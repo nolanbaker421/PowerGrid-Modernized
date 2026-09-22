@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    }
+  },
+  "pattern": [
+    " N ",
+    "NIN",
+    "NNN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:breaker_lock"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "P": {
+      "tag": "c:plates/copper"
+    },
+    "C": {
+      "item": "powergrid:conductive_casing"
+    },
+    "H": {
+      "item": "powergrid:heavy_wire_connector"
+    }
+  },
+  "pattern": [
+    "III",
+    "PCP",
+    "IHI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:breaker_panel_200"
+  }
+}

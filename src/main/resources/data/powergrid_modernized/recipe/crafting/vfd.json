@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "powergrid:conductive_casing"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "M": {
+      "tag": "c:copper_coils"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    }
+  },
+  "pattern": [
+    "PCP",
+    "MAM",
+    "PCP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:vfd"
+  }
+}

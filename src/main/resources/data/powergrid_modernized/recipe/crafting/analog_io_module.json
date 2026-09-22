@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "powergrid:conductive_casing"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    },
+    "R": {
+      "item": "minecraft:repeater"
+    }
+  },
+  "pattern": [
+    "PRP",
+    "CAC",
+    "PRP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:analog_io_module"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:nuggets/iron"
+    }
+  },
+  "pattern": [
+    "II"
+  ],
+  "result": {
+    "count": 4,
+    "id": "powergrid_modernized:breaker_blank"
+  }
+}

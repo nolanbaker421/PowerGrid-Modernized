@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "powergrid_modernized:analog_io_module",
+    "powergrid_modernized:vfd",
+    "powergrid_modernized:clamp_meter",
+    "powergrid_modernized:line_voltmeter",
+    "powergrid_modernized:line_ammeter",
+    "powergrid_modernized:network_jack",
+    "powergrid_modernized:network_switch",
+    "powergrid_modernized:breaker_panel_200",
+    "powergrid_modernized:breaker_panel_400",
+    "powergrid_modernized:breaker_panel_800",
+    "powergrid_modernized:conduit_box",
+    "powergrid_modernized:conduit_socket",
+    "powergrid_modernized:ct_cabinet"
+  ]
+}

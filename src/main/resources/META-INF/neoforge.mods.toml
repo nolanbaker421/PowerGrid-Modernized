@@ -1,0 +1,57 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "Apache-2.0"
+
+[[mods]]
+modId = "powergrid_modernized"
+version = "${version}"
+displayName = "PowerGrid: Modernized"
+authors = "Nolan Baker"
+description = '''
+Computer-facing instrumentation and drives for Create: Power Grid.
+Adds the Variable Frequency Drive, Analog I/O Module, Clamp Meter, Line Voltmeter, Line Ammeter,
+Cat6 network cabling and US-style breaker panels with plug-on breakers,
+with ComputerCraft peripherals and OpenComputers network nodes.
+'''
+
+[[dependencies.powergrid_modernized]]
+modId = "neoforge"
+type = "required"
+versionRange = "${neoforge_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.powergrid_modernized]]
+modId = "minecraft"
+type = "required"
+versionRange = "[${minecraft_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.powergrid_modernized]]
+modId = "powergrid"
+type = "required"
+versionRange = "${powergrid_version_range}"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.powergrid_modernized]]
+modId = "create"
+type = "required"
+versionRange = "${create_forge_range}"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.powergrid_modernized]]
+modId = "computercraft"
+type = "optional"
+versionRange = "[1.120.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.powergrid_modernized]]
+modId = "opencomputers"
+type = "optional"
+versionRange = "[1.9.4,)"
+ordering = "AFTER"
+side = "BOTH"

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "W": {
+      "item": "powergrid:wire"
+    }
+  },
+  "pattern": [
+    "NNN",
+    "WWW"
+  ],
+  "result": {
+    "count": 8,
+    "id": "powergrid_modernized:conduit_half"
+  }
+}

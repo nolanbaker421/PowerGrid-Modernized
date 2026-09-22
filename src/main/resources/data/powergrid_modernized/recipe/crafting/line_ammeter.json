@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "powergrid:conductive_casing"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    }
+  },
+  "pattern": [
+    "PGP",
+    "IAI",
+    "PCP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:line_ammeter"
+  }
+}

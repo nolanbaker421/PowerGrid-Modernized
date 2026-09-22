@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "c:plates/copper"
+    },
+    "B": {
+      "tag": "c:plates/brass"
+    },
+    "2": {
+      "item": "powergrid_modernized:breaker_panel_200"
+    }
+  },
+  "pattern": [
+    "PBP",
+    "P2P",
+    "PBP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:breaker_panel_400"
+  }
+}

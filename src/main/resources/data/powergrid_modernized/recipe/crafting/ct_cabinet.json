@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "powergrid:pins"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "A": {
+      "item": "powergrid:conductive_casing"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "W": {
+      "item": "powergrid:wire"
+    }
+  },
+  "pattern": [
+    "PCP",
+    "IAI",
+    "WIW"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:ct_cabinet"
+  }
+}

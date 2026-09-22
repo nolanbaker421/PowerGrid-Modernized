@@ -1,0 +1,136 @@
+plugins {
+    id 'java'
+    id 'dev.architectury.loom' version '1.13+'
+    id 'maven-publish'
+}
+
+base.archivesName = project.archives_base_name
+group = project.maven_group
+version = "mc${project.minecraft_version}-${project.mod_version}"
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    maven { url = "https://maven.parchmentmc.org" } // Parchment mappings
+    maven { url = "https://maven.neoforged.net/releases" }
+    maven { url = "https://maven.architectury.dev/" }
+    maven { url = "https://mvn.devos.one/releases" } // Porting Lib
+    maven { url = "https://mvn.devos.one/snapshots" }
+    maven { url = "https://modmaven.dev/" } // Flywheel
+    maven { url = "https://maven.tterrag.com/" } // Registrate
+    maven { url = "https://maven.squiddev.cc" } // CC: Tweaked
+    maven {
+        url = "https://maven.createmod.net"
+        content {
+            includeGroupAndSubgroups("net.createmod")
+            includeGroupAndSubgroups("dev.engine-room")
+            includeGroupAndSubgroups("com.simibubi")
+        }
+    }
+    maven { // Sable Companion
+        name = "RyanHCode Maven"
+        url = "https://maven.ryanhcode.dev/releases"
+    }
+    maven { // OpenComputers: Rebooted
+        url = "https://cursemaven.com"
+        content { includeGroup("curse.maven") }
+    }
+    maven { url = "https://maven.shedaniel.me" }
+    maven { url = "https://maven.blamejared.com" }
+    maven { url = "https://maven.terraformersmc.com/releases" }
+    maven {
+        url = "https://api.modrinth.com/maven"
+        content { includeGroup("maven.modrinth") }
+    }
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings(loom.layered {
+        officialMojangMappings { nameSyntheticMembers = false }
+        parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:${project.parchment_version}@zip")
+    })
+    neoForge "net.neoforged:neoforge:${project.neoforge_version}"
+
+    // Power Grid: the mod this addon extends. Swap the jar in gradle.properties to build against a newer release.
+    // Plain classpath entry on purpose: Loom would otherwise try to remap the access widener inside the jar.
+    compileOnly files(project.powergrid_jar)
+    localRuntime files(project.powergrid_jar)
+
+    // Create and friends (same versions Power Grid builds against)
+    modImplementation("com.simibubi.create:create-${project.minecraft_version}:${project.create_forge_version}:slim") { transitive = false }
+    modImplementation("net.createmod.ponder:ponder-neoforge:${project.ponder_forge_version}+mc${project.minecraft_version}")
+    modCompileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${project.minecraft_version}:${project.flywheel_forge_version}")
+    modLocalRuntime("dev.engine-room.flywheel:flywheel-neoforge-${project.minecraft_version}:${project.flywheel_forge_version}")
+    modImplementation("com.tterrag.registrate:Registrate:${project.registrate_forge_version}")
+    modImplementation("dev.architectury:architectury-neoforge:${project.architectury_api_version}")
+
+    // Referenced from Power Grid's public signatures
+    modCompileOnly("dev.ryanhcode.sable-companion:sable-companion-common-${project.minecraft_version}:${project.sable_companion_version}")
+    compileOnly("org.ejml:ejml-core:0.44.0")
+    compileOnly("org.ejml:ejml-simple:0.44.0")
+    compileOnly("org.ejml:ejml-ddense:0.44.0")
+    compileOnly("org.ejml:ejml-dsparse:0.44.0")
+
+    // CC: Tweaked (optional at runtime)
+    modCompileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-core-api:${project.cc_tweaked_version}")
+    modCompileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-forge-api:${project.cc_tweaked_version}")
+    modLocalRuntime("cc.tweaked:cc-tweaked-${project.minecraft_version}-forge:${project.cc_tweaked_version}")
+    forgeRuntimeLibrary("cc.tweaked:cobalt:0.9.7")
+
+    // OpenComputers: Rebooted (optional at runtime)
+    modCompileOnly("curse.maven:opencomputers-rebooted-1634364:${project.opencomputers_cursemaven_fileid}")
+
+    // Unit tests run against Power Grid's pure-Java circuit simulator
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(files(project.powergrid_jar))
+    testImplementation("org.ejml:ejml-core:0.44.0")
+    testImplementation("org.ejml:ejml-simple:0.44.0")
+    testImplementation("org.ejml:ejml-ddense:0.44.0")
+    testImplementation("org.ejml:ejml-dsparse:0.44.0")
+}
+
+loom {
+    runs {
+        client {
+            client()
+            vmArg("-enableassertions")
+        }
+        server {
+            server()
+        }
+    }
+}
+
+tasks.processResources {
+    var properties = [
+            version               : project.mod_version,
+            minecraft_version     : project.minecraft_version,
+            neoforge_version_range: project.neoforge_version_range,
+            create_forge_range    : project.create_forge_range,
+            powergrid_version_range: project.powergrid_version_range,
+    ]
+    inputs.properties(properties)
+    filesMatching("META-INF/neoforge.mods.toml") {
+        expand(properties)
+    }
+}
+
+tasks.jar {
+    from("LICENSE") { rename { "${it}_${project.archives_base_name}" } }
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -1,0 +1,145 @@
+{
+  "textures": {
+    "body": "powergrid_modernized:block/breaker_body_off",
+    "handle": "powergrid_modernized:block/breaker_handle",
+    "particle": "powergrid_modernized:block/breaker_body_off"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        4
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#body"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#body"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            12,
+            16
+          ],
+          "texture": "#body"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            16,
+            16
+          ],
+          "texture": "#body"
+        },
+        "up": {
+          "uv": [
+            0,
+            4,
+            16,
+            16
+          ],
+          "texture": "#body"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            12
+          ],
+          "texture": "#body"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        3,
+        0
+      ],
+      "to": [
+        6,
+        13,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            3,
+            15,
+            13
+          ],
+          "texture": "#handle"
+        },
+        "south": {
+          "uv": [
+            1,
+            3,
+            6,
+            13
+          ],
+          "texture": "#handle"
+        },
+        "east": {
+          "uv": [
+            8,
+            3,
+            16,
+            13
+          ],
+          "texture": "#handle"
+        },
+        "west": {
+          "uv": [
+            0,
+            3,
+            8,
+            13
+          ],
+          "texture": "#handle"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            6,
+            8
+          ],
+          "texture": "#handle"
+        },
+        "down": {
+          "uv": [
+            1,
+            8,
+            6,
+            16
+          ],
+          "texture": "#handle"
+        }
+      }
+    }
+  ]
+}

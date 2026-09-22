@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": { "item": "minecraft:iron_nugget" },
+    "P": { "item": "powergrid:pins" },
+    "W": { "tag": "c:copper_wires" }
+  },
+  "pattern": [
+    "N N",
+    "PWP"
+  ],
+  "result": {
+    "count": 2,
+    "id": "powergrid_modernized:network_jack"
+  }
+}

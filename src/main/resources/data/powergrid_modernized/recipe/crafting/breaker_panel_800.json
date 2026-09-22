@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:plates/brass"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "4": {
+      "item": "powergrid_modernized:breaker_panel_400"
+    }
+  },
+  "pattern": [
+    "BIB",
+    "I4I",
+    "BIB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:breaker_panel_800"
+  }
+}

@@ -1,0 +1,2253 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_off"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_on"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_off"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_on"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_off"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_on"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_off"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_on"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_off"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_on"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_off"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_on"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_off"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_on"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_off"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_on"
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_off",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_on",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_off",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_on",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_off",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_on",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_off",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_on",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_off",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_on",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_off",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_on",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_off",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_on",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_off",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_on",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch_wall"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port0_off"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port0_on"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port1_off"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port1_on"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port2_off"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port2_on"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port3_off"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port3_on"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port4_off"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port4_on"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port5_off"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port5_on"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port6_off"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port6_on"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port7_off"
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port7_on"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_off",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_on",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_off",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_on",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_off",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_on",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_off",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_on",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_off",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_on",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_off",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_on",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_off",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_on",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_off",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_on",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port0_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port0_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port1_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port1_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port2_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port2_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port3_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port3_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port4_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port4_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port5_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port5_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port6_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port6_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port7_off",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port7_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_off",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_on",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_off",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_on",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_off",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_on",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_off",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_on",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_off",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_on",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_off",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_on",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_off",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_on",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_off",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_on",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port0_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port0_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port1_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port1_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port2_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port2_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port3_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port3_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port4_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port4_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port5_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port5_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port6_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port6_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port7_off",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port7_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_off",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port0_on",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_off",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port1_on",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_off",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port2_on",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_off",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port3_on",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_off",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port4_on",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_off",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port5_on",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_off",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port6_on",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_off",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/port7_on",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/network_switch_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port0": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port0_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port0": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port0_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port1": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port1_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port1": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port1_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port2": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port2_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port2": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port2_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port3": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port3_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port3": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port3_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port4": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port4_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port4": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port4_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port5": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port5_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port5": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port5_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port6": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port6_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port6": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port6_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port7": "false"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port7_off",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "port7": "true"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/switch_port/wall_port7_on",
+        "y": 270
+      }
+    }
+  ]
+}

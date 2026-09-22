@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powergrid_modernized:block/conduit_box"
+    },
+    "facing=south": {
+      "model": "powergrid_modernized:block/conduit_box",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "powergrid_modernized:block/conduit_box",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "powergrid_modernized:block/conduit_box",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "powergrid_modernized:block/conduit_box",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "powergrid_modernized:block/conduit_box",
+      "x": 90
+    }
+  }
+}
