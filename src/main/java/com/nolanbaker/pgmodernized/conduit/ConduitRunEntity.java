@@ -314,9 +314,10 @@ public class ConduitRunEntity extends BlockWireEntity {
         if(stack.is(ModdedTags.Item.WIRE_CUTTERS.tag) || stack.is(ModdedTags.Item.BAD_WIRE_CUTTERS.tag)) {
             if(client)
                 return InteractionResult.SUCCESS;
-            if(player.isShiftKeyDown())
+            if(!player.isShiftKeyDown())
                 return pullOut(player);
-            // Power Grid would cut out a segment and respawn electrical wire; take the whole run instead.
+            // Sneaking takes the whole run. Power Grid would cut out a segment and respawn
+            // electrical wire; the run goes as one piece instead.
             ShockDamage.shockAmps(player, maxAmps());
             kill();
             return InteractionResult.SUCCESS;

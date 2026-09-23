@@ -19,25 +19,29 @@ import org.patryk3211.powergrid.utility.Lang;
  * south side of the block with its open front facing north. Someone looking at the front has +x on
  * their left, so a viewer coordinate {@code u} (0 at the viewer's left) is model {@code x = 16 - u}.
  * <p>
- * Wiring enters only through conduit: four knockout hubs on the top edge and four on the bottom.
- * The line, neutral and circuit points are hidden terminals inside the enclosure that pulled
- * conductors are spliced to in the panel's splice editor.
+ * Wiring enters only through conduit: four knockout hubs on the top edge, four on the bottom, and
+ * two on each side. The line, neutral and circuit points are hidden terminals inside the enclosure
+ * that pulled conductors are spliced to in the panel's splice editor.
  * <p>
- * Terminals: one per lug, the neutral, one per branch space; then the 8 hubs; then 12 hidden
- * landings per hub. The asset generator {@code tools/gen_breaker_panel_assets.py} carries the same
- * numbers; change both.
+ * Terminals: one per lug, the neutral, one per branch space; then the 8 top and bottom hubs and
+ * their 12 hidden landings each; then the 4 side hubs and their landings. The side hubs were added
+ * later and sit after everything else so panels saved before them keep their splice indices. The
+ * asset generator {@code tools/gen_breaker_panel_assets.py} carries the same numbers; change both.
  */
 public final class PanelLayout {
     public static final int NO_SLOT = -2;
     public static final int MAIN = -1;
 
-    public static final int HUB_COUNT = 8;
+    public static final int EDGE_HUBS = 8;
+    public static final int SIDE_HUBS = 4;
+    public static final int HUB_COUNT = EDGE_HUBS + SIDE_HUBS;
     public static final int PER_HUB = ConductorColors.COUNT;
 
     public static final double FRONT_Z = 10;
     private static final AABB BODY = new AABB(1, 1, 10, 15, 15, 16);
     private static final AABB HIDDEN = new AABB(7.5, 7.5, 11, 8.5, 8.5, 12);
     private static final double[] HUB_U = {3.5, 6.5, 9.5, 12.5};
+    private static final double[] SIDE_HUB_Y = {4, 9};
     private static final double HUB_Z1 = 12.5, HUB_Z2 = 14.5;
 
     private static final double LEFT_U1 = 1.5, RIGHT_U1 = 8.5, COLUMN_WIDTH = 6, ROW_TOP = 11;
@@ -52,46 +56,80 @@ public final class PanelLayout {
         return spec.branchFirst() + spec.slots();
     }
 
+    private static int edgeConductorBase(PanelSpec spec) {
+        return hubBase(spec) + EDGE_HUBS;
+    }
+
+    private static int sideHubBase(PanelSpec spec) {
+        return edgeConductorBase(spec) + EDGE_HUBS * PER_HUB;
+    }
+
+    private static int sideConductorBase(PanelSpec spec) {
+        return sideHubBase(spec) + SIDE_HUBS;
+    }
+
     public static int hubTerminal(PanelSpec spec, int hub) {
-        return hubBase(spec) + hub;
+        return hub < EDGE_HUBS ? hubBase(spec) + hub : sideHubBase(spec) + (hub - EDGE_HUBS);
     }
 
     /** Hub index of a hub terminal, or -1. */
     public static int hubAt(PanelSpec spec, int terminal) {
         int i = terminal - hubBase(spec);
-        return i >= 0 && i < HUB_COUNT ? i : -1;
-    }
-
-    public static int conductorBase(PanelSpec spec) {
-        return hubBase(spec) + HUB_COUNT;
+        if(i >= 0 && i < EDGE_HUBS)
+            return i;
+        int j = terminal - sideHubBase(spec);
+        return j >= 0 && j < SIDE_HUBS ? EDGE_HUBS + j : -1;
     }
 
     public static int conductorTerminal(PanelSpec spec, int hub, int conductor) {
-        return conductorBase(spec) + hub * PER_HUB + conductor;
+        return hub < EDGE_HUBS
+                ? edgeConductorBase(spec) + hub * PER_HUB + conductor
+                : sideConductorBase(spec) + (hub - EDGE_HUBS) * PER_HUB + conductor;
     }
 
     /** Hub a hidden conductor terminal belongs to, or -1. */
     public static int conductorHub(PanelSpec spec, int terminal) {
-        int i = terminal - conductorBase(spec);
-        return i >= 0 && i < HUB_COUNT * PER_HUB ? i / PER_HUB : -1;
+        int i = terminal - edgeConductorBase(spec);
+        if(i >= 0 && i < EDGE_HUBS * PER_HUB)
+            return i / PER_HUB;
+        int j = terminal - sideConductorBase(spec);
+        return j >= 0 && j < SIDE_HUBS * PER_HUB ? EDGE_HUBS + j / PER_HUB : -1;
     }
 
     public static int conductorOf(PanelSpec spec, int terminal) {
-        int i = terminal - conductorBase(spec);
-        return i >= 0 ? i % PER_HUB : -1;
+        int i = terminal - edgeConductorBase(spec);
+        if(i >= 0 && i < EDGE_HUBS * PER_HUB)
+            return i % PER_HUB;
+        int j = terminal - sideConductorBase(spec);
+        return j >= 0 && j < SIDE_HUBS * PER_HUB ? j % PER_HUB : -1;
     }
 
     public static int terminalCount(PanelSpec spec) {
-        return conductorBase(spec) + HUB_COUNT * PER_HUB;
+        return sideConductorBase(spec) + SIDE_HUBS * PER_HUB;
     }
 
     public static boolean isPoint(PanelSpec spec, int terminal) {
         return terminal >= 0 && terminal < hubBase(spec);
     }
 
-    /** Names: hubs 0..3 across the top left to right, 4..7 across the bottom. */
+    /** Names: hubs 0..3 across the top left to right, 4..7 across the bottom, 8..9 down the left side, 10..11 down the right. */
     public static Component hubName(int hub) {
-        return Lang.builder().translate("gui.breaker_panel.hub." + (hub < 4 ? "top" : "bottom"), hub % 4 + 1).style(ChatFormatting.AQUA).component();
+        String key;
+        int number;
+        if(hub < 4) {
+            key = "top";
+            number = hub + 1;
+        } else if(hub < EDGE_HUBS) {
+            key = "bottom";
+            number = hub - 4 + 1;
+        } else if(hub < EDGE_HUBS + 2) {
+            key = "left";
+            number = hub - EDGE_HUBS + 1;
+        } else {
+            key = "right";
+            number = hub - EDGE_HUBS - 2 + 1;
+        }
+        return Lang.builder().translate("gui.breaker_panel.hub." + key, number).style(ChatFormatting.AQUA).component();
     }
 
     // ---- lines ----
@@ -129,10 +167,10 @@ public final class PanelLayout {
         return new double[] {u1, vBottom, u1 + COLUMN_WIDTH, vTop};
     }
 
-    /** The spaces a breaker of that many poles covers from a head space, as one rectangle down the column. */
-    public static double[] spanRect(PanelSpec spec, int slot, int poles) {
+    /** The spaces a breaker covers from a head space, that many rows down the column, as one rectangle. */
+    public static double[] spanRect(PanelSpec spec, int slot, int rows) {
         var head = slotRect(spec, slot);
-        var last = slotRect(spec, slot + 2 * (poles - 1));
+        var last = slotRect(spec, slot + 2 * (rows - 1));
         return new double[] {head[0], last[1], head[2], head[3]};
     }
 
@@ -140,32 +178,41 @@ public final class PanelLayout {
         return new double[] {MAIN_U1, MAIN_V1, MAIN_U2, MAIN_V2};
     }
 
-    private static double[] rect(PanelSpec spec, int slot, int poles) {
-        return slot == MAIN ? mainRect() : spanRect(spec, slot, poles);
+    private static double[] rect(PanelSpec spec, int slot, int rows) {
+        return slot == MAIN ? mainRect() : spanRect(spec, slot, rows);
     }
 
     public static AABB breakerBox(PanelSpec spec, int slot) {
         return breakerBox(spec, slot, 1);
     }
 
-    public static AABB breakerBox(PanelSpec spec, int slot, int poles) {
-        var r = rect(spec, slot, poles);
+    /** @param rows spaces the breaker takes down its column (poles times frame rows); ignored for the main */
+    public static AABB breakerBox(PanelSpec spec, int slot, int rows) {
+        var r = rect(spec, slot, rows);
         double u1 = r[0] + VISUAL_INSET, u2 = r[2] - VISUAL_INSET;
         return new AABB(16 - u2, r[1], FRONT_Z - BREAKER_DEPTH, 16 - u1, r[3], FRONT_Z);
     }
 
-    public static Vec3 breakerCenter(PanelSpec spec, int slot, int poles) {
-        var box = breakerBox(spec, slot, poles);
+    public static Vec3 breakerCenter(PanelSpec spec, int slot, int rows) {
+        var box = breakerBox(spec, slot, rows);
         return new Vec3((box.minX + box.maxX) / 2, (box.minY + box.maxY) / 2, box.minZ);
     }
 
     // ---- hubs and shape ----
 
     private static AABB hub(int hub) {
-        double x = 16 - HUB_U[hub % 4];
-        return hub < 4
-                ? new AABB(x - 1, 15, HUB_Z1, x + 1, 16, HUB_Z2)
-                : new AABB(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2);
+        if(hub < EDGE_HUBS) {
+            double x = 16 - HUB_U[hub % 4];
+            return hub < 4
+                    ? new AABB(x - 1, 15, HUB_Z1, x + 1, 16, HUB_Z2)
+                    : new AABB(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2);
+        }
+        int side = hub - EDGE_HUBS;
+        double y = SIDE_HUB_Y[side % 2];
+        // Viewer's left is +x.
+        return side < 2
+                ? new AABB(15, y, HUB_Z1, 16, y + 2, HUB_Z2)
+                : new AABB(0, y, HUB_Z1, 1, y + 2, HUB_Z2);
     }
 
     public static VoxelShape shape(PanelSpec spec) {

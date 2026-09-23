@@ -13,9 +13,9 @@
     }
   },
   "pattern": [
-    "II",
-    "RR",
-    "CC"
+    "I",
+    "R",
+    "C"
   ],
   "result": {
     "count": 1,

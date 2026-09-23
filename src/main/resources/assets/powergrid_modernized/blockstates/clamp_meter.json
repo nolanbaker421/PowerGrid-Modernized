@@ -2,7 +2,7 @@
   "variants": {
     "facing=down,rotation=0": {
       "model": "powergrid_modernized:block/clamp_meter/block_v",
-      "y": -90
+      "y": 270
     },
     "facing=down,rotation=1": {
       "model": "powergrid_modernized:block/clamp_meter/block_v"
@@ -16,43 +16,44 @@
       "y": 180
     },
     "facing=east,rotation=0": {
-      "model": "powergrid_modernized:block/clamp_meter/block_h",
-      "x": -90
+      "model": "powergrid_modernized:block/clamp_meter/block_v",
+      "x": 270,
+      "y": 90
     },
     "facing=east,rotation=1": {
       "model": "powergrid_modernized:block/clamp_meter/block_h",
       "x": 180
     },
     "facing=east,rotation=2": {
-      "model": "powergrid_modernized:block/clamp_meter/block_h",
-      "x": 90
+      "model": "powergrid_modernized:block/clamp_meter/block_v",
+      "x": 90,
+      "y": 270
     },
     "facing=east,rotation=3": {
       "model": "powergrid_modernized:block/clamp_meter/block_h"
     },
     "facing=north,rotation=0": {
-      "model": "powergrid_modernized:block/clamp_meter/block_h",
-      "x": -90,
-      "y": -90
+      "model": "powergrid_modernized:block/clamp_meter/block_v",
+      "x": 270
     },
     "facing=north,rotation=1": {
       "model": "powergrid_modernized:block/clamp_meter/block_h",
       "x": 180,
-      "y": -90
+      "y": 270
     },
     "facing=north,rotation=2": {
-      "model": "powergrid_modernized:block/clamp_meter/block_h",
+      "model": "powergrid_modernized:block/clamp_meter/block_v",
       "x": 90,
-      "y": -90
+      "y": 180
     },
     "facing=north,rotation=3": {
       "model": "powergrid_modernized:block/clamp_meter/block_h",
-      "y": -90
+      "y": 270
     },
     "facing=south,rotation=0": {
-      "model": "powergrid_modernized:block/clamp_meter/block_h",
-      "x": -90,
-      "y": 90
+      "model": "powergrid_modernized:block/clamp_meter/block_v",
+      "x": 270,
+      "y": 180
     },
     "facing=south,rotation=1": {
       "model": "powergrid_modernized:block/clamp_meter/block_h",
@@ -60,9 +61,8 @@
       "y": 90
     },
     "facing=south,rotation=2": {
-      "model": "powergrid_modernized:block/clamp_meter/block_h",
-      "x": 90,
-      "y": 90
+      "model": "powergrid_modernized:block/clamp_meter/block_v",
+      "x": 90
     },
     "facing=south,rotation=3": {
       "model": "powergrid_modernized:block/clamp_meter/block_h",
@@ -71,7 +71,7 @@
     "facing=up,rotation=0": {
       "model": "powergrid_modernized:block/clamp_meter/block_v",
       "x": 180,
-      "y": -90
+      "y": 270
     },
     "facing=up,rotation=1": {
       "model": "powergrid_modernized:block/clamp_meter/block_v",
@@ -88,9 +88,9 @@
       "y": 180
     },
     "facing=west,rotation=0": {
-      "model": "powergrid_modernized:block/clamp_meter/block_h",
-      "x": -90,
-      "y": 180
+      "model": "powergrid_modernized:block/clamp_meter/block_v",
+      "x": 270,
+      "y": 270
     },
     "facing=west,rotation=1": {
       "model": "powergrid_modernized:block/clamp_meter/block_h",
@@ -98,9 +98,9 @@
       "y": 180
     },
     "facing=west,rotation=2": {
-      "model": "powergrid_modernized:block/clamp_meter/block_h",
+      "model": "powergrid_modernized:block/clamp_meter/block_v",
       "x": 90,
-      "y": 180
+      "y": 90
     },
     "facing=west,rotation=3": {
       "model": "powergrid_modernized:block/clamp_meter/block_h",

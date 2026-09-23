@@ -4,6 +4,7 @@ import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.SplicePoint;
 import com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import net.minecraft.core.Direction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -55,11 +56,40 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
 
     // ---- splice host ----
 
+    private boolean coverTerminals() {
+        var state = getBlockState();
+        return state.getBlock() instanceof ConduitBoxBlock && ConduitBoxBlock.cover(state).hasTerminals();
+    }
+
+    /** Any hanging wire on a cover terminal, which a node plate cannot be taken off under. */
+    public boolean hasCoverWires() {
+        var behaviour = getElectricBehaviour();
+        if(behaviour == null)
+            return false;
+        for(var entry : behaviour.getConnections().entrySet()) {
+            if(ConduitBoxGeometry.isFront(entry.getKey().getTerminal()) && !entry.getValue().isEmpty())
+                return true;
+        }
+        return false;
+    }
+
+    /** The cover changed: the points come and go with the node plate. */
+    @Override
+    public void setBlockState(BlockState state) {
+        boolean before = coverTerminals();
+        super.setBlockState(state);
+        if(before != coverTerminals()) {
+            points = null;
+            if(level != null && !level.isClientSide)
+                splices().prune();
+        }
+    }
+
     @Override
     public List<SplicePoint> points() {
         if(points == null) {
             points = new ArrayList<>();
-            for(int k = 0; k < ConduitBoxGeometry.FRONT_COUNT; ++k) {
+            if(coverTerminals()) for(int k = 0; k < ConduitBoxGeometry.FRONT_COUNT; ++k) {
                 var name = Lang.builder().translate("gui.conduit_box.cover").style(ChatFormatting.GRAY).text(" ").add(ConductorColors.name(k)).component();
                 points.add(new SplicePoint(k, name, ConductorColors.rgb(k)));
             }
@@ -69,7 +99,7 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
 
     @Override
     public boolean isPoint(int terminal) {
-        return ConduitBoxGeometry.isFront(terminal);
+        return ConduitBoxGeometry.isFront(terminal) && coverTerminals();
     }
 
     @Override

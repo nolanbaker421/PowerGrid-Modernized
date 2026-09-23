@@ -29,11 +29,11 @@ Everything is in its own creative tab, "PowerGrid: Modernized". All blocks are m
 | Item | What it is |
 | --- | --- |
 | Breaker Panel 200 A / 400 A / 800 A | Wall-mounted load centres with plug-on breakers |
-| Breakers 10, 20, 50, 60, 100, 200, 400, 800 A | Plug-on breakers |
+| Breakers 1-50, 51-200, 201-400, 401-800 A | Plug-on breaker frames; the trip rating is set with a wrench once installed |
 | Breaker Blank | Filler plate for an unused space |
-| Breaker Lock | Lockout hasp that freezes a breaker handle |
+| Breaker Lockout | Hasp that freezes a breaker handle |
 | Conduit 1/2", 3/4", 1" | Empty raceway, laid along surfaces, that wire is pulled through |
-| Conduit Box | Small wall box: ends and splices conduit runs |
+| Conduit Box | Small wall box: ends and splices conduit runs; takes a blank or node cover plate |
 | Conduit Socket | Tiny fitting that turns the end of a conduit into a cord socket |
 | Variable Frequency Drive (VFD) | Computer-controlled voltage/current source |
 | Analog I/O Module | Four analog outputs and four analog inputs for computers |
@@ -66,8 +66,9 @@ wire keeps its own gauge (resistance and ampacity).
 4. Finish by clicking a hub on the other fitting.
 
 One run per hub. A run cannot tee; if you need a branch, put a box there. To continue an open run,
-click its free end with conduit. Shift-right-click in the air cancels a pending run. Wire cutters
-take a whole run back up, and drop any wire inside it.
+click its free end with conduit. The route is previewed in green (or red where it cannot go) while
+a run is pending. Shift-right-click in the air cancels a pending run. Sneak and right-click a run
+with wire cutters to take the whole run back up; it drops any wire inside it.
 
 ### Pulling wire
 
@@ -77,19 +78,27 @@ wire until the conduit is full. Pulled wires are numbered and coloured in US ord
 
 1 black, 2 red, 3 blue, 4 white, 5 green, 6 orange, 7 brown, 8 yellow, 9 gray, 10 purple, 11 pink, 12 tan.
 
-- Shift-right-click the run with **wire cutters** to pull the last wire back out (you get it back).
+- Right-click the run with **wire cutters** to pull the last wire back out (you get it back).
 - Right-click the run with an **empty hand** or the **multimeter** to list every slot: colour, wire type
   and current.
 - A wire driven past its ampacity burns out like any Power Grid wire and frees its slot.
 
 ### Conduit Box
 
-An 8 x 8 pixel wall box. It has **three hubs on each of its four edges** (twelve runs) and **twelve
-colour-coded terminals on its cover** for ordinary wires. It is both the end of a run and a junction.
+An 8 x 8 pixel wall box with **three hubs on each of its four edges** (twelve runs). It is placed
+open, and takes one of two cover plates:
+
+- **Blank Cover Plate**: a closed pull box. Runs land on it and are spliced to each other inside;
+  nothing is exposed. This is the fitting for turning corners and joining runs.
+- **Node Cover Plate**: closes the box with **twelve colour-coded terminals** on the cover that
+  ordinary wires land on, and that the splice editor offers as points.
+
+Right-click an open box with a plate to fit it; shift-right-click the box with an empty hand to
+take the plate off (a node plate will not come off while wires hang on its terminals).
 
 Right-click the box with an empty hand to open the **splice editor**:
 
-- The first row is the twelve cover terminals.
+- The first row is the twelve cover terminals, when there is a node plate.
 - Every hub that has a run is a row of that run's slots. Filled pins are pulled wires; hollow pins
   are empty slots.
 - Click a pin, then another pin, to splice them. Click the same pair again to remove the splice.
@@ -137,10 +146,10 @@ Each row of spaces sits on the next lug down the panel, both columns of a row on
 the sequence repeats: on a split-phase panel rows alternate L1, L2, L1, L2; on a three-phase panel
 they cycle L1, L2, L3. A single-pole breaker in any space gives you that row's lug against neutral.
 
-Breakers also come as **2-pole** and **3-pole** (craft that many single-pole breakers of one rating
-with an iron nugget). A multi-pole breaker takes that many *adjacent rows in one column*, so it
-bridges that many lugs: a 2-pole in spaces 1 and 3 of a split-phase panel gives L1 and L2, 240 V
-across its two circuit points. All its poles share one handle and trip together. Its name is the
+Breakers also come as **2-pole** and **3-pole** (craft that many single-pole breakers of one frame
+with an iron nugget). A multi-pole breaker takes that many poles' worth of *rows in one column*
+and puts each pole on the next lug: a 2-pole in spaces 1 and 3 of a split-phase panel gives L1 and
+L2, 240 V across its two circuit points. All its poles share one handle and trip together. Its name is the
 spaces it spans, "Circuit 1/3", and each space is still its own circuit point in the editor.
 
 - A 2-pole breaker fits split-phase and three-phase panels; a 3-pole only three-phase.
@@ -150,12 +159,22 @@ spaces it spans, "Circuit 1/3", and each space is still its own circuit point in
 
 ### Breakers
 
+Breakers come as four **frames**: 1-50 A, 51-200 A, 201-400 A and 401-800 A. The frame is the
+physical breaker; its **trip rating** is set once it is in the panel. Hold a **wrench**, look at the
+breaker and scroll, or click it for the settings board. The 1-50 and 51-200 frames set in 1 A
+steps, 201-400 in 5 A, 401-800 in 10 A. A new breaker starts at the top of its frame.
+
+Bigger frames are bigger breakers. The two smaller frames take one row of a column per pole; the
+201-400 A frame takes two rows per pole and the 401-800 A frame three. The extra rows are dead
+(no circuit point, nothing to splice to); a pole always sits on the first row of its span.
+
 - With a breaker in hand every free space it fits is outlined and the one under the crosshair is
   bright. Right-click a space to plug it in. New breakers start OFF.
 - Right-click a breaker with an empty hand to flip it. A tripped breaker goes to OFF on the first
   click and ON on the next, like the real thing.
 - Shift-right-click a breaker with an empty hand to pull it.
-- Any breaker up to the panel's rating fits any space, including the main.
+- Any frame up to the panel's rating fits any space with enough free rows below it, including the main,
+  which is a single space whatever the frame.
 
 ### Trip curve
 
@@ -180,7 +199,7 @@ the breaker sound.
 ### Blanks, locks and labels
 
 - **Breaker Blank**: right-click a free space with it to fill the space. Pull it like a breaker.
-- **Breaker Lock**: right-click an installed breaker with it. The handle is frozen and will not flip
+- **Breaker Lockout**: right-click an installed breaker with it. The handle is frozen and will not flip
   by hand, but the breaker still trips on overload. Shift-right-click the breaker to take the lock off.
 - **Labels**: rename a name tag in an anvil and right-click a space with it. The label shows in
   goggles, in messages and in the splice editor ("Circuit 3 (Kitchen)"). A plain name tag clears
@@ -189,7 +208,7 @@ the breaker sound.
 ### Wiring a panel
 
 Panels have no exposed terminals. Wiring comes in through **conduit knockouts**: four across the top
-edge and four across the bottom. Land a run on a knockout, pull wire, then right-click the panel
+edge, four across the bottom and two on each side. Land a run on a knockout, pull wire, then right-click the panel
 front **outside the breaker spaces** with an empty hand to open the splice editor. Its points are:
 
 - **Line**: feeds the main breaker.
@@ -401,15 +420,17 @@ adapter placed next to them:
 | --- | --- |
 | Conduit (8) | iron nuggets / ingots over copper wire; 1" adds a second row of ingots |
 | Conduit Box (2) | ring of eight iron nuggets |
+| Blank Cover Plate (2) | an iron plate |
+| Node Cover Plate | a blank cover plate and pins, shapeless |
 | Conduit Socket (2) | iron nugget, copper nugget, iron nugget over an iron nugget |
 | Breaker Panel 200 A | iron plates and copper plates around a conductive casing, heavy wire connector at the bottom |
 | Breaker Panel 400 A / 800 A | the smaller panel surrounded by copper and brass plates / brass and iron |
-| Breakers | a column of iron, redstone, copper; nuggets for 10/20 A, ingots for 50/60 A, plates for 100/200 A, blocks for 400/800 A; the double-width version is the higher rating of each pair |
+| Breaker frames | a column of iron, redstone, copper: ingots for the 1-50 A frame (makes two), plates for 51-200 A, double-width plates for 201-400 A, double-width blocks for 401-800 A |
 | Breaker Blank (4) | two iron nuggets |
-| Breaker Lock | an iron ingot ringed by five nuggets |
+| Breaker Lockout | an iron ingot ringed by five nuggets |
 | CT Cabinet | pins, comparator, pins / iron plate, conductive casing, iron plate / copper wire, iron plate, copper wire |
 | Split-phase / three-phase panels | the single-lug panel of the same rating with heavy wire connectors either side and a copper plate (two for three-phase) below |
-| 2-pole / 3-pole breakers | two or three single-pole breakers of one rating and an iron nugget, shapeless |
+| 2-pole / 3-pole breakers | two or three single-pole breakers of one frame and an iron nugget, shapeless |
 | Transformers | copper coils either side of a transformer core; iron plates above and below for the dry-type, smooth stone below for the pad-mount, an iron plate above and below for the pole can; three pole cans and an iron plate make the three-phase bank |
 
 Look the rest up in the recipe book; every recipe unlocks from its main ingredient.

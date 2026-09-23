@@ -76,22 +76,53 @@ def textures():
 
 
 def box_model():
-    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/conduit_box" % MOD}
-    elements = [element(*BODY, "#box", cull_south=True)]
-    for hub in HUBS:
-        elements.append(element(*hub, "#terminal"))
-    for k in range(12):
-        x = 16 - COLUMNS_U[k % 4]
-        y = ROWS_Y[k // 4]
-        elements.append(element(x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2, "#terminal"))
-    dump(os.path.join(ASSETS, "models", "block", "conduit_box.json"), {"parent": "block/block", "textures": tex, "elements": elements})
-    dump(os.path.join(ASSETS, "models", "item", "conduit_box.json"), {"parent": "%s:block/conduit_box" % MOD})
+    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD,
+           "open": "%s:block/conduit_box_open" % MOD, "particle": "%s:block/conduit_box" % MOD}
+    for cover in ("open", "blank", "node"):
+        if cover == "open":
+            # No front: the body is set back and its open face shows the interior.
+            x1, y1, z1, x2, y2, z2 = BODY
+            elements = [element(x1, y1, z1 + 0.5, x2, y2, z2, "#box", cull_south=True)]
+            elements[0]["faces"]["north"]["texture"] = "#open"
+        else:
+            elements = [element(*BODY, "#box", cull_south=True)]
+        for hub in HUBS:
+            elements.append(element(*hub, "#terminal"))
+        if cover == "node":
+            for k in range(12):
+                x = 16 - COLUMNS_U[k % 4]
+                y = ROWS_Y[k // 4]
+                elements.append(element(x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2, "#terminal"))
+        dump(os.path.join(ASSETS, "models", "block", "conduit_box_%s.json" % cover), {"parent": "block/block", "textures": tex, "elements": elements})
+    dump(os.path.join(ASSETS, "models", "item", "conduit_box.json"), {"parent": "%s:block/conduit_box_open" % MOD})
     variants = {}
     for key, rot in DIRECTIONAL.items():
-        v = {"model": "%s:block/conduit_box" % MOD}
-        v.update(rot)
-        variants[key] = v
+        for cover in ("open", "blank", "node"):
+            v = {"model": "%s:block/conduit_box_%s" % (MOD, cover)}
+            v.update(rot)
+            variants["%s,cover=%s" % (key, cover)] = v
     dump(os.path.join(ASSETS, "blockstates", "conduit_box.json"), {"variants": variants})
+    # Cover plate items.
+    item = os.path.join(ASSETS, "textures", "item")
+    plate = (0x86, 0x8a, 0x8e)
+    for name, nubs in (("conduit_cover_blank", False), ("conduit_cover_node", True)):
+        img = canvas(16, 16)
+        fill(img, 2, 2, 14, 14, plate)
+        fill(img, 2, 2, 14, 3, shade(plate, 1.2))
+        fill(img, 2, 13, 14, 14, shade(plate, 0.6))
+        fill(img, 3, 3, 4, 4, shade(plate, 0.5))
+        fill(img, 12, 12, 13, 13, shade(plate, 0.5))
+        if nubs:
+            for k in range(12):
+                x = 4 + (k % 4) * 2 + 1
+                y = 5 + (k // 4) * 2 + 1
+                fill(img, x, y, x + 1, y + 1, (0xd0, 0xd4, 0xd8))
+        write_png(os.path.join(item, name + ".png"), img)
+        dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/%s" % (MOD, name)}})
+    open_tex = canvas(16, 16, shade(plate, 0.45) + (255,))
+    fill(open_tex, 0, 0, 16, 1, shade(plate, 0.7))
+    fill(open_tex, 0, 15, 16, 16, shade(plate, 0.3))
+    write_png(os.path.join(ASSETS, "textures", "block", "conduit_box_open.png"), open_tex)
 
 
 # Floor frame (FACING = down): body on the floor, socket face up, knockout on the north edge.
@@ -100,20 +131,8 @@ SOCKET_HUB = (7, 0.5, 4, 9, 2.5, 5)
 SOCKET_FACE = (6.5, 3, 6.5, 9.5, 4, 9.5)
 # Same rotation table Power Grid's Rotation4 blocks use (copied from the line ammeter): block_v for
 # floor and ceiling, block_h = (16 - y, x, z) of block_v for walls.
-ROTATION4 = {
-    "facing=down,rotation=0": ("v", {"y": -90}), "facing=down,rotation=1": ("v", {}),
-    "facing=down,rotation=2": ("v", {"y": 90}), "facing=down,rotation=3": ("v", {"y": 180}),
-    "facing=up,rotation=0": ("v", {"x": 180, "y": -90}), "facing=up,rotation=1": ("v", {"x": 180}),
-    "facing=up,rotation=2": ("v", {"x": 180, "y": 90}), "facing=up,rotation=3": ("v", {"x": 180, "y": 180}),
-    "facing=east,rotation=0": ("h", {"x": -90}), "facing=east,rotation=1": ("h", {"x": 180}),
-    "facing=east,rotation=2": ("h", {"x": 90}), "facing=east,rotation=3": ("h", {}),
-    "facing=north,rotation=0": ("h", {"x": -90, "y": -90}), "facing=north,rotation=1": ("h", {"x": 180, "y": -90}),
-    "facing=north,rotation=2": ("h", {"x": 90, "y": -90}), "facing=north,rotation=3": ("h", {"y": -90}),
-    "facing=south,rotation=0": ("h", {"x": -90, "y": 90}), "facing=south,rotation=1": ("h", {"x": 180, "y": 90}),
-    "facing=south,rotation=2": ("h", {"x": 90, "y": 90}), "facing=south,rotation=3": ("h", {"y": 90}),
-    "facing=west,rotation=0": ("h", {"x": -90, "y": 180}), "facing=west,rotation=1": ("h", {"x": 180, "y": 180}),
-    "facing=west,rotation=2": ("h", {"x": 90, "y": 180}), "facing=west,rotation=3": ("h", {"y": 180}),
-}
+ROTATION4 = {k: ("v" if v["model"] == "v" else "h", {a: v[a] for a in ("x", "y") if v[a]})
+             for k, v in __import__("json").load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rotation4.json"))).items()}
 
 
 def to_h(box):

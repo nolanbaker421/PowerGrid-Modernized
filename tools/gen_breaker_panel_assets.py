@@ -28,7 +28,8 @@ PANELS = [
     ("breaker_panel_400_3p", 400, 12, 3, (0x7a, 0x84, 0x7e), (0x48, 0x52, 0x4c)),
     ("breaker_panel_800_3p", 800, 12, 3, (0x55, 0x58, 0x5e), (0x2e, 0x30, 0x36)),
 ]
-BREAKERS = [10, 20, 50, 60, 100, 200, 400, 800]
+BREAKERS = [50, 200, 400, 800]
+FRAMES = {50: "1-50", 200: "51-200", 400: "201-400", 800: "401-800"}
 MULTI_POLES = [2, 3]
 
 # Layout constants (pixels, north frame) - keep in sync with PanelLayout.java
@@ -36,6 +37,7 @@ BODY = (1, 1, 10, 15, 15, 16)
 FRONT_Z = 10
 HUB_U = [3.5, 6.5, 9.5, 12.5]
 HUB_Z1, HUB_Z2 = 12.5, 14.5
+SIDE_HUB_Y = [4, 9]
 LEFT_U1, RIGHT_U1, COLUMN_WIDTH, ROW_TOP = 1.5, 8.5, 6, 11
 
 
@@ -255,6 +257,10 @@ def panel_model(name, slots):
         x = 16 - u
         elements.append(element(x - 1, 15, HUB_Z1, x + 1, 16, HUB_Z2, "#terminal"))
         elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#terminal"))
+    # Two more on each side (viewer's left is +x).
+    for y in SIDE_HUB_Y:
+        elements.append(element(15, y, HUB_Z1, 16, y + 2, HUB_Z2, "#terminal"))
+        elements.append(element(0, y, HUB_Z1, 1, y + 2, HUB_Z2, "#terminal"))
     model = {
         "parent": "block/block",
         "textures": {
@@ -443,13 +449,9 @@ def recipes():
     # Breakers: a column of iron, redstone and copper. The material tier sets the rating and the
     # double-width version of each tier is the next rating up.
     tiers = {
-        10: ({"tag": "c:nuggets/iron"}, {"tag": "c:nuggets/copper"}, False, 2),
-        20: ({"tag": "c:nuggets/iron"}, {"tag": "c:nuggets/copper"}, True, 2),
-        50: ({"tag": "c:ingots/iron"}, {"tag": "c:ingots/copper"}, False, 1),
-        60: ({"tag": "c:ingots/iron"}, {"tag": "c:ingots/copper"}, True, 1),
-        100: (iron_plate, copper_plate, False, 1),
-        200: (iron_plate, copper_plate, True, 1),
-        400: ({"tag": "c:storage_blocks/iron"}, {"tag": "c:storage_blocks/copper"}, False, 1),
+        50: ({"tag": "c:ingots/iron"}, {"tag": "c:ingots/copper"}, False, 2),
+        200: (iron_plate, copper_plate, False, 1),
+        400: (iron_plate, copper_plate, True, 1),
         800: ({"tag": "c:storage_blocks/iron"}, {"tag": "c:storage_blocks/copper"}, True, 1),
     }
     for rating, (iron, copper, wide, count) in tiers.items():

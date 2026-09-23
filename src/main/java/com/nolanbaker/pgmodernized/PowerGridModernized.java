@@ -3,6 +3,7 @@ package com.nolanbaker.pgmodernized;
 import com.nolanbaker.pgmodernized.client.BreakerPanelModels;
 import com.nolanbaker.pgmodernized.client.BreakerPlacementOutline;
 import com.nolanbaker.pgmodernized.client.Cat6Preview;
+import com.nolanbaker.pgmodernized.client.ConduitPreview;
 import com.nolanbaker.pgmodernized.compat.cc.CCBridge;
 import com.nolanbaker.pgmodernized.compat.oc.OCBridge;
 import com.nolanbaker.pgmodernized.network.packets.ModPackets;
@@ -71,6 +72,7 @@ public class PowerGridModernized {
         }
         if(FMLEnvironment.dist.isClient()) {
             NeoForge.EVENT_BUS.register(Cat6Preview.class);
+            NeoForge.EVENT_BUS.register(ConduitPreview.class);
             NeoForge.EVENT_BUS.register(BreakerPlacementOutline.class);
             bus.register(BreakerPanelModels.class);
         }

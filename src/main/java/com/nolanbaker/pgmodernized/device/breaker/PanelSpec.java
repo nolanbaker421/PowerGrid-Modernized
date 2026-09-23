@@ -65,9 +65,9 @@ public enum PanelSpec {
         return poles >= 1 && poles <= lugs;
     }
 
-    /** A breaker occupies its own space and the next {@code poles - 1} rows of the same column. */
-    public boolean fits(int slot, int poles) {
-        return slot >= 0 && slot < slots && slot + 2 * (poles - 1) < slots;
+    /** A breaker occupies its own space and the next {@code rows - 1} rows of the same column. */
+    public boolean fits(int slot, int rows) {
+        return slot >= 0 && slot < slots && slot + 2 * (rows - 1) < slots;
     }
 
     // ---- terminal indices: lines, then the neutral, then one per branch space ----

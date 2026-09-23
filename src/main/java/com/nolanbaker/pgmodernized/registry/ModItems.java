@@ -1,7 +1,10 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.conduit.ConduitCover;
+import com.nolanbaker.pgmodernized.conduit.ConduitCoverItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
+import com.nolanbaker.pgmodernized.device.breaker.BreakerFrame;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerItem;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerLockItem;
 import com.nolanbaker.pgmodernized.network.Cat6CableItem;
@@ -23,47 +26,50 @@ public class ModItems {
             .lang("Cat6 Cable")
             .register();
 
-    /** Single-pole plug-on breakers keyed by rated current, in the order of {@link BreakerItem#RATINGS}, plus the blank at 0. */
-    public static final Map<Integer, ItemEntry<BreakerItem>> BREAKERS;
+    /** Breakers: pole count (1, 2, 3), then frame. */
+    public static final Map<Integer, Map<BreakerFrame, ItemEntry<BreakerItem>>> BREAKERS;
 
-    /** Two- and three-pole breakers: poles, then rating. */
-    public static final Map<Integer, Map<Integer, ItemEntry<BreakerItem>>> MULTI_POLE_BREAKERS;
+    /** Blank filler plate for an unused space. */
+    public static final ItemEntry<BreakerItem> BREAKER_BLANK = REGISTRATE.item("breaker_blank", BreakerItem::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Breaker Blank")
+            .register();
 
     /** Lockout hasp for a breaker handle. */
     public static final ItemEntry<BreakerLockItem> BREAKER_LOCK = REGISTRATE.item("breaker_lock", BreakerLockItem::new)
             .model(NonNullBiConsumer.noop())
-            .lang("Breaker Lock")
+            .lang("Breaker Lockout")
+            .register();
+
+    /** Cover plates for the conduit box: a blank, and the node plate with twelve terminals. */
+    public static final ItemEntry<ConduitCoverItem> CONDUIT_COVER_BLANK = REGISTRATE.item("conduit_cover_blank", p -> new ConduitCoverItem(p, ConduitCover.BLANK))
+            .model(NonNullBiConsumer.noop())
+            .lang("Blank Cover Plate")
+            .register();
+    public static final ItemEntry<ConduitCoverItem> CONDUIT_COVER_NODE = REGISTRATE.item("conduit_cover_node", p -> new ConduitCoverItem(p, ConduitCover.NODE))
+            .model(NonNullBiConsumer.noop())
+            .lang("Node Cover Plate")
             .register();
 
     /** Conduit per trade size, laid like block wire. Wire stats in wire_types/conduit_<size>.json. */
     public static final Map<ConduitSize, ItemEntry<ConduitItem>> CONDUIT;
 
     static {
-        var breakers = new LinkedHashMap<Integer, ItemEntry<BreakerItem>>();
-        for(int rating : BreakerItem.RATINGS) {
-            breakers.put(rating, REGISTRATE.item("breaker_" + rating + "a", p -> new BreakerItem(p, rating))
-                    .model(NonNullBiConsumer.noop())
-                    .lang(rating + " A Breaker")
-                    .register());
-        }
-        breakers.put(BreakerItem.BLANK, REGISTRATE.item("breaker_blank", p -> new BreakerItem(p, BreakerItem.BLANK))
-                .model(NonNullBiConsumer.noop())
-                .lang("Breaker Blank")
-                .register());
-        BREAKERS = Collections.unmodifiableMap(breakers);
-
-        var multi = new LinkedHashMap<Integer, Map<Integer, ItemEntry<BreakerItem>>>();
-        for(int poles : BreakerItem.MULTI_POLES) {
-            var byRating = new LinkedHashMap<Integer, ItemEntry<BreakerItem>>();
-            for(int rating : BreakerItem.RATINGS) {
-                byRating.put(rating, REGISTRATE.item("breaker_" + rating + "a_" + poles + "p", p -> new BreakerItem(p, rating, poles))
+        var breakers = new LinkedHashMap<Integer, Map<BreakerFrame, ItemEntry<BreakerItem>>>();
+        for(int poles = 1; poles <= 3; ++poles) {
+            var byFrame = new EnumMap<BreakerFrame, ItemEntry<BreakerItem>>(BreakerFrame.class);
+            for(var frame : BreakerFrame.values()) {
+                final int p = poles;
+                String id = "breaker_" + frame.id() + (poles == 1 ? "" : "_" + poles + "p");
+                String name = frame.label() + (poles == 1 ? " Breaker" : " " + poles + "-Pole Breaker");
+                byFrame.put(frame, REGISTRATE.item(id, props -> new BreakerItem(props, frame, p))
                         .model(NonNullBiConsumer.noop())
-                        .lang(rating + " A " + poles + "-Pole Breaker")
+                        .lang(name)
                         .register());
             }
-            multi.put(poles, Collections.unmodifiableMap(byRating));
+            breakers.put(poles, Collections.unmodifiableMap(byFrame));
         }
-        MULTI_POLE_BREAKERS = Collections.unmodifiableMap(multi);
+        BREAKERS = Collections.unmodifiableMap(breakers);
 
         var conduit = new EnumMap<ConduitSize, ItemEntry<ConduitItem>>(ConduitSize.class);
         for(var size : ConduitSize.values()) {
@@ -75,21 +81,15 @@ public class ModItems {
         CONDUIT = Collections.unmodifiableMap(conduit);
     }
 
-    /** One single-pole breaker item of the given rating (or the blank for 0), or an empty stack if none exists. */
-    public static ItemStack breaker(int rating) {
-        return breaker(rating, 1);
+    /** One breaker item of the given frame and pole count, or an empty stack if none exists. */
+    public static ItemStack breaker(BreakerFrame frame, int poles) {
+        var byFrame = BREAKERS.get(Math.max(1, poles));
+        var entry = byFrame == null ? null : byFrame.get(frame);
+        return entry == null ? ItemStack.EMPTY : entry.asStack();
     }
 
-    /** One breaker item of the given rating and pole count, or an empty stack if none exists. */
-    public static ItemStack breaker(int rating, int poles) {
-        ItemEntry<BreakerItem> entry;
-        if(poles <= 1 || rating == BreakerItem.BLANK) {
-            entry = BREAKERS.get(rating);
-        } else {
-            var byRating = MULTI_POLE_BREAKERS.get(poles);
-            entry = byRating == null ? null : byRating.get(rating);
-        }
-        return entry == null ? ItemStack.EMPTY : entry.asStack();
+    public static ItemStack blank() {
+        return BREAKER_BLANK.asStack();
     }
 
     public static void register() {}

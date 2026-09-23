@@ -32,16 +32,20 @@ Wall-mounted load centres in the style of a US residential panel, with plug-on b
 | 400 A Three-Phase Breaker Panel | 400 A | 3 (L1, L2, L3, Neutral) | 12 |
 | 800 A Three-Phase Breaker Panel | 800 A | 3 | 12 |
 
-Breakers come in 10, 20, 50, 60, 100, 200, 400 and 800 A, in one-, two- and three-pole versions.
-Any breaker up to the panel's rating fits, and without a main breaker the panel is dead. The main
-must have as many poles as the panel has lugs.
+Breakers come in four frame sizes, 1-50, 51-200, 201-400 and 401-800 A, in one-, two- and
+three-pole versions. The trip rating is set once the breaker is in: look at it with a wrench and
+scroll, or click for the settings board. Any frame up to the panel's rating fits, and without a
+main breaker the panel is dead. The main must have as many poles as the panel has lugs.
 
 - Each row of spaces sits on the next lug down the panel, both columns of a row on the same lug,
-  as in a real load centre. A two-pole breaker takes two adjacent rows in one column and so bridges
-  two lugs (240 V across L1 and L2 on a split-phase panel); a three-pole takes three rows and all
-  three phases. All poles switch and trip together under one handle. Multi-pole breakers are
-  crafted from that many single-pole breakers and an iron nugget.
-- Wiring enters through conduit knockouts (see the conduit section). In the panel's splice editor the
+  as in a real load centre. A two-pole breaker takes two poles' worth of rows in one column and
+  lands each pole on the next lug (240 V across L1 and L2 on a split-phase panel); a three-pole
+  takes three and all three phases. All poles switch and trip together under one handle. Bigger
+  frames are bigger breakers: the 201-400 A frame takes two rows per pole and the 401-800 A frame
+  three, the extra rows being dead. Multi-pole breakers are crafted from that many single-pole
+  breakers of the same frame and an iron nugget.
+- Wiring enters through conduit knockouts, four on top, four underneath and two on each side (see
+  the conduit section). In the panel's splice editor the
   points are the line lugs (**Line**, or **L1..L3**), **Neutral** (a plain junction for every return)
   and **Circuit 1..N**, each fed from its lug through its breaker. Odd circuits sit in the left
   column, even in the right, top to bottom; a two-pole breaker in spaces 1 and 3 is "Circuit 1/3".
@@ -52,7 +56,7 @@ must have as many poles as the panel has lugs.
   1.1x, never at or below the rating. Tripping sparks and plays the breaker sound.
 - Goggles list every space with its rating, pole count, handle position and live current.
 - With a breaker in hand every space it would fit is outlined on the panel and the one under the
-  crosshair is drawn bright. A **Breaker Blank** fills an unused space. A **Breaker Lock** on an
+  crosshair is drawn bright. A **Breaker Blank** fills an unused space. A **Breaker Lockout** on an
   installed breaker freezes its handle (it can still trip); shift-click the breaker to take the lock
   off. Right-click a space with a renamed name tag to label it; the label shows in goggles, messages
   and the splice editor. A plain name tag clears it.
@@ -93,21 +97,24 @@ Conduit is laid empty, like Power Grid block wire, and wire is pulled through it
 | 3/4" | 8 wires | 2 px |
 | 1" | 12 wires | 2.5 px |
 
-The **Conduit Box** is an 8 x 8 px wall box with three hubs on each of its four edges and twelve
-colour-coded terminals on its cover. Hold a conduit item, click a hub, click along the walls, floors
-or ceilings the run should follow, and finish on a hub of another box or a panel knockout. Wire
-cutters take a whole run up again. A run cannot tee; give it a box. One run per hub.
+The **Conduit Box** is an 8 x 8 px wall box with three hubs on each of its four edges. It is
+placed open; a **Blank Cover Plate** closes it as a plain pull box where runs cross and join, and a
+**Node Cover Plate** closes it with twelve colour-coded terminals for ordinary wires. Shift-click
+a box with an empty hand to take its plate off. Hold a conduit item, click a hub, click along the
+walls, floors or ceilings the run should follow (the route is previewed as you go), and finish on
+a hub of another box or a panel knockout. Sneaking with wire cutters takes a whole run up again. A
+run cannot tee; give it a box. One run per hub.
 
 **Pulling wire**: right-click a closed run with any Power Grid wire item, from this mod, Power Grid
 or another addon. One conductor of that wire goes through, consuming the wire's usual items per
 metre, and keeps that wire's resistance and ampacity. Pulled wires are invisible inside the tube
-and are numbered and coloured in US order (black, red, blue, white, green, orange, ...). Shift-click
-with wire cutters pulls the last wire back out; an empty hand or a multimeter on the run lists
+and are numbered and coloured in US order (black, red, blue, white, green, orange, ...). Wire
+cutters pull the last wire back out; an empty hand or a multimeter on the run lists
 every slot with its wire and current, and the splice editor names the wire under each pin; taking the conduit up drops all of them. A wire that
 is overloaded burns out like any Power Grid wire and frees its slot.
 
-Right-click a box to open the splice editor. The first row is the cover terminals, every hub with a
-run is a row of that run's slots, filled where a wire is pulled. Click two pins to splice them, click
+Right-click a box to open the splice editor. The first row is the cover terminals (only under a
+node plate), every hub with a run is a row of that run's slots, filled where a wire is pulled. Click two pins to splice them, click
 the pair again to undo, or click a hub's label to land all of its pulled wires on the cover terminals
 of the same number. So a box at the end of a run exposes the wires on its cover, and a box in the
 middle joins runs.

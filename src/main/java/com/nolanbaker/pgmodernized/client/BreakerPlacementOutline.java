@@ -42,7 +42,7 @@ public final class BreakerPlacementOutline {
         var spec = be.spec();
         var facing = BreakerPanelBlock.facing(state);
         int hovered = PanelLayout.slotAt(spec, facing, hit.getDirection(), hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
-        int poles = item.isBlank() ? 1 : item.poles();
+        int rows = item.isBlank() ? 1 : item.poles() * item.frame().rows();
 
         var poseStack = event.getPoseStack();
         var camera = event.getCamera().getPosition();
@@ -52,7 +52,7 @@ public final class BreakerPlacementOutline {
         for(int slot = BreakerPanelBlockEntity.MAIN; slot < spec.slots(); ++slot) {
             if(!be.canInstall(slot, item))
                 continue;
-            var box = toWorld(PanelLayout.breakerBox(spec, slot, slot == BreakerPanelBlockEntity.MAIN ? 1 : poles), facing).inflate(0.002);
+            var box = toWorld(PanelLayout.breakerBox(spec, slot, slot == BreakerPanelBlockEntity.MAIN ? 1 : rows), facing).inflate(0.002);
             boolean bright = slot == hovered;
             LevelRenderer.renderLineBox(poseStack, buffer, box, 1f, bright ? 0.95f : 0.8f, bright ? 0.3f : 0.2f, bright ? 1f : 0.35f);
         }

@@ -45,7 +45,7 @@ public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBl
             var breaker = be.breaker(slot);
             if(!breaker.installed() || breaker.isCovered())
                 continue;
-            var box = PanelLayout.breakerBox(spec, slot, breaker.poles());
+            var box = PanelLayout.breakerBox(spec, slot, breaker.rows());
             boolean roll = slot >= 0 && PanelLayout.rightColumn(slot);
             if(breaker.isBlank()) {
                 draw(ms, consumer, renderer, BreakerPanelModels.get(BreakerPanelModels.BLANK), box, roll, light, overlay);
