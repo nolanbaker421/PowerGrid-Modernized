@@ -24,6 +24,7 @@
     "powergrid_modernized:transformer_pad_3ph",
     "powergrid_modernized:transformer_pole_split",
     "powergrid_modernized:transformer_pole_3ph",
-    "powergrid_modernized:switchgear"
+    "powergrid_modernized:switchgear",
+    "powergrid_modernized:transformer_filler"
   ]
 }

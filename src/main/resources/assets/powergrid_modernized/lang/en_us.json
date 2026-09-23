@@ -194,5 +194,6 @@
   "powergrid.switchgear.bus_n": "Neutral bus",
   "powergrid.switchgear.load": "Load L%1$s",
   "powergrid.gui.switchgear.feeder": "Feeder",
-  "powergrid.gui.switchgear.title": "Switchgear lineup, %1$s section(s), 2000 A bus"
+  "powergrid.gui.switchgear.title": "Switchgear lineup, %1$s section(s), 2000 A bus",
+  "block.powergrid_modernized.transformer_filler": "Transformer"
 }

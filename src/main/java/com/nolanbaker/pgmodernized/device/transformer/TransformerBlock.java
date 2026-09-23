@@ -3,6 +3,7 @@ package com.nolanbaker.pgmodernized.device.transformer;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
 import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
+import com.nolanbaker.pgmodernized.registry.ModBlocks;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.ChatFormatting;
@@ -11,23 +12,31 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.utility.Lang;
 
 /**
- * A split-phase or three-phase transformer in one block. The cabinets (dry-type, pad-mount) are
- * wired through conduit knockouts and spliced in their editor like a panel; the pole can has
- * bushings that hanging wire lands on. The turns ratio is set on the value box on the front.
+ * A split-phase or three-phase transformer. The cabinets (dry-type, pad-mount) are wired through
+ * conduit knockouts and spliced in their editor like a panel; the pole can has bushings that
+ * hanging wire lands on. The turns ratio is set on the value box on the front. The base block
+ * carries the model and the wiring; the unit's other cells are {@link TransformerFillerBlock}s
+ * placed with it and taken with it.
  */
 public class TransformerBlock extends HorizontalElectricBlock implements IBE<TransformerBlockEntity> {
     private final TransformerKind kind;
@@ -64,6 +73,26 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
         return layout;
     }
 
+    /** A north-frame shape turned to face that way, as Power Grid turns the terminals. */
+    public static VoxelShape rotateShape(VoxelShape north, Direction facing) {
+        int turns = switch(facing) {
+            case EAST -> 1;
+            case SOUTH -> 2;
+            case WEST -> 3;
+            default -> 0;
+        };
+        var shape = north;
+        for(int i = 0; i < turns; ++i) {
+            VoxelShape[] out = {Shapes.empty()};
+            shape.forAllBoxes((x1, y1, z1, x2, y2, z2) ->
+                    out[0] = Shapes.joinUnoptimized(out[0], Shapes.box(1 - z2, y1, x1, 1 - z1, y2, x2), BooleanOp.OR));
+            shape = out[0].optimize();
+        }
+        return shape;
+    }
+
+    // ---- placement with fillers ----
+
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         // Against a wall or pole the back goes on it; on a floor or ceiling it faces the player.
@@ -71,7 +100,39 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
         var facing = face.getAxis().isHorizontal() ? face : ctx.getHorizontalDirection().getOpposite();
         if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
             facing = facing.getOpposite();
+        for(var part : TransformerGeometry.parts(mount, kind)) {
+            var pos = TransformerFillerBlock.partPos(ctx.getClickedPos(), facing, part);
+            if(!ctx.getLevel().getBlockState(pos).canBeReplaced(ctx))
+                return null;
+        }
         return defaultBlockState().setValue(HORIZONTAL_FACING, facing);
+    }
+
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if(level.isClientSide)
+            return;
+        var facing = facing(state);
+        for(var part : TransformerGeometry.parts(mount, kind)) {
+            var filler = ModBlocks.TRANSFORMER_FILLER.getDefaultState()
+                    .setValue(TransformerFillerBlock.FACING, facing)
+                    .setValue(TransformerFillerBlock.PART, part);
+            level.setBlock(TransformerFillerBlock.partPos(pos, facing, part), filler, Block.UPDATE_ALL);
+        }
+    }
+
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
+        if(!state.is(newState.getBlock())) {
+            var facing = facing(state);
+            for(var part : TransformerGeometry.parts(mount, kind)) {
+                var at = TransformerFillerBlock.partPos(pos, facing, part);
+                if(level.getBlockState(at).getBlock() instanceof TransformerFillerBlock)
+                    level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+        }
+        super.onRemove(state, level, pos, newState, moved);
     }
 
     /** Direction the front faces. */

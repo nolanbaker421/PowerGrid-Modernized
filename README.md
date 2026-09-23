@@ -82,10 +82,10 @@ through 1:1 to 60:1 step-down):
 
 | Block | Windings | Wiring |
 | --- | --- | --- |
-| Dry-Type Transformer (Split-Phase / Three-Phase) | see below | indoor cabinet; conduit knockouts on top and both sides, spliced inside |
-| Pad-Mount Transformer (Split-Phase / Three-Phase) | see below | outdoor box; knockouts underneath and on both sides |
-| Pole-Mount Transformer (Split-Phase) | one can | bushings on the can for hanging wire: H1, H2 on top, X1, N, X2 on the front |
-| Pole-Mount Transformer Bank (Three-Phase) | three cans | H1..H3 on top, X1..X3 and X0 on the front |
+| Dry-Type Transformer (Split-Phase / Three-Phase) | see below | indoor cabinet two blocks tall; conduit knockouts underneath and low on the front, spliced inside |
+| Pad-Mount Transformer (Split-Phase / Three-Phase) | see below | oil tank on a skid, two blocks tall, radiators either side, bushings on the lid; knockouts in two rows on the front |
+| Pole-Mount Transformer (Split-Phase) | one can | a can the size of a real one hung on its pole; HV bushings on the lid (H1, H2), LV studs on the front (X1, N, X2), all for hanging wire |
+| Pole-Mount Transformer Bank (Three-Phase) | three cans across three blocks | the middle can carries every terminal: H1..H3 on its lid, X1..X3 and X0 on its front |
 
 - **Split-phase**: primary H1, H2; centre-tapped secondary X1, N, X2. X1 to X2 is the full ratio,
   each half is half of it, so a 1:2 unit on 120 V gives 120/240 V for a split-phase panel.
@@ -94,6 +94,9 @@ through 1:1 to 60:1 step-down):
   distribution bank.
 - Goggles show the ratio and each leg's voltage against the neutral and its current.
 - The cabinets open their splice editor on an empty-hand right-click away from the value box.
+- The units are sized after Create: PowerPlantGrid's transformers. A ground unit needs the block above
+  it free and the bank needs the blocks either side; those cells are filled with invisible parts that
+  break with the unit.
 
 On stock Power Grid these pass DC exactly as Power Grid's own transformer does; the phases mean
 something on the AC build.
