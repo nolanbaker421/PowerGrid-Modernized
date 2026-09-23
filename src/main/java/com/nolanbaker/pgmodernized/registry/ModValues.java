@@ -40,6 +40,7 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         // model; the breakers themselves are the overcurrent protection.
         for(var spec : PanelSpec.values())
             resistance(spec.id(), "main", 0.002, "branch", 0.005);
+        resistance("switchgear", "pole", 0.0005);
         // Three-phase motor: one winding per phase, star connected; thermal limits are its own.
         resistance("three_phase_motor", "winding", 8.0);
         resistance("three_phase_drive", "output", 0.05);

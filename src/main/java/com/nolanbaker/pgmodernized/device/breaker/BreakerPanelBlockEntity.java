@@ -897,6 +897,53 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             pole = poleIndex;
         }
 
+        // Shared with the switchgear section, which keeps one of these records on its own.
+
+        void installFrom(BreakerItem item, int poleCount) {
+            clear();
+            frame = item.frame();
+            rating = item.rating();
+            blank = item.isBlank();
+            poles = blank ? 1 : poleCount;
+        }
+
+        void setRating(int value) {
+            rating = value;
+            heat = 0;
+        }
+
+        void setState(BreakerState value) {
+            state = value;
+            heat = 0;
+            current = 0;
+        }
+
+        void setLocked(boolean value) {
+            locked = value;
+        }
+
+        void setLabel(String value) {
+            label = value;
+        }
+
+        /** Open or tripped: nothing flows and the thermal element cools. */
+        void tickOpen() {
+            current = 0;
+            heat = BreakerTripCurve.cool(heat);
+        }
+
+        /** Closed and carrying this current; true when it trips on this tick. */
+        boolean tickClosed(float amps) {
+            current = amps;
+            heat = BreakerTripCurve.step(heat, amps, rating);
+            if(!BreakerTripCurve.trips(heat, amps, rating))
+                return false;
+            state = BreakerState.TRIPPED;
+            heat = 0;
+            current = 0;
+            return true;
+        }
+
         boolean currentChanged() {
             return Math.abs(current - syncedCurrent) > Math.max(0.05f, Math.abs(syncedCurrent) * 0.02f);
         }

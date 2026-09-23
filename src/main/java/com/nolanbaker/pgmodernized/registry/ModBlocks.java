@@ -5,6 +5,7 @@ import com.nolanbaker.pgmodernized.conduit.ConduitSocketBlock;
 import com.nolanbaker.pgmodernized.device.analogio.AnalogIOBlock;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlock;
 import com.nolanbaker.pgmodernized.device.breaker.PanelSpec;
+import com.nolanbaker.pgmodernized.device.breaker.SwitchgearBlock;
 import com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlock;
 import com.nolanbaker.pgmodernized.device.meter.ClampMeterBlock;
 import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlock;
@@ -129,6 +130,18 @@ public class ModBlocks {
                     .build()
                 .register();
     }
+
+    /** One section of a switchgear lineup. */
+    public static final BlockEntry<SwitchgearBlock> SWITCHGEAR = REGISTRATE.block("switchgear", SwitchgearBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Switchgear Section")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
 
     public static final BlockEntry<CtCabinetBlock> CT_CABINET = REGISTRATE.block("ct_cabinet", CtCabinetBlock::new)
             .blockstate(NonNullBiConsumer.noop())
