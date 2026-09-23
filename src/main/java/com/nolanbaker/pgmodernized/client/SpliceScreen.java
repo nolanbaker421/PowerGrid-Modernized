@@ -75,7 +75,7 @@ public class SpliceScreen extends Screen {
                 for(var conductor : run.conductors())
                     pulled |= 1 << conductor.slot();
             }
-            key = key * 8191 + (run == null ? 0 : (run.size().ordinal() + 1) * 4096 + pulled);
+            key = key * 65536 + (run == null ? 0 : (run.size().ordinal() + 1) * 4096 + pulled);
         }
         return key;
     }

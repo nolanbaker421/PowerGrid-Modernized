@@ -97,13 +97,29 @@ cells around it (invisible filler blocks carry the collision there and break wit
 
 ## Conduit and conduit boxes
 
-Conduit is laid empty, like Power Grid block wire, and wire is pulled through it afterwards:
+Conduit is laid empty, like Power Grid block wire, and wire is pulled through it afterwards. Nine
+EMT trade sizes, 1/2" to 4", filled by the book (NEC Chapter 9): the pulled conductors' total
+cross-section may take 53% of the raceway with one wire, 31% with two and 40% with three or more.
+Every run also has numbered slots (4, 8 or 12) that cap the count of small wire in big pipe. How
+many conductors of one gauge each size takes:
 
-| Conduit | Capacity | Tube |
-| --- | --- | --- |
-| 1/2" | 4 wires | 1.5 px |
-| 3/4" | 8 wires | 2 px |
-| 1" | 12 wires | 2.5 px |
+| Conduit | Area (sq in) | Slots | 12 AWG | 8 AWG | 4 AWG | 1/0 | 4/0 | 500 kcmil |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1/2" | 0.304 | 4 | 4 | 3 | 1 | 0 | 0 | 0 |
+| 3/4" | 0.533 | 8 | 8 | 5 | 2 | 1 | 0 | 0 |
+| 1" | 0.864 | 12 | 12 | 9 | 4 | 1 | 1 | 0 |
+| 1-1/4" | 1.496 | 12 | 12 | 12 | 7 | 3 | 1 | 1 |
+| 1-1/2" | 2.036 | 12 | 12 | 12 | 9 | 4 | 1 | 1 |
+| 2" | 3.356 | 12 | 12 | 12 | 12 | 7 | 4 | 1 |
+| 2-1/2" | 5.858 | 12 | 12 | 12 | 12 | 12 | 7 | 3 |
+| 3" | 8.846 | 12 | 12 | 12 | 12 | 12 | 10 | 5 |
+| 4" | 14.753 | 12 | 12 | 12 | 12 | 12 | 12 | 8 |
+
+**THHN building wire** comes in 14, 12, 10, 8, 6, 4 and 2 AWG, 1/0, 2/0 and 4/0, and 250, 350 and
+500 kcmil, each an ordinary Power Grid wire item with the real conductor area, 75 °C ampacity and
+resistance, crafted from copper and dried kelp. Other wires (Power Grid's own, or another addon's)
+count as the smallest gauge whose ampacity covers their rated current, so Power Grid's 80 A copper
+wire fills a conduit like 4 AWG.
 
 The **Conduit Box** is an 8 x 8 px wall box with three hubs on each of its four edges. It is
 placed open; a **Blank Cover Plate** closes it as a plain pull box where runs cross and join, and a
@@ -115,11 +131,12 @@ run cannot tee; give it a box. One run per hub.
 
 **Pulling wire**: right-click a closed run with any Power Grid wire item, from this mod, Power Grid
 or another addon. One conductor of that wire goes through, consuming the wire's usual items per
-metre, and keeps that wire's resistance and ampacity. Pulled wires are invisible inside the tube
-and are numbered and coloured in US order (black, red, blue, white, green, orange, ...). Wire
-cutters pull the last wire back out; an empty hand or a multimeter on the run lists
-every slot with its wire and current, and the splice editor names the wire under each pin; taking the conduit up drops all of them. A wire that
-is overloaded burns out like any Power Grid wire and frees its slot.
+metre, and keeps that wire's resistance and ampacity. A wire that would overfill the run is refused
+with the fill it would reach. Pulled wires are invisible inside the tube and are numbered and
+coloured in US order (black, red, blue, white, green, orange, ...). Wire cutters pull the last wire
+back out; an empty hand or a multimeter on the run lists the fill and every slot with its wire,
+gauge and current, and the splice editor names the wire under each pin; taking the conduit up drops
+all of them. A wire that is overloaded burns out like any Power Grid wire and frees its slot.
 
 Right-click a box to open the splice editor. The first row is the cover terminals (only under a
 node plate), every hub with a run is a row of that run's slots, filled where a wire is pulled. Click two pins to splice them, click
