@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.analogio;
 
+import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.network.INetworkJack;
@@ -44,6 +45,7 @@ public class AnalogIOBlockEntity extends ElectricBlockEntity implements IHaveGog
     private float[] setpoints, applied, limitCap, inputs, syncedInputs;
     private ProvidedVoltageSourceCoupling[] sources;
     private ElectricWire[] inputWires;
+    private AcReadings.Filter[] inputReadings;
 
     private final JackSupport jack = new JackSupport(this, false);
 
@@ -96,6 +98,9 @@ public class AnalogIOBlockEntity extends ElectricBlockEntity implements IHaveGog
         syncedInputs = new float[CHANNELS];
         sources = new ProvidedVoltageSourceCoupling[CHANNELS];
         inputWires = new ElectricWire[CHANNELS];
+        inputReadings = new AcReadings.Filter[CHANNELS];
+        for(int i = 0; i < CHANNELS; ++i)
+            inputReadings[i] = new AcReadings.Filter();
         java.util.Arrays.fill(limitCap, MAX_VOLTAGE);
     }
 
@@ -130,7 +135,8 @@ public class AnalogIOBlockEntity extends ElectricBlockEntity implements IHaveGog
             }
             var wire = inputWires[i];
             if(wire != null) {
-                float value = (float) wire.potentialDifference();
+                inputReadings[i].sample(wire);
+                float value = (float) inputReadings[i].signedRmsVoltage();
                 inputs[i] = Float.isFinite(value) ? value : 0;
             }
         }

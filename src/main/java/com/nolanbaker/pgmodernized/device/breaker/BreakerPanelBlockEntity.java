@@ -153,7 +153,9 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         }
         if(!wire.isConverged())
             return;
-        float current = (float) Math.abs(wire.current());
+        // Settled RMS: an instantaneous sample of an alternating current lands anywhere in the
+        // cycle, and one tick's RMS covers a fraction of a cycle at Create's frequencies.
+        float current = (float) wire.lastRmsCurrent();
         if(!Float.isFinite(current))
             current = 0;
         breaker.current = current;

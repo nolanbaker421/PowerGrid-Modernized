@@ -5,6 +5,7 @@ import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceReadings;
 import com.nolanbaker.pgmodernized.network.INetworkJack;
 import com.nolanbaker.pgmodernized.network.JackSupport;
+import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -17,6 +18,7 @@ import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.special.WattmeterWire;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.ArrayList;
@@ -25,22 +27,29 @@ import java.util.List;
 import static com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlock.*;
 
 /**
- * Four metered pass-throughs. Per channel: current through the shunt (signed In to Out), voltage of
- * the In point against the Reference point, power, and energy integrated every tick. Readings are
- * synced to clients for the editor and goggles; energy is saved with the block.
+ * Four metered pass-throughs. Per channel: RMS current through the shunt (signed In to Out when it
+ * is one-way), RMS voltage of the In point against the Reference point, real power from a
+ * wattmeter element that multiplies the two waveforms sub-tick by sub-tick, the power factor, and
+ * energy integrated from the real power every tick. Readings are synced to clients for the editor
+ * and goggles; energy is saved with the block.
  */
 public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDeviceSpliceHost, ISpliceReadings, INetworkJack, IHaveGoggleInformation {
     /** Shunt resistance per channel, ohms. */
     public static final float SHUNT = 0.001f;
+    /** Voltage sense branch from each In point to Reference, ohms. */
+    public static final float SENSE = 1_000_000f;
     private static final double TICK_SECONDS = 1 / 20.0;
 
     private DeviceSpliceHost deviceHubs;
     private final JackSupport jack = new JackSupport(this, false);
-    // No initialiser: buildCircuit runs from the superclass constructor, before field initialisers.
-    private ElectricWire[] shunts;
+    // No initialisers: buildCircuit runs from the superclass constructor, before field initialisers.
+    private WattmeterWire[] shunts;
+    private ElectricWire[] senses;
+    private AcReadings.Filter[] readings;
     private final float[] volts = new float[CHANNELS];
     private final float[] amps = new float[CHANNELS];
     private final float[] watts = new float[CHANNELS];
+    private final float[] powerFactors = new float[CHANNELS];
     /** Joules, per channel. */
     private final double[] energy = new double[CHANNELS];
     private final float[] syncedWatts = new float[CHANNELS];
@@ -64,10 +73,22 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         deviceHubs().buildCircuit(builder);
-        if(shunts == null)
-            shunts = new ElectricWire[CHANNELS];
-        for(int n = 0; n < CHANNELS; ++n)
-            shunts[n] = builder.connect(SHUNT, builder.terminalNode(inTerminal(n)), builder.terminalNode(outTerminal(n)));
+        if(shunts == null) {
+            shunts = new WattmeterWire[CHANNELS];
+            senses = new ElectricWire[CHANNELS];
+            readings = new AcReadings.Filter[CHANNELS];
+            for(int n = 0; n < CHANNELS; ++n)
+                readings[n] = new AcReadings.Filter();
+        }
+        var reference = builder.terminalNode(TERMINAL_REFERENCE);
+        for(int n = 0; n < CHANNELS; ++n) {
+            var in = builder.terminalNode(inTerminal(n));
+            // The sense branch is built first because the shunt holds a reference to it: the
+            // wattmeter accumulates its own current times the sense voltage as the solver steps.
+            senses[n] = builder.connect(SENSE, in, reference);
+            shunts[n] = new WattmeterWire(SHUNT, senses[n], in, builder.terminalNode(outTerminal(n)));
+            builder.add(shunts[n]);
+        }
     }
 
     @Override
@@ -83,28 +104,20 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
 
     @Override
     public void electricalTick() {
-        var behaviour = getElectricBehaviour();
-        if(behaviour == null || shunts == null)
+        if(shunts == null)
             return;
-        var reference = behaviour.getTerminal(TERMINAL_REFERENCE);
-        double refVolts = reference == null ? 0 : reference.getVoltage();
-        if(!Double.isFinite(refVolts))
-            refVolts = 0;
         for(int n = 0; n < CHANNELS; ++n) {
             var shunt = shunts[n];
-            if(shunt == null || !shunt.isConverged())
+            var sense = senses[n];
+            if(shunt == null || sense == null || !shunt.isConverged())
                 continue;
-            double current = shunt.current();
-            var in = behaviour.getTerminal(inTerminal(n));
-            double voltage = (in == null ? 0 : in.getVoltage()) - refVolts;
-            if(!Double.isFinite(current))
-                current = 0;
-            if(!Double.isFinite(voltage))
-                voltage = 0;
-            amps[n] = (float) current;
-            volts[n] = (float) voltage;
-            watts[n] = (float) (voltage * current);
-            energy[n] += voltage * current * TICK_SECONDS;
+            var reading = readings[n];
+            reading.sample(sense, shunt, shunt.drainRealPower());
+            amps[n] = (float) reading.signedRmsCurrent();
+            volts[n] = (float) reading.signedRmsVoltage();
+            watts[n] = (float) reading.realPower();
+            powerFactors[n] = (float) reading.powerFactor();
+            energy[n] += reading.realPower() * TICK_SECONDS;
         }
     }
 
@@ -127,17 +140,24 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         return CHANNELS;
     }
 
+    /** RMS, signed when the voltage is one-way. */
     public float voltage(int channel) {
         return volts[channel];
     }
 
-    /** Signed, positive from In to Out. */
+    /** RMS, positive from In to Out when the current is one-way. */
     public float current(int channel) {
         return amps[channel];
     }
 
+    /** Real power, watts. */
     public float power(int channel) {
         return watts[channel];
+    }
+
+    /** Real over apparent power, in [-1, 1]; 1 on a direct current or an unloaded channel. */
+    public float powerFactor(int channel) {
+        return powerFactors[channel];
     }
 
     /** Watt-hours. */
@@ -179,7 +199,7 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         var lines = new ArrayList<Component>();
         for(int n = 0; n < CHANNELS; ++n) {
             lines.add(Lang.builder().translate("gui.ct_cabinet.channel", n + 1).style(ChatFormatting.GRAY).text(" ")
-                    .add(Lang.builder().text(String.format("%.1f V  %.2f A  %.0f W  ", volts[n], amps[n], watts[n]) + wh(energyWh(n))).style(ChatFormatting.WHITE))
+                    .add(Lang.builder().text(String.format("%.1f V  %.2f A  %.0f W  PF %.2f  ", volts[n], amps[n], watts[n], powerFactors[n]) + wh(energyWh(n))).style(ChatFormatting.WHITE))
                     .component());
         }
         lines.add(Lang.builder().translate("gui.ct_cabinet.total").style(ChatFormatting.GRAY).text(" ")
@@ -237,17 +257,15 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
             joules[n] = Math.round(energy[n]);
         tag.putLongArray("EnergyJ", joules);
         if(clientPacket) {
-            var readings = new float[CHANNELS * 3];
+            var list = new net.minecraft.nbt.ListTag();
             for(int n = 0; n < CHANNELS; ++n) {
-                readings[n * 3] = volts[n];
-                readings[n * 3 + 1] = amps[n];
-                readings[n * 3 + 2] = watts[n];
+                list.add(net.minecraft.nbt.FloatTag.valueOf(volts[n]));
+                list.add(net.minecraft.nbt.FloatTag.valueOf(amps[n]));
+                list.add(net.minecraft.nbt.FloatTag.valueOf(watts[n]));
+                list.add(net.minecraft.nbt.FloatTag.valueOf(powerFactors[n]));
                 syncedWatts[n] = watts[n];
             }
             syncedEnergy = totalEnergy();
-            var list = new net.minecraft.nbt.ListTag();
-            for(float f : readings)
-                list.add(net.minecraft.nbt.FloatTag.valueOf(f));
             tag.put("Readings", list);
         }
     }
@@ -261,10 +279,11 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
             energy[n] = joules[n];
         if(clientPacket && tag.contains("Readings")) {
             var list = tag.getList("Readings", net.minecraft.nbt.Tag.TAG_FLOAT);
-            for(int n = 0; n < CHANNELS && n * 3 + 2 < list.size(); ++n) {
-                volts[n] = list.getFloat(n * 3);
-                amps[n] = list.getFloat(n * 3 + 1);
-                watts[n] = list.getFloat(n * 3 + 2);
+            for(int n = 0; n < CHANNELS && n * 4 + 3 < list.size(); ++n) {
+                volts[n] = list.getFloat(n * 4);
+                amps[n] = list.getFloat(n * 4 + 1);
+                watts[n] = list.getFloat(n * 4 + 2);
+                powerFactors[n] = list.getFloat(n * 4 + 3);
             }
         }
     }

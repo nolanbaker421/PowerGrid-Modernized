@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.meter;
 
+import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.network.INetworkJack;
@@ -36,6 +37,7 @@ public class LineVoltmeterBlockEntity extends ElectricBlockEntity implements IHa
     }
 
     private ElectricWire input;
+    private final AcReadings.Filter reading = new AcReadings.Filter();
     private float voltage;
     private float syncedVoltage;
 
@@ -89,7 +91,8 @@ public class LineVoltmeterBlockEntity extends ElectricBlockEntity implements IHa
     public void electricalTick() {
         if(input == null)
             return;
-        float value = (float) input.potentialDifference();
+        reading.sample(input);
+        float value = (float) reading.signedRmsVoltage();
         voltage = Float.isFinite(value) ? value : 0;
     }
 

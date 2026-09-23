@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.meter;
 
+import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.network.INetworkJack;
@@ -38,6 +39,7 @@ public class LineAmmeterBlockEntity extends ElectricBlockEntity implements IHave
     }
 
     private ElectricWire shunt;
+    private final AcReadings.Filter reading = new AcReadings.Filter();
     private float current;
     private float syncedCurrent;
 
@@ -97,7 +99,8 @@ public class LineAmmeterBlockEntity extends ElectricBlockEntity implements IHave
     public void electricalTick() {
         if(shunt == null)
             return;
-        float value = shunt.isConverged() ? (float) shunt.current() : 0;
+        reading.sample(shunt);
+        float value = shunt.isConverged() ? (float) reading.signedRmsCurrent() : 0;
         current = Float.isFinite(value) ? value : 0;
     }
 

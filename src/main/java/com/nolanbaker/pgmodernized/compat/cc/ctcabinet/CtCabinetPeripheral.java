@@ -45,6 +45,11 @@ public class CtCabinetPeripheral implements IPeripheral {
     }
 
     @LuaFunction
+    public double getPowerFactor(int channel) throws LuaException {
+        return cabinet.powerFactor(channel(channel));
+    }
+
+    @LuaFunction
     public double getEnergy(int channel) throws LuaException {
         return cabinet.energyWh(channel(channel));
     }
@@ -59,7 +64,7 @@ public class CtCabinetPeripheral implements IPeripheral {
         return cabinet.totalEnergyWh();
     }
 
-    /** Every channel at once: table of {voltage, current, power, energy} indexed 1 to 4. */
+    /** Every channel at once: table of {voltage, current, power, powerFactor, energy} indexed 1 to 4. */
     @LuaFunction
     public Map<Integer, Map<String, Double>> getReadings() {
         var result = new LinkedHashMap<Integer, Map<String, Double>>();
@@ -68,6 +73,7 @@ public class CtCabinetPeripheral implements IPeripheral {
             channel.put("voltage", (double) cabinet.voltage(n));
             channel.put("current", (double) cabinet.current(n));
             channel.put("power", (double) cabinet.power(n));
+            channel.put("powerFactor", (double) cabinet.powerFactor(n));
             channel.put("energy", cabinet.energyWh(n));
             result.put(n + 1, channel);
         }

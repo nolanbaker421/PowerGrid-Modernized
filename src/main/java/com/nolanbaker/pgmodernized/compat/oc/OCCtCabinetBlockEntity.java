@@ -103,6 +103,11 @@ public class OCCtCabinetBlockEntity extends CtCabinetBlockEntity implements Envi
         return result((double) power(channel(args)));
     }
 
+    @Callback(direct = true, doc = "function(channel:number):number -- Power factor of the channel, real over apparent power; 1 on direct current.")
+    public Object[] getPowerFactor(Context context, Arguments args) {
+        return result((double) powerFactor(channel(args)));
+    }
+
     @Callback(direct = true, doc = "function(channel:number):number -- Energy (Wh) accumulated on the channel.")
     public Object[] getEnergy(Context context, Arguments args) {
         return result(energyWh(channel(args)));
@@ -118,7 +123,7 @@ public class OCCtCabinetBlockEntity extends CtCabinetBlockEntity implements Envi
         return result(totalEnergyWh());
     }
 
-    @Callback(direct = true, doc = "function():table -- Every channel: {voltage, current, power, energy}, indexed from 1.")
+    @Callback(direct = true, doc = "function():table -- Every channel: {voltage, current, power, powerFactor, energy}, indexed from 1.")
     public Object[] getReadings(Context context, Arguments args) {
         var table = new LinkedHashMap<Integer, Map<String, Double>>();
         for(int n = 0; n < channels(); ++n) {
@@ -126,6 +131,7 @@ public class OCCtCabinetBlockEntity extends CtCabinetBlockEntity implements Envi
             channel.put("voltage", (double) voltage(n));
             channel.put("current", (double) current(n));
             channel.put("power", (double) power(n));
+            channel.put("powerFactor", (double) powerFactor(n));
             channel.put("energy", energyWh(n));
             table.put(n + 1, channel);
         }

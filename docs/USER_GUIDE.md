@@ -24,6 +24,20 @@ Everything is in its own creative tab, "PowerGrid: Modernized". All blocks are m
 
 ---
 
+### The AC build
+
+Power Grid itself is direct current. If you run the experimental
+[powergrid-ac](https://github.com/DaRealML/powergrid-ac) fork instead (alternators, three-phase,
+transformer banks), use the AC build of this addon, `powergrid-modernized-mc1.21.1-0.2.0-ac.jar`,
+with `powergrid-mc1.21.1-0.6.1-ac.7.jar` or newer in place of the regular Power Grid jar. The AC
+build will not start on the regular jar, and says so.
+
+On the AC build every meter, breaker and analog input reads RMS, the figure a real instrument
+shows, and the CT cabinet meters real power and a power factor per channel. Currents and voltages
+that alternate symmetrically read positive; direct or rectified ones keep their sign. The VFD holds
+its output at the RMS setpoint. On a direct-current circuit nothing reads differently from the
+regular build.
+
 ## 2. What is in the box
 
 | Item | What it is |
@@ -309,10 +323,11 @@ coordinates prefixed by `n`, so `peripheral.find("powergrid_vfd")` or
 | Method | Meaning |
 | --- | --- |
 | `getChannels()` | 4 |
-| `getVoltage(channel)` / `getCurrent(channel)` / `getPower(channel)` | Live readings |
+| `getVoltage(channel)` / `getCurrent(channel)` / `getPower(channel)` | Live readings (RMS and real power) |
+| `getPowerFactor(channel)` | Real over apparent power; 1 on direct current |
 | `getEnergy(channel)` | Accumulated Wh |
 | `getTotalPower()` / `getTotalEnergy()` | Summed over channels |
-| `getReadings()` | Table 1..4 of {voltage, current, power, energy} |
+| `getReadings()` | Table 1..4 of {voltage, current, power, powerFactor, energy} |
 | `resetEnergy()` | Zero the counters |
 
 **powergrid_clamp_meter**: `getCurrent()`, `isClamped()`, `getWireCount()`.

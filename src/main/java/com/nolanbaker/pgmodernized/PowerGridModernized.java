@@ -54,7 +54,8 @@ public class PowerGridModernized {
                             .andThen(TooltipModifier.mapNull(ElectricProperties.create(item))));
 
     public PowerGridModernized(IEventBus bus, ModContainer container) {
-        LOGGER.info("PowerGrid: Modernized loading");
+        LOGGER.info("PowerGrid: Modernized loading (AC build)");
+        requireAcPowerGrid();
 
         // Bind the bus before registering anything, as Power Grid does: Registrate parks client hooks
         // such as entity renderers until it knows the bus, and only flushes them on a later registration.
@@ -104,6 +105,21 @@ public class PowerGridModernized {
         }
         if(Platform.isModLoaded("opencomputers")) {
             OCBridge.registerCapabilities(event);
+        }
+    }
+
+    /**
+     * The AC build reads RMS accessors and the wattmeter element that only the powergrid-ac fork
+     * has. On the stock mod those calls would fail one by one in the world; fail once, up front,
+     * with a message that says which jar to fetch.
+     */
+    private static void requireAcPowerGrid() {
+        try {
+            Class.forName("org.patryk3211.powergrid.electricity.sim.special.WattmeterWire", false, PowerGridModernized.class.getClassLoader());
+        } catch(ClassNotFoundException e) {
+            throw new IllegalStateException("This is the AC build of PowerGrid: Modernized. It needs the powergrid-ac fork of "
+                    + "Create: Power Grid (v0.6.1-ac.7 or newer, https://github.com/DaRealML/powergrid-ac/releases). "
+                    + "With the regular Power Grid mod, use the main build of PowerGrid: Modernized instead.", e);
         }
     }
 

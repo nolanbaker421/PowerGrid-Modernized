@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.device.vfd;
 
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.network.INetworkJack;
@@ -28,7 +30,8 @@ import java.util.List;
 import static com.nolanbaker.pgmodernized.device.vfd.VfdBlock.*;
 
 /**
- * Computer-controlled ideal DC-DC converter: an isolating transformer coupling whose ratio is
+ * Computer-controlled ideal converter (on an alternating feed, a variable transformer holding the
+ * output RMS at the setpoint): an isolating transformer coupling whose ratio is
  * re-tuned every tick so the output holds the commanded voltage regardless of the input.
  * Power is conserved (the input side draws whatever the load takes, plus a small conversion loss).
  *
@@ -56,7 +59,9 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
     private static final float RATIO_SLEW = 0.35f;
     private static final float CAP_MARGIN = 0.98f;   // land just under the current limit
     private static final float CAP_RECOVERY = 1.02f; // ~2 % per tick ceiling recovery
-    private static final float INPUT_SAG_FRACTION = 0.5f;      // back off when the input drops below half its unloaded voltage
+    private static final float INPUT_SAG_FRACTION = 0.5f;
+    private static final float SENSE_RESISTANCE = 1_000_000f;  // voltmeter branches across input and output
+    private static final float SHUNT_RESISTANCE = 0.001f;      // ammeter in series with the output      // back off when the input drops below half its unloaded voltage
 
     private float setpoint = 0;
     private float currentLimit = MAX_CURRENT;
@@ -70,6 +75,9 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
 
     private TransformerCoupling coupling;
     private FloatingNode inPos, inNeg, outPos, outNeg;
+    private ElectricWire inputSense, outputSense, outputShunt;
+    private final AcReadings.Filter inputReading = new AcReadings.Filter();
+    private final AcReadings.Filter outputReading = new AcReadings.Filter();
 
     private final JackSupport jack = new JackSupport(this, false);
 
@@ -125,22 +133,34 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
         outNeg = builder.terminalNode(OUTPUT_NEGATIVE);
         if(ratio == 0)
             ratio = MIN_RATIO;
-        coupling = enabled
-                ? builder.couple(ratio, resistance("output"), inPos, inNeg, outPos, outNeg)
-                : null;
+        // Meters read the RMS a branch accumulated over the tick; a node voltage sampled once per
+        // tick on the AC build is whichever point of the waveform the tick happened to land on.
+        inputSense = builder.connect(SENSE_RESISTANCE, inPos, inNeg);
+        outputSense = builder.connect(SENSE_RESISTANCE, outPos, outNeg);
+        if(enabled) {
+            var outMid = builder.addInternalNode();
+            coupling = builder.couple(ratio, resistance("output"), inPos, inNeg, outMid, outNeg);
+            outputShunt = builder.connect(SHUNT_RESISTANCE, outMid, outPos);
+        } else {
+            coupling = null;
+            outputShunt = null;
+        }
     }
 
     @Override
     public void electricalTick() {
-        if(coupling == null) {
-            inputVoltage = finite((float) (inPos.getVoltage() - inNeg.getVoltage()));
+        if(inputSense != null) {
+            inputReading.sample(inputSense);
+            inputVoltage = finite((float) inputReading.signedRmsVoltage());
+        }
+        if(coupling == null || outputShunt == null) {
             outputVoltage = 0;
             outputCurrent = 0;
             return;
         }
-        inputVoltage = finite((float) (inPos.getVoltage() - inNeg.getVoltage()));
-        outputVoltage = finite((float) (outPos.getVoltage() - outNeg.getVoltage()));
-        outputCurrent = Math.abs(finite((float) coupling.getStateValue()));
+        outputReading.sample(outputSense, outputShunt, Double.NaN);
+        outputVoltage = finite((float) outputReading.signedRmsVoltage());
+        outputCurrent = finite((float) outputReading.rmsCurrent());
 
         // Current limiter: a ceiling on the ratio that drops in proportion to the overshoot and
         // recovers slowly, so the output settles at the limit instead of bouncing around it.

@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.meter;
 
+import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -29,6 +30,7 @@ public class ClampMeterBlockEntity extends ElectricBlockEntity implements IHaveG
 
     private float current;
     private int wireCount;
+    private final AcReadings.Smoother smoother = new AcReadings.Smoother(SCAN_INTERVAL * 0.05);
     private float syncedCurrent;
     private int scanCountdown;
 
@@ -62,10 +64,14 @@ public class ClampMeterBlockEntity extends ElectricBlockEntity implements IHaveG
         var wires = level.getEntitiesOfClass(BaseWireEntity.class, jaw.inflate(SEARCH_RADIUS),
                 wire -> wire.isAlive() && WireGeometry.passesThrough(wire, jaw));
         wireCount = wires.size();
-        float sum = 0;
-        for(var wire : wires)
-            sum += wire.current();
-        current = Float.isFinite(sum) ? sum : 0;
+        // Magnitude from the wires' RMS (heatingCurrent is the RMS where the wire keeps one); the
+        // sign is kept only when the instantaneous sum agrees with it, which on DC it does exactly.
+        double instantaneous = 0, rms = 0;
+        for(var wire : wires) {
+            instantaneous += AcReadings.finite(wire.current());
+            rms += AcReadings.finite(wire.heatingCurrent());
+        }
+        current = (float) smoother.update(instantaneous, rms);
     }
 
     @Override

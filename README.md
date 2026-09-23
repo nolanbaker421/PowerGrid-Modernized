@@ -127,6 +127,33 @@ cannot branch; wire cutters pick up a whole run.
 Cables re-link themselves once a second, so jacks that unload and reload, or a rebuilt network, recover
 without any manual action. Breaking a jack drops a hanging cable and trims the last segment of a laid run.
 
+## AC build (branch `ac`)
+
+The `main` branch targets the stock Power Grid release, which simulates direct current only. The
+`ac` branch builds against [powergrid-ac](https://github.com/DaRealML/powergrid-ac), an
+experimental fork that adds alternating current: alternators with pole pairs, three-phase machines,
+reactive components and sub-tick solving. Its author calls it a demo written by an AI assistant and
+has not verified it in a running game, so expect rough edges.
+
+What the branch changes:
+
+- Every meter reads the RMS of the last tick instead of one instantaneous sample: breaker trip
+  curves, the line ammeter and voltmeter, the clamp meter, the analog inputs and the VFD readouts.
+- The CT cabinet meters real power with the fork's wattmeter element and reports a power factor per
+  channel: `getPowerFactor(channel)` on the peripheral and the component, `powerFactor` in
+  `getReadings()`.
+- The VFD holds its output RMS voltage at the setpoint, so on an alternating feed it behaves as a
+  variable transformer.
+- On a direct-current network every reading is the same number the main build reports.
+
+Installing: in `mods/`, replace `powergrid-mc1.21.1-0.6.2.jar` with
+`powergrid-mc1.21.1-0.6.1-ac.7.jar` from the fork's releases, and use
+`powergrid-modernized-mc1.21.1-0.2.0-ac.jar`. The AC build refuses to load on stock Power Grid.
+The main build does load on the fork, but its meters would sample the waveform once per tick.
+
+Building: drop the fork jar in `libs/` and point `powergrid_jar` in `gradle.properties` at it, as
+the branch already does.
+
 ## Building
 
 1. Drop a Power Grid NeoForge release jar into `libs/` and point `powergrid_jar` in `gradle.properties` at it.
