@@ -3,7 +3,9 @@ package com.nolanbaker.pgmodernized.registry;
 import com.nolanbaker.pgmodernized.conduit.ConduitCover;
 import com.nolanbaker.pgmodernized.conduit.ConduitCoverItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
+import com.nolanbaker.pgmodernized.conduit.BuildingWireItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
+import com.nolanbaker.pgmodernized.conduit.WireGauge;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerFrame;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerItem;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerLockItem;
@@ -61,6 +63,9 @@ public class ModItems {
     /** Conduit per trade size, laid like block wire. Wire stats in wire_types/conduit_<size>.json. */
     public static final Map<ConduitSize, ItemEntry<ConduitItem>> CONDUIT;
 
+    /** THHN building wire per gauge. Wire stats in wire_types/wire_<gauge>.json. */
+    public static final Map<WireGauge, ItemEntry<BuildingWireItem>> BUILDING_WIRE;
+
     static {
         var breakers = new LinkedHashMap<Integer, Map<BreakerFrame, ItemEntry<BreakerItem>>>();
         for(int poles = 1; poles <= 3; ++poles) {
@@ -86,6 +91,15 @@ public class ModItems {
                     .register());
         }
         CONDUIT = Collections.unmodifiableMap(conduit);
+
+        var wires = new EnumMap<WireGauge, ItemEntry<BuildingWireItem>>(WireGauge.class);
+        for(var gauge : WireGauge.values()) {
+            wires.put(gauge, REGISTRATE.item(gauge.id(), p -> new BuildingWireItem(p, gauge))
+                    .model(NonNullBiConsumer.noop())
+                    .lang(gauge.label() + " THHN Wire")
+                    .register());
+        }
+        BUILDING_WIRE = Collections.unmodifiableMap(wires);
     }
 
     /** One breaker item of the given frame and pole count, or an empty stack if none exists. */

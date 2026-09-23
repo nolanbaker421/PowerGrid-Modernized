@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:storage_blocks/iron"
+    },
+    "W": {
+      "item": "powergrid:wire"
+    }
+  },
+  "pattern": [
+    "BWB",
+    "WBW",
+    "BWB"
+  ],
+  "result": {
+    "count": 8,
+    "id": "powergrid_modernized:conduit_four"
+  }
+}

@@ -49,13 +49,19 @@ Everything is in its own creative tab, "PowerGrid: Modernized". All blocks are m
 
 Conduit is laid like Power Grid block wire and is empty when placed. You pull real wire through it
 afterwards, so it works with any Power Grid wire, including wires from other addons, and each pulled
-wire keeps its own gauge (resistance and ampacity).
+wire keeps its own gauge (resistance and ampacity). Nine EMT trade sizes:
 
-| Conduit | Wires it holds | Tube thickness |
-| --- | --- | --- |
-| 1/2" | 4 | 1.5 px |
-| 3/4" | 8 | 2 px |
-| 1" | 12 | 2.5 px |
+| Conduit | Area (sq in) | Slots | Tube |
+| --- | --- | --- | --- |
+| 1/2" | 0.304 | 4 | 1.5 px |
+| 3/4" | 0.533 | 8 | 2 px |
+| 1" | 0.864 | 12 | 2.5 px |
+| 1-1/4" | 1.496 | 12 | 3 px |
+| 1-1/2" | 2.036 | 12 | 3.5 px |
+| 2" | 3.356 | 12 | 4 px |
+| 2-1/2" | 5.858 | 12 | 5 px |
+| 3" | 8.846 | 12 | 5.5 px |
+| 4" | 14.753 | 12 | 6.5 px |
 
 ### Laying a run
 
@@ -78,9 +84,35 @@ wire until the conduit is full. Pulled wires are numbered and coloured in US ord
 
 1 black, 2 red, 3 blue, 4 white, 5 green, 6 orange, 7 brown, 8 yellow, 9 gray, 10 purple, 11 pink, 12 tan.
 
+**Conduit fill** is figured by the book (NEC Chapter 9, Table 1): the pulled conductors' total
+cross-section may take 53% of the conduit's internal area with one wire in it, 31% with two, and
+40% with three or more. A wire that would go past that is refused, and the message tells you the
+fill it would have reached. Every run also has numbered slots (4 in 1/2", 8 in 3/4", 12 above)
+that cap the count whatever the gauge. Conductors of one gauge per run:
+
+| Conduit | Area (sq in) | Slots | 12 AWG | 8 AWG | 4 AWG | 1/0 | 4/0 | 500 kcmil |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1/2" | 0.304 | 4 | 4 | 3 | 1 | 0 | 0 | 0 |
+| 3/4" | 0.533 | 8 | 8 | 5 | 2 | 1 | 0 | 0 |
+| 1" | 0.864 | 12 | 12 | 9 | 4 | 1 | 1 | 0 |
+| 1-1/4" | 1.496 | 12 | 12 | 12 | 7 | 3 | 1 | 1 |
+| 1-1/2" | 2.036 | 12 | 12 | 12 | 9 | 4 | 1 | 1 |
+| 2" | 3.356 | 12 | 12 | 12 | 12 | 7 | 4 | 1 |
+| 2-1/2" | 5.858 | 12 | 12 | 12 | 12 | 12 | 7 | 3 |
+| 3" | 8.846 | 12 | 12 | 12 | 12 | 12 | 10 | 5 |
+| 4" | 14.753 | 12 | 12 | 12 | 12 | 12 | 12 | 8 |
+
+**THHN building wire** is this mod's wire, in thirteen gauges from 14 AWG to 500 kcmil. Each is an
+ordinary Power Grid wire item (it hangs between terminals like any other) with the real conductor
+area, ampacity at 75 °C (the current it burns out above) and resistance per metre; hover the item to
+see them. Recipes are shapeless: dried kelp with copper nuggets (14 to 10 AWG), copper ingots
+(8 AWG to 4/0) or copper blocks (250 kcmil and up), eight metres a craft. Power Grid's own wires and
+another addon's count for fill as the smallest gauge whose ampacity covers their rated current, so
+Power Grid's 80 A copper wire takes the room of 4 AWG and its 160 A iron wire that of 2/0.
+
 - Right-click the run with **wire cutters** to pull the last wire back out (you get it back).
-- Right-click the run with an **empty hand** or the **multimeter** to list every slot: colour, wire type
-  and current.
+- Right-click the run with an **empty hand** or the **multimeter** to see the fill and every slot:
+  colour, wire, gauge and current.
 - A wire driven past its ampacity burns out like any Power Grid wire and frees its slot.
 
 ### Conduit Box
@@ -434,7 +466,8 @@ adapter placed next to them:
 
 | Item | Recipe |
 | --- | --- |
-| Conduit (8) | iron nuggets / ingots over copper wire; 1" adds a second row of ingots |
+| Conduit (8) | iron nuggets / ingots over copper wire; 1" adds a second row of ingots; bigger sizes ring copper wire with iron ingots, then iron blocks |
+| THHN wire (8) | shapeless: dried kelp with copper nuggets (14, 12, 10 AWG), copper ingots (8 AWG to 4/0) or copper blocks (250 kcmil and up) |
 | Conduit Box (2) | ring of eight iron nuggets |
 | Blank Cover Plate (2) | an iron plate |
 | Node Cover Plate | a blank cover plate and pins, shapeless |

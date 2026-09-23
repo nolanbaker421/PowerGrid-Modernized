@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "W": {
+      "item": "powergrid:wire"
+    }
+  },
+  "pattern": [
+    "III",
+    "W W",
+    "III"
+  ],
+  "result": {
+    "count": 8,
+    "id": "powergrid_modernized:conduit_one_quarter"
+  }
+}

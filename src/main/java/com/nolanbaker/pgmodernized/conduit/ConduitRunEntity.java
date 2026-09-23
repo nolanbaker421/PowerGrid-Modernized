@@ -165,6 +165,15 @@ public class ConduitRunEntity extends BlockWireEntity {
         int slot = freeSlot();
         if(slot < 0)
             return fail(player, "message.conduit.full");
+        // Fill by the book: the conductors' area against the raceway's, 53/31/40% for 1/2/more.
+        var pulled = conductors();
+        double used = ConduitFill.used(level, pulled);
+        double added = WireGauge.areaOf(level, stack.getItem());
+        if(!ConduitFill.fits(size(), used, pulled.size(), added)) {
+            player.displayClientMessage(Lang.builder().translate("message.conduit.fill", stack.getHoverName(), size().label(),
+                    ConduitFill.percent(size(), used + added), ConduitFill.percentLimit(pulled.size() + 1)).style(ChatFormatting.RED).component(), true);
+            return InteractionResult.FAIL;
+        }
         int required = Math.max(1, (int) Math.ceil(getTotalLength() * entry.itemsPerMeter()));
         if(!PlayerUtilities.hasEnoughItems(player, stack, required))
             return fail(player, "message.connection_missing_items");
@@ -195,7 +204,9 @@ public class ConduitRunEntity extends BlockWireEntity {
         var lines = new ArrayList<Component>();
         var size = size();
         var pulled = conductors();
-        lines.add(Lang.builder().translate("gui.conduit.contents", size.label(), pulled.size(), size.conductors()).style(ChatFormatting.GRAY).component());
+        double used = ConduitFill.used(level(), pulled);
+        lines.add(Lang.builder().translate("gui.conduit.contents", size.label(), pulled.size(), size.conductors(),
+                ConduitFill.percent(size, used), ConduitFill.percentLimit(Math.max(1, pulled.size()))).style(ChatFormatting.GRAY).component());
         for(int k = 0; k < size.conductors(); ++k) {
             ConductorEntity conductor = null;
             for(var c : pulled) {
@@ -207,7 +218,7 @@ public class ConduitRunEntity extends BlockWireEntity {
             } else {
                 lines.add(Lang.builder().text("  " + (k + 1) + " ").add(ConductorColors.name(k)).text(": ")
                         .add(Lang.builder().add(conductor.getItem().getDescription()).style(ChatFormatting.WHITE))
-                        .text(String.format(", %.1f A", conductor.measuredCurrent())).style(ChatFormatting.GRAY).component());
+                        .text(String.format(" (%s), %.1f A", WireGauge.of(level(), conductor.getItem()).label(), conductor.measuredCurrent())).style(ChatFormatting.GRAY).component());
             }
         }
         return lines;

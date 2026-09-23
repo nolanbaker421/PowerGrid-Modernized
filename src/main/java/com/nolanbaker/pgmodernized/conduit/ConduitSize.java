@@ -1,24 +1,34 @@
 package com.nolanbaker.pgmodernized.conduit;
 
 /**
- * Trade sizes. The size sets how many wires can be pulled through a run and how fat the tube is drawn.
- * The wires themselves are whatever Power Grid wire items the player pulls, each with its own gauge.
+ * EMT trade sizes. A size has an internal area (NEC Chapter 9 Table 4) that the pulled conductors
+ * fill by the book ({@link ConduitFill}), a number of numbered slots that caps the count of wires
+ * regardless of area, and a drawn tube thickness. The wires themselves are whatever Power Grid wire
+ * items the player pulls, each with its own gauge.
  */
 public enum ConduitSize {
-    HALF("half", "1/2\"", 4, 2.5f),
-    THREE_QUARTER("three_quarter", "3/4\"", 8, 3f),
-    ONE("one", "1\"", 12, 3.5f);
+    HALF("half", "1/2\"", 4, 0.304, 0.09f),
+    THREE_QUARTER("three_quarter", "3/4\"", 8, 0.533, 0.125f),
+    ONE("one", "1\"", 12, 0.864, 0.16f),
+    ONE_QUARTER("one_quarter", "1-1/4\"", 12, 1.496, 0.19f),
+    ONE_HALF("one_half", "1-1/2\"", 12, 2.036, 0.22f),
+    TWO("two", "2\"", 12, 3.356, 0.26f),
+    TWO_HALF("two_half", "2-1/2\"", 12, 5.858, 0.30f),
+    THREE("three", "3\"", 12, 8.846, 0.34f),
+    FOUR("four", "4\"", 12, 14.753, 0.40f);
 
     private final String id;
     private final String label;
     private final int conductors;
-    private final float apothemPx;
+    private final double areaSqIn;
+    private final float tubeThickness;
 
-    ConduitSize(String id, String label, int conductors, float apothemPx) {
+    ConduitSize(String id, String label, int conductors, double areaSqIn, float tubeThickness) {
         this.id = id;
         this.label = label;
         this.conductors = conductors;
-        this.apothemPx = apothemPx;
+        this.areaSqIn = areaSqIn;
+        this.tubeThickness = tubeThickness;
     }
 
     /** Suffix used in block, item and texture ids. */
@@ -30,22 +40,19 @@ public enum ConduitSize {
         return label;
     }
 
+    /** Numbered slots: the most wires a run can carry whatever their size. */
     public int conductors() {
         return conductors;
     }
 
-    /** Half the tube width, in pixels. */
-    public float apothemPx() {
-        return apothemPx;
+    /** Internal cross-section, square inches. */
+    public double areaSqIn() {
+        return areaSqIn;
     }
 
-    /** Terminal grid columns on an end cap face. */
-    public int columns() {
-        return this == HALF ? 2 : 4;
-    }
-
-    public int rows() {
-        return conductors / columns();
+    /** Drawn tube thickness, blocks; mirrored in wire_types/conduit_&lt;id&gt;.json. */
+    public float tubeThickness() {
+        return tubeThickness;
     }
 
     public static ConduitSize fromOrdinal(int ordinal) {

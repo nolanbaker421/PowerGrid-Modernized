@@ -1,6 +1,7 @@
 package com.nolanbaker.pgmodernized.conduit.splice;
 
 import com.nolanbaker.pgmodernized.conduit.ConductorColors;
+import com.nolanbaker.pgmodernized.conduit.ConduitFill;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -141,8 +142,10 @@ public final class SpliceSupport {
             if(run == null)
                 continue;
             var pulled = run.conductors();
+            double used = ConduitFill.used(be.getLevel(), pulled);
             Lang.builder().add(host.hubName(h)).text(": ")
-                    .add(Lang.builder().translate("gui.conduit.pulled", run.size().label(), pulled.size(), run.size().conductors()).style(ChatFormatting.WHITE))
+                    .add(Lang.builder().translate("gui.conduit.pulled", run.size().label(), pulled.size(), run.size().conductors(),
+                            ConduitFill.percent(run.size(), used), ConduitFill.percentLimit(Math.max(1, pulled.size()))).style(ChatFormatting.WHITE))
                     .forGoggles(tooltip, 1);
         }
         if(splices.isEmpty())

@@ -17,6 +17,12 @@ SIZES = [
     ("half", 4, 0.09),
     ("three_quarter", 8, 0.125),
     ("one", 12, 0.16),
+    ("one_quarter", 12, 0.19),
+    ("one_half", 12, 0.22),
+    ("two", 12, 0.26),
+    ("two_half", 12, 0.30),
+    ("three", 12, 0.34),
+    ("four", 12, 0.40),
 ]
 COLORS = [0x1a1a1a, 0xc62828, 0x1e5bc6, 0xf0f0f0, 0x2e8b3a, 0xf07f1a,
           0x6b3f1f, 0xe8c800, 0x8a8a8a, 0x7b3fa0, 0xf08fb0, 0xc9a97a]
@@ -65,7 +71,7 @@ def textures():
     for i, (sid, _conductors, _thickness) in enumerate(SIZES):
         # Conduit item: a straight stick of tube, thicker for bigger sizes, with a coupling.
         img = canvas(16, 16)
-        t = 2 + i
+        t = min(2 + i, 9)
         y0 = 8 - t // 2
         for x in range(1, 15):
             fill(img, x, y0, x + 1, y0 + t, steel)
@@ -205,6 +211,13 @@ def recipes():
     shaped("conduit_half", ["NNN", "WWW"], {"N": nugget, "W": wire}, 8, {"items": "powergrid:wire"})
     shaped("conduit_three_quarter", ["III", "WWW"], {"I": ingot, "W": wire}, 8, {"items": "powergrid:wire"})
     shaped("conduit_one", ["III", "WWW", "III"], {"I": ingot, "W": wire}, 8, {"items": "powergrid:wire"})
+    block = {"tag": "c:storage_blocks/iron"}
+    shaped("conduit_one_quarter", ["III", "W W", "III"], {"I": ingot, "W": wire}, 8, {"items": "powergrid:wire"})
+    shaped("conduit_one_half", ["III", "WIW", "III"], {"I": ingot, "W": wire}, 8, {"items": "powergrid:wire"})
+    shaped("conduit_two", ["IWI", "W W", "IWI"], {"I": ingot, "W": wire}, 8, {"items": "powergrid:wire"})
+    shaped("conduit_two_half", ["IWI", "WIW", "IWI"], {"I": ingot, "W": wire}, 8, {"items": "powergrid:wire"})
+    shaped("conduit_three", ["BWB", "W W", "BWB"], {"B": block, "W": wire}, 8, {"items": "powergrid:wire"})
+    shaped("conduit_four", ["BWB", "WBW", "BWB"], {"B": block, "W": wire}, 8, {"items": "powergrid:wire"})
     shaped("conduit_box", ["NNN", "N N", "NNN"], {"N": nugget}, 2, {"items": "powergrid:wire"})
     shaped("conduit_socket", ["NCN", " N "], {"N": nugget, "C": {"tag": "c:nuggets/copper"}}, 2, {"items": "powergrid:wire"})
 
