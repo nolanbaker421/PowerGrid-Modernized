@@ -113,8 +113,13 @@ public final class ConduitBoxGeometry {
     }
 
     public static VoxelShape shape() {
+        return shape(true);
+    }
+
+    /** @param nubs with the twelve cover terminals of a node plate */
+    public static VoxelShape shape(boolean nubs) {
         var shape = box(BODY);
-        for(int k = 0; k < FRONT_COUNT; ++k)
+        if(nubs) for(int k = 0; k < FRONT_COUNT; ++k)
             shape = Shapes.or(shape, box(frontNub(k)));
         for(var hub : HUBS)
             shape = Shapes.or(shape, box(hub));

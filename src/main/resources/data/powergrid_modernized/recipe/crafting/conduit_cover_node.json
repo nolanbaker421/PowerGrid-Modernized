@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powergrid_modernized:conduit_cover_blank"
+    },
+    {
+      "item": "powergrid:pins"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:conduit_cover_node"
+  }
+}

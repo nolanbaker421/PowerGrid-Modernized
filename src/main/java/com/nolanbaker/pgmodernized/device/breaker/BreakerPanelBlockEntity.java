@@ -7,6 +7,7 @@ import com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport;
 import com.nolanbaker.pgmodernized.registry.ModItems;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -39,12 +40,18 @@ import java.util.List;
 /**
  * Circuit: one line point per lug -> one pole of the main breaker each -> one bus per lug -> one
  * breaker pole per branch space -> circuit point. Every pole is a {@link SwitchedWire}; an empty or
- * blanked space keeps its wire open. A row of spaces sits on the next lug down the panel, so a
- * two- or three-pole breaker, which takes adjacent rows in one column, bridges that many lugs
- * under one handle: its poles switch and trip together. Breakers open on overcurrent following
- * {@link BreakerTripCurve} and stay tripped until someone resets them. A locked breaker cannot be
- * flipped or pulled but still trips. Wiring arrives through conduit knockouts and is spliced to the
- * line, neutral and circuit points in the splice editor.
+ * blanked space keeps its wire open.
+ * <p>
+ * A breaker is a frame (1-50, 51-200, 201-400 or 401-800 A) whose trip rating is set with a wrench
+ * once it is in. Bigger frames take more rows of the column per pole, and a two- or three-pole
+ * breaker takes that many poles' worth of rows under one handle: pole k lands on the lug after the
+ * head row's, so its poles switch and trip together across the lugs. The rows a pole takes beyond
+ * its first are dead: no circuit point, wire held open. Installing or pulling a breaker rebuilds
+ * the circuit so each pole's wire hangs off the right bus.
+ * <p>
+ * Breakers open on overcurrent following {@link BreakerTripCurve} and stay tripped until someone
+ * resets them. A locked breaker cannot be flipped or pulled but still trips. Wiring arrives through
+ * conduit knockouts and is spliced to the line, neutral and circuit points in the splice editor.
  */
 public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, ISpliceHost {
     /** Slot index of the main breaker in the interaction and lookup methods. */
@@ -57,8 +64,10 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     private Breaker[] branches;
     private SwitchedWire[] mainWires;
     private SwitchedWire[] branchWires;
+    private BreakerRatingBehaviour[] ratings;
     private SpliceSupport splices;
     private List<SplicePoint> points;
+    private boolean needsRebuild;
 
     public BreakerPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -79,6 +88,38 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         branchWires = new SwitchedWire[spec.slots()];
     }
 
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        ensureInit();
+        ratings = new BreakerRatingBehaviour[1 + spec.slots()];
+        for(int slot = MAIN; slot < spec.slots(); ++slot) {
+            final int s = slot;
+            var behaviour = new BreakerRatingBehaviour(this, slot);
+            behaviour.withCallback(value -> onRating(s, value));
+            ratings[slot + 1] = behaviour;
+            behaviours.add(behaviour);
+        }
+        super.addBehaviours(behaviours);
+    }
+
+    private BreakerRatingBehaviour rating(int slot) {
+        return ratings[slot + 1];
+    }
+
+    private void onRating(int slot, int value) {
+        var breaker = breaker(slot);
+        if(!breaker.isBreaker())
+            return;
+        int rating = breaker.frame.clamp(value);
+        if(rating != value)
+            rating(slot).mirror(rating);
+        if(rating == breaker.rating)
+            return;
+        breaker.rating = rating;
+        breaker.heat = 0;
+        notifyUpdate();
+    }
+
     public PanelSpec spec() {
         ensureInit();
         return spec;
@@ -94,13 +135,13 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         return branches[slot];
     }
 
-    /** The record in that space itself; a space covered by a multi-pole breaker only points at its head. */
+    /** The record in that space itself; a space covered by a bigger breaker only points at its head. */
     public Breaker breaker(int slot) {
         ensureInit();
         return slot == MAIN ? main : branches[slot];
     }
 
-    /** The space whose breaker owns a slot: itself, or the head of the multi-pole breaker covering it. */
+    /** The space whose breaker owns a slot: itself, or the head of the breaker covering it. */
     public int headSlot(int slot) {
         ensureInit();
         if(slot == MAIN)
@@ -114,14 +155,31 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         return breaker(headSlot(slot));
     }
 
+    /** The lug a branch space's wire hangs off: its pole's lug for a pole row, its row's lug otherwise. */
+    private int lugFor(int slot) {
+        var breaker = branches[slot];
+        if(breaker.head >= 0 && breaker.pole >= 0)
+            return (spec.leg(breaker.head) + breaker.pole) % spec.lugs();
+        return spec.leg(slot);
+    }
+
+    /** A branch space's wire is closed when its breaker is on and this row carries a pole. */
+    private boolean wireClosed(int slot) {
+        var breaker = branches[slot];
+        if(breaker.head >= 0)
+            return breaker.pole >= 0 && branches[breaker.head].closed();
+        return breaker.closed();
+    }
+
     /** The pole wires of the breaker heading a slot: one per lug for the main, one per pole for a branch. */
     private SwitchedWire[] wiresOf(int head) {
         if(head == MAIN)
             return mainWires;
         var breaker = branches[head];
         var wires = new SwitchedWire[breaker.poles];
+        int rows = breaker.frame == null ? 1 : breaker.frame.rows();
         for(int p = 0; p < breaker.poles; ++p) {
-            int slot = head + 2 * p;
+            int slot = head + 2 * p * rows;
             wires[p] = slot < branchWires.length ? branchWires[slot] : null;
         }
         return wires;
@@ -140,8 +198,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             mainWires[lug] = builder.connectSwitch(resistance("main"), builder.terminalNode(spec.lineTerminal(lug)), buses[lug], main.closed());
         }
         for(int slot = 0; slot < branchWires.length; ++slot) {
-            branchWires[slot] = builder.connectSwitch(resistance("branch"), buses[spec.leg(slot)],
-                    builder.terminalNode(spec.branchTerminal(slot)), effective(slot).closed());
+            branchWires[slot] = builder.connectSwitch(resistance("branch"), buses[lugFor(slot)],
+                    builder.terminalNode(spec.branchTerminal(slot)), wireClosed(slot));
         }
     }
 
@@ -152,13 +210,33 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         }
         for(int slot = 0; slot < branchWires.length; ++slot) {
             if(branchWires[slot] != null)
-                branchWires[slot].setState(effective(slot).closed());
+                branchWires[slot].setState(wireClosed(slot));
         }
+    }
+
+    /** Multi-pole breakers hang their poles off other lugs than their rows', so the wiring is rebuilt around them. */
+    private void rebuild() {
+        if(level == null || level.isClientSide) {
+            needsRebuild = level == null;
+            return;
+        }
+        if(electricBehaviour != null)
+            electricBehaviour.rebuildCircuit(false);
+        applyWireStates();
     }
 
     @Override
     public boolean isNoisy() {
         return false;
+    }
+
+    @Override
+    public void tick() {
+        if(needsRebuild && level != null && !level.isClientSide) {
+            needsRebuild = false;
+            rebuild();
+        }
+        super.tick();
     }
 
     @Override
@@ -240,6 +318,13 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
     // ------------------------------------------------------------------ interaction
 
+    /** Rows that item takes from a head space: poles times the frame's rows; a blank or the main takes one. */
+    private int rowsFor(int slot, BreakerItem item) {
+        if(item.isBlank() || slot == MAIN)
+            return 1;
+        return item.poles() * item.frame().rows();
+    }
+
     /** Why that item cannot go into that space, or null when it can. */
     @Nullable
     public Component installProblem(int slot, BreakerItem item) {
@@ -257,11 +342,12 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         }
         if(!spec.acceptsPoles(item.poles()))
             return Lang.builder().translate("message.breaker_panel.too_many_poles", item.poles(), spec.lugs()).style(ChatFormatting.RED).component();
-        if(!spec.fits(slot, item.poles()))
-            return Lang.builder().translate("message.breaker_panel.no_room", item.poles()).style(ChatFormatting.RED).component();
-        for(int p = 1; p < item.poles(); ++p) {
-            if(branches[slot + 2 * p].installed())
-                return Lang.builder().translate("message.breaker_panel.no_room", item.poles()).style(ChatFormatting.RED).component();
+        int rows = rowsFor(slot, item);
+        if(!spec.fits(slot, rows))
+            return Lang.builder().translate("message.breaker_panel.no_room", rows).style(ChatFormatting.RED).component();
+        for(int i = 1; i < rows; ++i) {
+            if(branches[slot + 2 * i].installed())
+                return Lang.builder().translate("message.breaker_panel.no_room", rows).style(ChatFormatting.RED).component();
         }
         return null;
     }
@@ -280,15 +366,20 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         if(level == null || level.isClientSide)
             return true;
         var breaker = breaker(slot);
+        breaker.frame = item.frame();
         breaker.rating = item.rating();
         breaker.blank = item.isBlank();
         breaker.poles = item.isBlank() || slot == MAIN ? 1 : item.poles();
         breaker.state = BreakerState.OFF;
         breaker.heat = 0;
         breaker.current = 0;
-        for(int p = 1; p < breaker.poles; ++p)
-            branches[slot + 2 * p].coverBy(slot);
-        applyWireStates();
+        if(slot != MAIN && !item.isBlank()) {
+            int frameRows = item.frame().rows();
+            for(int i = 1; i < rowsFor(slot, item); ++i)
+                branches[slot + 2 * i].coverBy(slot, i % frameRows == 0 ? i / frameRows : -1);
+        }
+        rating(slot).follow(breaker);
+        rebuild();
         if(!player.isCreative())
             stack.shrink(1);
         ModdedSoundEvents.FUSE_INSTALL.playOnServer(level, worldPosition);
@@ -320,7 +411,6 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         var stack = breaker.item();
         var name = slotName(head);
         uninstall(head);
-        applyWireStates();
         give(player, stack);
         level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.6f, 1.2f);
         message(player, Lang.builder().translate("message.breaker_panel.removed", name).style(ChatFormatting.GRAY).component());
@@ -332,14 +422,16 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     private void uninstall(int head) {
         var breaker = breaker(head);
         if(head != MAIN) {
-            for(int p = 1; p < breaker.poles; ++p) {
-                int slot = head + 2 * p;
+            for(int i = 1; i < breaker.rows(); ++i) {
+                int slot = head + 2 * i;
                 if(slot < branches.length && branches[slot].head == head)
                     branches[slot].clear();
             }
         }
         breaker.clear();
+        rating(head).follow(breaker);
         points = null;
+        rebuild();
     }
 
     private static void give(Player player, ItemStack stack) {
@@ -435,15 +527,16 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             player.displayClientMessage(text, true);
     }
 
-    /** "Main" or "Circuit n" (a multi-pole breaker lists every space it spans, "Circuit 1/3"), with the label in brackets when there is one. */
+    /** "Main" or "Circuit n" (a multi-pole breaker lists the space of each pole, "Circuit 1/3"), with the label in brackets when there is one. */
     public Component slotName(int slot) {
         int head = headSlot(slot);
         var breaker = breaker(head);
         var numbers = new StringBuilder();
+        int frameRows = breaker.frame == null ? 1 : breaker.frame.rows();
         for(int p = 0; p < Math.max(1, breaker.poles); ++p) {
             if(p > 0)
                 numbers.append('/');
-            numbers.append(head + 2 * p + 1);
+            numbers.append(head + 2 * p * frameRows + 1);
         }
         var name = head == MAIN
                 ? Lang.builder().translate("gui.breaker_panel.main")
@@ -509,10 +602,23 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         var list = tag.getList("Branches", Tag.TAG_COMPOUND);
         for(int i = 0; i < branches.length && i < list.size(); ++i)
             branches[i].read(list.getCompound(i), clientPacket);
+        if(ratings != null) {
+            for(int slot = MAIN; slot < branches.length; ++slot)
+                rating(slot).follow(breaker(slot));
+        }
         // Reading splices may rebuild the circuit, which recreates the switch wires; set their states after.
         splices().read(tag);
         applyWireStates();
         points = null;
+        if(!clientPacket) {
+            // Loaded from disk: multi-pole wiring depends on what is installed, so rebuild once ticking.
+            for(var branch : branches) {
+                if(branch.isCovered()) {
+                    needsRebuild = true;
+                    break;
+                }
+            }
+        }
 
         if(clientPacket && level != null) {
             if(prevMain == BreakerState.ON && main.state == BreakerState.TRIPPED)
@@ -526,7 +632,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
     private void tripEffect(int slot) {
         var facing = BreakerPanelBlock.facing(getBlockState());
-        var local = PanelLayout.fromNorthFrame(PanelLayout.breakerCenter(spec, slot, breaker(slot).poles), facing).scale(1 / 16.0);
+        var local = PanelLayout.fromNorthFrame(PanelLayout.breakerCenter(spec, slot, breaker(slot).rows()), facing).scale(1 / 16.0);
         var pos = local.add(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
         SparkParticleData.explodeParticles(level, pos.x, pos.y, pos.z, facing, 3);
     }
@@ -615,15 +721,21 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             for(int lug = 0; lug < spec.lugs(); ++lug)
                 points.add(new SplicePoint(spec.lineTerminal(lug), PanelLayout.lineName(spec, lug), PanelLayout.lineRgb(spec, lug)));
             points.add(new SplicePoint(spec.neutralTerminal(), Lang.builder().translate("breaker_panel.neutral").style(ChatFormatting.BLUE).component(), IDecoratedTerminal.BLUE));
-            for(int i = 0; i < spec.slots(); ++i)
+            for(int i = 0; i < spec.slots(); ++i) {
+                if(branches[i].isDeadRow())
+                    continue;
                 points.add(new SplicePoint(spec.branchTerminal(i), Lang.builder().add(pointName(i)).style(ChatFormatting.WHITE).component(), 0xC8C8C8));
+            }
         }
         return points;
     }
 
     @Override
     public boolean isPoint(int terminal) {
-        return PanelLayout.isPoint(spec(), terminal);
+        if(!PanelLayout.isPoint(spec(), terminal))
+            return false;
+        int slot = terminal - spec.branchFirst();
+        return slot < 0 || slot >= branches.length || !branches[slot].isDeadRow();
     }
 
     @Override
@@ -669,13 +781,16 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     // ------------------------------------------------------------------ breaker record
 
     /**
-     * One space in the panel: empty, a blank filler, a breaker with a rating and pole count, or a
-     * space covered by the pole of a multi-pole breaker headed in another space.
+     * One space in the panel: empty, a blank filler, a breaker with a frame and a trip rating, or a
+     * space covered by a bigger breaker headed in another space (carrying one of its poles, or dead).
      */
     public static final class Breaker {
+        @Nullable
+        private BreakerFrame frame;
         private int rating;
         private int poles = 1;
         private int head = -1;
+        private int pole = -1;
         private boolean blank;
         private boolean locked;
         private String label = "";
@@ -684,41 +799,61 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         private float current;
         private float syncedCurrent;
 
-        /** Something occupies the space: a breaker, a blank, or another breaker's pole. */
+        /** Something occupies the space: a breaker, a blank, or part of another breaker. */
         public boolean installed() {
-            return rating > 0 || blank || head >= 0;
+            return frame != null || blank || head >= 0;
         }
 
         /** A real breaker is headed here. */
         public boolean isBreaker() {
-            return rating > 0 && !blank && head < 0;
+            return frame != null && !blank && head < 0;
         }
 
         public boolean isBlank() {
             return blank;
         }
 
-        /** Taken by a pole of the multi-pole breaker in {@link #head()}. */
+        /** Taken by the breaker in {@link #head()}. */
         public boolean isCovered() {
             return head >= 0;
+        }
+
+        /** Taken by a bigger breaker's extra row: no pole, no circuit point. */
+        public boolean isDeadRow() {
+            return head >= 0 && pole < 0;
         }
 
         public boolean closed() {
             return isBreaker() && state == BreakerState.ON;
         }
 
+        @Nullable
+        public BreakerFrame frame() {
+            return frame;
+        }
+
+        /** Trip rating in amperes. */
         public int rating() {
             return rating;
         }
 
-        /** Spaces this breaker spans down its column. */
         public int poles() {
             return poles;
+        }
+
+        /** Rows of the column this breaker takes from its head: poles times the frame's rows. */
+        public int rows() {
+            return frame == null ? 1 : poles * frame.rows();
         }
 
         /** Head space of the breaker covering this space, or -1. */
         public int head() {
             return head;
+        }
+
+        /** Pole index this covered row carries, or -1 for a dead row. */
+        public int pole() {
+            return pole;
         }
 
         public boolean locked() {
@@ -740,13 +875,15 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
         /** The item that put this breaker or blank here. */
         public ItemStack item() {
-            return blank ? ModItems.breaker(BreakerItem.BLANK) : ModItems.breaker(rating, poles);
+            return blank || frame == null ? ModItems.blank() : ModItems.breaker(frame, poles);
         }
 
         void clear() {
+            frame = null;
             rating = 0;
             poles = 1;
             head = -1;
+            pole = -1;
             blank = false;
             locked = false;
             state = BreakerState.OFF;
@@ -754,9 +891,10 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             current = 0;
         }
 
-        void coverBy(int headSlot) {
+        void coverBy(int headSlot, int poleIndex) {
             clear();
             head = headSlot;
+            pole = poleIndex;
         }
 
         boolean currentChanged() {
@@ -765,11 +903,15 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
         CompoundTag write(boolean clientPacket) {
             var tag = new CompoundTag();
+            if(frame != null)
+                tag.putByte("Frame", (byte) frame.ordinal());
             tag.putInt("Rating", rating);
             if(poles > 1)
                 tag.putInt("Poles", poles);
-            if(head >= 0)
+            if(head >= 0) {
                 tag.putInt("Head", head);
+                tag.putInt("Pole", pole);
+            }
             tag.putBoolean("Blank", blank);
             tag.putBoolean("Locked", locked);
             if(!label.isEmpty())
@@ -786,9 +928,16 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
         void read(CompoundTag tag, boolean clientPacket) {
             rating = tag.getInt("Rating");
+            // Panels saved before frames existed only had a rating.
+            frame = tag.contains("Frame") ? BreakerFrame.byOrdinal(tag.getByte("Frame")) : rating > 0 ? BreakerFrame.forRating(rating) : null;
+            if(frame != null)
+                rating = frame.clamp(rating);
             poles = tag.contains("Poles") ? Math.max(1, tag.getInt("Poles")) : 1;
             head = tag.contains("Head") ? tag.getInt("Head") : -1;
+            pole = head >= 0 ? (tag.contains("Pole") ? tag.getInt("Pole") : 1) : -1;
             blank = tag.getBoolean("Blank");
+            if(blank)
+                frame = null;
             locked = tag.getBoolean("Locked");
             label = tag.getString("Label");
             state = BreakerState.fromOrdinal(tag.getByte("State"));

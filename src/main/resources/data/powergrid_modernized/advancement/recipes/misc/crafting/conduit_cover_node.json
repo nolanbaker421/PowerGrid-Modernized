@@ -5,7 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": "minecraft:redstone"
+            "items": "powergrid_modernized:conduit_cover_blank"
           }
         ]
       },
@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "powergrid_modernized:crafting/breaker_10a"
+        "recipe": "powergrid_modernized:crafting/conduit_cover_node"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "powergrid_modernized:crafting/breaker_10a"
+      "powergrid_modernized:crafting/conduit_cover_node"
     ]
   }
 }
