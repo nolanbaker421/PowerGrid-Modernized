@@ -1,6 +1,8 @@
 package com.nolanbaker.pgmodernized.registry;
 
 import com.nolanbaker.pgmodernized.client.BreakerPanelRenderer;
+import com.nolanbaker.pgmodernized.client.SwitchgearRenderer;
+import com.nolanbaker.pgmodernized.device.breaker.SwitchgearBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitBoxBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitSocketBlockEntity;
 import com.nolanbaker.pgmodernized.device.analogio.AnalogIOBlockEntity;
@@ -60,6 +62,12 @@ public class ModBlockEntities {
                     .validBlocks(ModBlocks.BREAKER_PANEL_200, ModBlocks.BREAKER_PANEL_400, ModBlocks.BREAKER_PANEL_800,
                             ModBlocks.BREAKER_PANEL_200_2P, ModBlocks.BREAKER_PANEL_400_2P, ModBlocks.BREAKER_PANEL_400_3P, ModBlocks.BREAKER_PANEL_800_3P)
                     .renderer(() -> BreakerPanelRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<SwitchgearBlockEntity> SWITCHGEAR =
+            REGISTRATE.blockEntity("switchgear", SwitchgearBlockEntity::new)
+                    .validBlock(ModBlocks.SWITCHGEAR)
+                    .renderer(() -> SwitchgearRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<ConduitBoxBlockEntity> CONDUIT_BOX =

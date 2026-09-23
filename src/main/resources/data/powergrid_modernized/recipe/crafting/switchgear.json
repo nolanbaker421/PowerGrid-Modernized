@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "B": {
+      "item": "powergrid_modernized:bus_bar"
+    },
+    "P": {
+      "item": "powergrid_modernized:breaker_panel_400_3p"
+    }
+  },
+  "pattern": [
+    "IBI",
+    "BPB",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:switchgear"
+  }
+}

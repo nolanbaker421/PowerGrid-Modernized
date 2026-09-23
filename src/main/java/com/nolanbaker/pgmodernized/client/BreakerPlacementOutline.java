@@ -4,6 +4,9 @@ import com.nolanbaker.pgmodernized.device.breaker.BreakerItem;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlock;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlockEntity;
 import com.nolanbaker.pgmodernized.device.breaker.PanelLayout;
+import com.nolanbaker.pgmodernized.device.breaker.SwitchgearBlock;
+import com.nolanbaker.pgmodernized.device.breaker.SwitchgearBlockEntity;
+import com.nolanbaker.pgmodernized.device.breaker.SwitchgearLayout;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
@@ -36,6 +39,20 @@ public final class BreakerPlacementOutline {
             return;
         var pos = hit.getBlockPos();
         var state = level.getBlockState(pos);
+        if(state.getBlock() instanceof SwitchgearBlock && level.getBlockEntity(pos) instanceof SwitchgearBlockEntity section) {
+            if(!section.canInstall(item))
+                return;
+            var camera = event.getCamera().getPosition();
+            var poseStack = event.getPoseStack();
+            var buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.lines());
+            poseStack.pushPose();
+            poseStack.translate(pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z);
+            var box = toWorld(SwitchgearLayout.BREAKER, SwitchgearBlock.facing(state)).inflate(0.002);
+            LevelRenderer.renderLineBox(poseStack, buffer, box, 1f, 0.95f, 0.3f, 1f);
+            poseStack.popPose();
+            mc.renderBuffers().bufferSource().endBatch(RenderType.lines());
+            return;
+        }
         if(!(state.getBlock() instanceof BreakerPanelBlock) || !(level.getBlockEntity(pos) instanceof BreakerPanelBlockEntity be))
             return;
 

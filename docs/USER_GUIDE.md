@@ -222,6 +222,23 @@ Splice pulled wires to those points exactly as in a conduit box.
 Goggles list every space: label, rating, handle position (ON / OFF / TRIPPED), live current, and
 LOCKED where a lock is hung, followed by the knockouts in use and a splice count.
 
+### Switchgear
+
+A **Switchgear Section** is a floor-standing cabinet with a **2000 A three-phase bus** and a
+single 3-pole breaker space in the door. Put sections in a row, all facing the same way, and their
+buses join through hidden bus bars: the row is one lineup on one bus. Goggles on any section say
+how many sections share it.
+
+- Knockouts: four on top, four underneath. Points in the editor: **L1 bus, L2 bus, L3 bus,
+  Neutral bus** and **Load L1, L2, L3** (the breaker's load side).
+- Land the incoming feed on the bus of any section. To have a **main breaker**, land the feed on a
+  section's load side instead: that breaker then sits between the feed and the bus.
+- Every other section feeds one three-phase load through its breaker: splice the outgoing run to
+  Load L1..L3 and the neutral to the neutral bus.
+- Any 3-pole frame goes in the door; set its rating with a wrench, flip it, lock it and label it
+  exactly like a panel breaker. Blanks fit too.
+- The bus bars between sections carry 2000 A and burn out like any wire past that.
+
 ### Transformers
 
 Six one-block transformers, in two windings and three mounts. All have a **turns ratio** on the
@@ -431,6 +448,8 @@ adapter placed next to them:
 | CT Cabinet | pins, comparator, pins / iron plate, conductive casing, iron plate / copper wire, iron plate, copper wire |
 | Split-phase / three-phase panels | the single-lug panel of the same rating with heavy wire connectors either side and a copper plate (two for three-phase) below |
 | 2-pole / 3-pole breakers | two or three single-pole breakers of one frame and an iron nugget, shapeless |
+| Copper Bus Bar (4) | three copper blocks in a row |
+| Switchgear Section | bus bars either side of a 400 A three-phase panel, iron plates above and below, a bus bar top centre |
 | Transformers | copper coils either side of a transformer core; iron plates above and below for the dry-type, smooth stone below for the pad-mount, an iron plate above and below for the pole can; three pole cans and an iron plate make the three-phase bank |
 
 Look the rest up in the recipe book; every recipe unlocks from its main ingredient.

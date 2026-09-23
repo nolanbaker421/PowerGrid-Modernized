@@ -63,6 +63,17 @@ main breaker the panel is dead. The main must have as many poles as the panel ha
 - Splicing a live terminal, or cutting or pulling live wire out of conduit, shocks you. Damage grows
   with the voltage or current involved, and the death message says who forgot their lockout tagout.
 
+## Switchgear
+
+For loads beyond what a panel carries, a **Switchgear Section** is a floor-standing cabinet with a
+2000 A three-phase bus and one 3-pole breaker space in its door. Place sections side by side facing
+the same way and their buses join (through hidden bus bars between the cabinets), so a row of
+sections is one lineup on one bus; goggles show how many sections are in it. Each section has
+eight knockouts, four on top and four underneath, and its splice points are the bus (L1, L2, L3, N)
+and the breaker's load side (Load L1..L3). Land the feed on any section's bus, or on a section's
+load side to make that section's breaker the main. Any 3-pole frame fits, and its rating is set
+with a wrench like a panel breaker. The bus bars carry 2000 A and burn like any wire beyond it.
+
 ## Transformers
 
 Six one-block transformers, each an ideal coupling per secondary leg with a small winding

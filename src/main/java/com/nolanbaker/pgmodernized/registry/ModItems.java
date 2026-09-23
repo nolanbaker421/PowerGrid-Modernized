@@ -10,6 +10,7 @@ import com.nolanbaker.pgmodernized.device.breaker.BreakerLockItem;
 import com.nolanbaker.pgmodernized.network.Cat6CableItem;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Collections;
@@ -39,6 +40,12 @@ public class ModItems {
     public static final ItemEntry<BreakerLockItem> BREAKER_LOCK = REGISTRATE.item("breaker_lock", BreakerLockItem::new)
             .model(NonNullBiConsumer.noop())
             .lang("Breaker Lockout")
+            .register();
+
+    /** Copper bus bar: a crafting part, and the hidden wire type that joins switchgear sections (wire_types/bus_bar.json). */
+    public static final ItemEntry<Item> BUS_BAR = REGISTRATE.item("bus_bar", Item::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Copper Bus Bar")
             .register();
 
     /** Cover plates for the conduit box: a blank, and the node plate with twelve terminals. */

@@ -40,6 +40,7 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         // model; the breakers themselves are the overcurrent protection.
         for(var spec : PanelSpec.values())
             resistance(spec.id(), "main", 0.002, "branch", 0.005);
+        resistance("switchgear", "pole", 0.0005);
         // Transformers: winding resistance in series with each secondary leg.
         for(var mount : TransformerMount.values())
             for(var kind : TransformerKind.values())

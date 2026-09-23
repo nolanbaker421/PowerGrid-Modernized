@@ -187,5 +187,12 @@
   "powergrid.breaker.frame": "%1$s-%2$s A frame; set the trip rating with a wrench once it is in",
   "powergrid.breaker.poles": "%1$s poles, takes %2$s rows of one column",
   "powergrid.breaker.rows": "Takes %1$s rows of one column",
-  "powergrid.gui.breaker_panel.rating": "Trip rating"
+  "powergrid.gui.breaker_panel.rating": "Trip rating",
+  "block.powergrid_modernized.switchgear": "Switchgear Section",
+  "item.powergrid_modernized.bus_bar": "Copper Bus Bar",
+  "powergrid.switchgear.bus": "L%1$s bus",
+  "powergrid.switchgear.bus_n": "Neutral bus",
+  "powergrid.switchgear.load": "Load L%1$s",
+  "powergrid.gui.switchgear.feeder": "Feeder",
+  "powergrid.gui.switchgear.title": "Switchgear lineup, %1$s section(s), 2000 A bus"
 }
