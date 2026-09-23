@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powergrid_modernized:block/breaker_panel_400_3p"
+    },
+    "facing=east": {
+      "model": "powergrid_modernized:block/breaker_panel_400_3p",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "powergrid_modernized:block/breaker_panel_400_3p",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid_modernized:block/breaker_panel_400_3p",
+      "y": 270
+    }
+  }
+}

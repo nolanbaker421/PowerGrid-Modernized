@@ -1,6 +1,9 @@
 package com.nolanbaker.pgmodernized.registry;
 
 import com.nolanbaker.pgmodernized.device.breaker.PanelSpec;
+import com.nolanbaker.pgmodernized.device.transformer.TransformerBlock;
+import com.nolanbaker.pgmodernized.device.transformer.TransformerKind;
+import com.nolanbaker.pgmodernized.device.transformer.TransformerMount;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -37,6 +40,10 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         // model; the breakers themselves are the overcurrent protection.
         for(var spec : PanelSpec.values())
             resistance(spec.id(), "main", 0.002, "branch", 0.005);
+        // Transformers: winding resistance in series with each secondary leg.
+        for(var mount : TransformerMount.values())
+            for(var kind : TransformerKind.values())
+                resistance(TransformerBlock.id(mount, kind), "winding", 0.02);
     }
 
     private ModValues() {}

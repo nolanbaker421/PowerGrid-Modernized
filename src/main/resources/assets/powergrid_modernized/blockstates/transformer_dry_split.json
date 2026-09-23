@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powergrid_modernized:block/transformer_dry_split"
+    },
+    "facing=east": {
+      "model": "powergrid_modernized:block/transformer_dry_split",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "powergrid_modernized:block/transformer_dry_split",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid_modernized:block/transformer_dry_split",
+      "y": 270
+    }
+  }
+}

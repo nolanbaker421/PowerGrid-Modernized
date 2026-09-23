@@ -10,7 +10,8 @@ authors = "Nolan Baker"
 description = '''
 Computer-facing instrumentation and drives for Create: Power Grid.
 Adds the Variable Frequency Drive, Analog I/O Module, Clamp Meter, Line Voltmeter, Line Ammeter,
-Cat6 network cabling and US-style breaker panels with plug-on breakers,
+Cat6 network cabling, US-style breaker panels (single, split-phase and three-phase) with plug-on breakers,
+split-phase and three-phase transformers,
 with ComputerCraft peripherals and OpenComputers network nodes.
 AC build: needs the powergrid-ac fork of Power Grid (v0.6.1-ac.7 or newer); meters read RMS and real power.
 '''

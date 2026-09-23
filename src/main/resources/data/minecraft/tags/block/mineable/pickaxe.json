@@ -13,6 +13,16 @@
     "powergrid_modernized:breaker_panel_800",
     "powergrid_modernized:conduit_box",
     "powergrid_modernized:conduit_socket",
-    "powergrid_modernized:ct_cabinet"
+    "powergrid_modernized:ct_cabinet",
+    "powergrid_modernized:breaker_panel_200_2p",
+    "powergrid_modernized:breaker_panel_400_2p",
+    "powergrid_modernized:breaker_panel_400_3p",
+    "powergrid_modernized:breaker_panel_800_3p",
+    "powergrid_modernized:transformer_dry_split",
+    "powergrid_modernized:transformer_dry_3ph",
+    "powergrid_modernized:transformer_pad_split",
+    "powergrid_modernized:transformer_pad_3ph",
+    "powergrid_modernized:transformer_pole_split",
+    "powergrid_modernized:transformer_pole_3ph"
   ]
 }

@@ -23,8 +23,11 @@ public class ModItems {
             .lang("Cat6 Cable")
             .register();
 
-    /** Plug-on breakers keyed by rated current, in the order of {@link BreakerItem#RATINGS}. */
+    /** Single-pole plug-on breakers keyed by rated current, in the order of {@link BreakerItem#RATINGS}, plus the blank at 0. */
     public static final Map<Integer, ItemEntry<BreakerItem>> BREAKERS;
+
+    /** Two- and three-pole breakers: poles, then rating. */
+    public static final Map<Integer, Map<Integer, ItemEntry<BreakerItem>>> MULTI_POLE_BREAKERS;
 
     /** Lockout hasp for a breaker handle. */
     public static final ItemEntry<BreakerLockItem> BREAKER_LOCK = REGISTRATE.item("breaker_lock", BreakerLockItem::new)
@@ -49,6 +52,19 @@ public class ModItems {
                 .register());
         BREAKERS = Collections.unmodifiableMap(breakers);
 
+        var multi = new LinkedHashMap<Integer, Map<Integer, ItemEntry<BreakerItem>>>();
+        for(int poles : BreakerItem.MULTI_POLES) {
+            var byRating = new LinkedHashMap<Integer, ItemEntry<BreakerItem>>();
+            for(int rating : BreakerItem.RATINGS) {
+                byRating.put(rating, REGISTRATE.item("breaker_" + rating + "a_" + poles + "p", p -> new BreakerItem(p, rating, poles))
+                        .model(NonNullBiConsumer.noop())
+                        .lang(rating + " A " + poles + "-Pole Breaker")
+                        .register());
+            }
+            multi.put(poles, Collections.unmodifiableMap(byRating));
+        }
+        MULTI_POLE_BREAKERS = Collections.unmodifiableMap(multi);
+
         var conduit = new EnumMap<ConduitSize, ItemEntry<ConduitItem>>(ConduitSize.class);
         for(var size : ConduitSize.values()) {
             conduit.put(size, REGISTRATE.item("conduit_" + size.id(), p -> new ConduitItem(p, size))
@@ -59,9 +75,20 @@ public class ModItems {
         CONDUIT = Collections.unmodifiableMap(conduit);
     }
 
-    /** One breaker item of the given rating, or an empty stack if no such breaker exists. */
+    /** One single-pole breaker item of the given rating (or the blank for 0), or an empty stack if none exists. */
     public static ItemStack breaker(int rating) {
-        var entry = BREAKERS.get(rating);
+        return breaker(rating, 1);
+    }
+
+    /** One breaker item of the given rating and pole count, or an empty stack if none exists. */
+    public static ItemStack breaker(int rating, int poles) {
+        ItemEntry<BreakerItem> entry;
+        if(poles <= 1 || rating == BreakerItem.BLANK) {
+            entry = BREAKERS.get(rating);
+        } else {
+            var byRating = MULTI_POLE_BREAKERS.get(poles);
+            entry = byRating == null ? null : byRating.get(rating);
+        }
         return entry == null ? ItemStack.EMPTY : entry.asStack();
     }
 

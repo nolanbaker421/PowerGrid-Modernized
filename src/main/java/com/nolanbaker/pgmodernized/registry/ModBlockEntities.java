@@ -10,10 +10,12 @@ import com.nolanbaker.pgmodernized.device.computer.ComputerBlockEntityFactories;
 import com.nolanbaker.pgmodernized.device.meter.ClampMeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineVoltmeterBlockEntity;
+import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
 import com.nolanbaker.pgmodernized.device.vfd.VfdBlockEntity;
 import com.nolanbaker.pgmodernized.network.NetworkJackBlockEntity;
 import com.nolanbaker.pgmodernized.network.NetworkSwitchBlockEntity;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
+import com.tterrag.registrate.util.entry.BlockEntry;
 
 import static com.nolanbaker.pgmodernized.PowerGridModernized.REGISTRATE;
 
@@ -55,7 +57,8 @@ public class ModBlockEntities {
 
     public static final BlockEntityEntry<BreakerPanelBlockEntity> BREAKER_PANEL =
             REGISTRATE.blockEntity("breaker_panel", BreakerPanelBlockEntity::new)
-                    .validBlocks(ModBlocks.BREAKER_PANEL_200, ModBlocks.BREAKER_PANEL_400, ModBlocks.BREAKER_PANEL_800)
+                    .validBlocks(ModBlocks.BREAKER_PANEL_200, ModBlocks.BREAKER_PANEL_400, ModBlocks.BREAKER_PANEL_800,
+                            ModBlocks.BREAKER_PANEL_200_2P, ModBlocks.BREAKER_PANEL_400_2P, ModBlocks.BREAKER_PANEL_400_3P, ModBlocks.BREAKER_PANEL_800_3P)
                     .renderer(() -> BreakerPanelRenderer::new)
                     .register();
 
@@ -72,6 +75,12 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<CtCabinetBlockEntity> CT_CABINET =
             REGISTRATE.blockEntity("ct_cabinet", ComputerBlockEntityFactories.ctCabinet())
                     .validBlock(ModBlocks.CT_CABINET)
+                    .register();
+
+    @SuppressWarnings("unchecked")
+    public static final BlockEntityEntry<TransformerBlockEntity> TRANSFORMER =
+            REGISTRATE.blockEntity("transformer", TransformerBlockEntity::new)
+                    .validBlocks(ModBlocks.TRANSFORMERS.values().stream().flatMap(m -> m.values().stream()).toArray(BlockEntry[]::new))
                     .register();
 
     public static void register() {}

@@ -20,34 +20,68 @@ A player-facing guide to everything in the mod, including the computer APIs, is 
 
 ## Breaker panels
 
-Three wall-mounted load centres in the style of a US residential panel, with plug-on breakers:
+Wall-mounted load centres in the style of a US residential panel, with plug-on breakers:
 
-| Panel | Main / largest breaker | Branch spaces |
-| --- | --- | --- |
-| 200 A Breaker Panel | 200 A | 8 |
-| 400 A Breaker Panel | 400 A | 12 |
-| 800 A Breaker Panel | 800 A | 12 |
+| Panel | Main / largest breaker | Lugs | Branch spaces |
+| --- | --- | --- | --- |
+| 200 A Breaker Panel | 200 A | 1 (Line, Neutral) | 8 |
+| 400 A Breaker Panel | 400 A | 1 | 12 |
+| 800 A Breaker Panel | 800 A | 1 | 12 |
+| 200 A Split-Phase Breaker Panel | 200 A | 2 (L1, L2, Neutral) | 12 |
+| 400 A Split-Phase Breaker Panel | 400 A | 2 | 12 |
+| 400 A Three-Phase Breaker Panel | 400 A | 3 (L1, L2, L3, Neutral) | 12 |
+| 800 A Three-Phase Breaker Panel | 800 A | 3 | 12 |
 
-Breakers come in 10, 20, 50, 60, 100, 200, 400 and 800 A. Any breaker up to the panel's rating fits
-any space, including the main space at the top; without a main breaker the panel is dead.
+Breakers come in 10, 20, 50, 60, 100, 200, 400 and 800 A, in one-, two- and three-pole versions.
+Any breaker up to the panel's rating fits, and without a main breaker the panel is dead. The main
+must have as many poles as the panel has lugs.
 
+- Each row of spaces sits on the next lug down the panel, both columns of a row on the same lug,
+  as in a real load centre. A two-pole breaker takes two adjacent rows in one column and so bridges
+  two lugs (240 V across L1 and L2 on a split-phase panel); a three-pole takes three rows and all
+  three phases. All poles switch and trip together under one handle. Multi-pole breakers are
+  crafted from that many single-pole breakers and an iron nugget.
 - Wiring enters through conduit knockouts (see the conduit section). In the panel's splice editor the
-  points are **Line** (feeds the main breaker), **Neutral** (a plain junction for every return) and
-  **Circuit 1..N**, each fed from the bus through its breaker. Odd circuits sit in the left column,
-  even in the right, top to bottom.
+  points are the line lugs (**Line**, or **L1..L3**), **Neutral** (a plain junction for every return)
+  and **Circuit 1..N**, each fed from its lug through its breaker. Odd circuits sit in the left
+  column, even in the right, top to bottom; a two-pole breaker in spaces 1 and 3 is "Circuit 1/3".
 - Right-click a space with a breaker to plug it in (it starts OFF). Right-click a breaker with an
   empty hand to flip it; shift-right-click pulls it. A tripped breaker goes to OFF on the first click
   and ON on the next, like the real thing.
 - Trip curve: instant at 8x the rating, about two seconds at 2x, five at 1.5x, half a minute at
   1.1x, never at or below the rating. Tripping sparks and plays the breaker sound.
-- Goggles list every space with its rating, handle position and live current.
-- With a breaker in hand every free space is outlined on the panel and the one under the crosshair
-  is drawn bright. A **Breaker Blank** fills an unused space. A **Breaker Lock** on an installed
-  breaker freezes its handle (it can still trip); shift-click the breaker to take the lock off.
-  Right-click a space with a renamed name tag to label it; the label shows in goggles, messages and
-  the splice editor. A plain name tag clears it.
+- Goggles list every space with its rating, pole count, handle position and live current.
+- With a breaker in hand every space it would fit is outlined on the panel and the one under the
+  crosshair is drawn bright. A **Breaker Blank** fills an unused space. A **Breaker Lock** on an
+  installed breaker freezes its handle (it can still trip); shift-click the breaker to take the lock
+  off. Right-click a space with a renamed name tag to label it; the label shows in goggles, messages
+  and the splice editor. A plain name tag clears it.
 - Splicing a live terminal, or cutting or pulling live wire out of conduit, shocks you. Damage grows
   with the voltage or current involved, and the death message says who forgot their lockout tagout.
+
+## Transformers
+
+Six one-block transformers, each an ideal coupling per secondary leg with a small winding
+resistance, and a turns ratio set on the value box on the front (scroll it, from 1:60 step-up
+through 1:1 to 60:1 step-down):
+
+| Block | Windings | Wiring |
+| --- | --- | --- |
+| Dry-Type Transformer (Split-Phase / Three-Phase) | see below | indoor cabinet; conduit knockouts on top and both sides, spliced inside |
+| Pad-Mount Transformer (Split-Phase / Three-Phase) | see below | outdoor box; knockouts underneath and on both sides |
+| Pole-Mount Transformer (Split-Phase) | one can | bushings on the can for hanging wire: H1, H2 on top, X1, N, X2 on the front |
+| Pole-Mount Transformer Bank (Three-Phase) | three cans | H1..H3 on top, X1..X3 and X0 on the front |
+
+- **Split-phase**: primary H1, H2; centre-tapped secondary X1, N, X2. X1 to X2 is the full ratio,
+  each half is half of it, so a 1:2 unit on 120 V gives 120/240 V for a split-phase panel.
+- **Three-phase**: delta primary H1, H2, H3; star secondary X1, X2, X3 with neutral X0. Secondary
+  phase voltage is the ratio times the primary line voltage, shifted 30°, the standard delta-star
+  distribution bank.
+- Goggles show the ratio and each leg's voltage against the neutral and its current.
+- The cabinets open their splice editor on an empty-hand right-click away from the value box.
+
+On stock Power Grid these pass DC exactly as Power Grid's own transformer does; the phases mean
+something on the AC build.
 
 ## Conduit and conduit boxes
 
@@ -144,6 +178,8 @@ What the branch changes:
   `getReadings()`.
 - The VFD holds its output RMS voltage at the setpoint, so on an alternating feed it behaves as a
   variable transformer.
+- The split-phase and three-phase transformers carry the phases (a delta-star bank shifts 30°), and
+  their goggle readings are RMS.
 - On a direct-current network every reading is the same number the main build reports.
 
 Installing: in `mods/`, replace `powergrid-mc1.21.1-0.6.2.jar` with

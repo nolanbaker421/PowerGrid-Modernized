@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "powergrid_modernized:item/breaker_400a_2p"
+  }
+}
