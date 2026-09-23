@@ -28,7 +28,8 @@ Everything is in its own creative tab, "PowerGrid: Modernized". All blocks are m
 
 Power Grid itself is direct current. If you run the experimental
 [powergrid-ac](https://github.com/DaRealML/powergrid-ac) fork instead (alternators, three-phase,
-transformer banks), use the AC build of this addon, `powergrid-modernized-mc1.21.1-0.2.0-ac.jar`,
+transformer banks), use the AC build of this addon, `powergrid-modernized-ac-mc1.21.1-<version>.jar` (not the plain
+`powergrid-modernized-mc1.21.1-<version>.jar`, which is the stock build and asks for Power Grid 0.6.2),
 with `powergrid-mc1.21.1-0.6.1-ac.7.jar` or newer in place of the regular Power Grid jar. The AC
 build will not start on the regular jar, and says so.
 
@@ -261,9 +262,9 @@ value box on the front: scroll it (or click it for the board) through 1:60, 1:30
 
 | Mount | Wiring |
 | --- | --- |
-| Dry-Type (indoor cabinet) | conduit knockouts, four on top and two on each side; splice inside like a panel |
-| Pad-Mount (outdoor box) | knockouts, four underneath and two on each side |
-| Pole-Mount (can on a pole) | bushings for hanging wire: primaries on top, secondaries on the front |
+| Dry-Type (indoor cabinet, two blocks tall) | conduit knockouts, four underneath and four low on the front; splice inside like a panel |
+| Pad-Mount (oil tank on a skid, two blocks tall, radiators, bushings on the lid) | knockouts in two rows of four on the front |
+| Pole-Mount (a can hung on a pole; the bank is three cans across three blocks) | bushings for hanging wire: HV on the lid, LV studs on the front |
 
 - **Split-Phase**: primary H1, H2; centre-tapped secondary X1, N, X2. Each half is half the ratio,
   so on a 1:2 unit 120 V in gives X1 at +120 V and X2 at -120 V against N: 120/240 V, ready for a
@@ -274,6 +275,8 @@ value box on the front: scroll it (or click it for the board) through 1:60, 1:30
 - The three-phase pole bank is three cans on a crossarm: H1..H3 on top, X1..X3 on the fronts, X0
   low on the middle can.
 - Goggles show the ratio and each secondary leg's voltage against the neutral and its current.
+- Sizes follow Create: PowerPlantGrid. Ground units take the block above them, the pole bank the
+  blocks either side; place them with that room free. Breaking any part takes the whole unit.
 
 On the regular (DC) Power Grid these pass DC at the ratio, as Power Grid's own transformer does.
 On the AC build they carry the phases; a delta primary needs a three-wire three-phase source (three

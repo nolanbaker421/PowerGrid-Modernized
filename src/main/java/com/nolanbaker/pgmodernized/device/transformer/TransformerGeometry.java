@@ -9,35 +9,76 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
+import java.util.List;
+
 /**
  * Shapes and terminal boxes per mount and kind, in the north-facing frame in pixels: the block's
  * back (the wall or the pole) is the south side, the front faces north, and someone looking at the
- * front has +x on their left. Mirrored by {@code tools/gen_transformer_assets.py}; change both.
+ * front has +x on their left. Sized like Create: PowerPlantGrid's transformers: the ground units
+ * are two blocks tall (the base block carries the model, a filler block above carries the upper
+ * collision), the pole can is half a block wide and a block tall hung on its pole, and the
+ * three-phase pole bank is three such cans across three blocks with fillers either side.
+ * Mirrored by {@code tools/gen_transformer_assets.py}; change both.
  */
 public final class TransformerGeometry {
+    /** A cell of the unit beyond the base block. */
+    public enum Part implements net.minecraft.util.StringRepresentable {
+        ABOVE, LEFT, RIGHT;
+
+        public String id() {
+            return name().toLowerCase();
+        }
+
+        @Override
+        public String getSerializedName() {
+            return id();
+        }
+    }
+
     private static final double[] HUB_U = {3.5, 6.5, 9.5, 12.5};
 
-    // Dry-type cabinet: floor standing against the wall. Knockouts on top and on both sides.
-    private static final AABB DRY_BODY = new AABB(2, 0, 8, 14, 14, 16);
+    // Dry-type: an indoor cabinet two blocks tall against the wall. Knockouts on the bottom and the front.
+    private static final AABB DRY_BODY = new AABB(2, 0, 4, 14, 16, 16);
+    private static final AABB DRY_UPPER = new AABB(2, 0, 4, 14, 14, 16);
     private static final AABB DRY_HIDDEN = new AABB(7.5, 7.5, 11, 8.5, 8.5, 12);
-    private static final Vec3 DRY_VALUE_BOX = new Vec3(8, 9, 8);
+    private static final Vec3 DRY_VALUE_BOX = new Vec3(8, 11, 12);
 
-    // Pad-mount: a low wide box on the ground. Knockouts on the bottom and on both sides.
-    private static final AABB PAD_BODY = new AABB(1, 0, 3, 15, 11, 15);
-    private static final AABB PAD_HIDDEN = new AABB(7.5, 5, 7, 8.5, 6, 8);
-    private static final Vec3 PAD_VALUE_BOX = new Vec3(8, 6, 13);
+    // Pad-mount: an oil tank on a skid, radiators on both sides, bushings on the lid one block up.
+    private static final AABB PAD_SKID = new AABB(0, 0, 0, 16, 1.5, 16);
+    private static final AABB PAD_TANK = new AABB(1.5, 1.5, 1.5, 14.5, 16, 14.5);
+    private static final AABB PAD_UPPER = new AABB(1.5, 0, 1.5, 14.5, 12, 14.5);
+    private static final AABB PAD_HIDDEN = new AABB(7.5, 7.5, 7.5, 8.5, 8.5, 8.5);
+    private static final Vec3 PAD_VALUE_BOX = new Vec3(8, 12, 14.5);
 
-    // Pole can: hangs on the pole behind it. Primary bushings on top, secondaries on the front.
-    private static final AABB CAN = new AABB(5, 1, 9, 11, 13, 16);
-    private static final AABB[] CAN_PRIMARIES = {new AABB(6, 13, 11, 7.5, 15.5, 12.5), new AABB(8.5, 13, 11, 10, 15.5, 12.5)};
-    private static final AABB[] CAN_SECONDARIES = {new AABB(5.5, 8, 7.5, 7, 9.5, 9), new AABB(7.25, 5.5, 7.5, 8.75, 7, 9), new AABB(9, 8, 7.5, 10.5, 9.5, 9)};
-    private static final Vec3 CAN_VALUE_BOX = new Vec3(8, 11, 7);
+    // Pole can: hung on the pole behind it, HV bushings on the lid, LV studs on the front flat.
+    private static final AABB CAN = new AABB(3.75, 0, 6, 12.25, 13, 16);
+    private static final AABB[] CAN_PRIMARIES = {new AABB(4.75, 13, 10.25, 6.75, 16, 12.25), new AABB(9.25, 13, 10.25, 11.25, 16, 12.25)};
+    private static final AABB[] CAN_SECONDARIES = {new AABB(4.5, 4, 5, 6, 5.5, 6), new AABB(7.25, 4, 5, 8.75, 5.5, 6), new AABB(10, 4, 5, 11.5, 5.5, 6)};
+    private static final Vec3 CAN_VALUE_BOX = new Vec3(8, 9, 10);
 
-    // Three cans side by side: phase A on the viewer's left (+x).
-    private static final double[] BANK_CX = {12.75, 7.75, 2.75};
-    private static final Vec3 BANK_VALUE_BOX = new Vec3(8, 11.5, 6);
+    // Three cans on one crossarm: the middle one carries every terminal, the outer two are the bank's other phases.
+    private static final AABB[] BANK_PRIMARIES = {new AABB(4.5, 13, 10.25, 6, 16, 12.25), new AABB(7.25, 13, 10.25, 8.75, 16, 12.25), new AABB(10, 13, 10.25, 11.5, 16, 12.25)};
+    private static final AABB[] BANK_SECONDARIES = {new AABB(4.5, 8, 5, 6, 9.5, 6), new AABB(7.25, 8, 5, 8.75, 9.5, 6), new AABB(10, 8, 5, 11.5, 9.5, 6), new AABB(7.25, 3.5, 5, 8.75, 5, 6)};
+    private static final Vec3 BANK_VALUE_BOX = new Vec3(8, 11.25, 10);
 
     private TransformerGeometry() {}
+
+    /** The cells a unit takes beyond its base block. */
+    public static List<Part> parts(TransformerMount mount, TransformerKind kind) {
+        return switch(mount) {
+            case DRY, PAD -> List.of(Part.ABOVE);
+            case POLE -> kind == TransformerKind.THREE_PHASE ? List.of(Part.LEFT, Part.RIGHT) : List.of();
+        };
+    }
+
+    /** Collision of a filler cell, in that cell's own frame. */
+    public static VoxelShape partShape(TransformerMount mount, TransformerKind kind, Part part) {
+        return switch(mount) {
+            case DRY -> box(DRY_UPPER);
+            case PAD -> box(PAD_UPPER);
+            case POLE -> Shapes.or(box(CAN), box(new AABB(3.75, 13, 10.25, 12.25, 16, 12.25)));
+        };
+    }
 
     public static AABB[] hubs(TransformerMount mount) {
         return switch(mount) {
@@ -45,24 +86,18 @@ public final class TransformerGeometry {
                 var hubs = new AABB[8];
                 for(int i = 0; i < 4; ++i) {
                     double x = 16 - HUB_U[i];
-                    hubs[i] = new AABB(x - 1, 14, 11, x + 1, 15, 13);
+                    hubs[i] = new AABB(x - 1, 0, 9, x + 1, 1, 11);          // bottom, up through the floor
+                    hubs[4 + i] = new AABB(x - 1, 3, 3, x + 1, 5, 4);        // low on the front
                 }
-                hubs[4] = new AABB(14, 4, 11, 15, 6, 13);
-                hubs[5] = new AABB(14, 8, 11, 15, 10, 13);
-                hubs[6] = new AABB(1, 4, 11, 2, 6, 13);
-                hubs[7] = new AABB(1, 8, 11, 2, 10, 13);
                 yield hubs;
             }
             case PAD -> {
                 var hubs = new AABB[8];
                 for(int i = 0; i < 4; ++i) {
                     double x = 16 - HUB_U[i];
-                    hubs[i] = new AABB(x - 1, 0, 8, x + 1, 1, 10);
+                    hubs[i] = new AABB(x - 1, 3, 0.5, x + 1, 5, 1.5);        // front, low
+                    hubs[4 + i] = new AABB(x - 1, 8, 0.5, x + 1, 10, 1.5);   // front, high
                 }
-                hubs[4] = new AABB(15, 3, 5, 16, 5, 7);
-                hubs[5] = new AABB(15, 3, 11, 16, 5, 13);
-                hubs[6] = new AABB(0, 3, 5, 1, 5, 7);
-                hubs[7] = new AABB(0, 3, 11, 1, 5, 13);
                 yield hubs;
             }
             case POLE -> new AABB[0];
@@ -82,37 +117,14 @@ public final class TransformerGeometry {
         };
     }
 
-    private static AABB can(int index) {
-        double cx = BANK_CX[index];
-        return new AABB(cx - 2.25, 2, 10, cx + 2.25, 13, 16);
-    }
-
-    private static AABB bankPrimary(int k) {
-        double cx = BANK_CX[k];
-        return new AABB(cx - 0.75, 13, 12.25, cx + 0.75, 15.5, 13.75);
-    }
-
-    private static AABB bankSecondary(int j) {
-        if(j == 3)
-            return new AABB(7, 4.5, 8.5, 8.5, 6, 10);
-        double cx = BANK_CX[j];
-        return new AABB(cx - 0.75, 8, 8.5, cx + 0.75, 9.5, 10);
-    }
-
     public static VoxelShape shape(TransformerMount mount, TransformerKind kind) {
         return switch(mount) {
             case DRY -> box(DRY_BODY);
-            case PAD -> box(PAD_BODY);
+            case PAD -> Shapes.or(box(PAD_SKID), box(PAD_TANK));
             case POLE -> {
-                VoxelShape shape = Shapes.empty();
+                VoxelShape shape = box(CAN);
                 for(var t : exposedTerminals(kind))
                     shape = Shapes.or(shape, box(t));
-                if(kind == TransformerKind.THREE_PHASE) {
-                    for(int i = 0; i < 3; ++i)
-                        shape = Shapes.or(shape, box(can(i)));
-                } else {
-                    shape = Shapes.or(shape, box(CAN));
-                }
                 yield shape;
             }
         };
@@ -120,14 +132,15 @@ public final class TransformerGeometry {
 
     private static AABB[] exposedTerminals(TransformerKind kind) {
         var boxes = new AABB[kind.pointCount()];
+        boolean bank = kind == TransformerKind.THREE_PHASE;
         for(int k = 0; k < kind.primaries(); ++k)
-            boxes[kind.primaryTerminal(k)] = kind == TransformerKind.THREE_PHASE ? bankPrimary(k) : CAN_PRIMARIES[k];
+            boxes[kind.primaryTerminal(k)] = bank ? BANK_PRIMARIES[k] : CAN_PRIMARIES[k];
         for(int j = 0; j < kind.secondaries(); ++j)
-            boxes[kind.secondaryTerminal(j)] = kind == TransformerKind.THREE_PHASE ? bankSecondary(j) : CAN_SECONDARIES[j];
+            boxes[kind.secondaryTerminal(j)] = bank ? BANK_SECONDARIES[j] : CAN_SECONDARIES[j];
         return boxes;
     }
 
-    /** The winding terminals: hidden points inside a cabinet, bushings on a pole can. */
+    /** The winding terminals: hidden points inside a cabinet or tank, bushings and studs on a pole can. */
     public static TerminalBoundingBox[] terminals(TransformerMount mount, TransformerKind kind) {
         var terminals = new TerminalBoundingBox[kind.pointCount()];
         var boxes = mount == TransformerMount.POLE ? exposedTerminals(kind) : null;

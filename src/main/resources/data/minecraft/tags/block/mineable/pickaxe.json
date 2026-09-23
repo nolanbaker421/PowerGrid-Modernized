@@ -25,6 +25,7 @@
     "powergrid_modernized:transformer_pole_split",
     "powergrid_modernized:transformer_pole_3ph",
     "powergrid_modernized:switchgear",
+    "powergrid_modernized:transformer_filler",
     "powergrid_modernized:three_phase_motor",
     "powergrid_modernized:three_phase_drive"
   ]

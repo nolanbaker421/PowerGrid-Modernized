@@ -1,0 +1,40 @@
+{
+  "variants": {
+    "facing=north,part=above": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "facing=north,part=left": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "facing=north,part=right": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "facing=east,part=above": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "facing=east,part=left": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "facing=east,part=right": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "facing=south,part=above": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "facing=south,part=left": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "facing=south,part=right": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "facing=west,part=above": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "facing=west,part=left": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "facing=west,part=right": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    }
+  }
+}

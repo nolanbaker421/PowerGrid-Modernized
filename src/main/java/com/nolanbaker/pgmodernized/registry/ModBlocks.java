@@ -16,6 +16,7 @@ import com.nolanbaker.pgmodernized.device.motor.ThreePhaseMotorBlockEntity;
 import com.simibubi.create.api.stress.BlockStressValues;
 import net.minecraft.world.level.block.Blocks;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlock;
+import com.nolanbaker.pgmodernized.device.transformer.TransformerFillerBlock;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerKind;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerMount;
 import com.nolanbaker.pgmodernized.device.vfd.VfdBlock;
@@ -152,6 +153,15 @@ public class ModBlocks {
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()
+            .register();
+
+    /** The invisible upper and side cells of the two-block and three-block transformers. */
+    public static final BlockEntry<TransformerFillerBlock> TRANSFORMER_FILLER = REGISTRATE.block("transformer_filler", TransformerFillerBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion().noLootTable())
+            .transform(pickaxeOnly())
+            .lang("Transformer")
             .register();
 
     /** Transformers by mount, then winding kind. */
