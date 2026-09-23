@@ -3,6 +3,8 @@ package com.nolanbaker.pgmodernized.device.computer;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.nolanbaker.pgmodernized.device.analogio.AnalogIOBlockEntity;
 import com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlockEntity;
+import com.nolanbaker.pgmodernized.device.drive.ThreePhaseDriveBlockEntity;
+import com.nolanbaker.pgmodernized.device.motor.ThreePhaseMotorBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.ClampMeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineVoltmeterBlockEntity;
@@ -24,6 +26,8 @@ public final class ComputerBlockEntityFactories {
     public static BlockEntityFactory<NetworkJackBlockEntity> NETWORK_JACK = NetworkJackBlockEntity::new;
     public static BlockEntityFactory<NetworkSwitchBlockEntity> NETWORK_SWITCH = NetworkSwitchBlockEntity::new;
     public static BlockEntityFactory<CtCabinetBlockEntity> CT_CABINET = CtCabinetBlockEntity::new;
+    public static BlockEntityFactory<ThreePhaseMotorBlockEntity> THREE_PHASE_MOTOR = ThreePhaseMotorBlockEntity::new;
+    public static BlockEntityFactory<ThreePhaseDriveBlockEntity> THREE_PHASE_DRIVE = ThreePhaseDriveBlockEntity::new;
 
     public static BlockEntityFactory<NetworkSwitchBlockEntity> networkSwitch() {
         return (type, pos, state) -> NETWORK_SWITCH.create(type, pos, state);
@@ -39,6 +43,14 @@ public final class ComputerBlockEntityFactories {
 
     public static BlockEntityFactory<CtCabinetBlockEntity> ctCabinet() {
         return (type, pos, state) -> CT_CABINET.create(type, pos, state);
+    }
+
+    public static BlockEntityFactory<ThreePhaseMotorBlockEntity> threePhaseMotor() {
+        return (type, pos, state) -> THREE_PHASE_MOTOR.create(type, pos, state);
+    }
+
+    public static BlockEntityFactory<ThreePhaseDriveBlockEntity> threePhaseDrive() {
+        return (type, pos, state) -> THREE_PHASE_DRIVE.create(type, pos, state);
     }
 
     private ComputerBlockEntityFactories() {}

@@ -10,6 +10,10 @@ import com.nolanbaker.pgmodernized.device.computer.ComputerBlockEntityFactories;
 import com.nolanbaker.pgmodernized.device.meter.ClampMeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineVoltmeterBlockEntity;
+import com.nolanbaker.pgmodernized.device.drive.ThreePhaseDriveBlockEntity;
+import com.nolanbaker.pgmodernized.device.motor.ThreePhaseMotorBlockEntity;
+import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
+import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
 import com.nolanbaker.pgmodernized.device.vfd.VfdBlockEntity;
 import com.nolanbaker.pgmodernized.network.NetworkJackBlockEntity;
@@ -81,6 +85,18 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<TransformerBlockEntity> TRANSFORMER =
             REGISTRATE.blockEntity("transformer", TransformerBlockEntity::new)
                     .validBlocks(ModBlocks.TRANSFORMERS.values().stream().flatMap(m -> m.values().stream()).toArray(BlockEntry[]::new))
+                    .register();
+
+    public static final BlockEntityEntry<ThreePhaseMotorBlockEntity> THREE_PHASE_MOTOR =
+            REGISTRATE.blockEntity("three_phase_motor", ComputerBlockEntityFactories.threePhaseMotor())
+                    .visual(() -> HalfShaftVisual::new)
+                    .validBlock(ModBlocks.THREE_PHASE_MOTOR)
+                    .renderer(() -> ElectricMotorRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<ThreePhaseDriveBlockEntity> THREE_PHASE_DRIVE =
+            REGISTRATE.blockEntity("three_phase_drive", ComputerBlockEntityFactories.threePhaseDrive())
+                    .validBlock(ModBlocks.THREE_PHASE_DRIVE)
                     .register();
 
     public static void register() {}

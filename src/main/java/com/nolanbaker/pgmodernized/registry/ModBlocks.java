@@ -9,6 +9,11 @@ import com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlock;
 import com.nolanbaker.pgmodernized.device.meter.ClampMeterBlock;
 import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlock;
 import com.nolanbaker.pgmodernized.device.meter.LineVoltmeterBlock;
+import com.nolanbaker.pgmodernized.device.drive.ThreePhaseDriveBlock;
+import com.nolanbaker.pgmodernized.device.motor.ThreePhaseMotorBlock;
+import com.nolanbaker.pgmodernized.device.motor.ThreePhaseMotorBlockEntity;
+import com.simibubi.create.api.stress.BlockStressValues;
+import net.minecraft.world.level.block.Blocks;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlock;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerKind;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerMount;
@@ -163,6 +168,32 @@ public class ModBlocks {
     public static BlockEntry<TransformerBlock> transformer(TransformerMount mount, TransformerKind kind) {
         return TRANSFORMERS.get(mount).get(kind);
     }
+
+    /** Three-phase induction motor: a Create generator whose speed follows the supply frequency. */
+    public static final BlockEntry<ThreePhaseMotorBlock> THREE_PHASE_MOTOR = REGISTRATE.block("three_phase_motor", ThreePhaseMotorBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(() -> Blocks.IRON_BLOCK)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .onRegister(block -> BlockStressValues.CAPACITIES.register(block, () -> ThreePhaseMotorBlockEntity.STRESS_CAPACITY))
+            .onRegister(BlockStressValues.setGeneratorSpeed(256, true))
+            .lang("Three-Phase Motor")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** Three-phase variable frequency drive. */
+    public static final BlockEntry<ThreePhaseDriveBlock> THREE_PHASE_DRIVE = REGISTRATE.block("three_phase_drive", ThreePhaseDriveBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Three-Phase Drive")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
 
     // ---- conduit system ----
 

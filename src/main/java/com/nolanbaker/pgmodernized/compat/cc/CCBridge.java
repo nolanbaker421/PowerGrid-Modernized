@@ -1,6 +1,9 @@
 package com.nolanbaker.pgmodernized.compat.cc;
 
 import com.nolanbaker.pgmodernized.compat.cc.ctcabinet.CtCabinetPeripheral;
+import com.nolanbaker.pgmodernized.compat.cc.drive.ThreePhaseDrivePeripheral;
+import com.nolanbaker.pgmodernized.compat.cc.motor.ThreePhaseMotorPeripheral;
+import com.nolanbaker.pgmodernized.device.drive.ThreePhaseDriveBlockEntity;
 import com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlockEntity;
 import com.nolanbaker.pgmodernized.compat.cc.analogio.AnalogIOPeripheral;
 import com.nolanbaker.pgmodernized.compat.cc.meter.ClampMeterPeripheral;
@@ -43,6 +46,10 @@ public class CCBridge {
                 (be, direction) -> new LineAmmeterPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.CT_CABINET.get(),
                 (be, direction) -> new CtCabinetPeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.THREE_PHASE_MOTOR.get(),
+                (be, direction) -> new ThreePhaseMotorPeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.THREE_PHASE_DRIVE.get(),
+                (be, direction) -> new ThreePhaseDrivePeripheral(be));
 
         // The standalone jack behaves like a piece of CC cable towards its neighbours.
         // Device jacks deliberately do not: a modem next to a device already sees it as a local peripheral.
@@ -66,6 +73,8 @@ public class CCBridge {
             return new LineAmmeterPeripheral(meter);
         if(be instanceof CtCabinetBlockEntity cabinet)
             return new CtCabinetPeripheral(cabinet);
+        if(be instanceof ThreePhaseDriveBlockEntity drive)
+            return new ThreePhaseDrivePeripheral(drive);
         return null;
     }
 }

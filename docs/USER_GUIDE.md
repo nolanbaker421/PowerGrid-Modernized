@@ -296,6 +296,35 @@ Right-click the cabinet with an empty hand to open it: the readings sit above th
 Goggles show the same lines. Energy is kept when the world reloads and can be zeroed from a
 computer. The cabinet has a Cat6 jack for the network.
 
+### Three-Phase Motor (AC build)
+
+A Create generator like Power Grid's electric motor, with three terminals U, V, W on the terminal
+box at the back and the shaft out of the front. Feed it three phases (from three alternators at
+0°, 120°, 240°, a three-phase transformer, or the Three-Phase Drive):
+
+- It turns at the **synchronous speed**, 60 × frequency / pole pairs, less up to 5% slip at full
+  load. Set the pole pairs on the value box on the terminal-box end: one pole pair gives 270 rpm at
+  4.5 Hz, the speed of the alternator feeding it.
+- The **phase sequence** sets the direction: U-V-W forward, U-W-V reverse. Swap two phases, or use
+  the drive's reverse, to turn it the other way. With one phase missing or on DC it does not turn.
+- It needs about 12 V per hertz per phase for full excitation and stalls below a fifth of that.
+- Loaded windings draw more current, as Power Grid's motor does. It heats and can burn out.
+- Goggles show frequency, sequence, phase voltage and current, pole pairs and synchronous speed.
+
+### Three-Phase Drive (AC build)
+
+A variable frequency drive in the DC VFD's form: floor-mounted, wrench-rotated, with two conduit
+knockouts and a Cat6 jack. Three-phase in on L1, L2, L3 (DC across two of them works too); three
+phases out on U, V, W.
+
+- Set the **frequency** on the value box on top (whole hertz, 0 to 30) or from a computer.
+- The output holds the **rated volts per hertz** (120 V at 10 Hz by default) up to the rated
+  voltage, capped at what the input can supply (about 0.58 × the input line voltage).
+- Changes **ramp** at 5 Hz/s by default. Disabling ramps to a stop.
+- **Reverse** swaps the phase sequence, so a motor on it runs backwards.
+- Whatever real power the output delivers, plus a little idle, is drawn from the input, so a
+  weak source sags.
+
 ### Clamp Meter
 
 Reads the current in any Power Grid wire that passes through its jaw, without being in the circuit.
@@ -377,6 +406,20 @@ coordinates prefixed by `n`, so `peripheral.find("powergrid_vfd")` or
 | `getReadings()` | Table 1..4 of {voltage, current, power, powerFactor, energy} |
 | `resetEnergy()` | Zero the counters |
 
+**powergrid_three_phase_drive** (AC build)
+
+| Method | Meaning |
+| --- | --- |
+| `setFrequency(hz)` / `getFrequency()` | Commanded frequency; a negative value hands control back to the value box |
+| `getOutputFrequency()` | Frequency the output is running at, following the ramp |
+| `setRatedVoltage(v)` / `setRatedFrequency(hz)` | The volts-per-hertz base (120 V at 10 Hz by default) |
+| `setRampRate(hzPerSecond)` | Acceleration and deceleration |
+| `setEnabled(bool)` / `setReversed(bool)` | Run or coast to a stop; swap the phase sequence |
+| `getOutputVoltage()` / `getOutputCurrent()` / `getInputVoltage()` / `getInputCurrent()` / `getPower()` | Live readings, RMS |
+
+**powergrid_three_phase_motor** (AC build; from an adjacent modem): `getFrequency()`, `getVoltage()`,
+`getCurrent()`, `getSequence()` (1, -1 or 0), `getSpeed()`, `getSynchronousSpeed()`, `getPolePairs()`.
+
 **powergrid_clamp_meter**: `getCurrent()`, `isClamped()`, `getWireCount()`.
 
 **powergrid_ammeter**: `getCurrent()` (signed, IN to OUT), `getPower()` (shunt loss).
@@ -397,6 +440,8 @@ its signature. Methods match the ComputerCraft ones, plus:
 - **Clamp meter and ammeter**: `setChangeThreshold(amps)` for a `current_change` signal.
 - **Voltmeter**: `setChangeThreshold(volts)` for a `voltage_change` signal.
 - **CT cabinet**: `setChangeThreshold(watts)` for a `power_change` signal on total power.
+- **Three-phase drive** and **motor**: the same methods as their ComputerCraft peripherals, as components
+  `powergrid_three_phase_drive` and `powergrid_three_phase_motor`.
 
 When OpenComputers is present, Power Grid's own blocks also become read-only components for an
 adapter placed next to them:

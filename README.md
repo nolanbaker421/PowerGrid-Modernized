@@ -180,6 +180,13 @@ What the branch changes:
   variable transformer.
 - The split-phase and three-phase transformers carry the phases (a delta-star bank shifts 30°), and
   their goggle readings are RMS.
+- **Three-Phase Motor** and **Three-Phase Drive** (AC build only). The motor is a Create generator
+  with U, V, W terminals: its speed is the synchronous speed for its pole-pair setting (value box on
+  the terminal box) at the supply frequency, less a little slip under load, in the direction the
+  phase sequence dictates. The drive takes three-phase (or DC) in on L1, L2, L3 and puts out three
+  phases at the frequency on its value box or a computer command (`powergrid_three_phase_drive`),
+  holding the rated volts per hertz, ramping at a set rate, reversible; the real power it delivers
+  is drawn from its input.
 - On a direct-current network every reading is the same number the main build reports.
 
 Installing: in `mods/`, replace `powergrid-mc1.21.1-0.6.2.jar` with
