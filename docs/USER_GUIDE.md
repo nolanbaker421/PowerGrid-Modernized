@@ -241,31 +241,28 @@ how many sections share it.
 
 ### Transformers
 
-Six one-block transformers, in two windings and three mounts. All have a **turns ratio** on the
-value box on the front: scroll it (or click it for the board) through 1:60, 1:30 ... 1:2, 1:1,
-2:1 ... 60:1, primary : secondary.
+Fourteen nameplates, each a fixed high-side and low-side voltage, in four kinds of housing sized
+after Create: PowerPlantGrid. A unit is one block whose model spills into the blocks around it;
+those cells are filled with invisible parts that break with the unit, so place it with the room
+free (a tank needs the block above, the substation units a ring around them).
 
-| Mount | Wiring |
-| --- | --- |
-| Dry-Type (indoor cabinet, two blocks tall) | conduit knockouts, four underneath and four low on the front; splice inside like a panel |
-| Pad-Mount (oil tank on a skid, two blocks tall, radiators, bushings on the lid) | knockouts in two rows of four on the front |
-| Pole-Mount (a can hung on a pole; the bank is three cans across three blocks) | bushings for hanging wire: HV on the lid, LV studs on the front |
+| Housing | Nameplates | Wiring |
+| --- | --- | --- |
+| Pole can | 480 V/240 V, 1 kV/240 V, 10 kV/240 V, 35 kV/240 V | Stand it on the ground or place it against a pole to hang it. Hanging wire on the HV bushings on the lid (H1, H2) and the LV studs on the front (X1, N, X2). |
+| Pad tank | 1 kV/240 V, 10 kV/240 V, 1 kV/208 V, 10 kV/208 V, 10 kV/480 V | Hanging wire on the lid bushings: tall HV at the back, short LV at the front. |
+| Substation | 35 kV/480 V, 35 kV/10 kV, 100 kV/35 kV | Same, on a much bigger tank with radiators. |
+| Dry-type cabinet | 480 V/240 V, 480 V/208 V | Conduit knockouts underneath and low on the front; splice inside like a panel. |
 
-- **Split-Phase**: primary H1, H2; centre-tapped secondary X1, N, X2. Each half is half the ratio,
-  so on a 1:2 unit 120 V in gives X1 at +120 V and X2 at -120 V against N: 120/240 V, ready for a
-  split-phase panel (X1 to L1, X2 to L2, N to Neutral).
-- **Three-Phase**: delta primary H1, H2, H3; star secondary X1, X2, X3 and neutral X0. The
-  secondary phase voltage is the ratio times the primary line voltage, shifted 30° (a delta-star
-  bank). Feed a three-phase panel with X1..X3 to L1..L3 and X0 to Neutral.
-- The three-phase pole bank is three cans on a crossarm: H1..H3 on top, X1..X3 on the fronts, X0
-  low on the middle can.
-- Goggles show the ratio and each secondary leg's voltage against the neutral and its current.
-- Sizes follow Create: PowerPlantGrid. Ground units take the block above them, the pole bank the
-  blocks either side; place them with that room free. Breaking any part takes the whole unit.
-
-On the regular (DC) Power Grid these pass DC at the ratio, as Power Grid's own transformer does.
-On the AC build they carry the phases; a delta primary needs a three-wire three-phase source (three
-alternators at 0°, 120°, 240°).
+- A 240 V low side is split-phase: X1 and X2 are 120 V either side of the centre tap N. A 208 V or
+  480 V low side is three-phase line-to-line: X1, X2, X3 are 120 V (or 277 V) each against X0, from
+  a delta primary H1, H2, H3.
+- **Taps**: two value boxes on the front of the base block, HV on the left and LV on the right.
+  Scroll or click them to move that winding in 2.5% steps up to 10% either way. Changing a tap
+  while that winding is live arcs and shocks you: there is no on-load tap changer.
+- Goggles show the taps and their voltages, the kVA rating and low-side current, and each leg's
+  voltage against neutral and its current.
+- On the regular (DC) Power Grid these pass DC at the ratio, as Power Grid's own transformer does.
+  On the AC build they carry the phases.
 
 ---
 
@@ -452,6 +449,6 @@ adapter placed next to them:
 | 2-pole / 3-pole breakers | two or three single-pole breakers of one frame and an iron nugget, shapeless |
 | Copper Bus Bar (4) | three copper blocks in a row |
 | Switchgear Section | bus bars either side of a 400 A three-phase panel, iron plates above and below, a bus bar top centre |
-| Transformers | copper coils either side of a transformer core; iron plates above and below for the dry-type, smooth stone below for the pad-mount, an iron plate above and below for the pole can; three pole cans and an iron plate make the three-phase bank |
+| Transformers | copper coils either side of a transformer core, bigger housings with more of each; iron plates for cans and cabinets, smooth stone under the tanks |
 
 Look the rest up in the recipe book; every recipe unlocks from its main ingredient.

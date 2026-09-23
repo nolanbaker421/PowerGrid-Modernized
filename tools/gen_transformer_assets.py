@@ -3,59 +3,87 @@
 
 Run from the repository root:  python tools/gen_transformer_assets.py
 
-Geometry mirrors TransformerGeometry.java; change both. North frame like the breaker panel: the
-back (wall or pole) is the south side, the front faces north, +x is on the viewer's left. The
-ground units are two blocks tall in one model (y up to 32); the three-phase pole bank is three
-cans across three blocks (x from -16 to 32). Sized after Create: PowerPlantGrid's transformers.
+Geometry mirrors TransformerGeometry.java (sizes) and TransformerSpec.java (nameplates); change
+both. North frame: the back (wall or pole) is the south side, the front faces north, +x on the
+viewer's left. Models reach into neighbouring cells (-16..32 px), which the game allows; the
+matching filler blocks carry the collision there. Sized after Create: PowerPlantGrid.
 """
 import os
 
-from gen_breaker_panel_assets import ASSETS, DATA, MOD, canvas, dump, element, fill, loot_table, recipe, recipe_shapeless, shade, write_png
+from gen_breaker_panel_assets import ASSETS, DATA, MOD, canvas, dump, element, fill, loot_table, recipe, shade, write_png
 
 HUB_U = [3.5, 6.5, 9.5, 12.5]
-KINDS = ["split", "3ph"]
 
-DRY_BODY = (2, 0, 4, 14, 30, 16)
-PAD_SKID = (0, 0, 0, 16, 1.5, 16)
-PAD_TANK = (1.5, 1.5, 1.5, 14.5, 26, 14.5)
-PAD_LID = (0.5, 26, 0.5, 15.5, 28, 15.5)
-CAN = (3.75, 0, 6, 12.25, 12, 16)
-CAN_LID = (3.5, 12, 5.75, 12.5, 13, 16)
-CAN_PRIMARIES = [(4.75, 13, 10.25, 6.75, 16, 12.25), (9.25, 13, 10.25, 11.25, 16, 12.25)]
-CAN_SECONDARIES = [(4.5, 4, 5, 6, 5.5, 6), (7.25, 4, 5, 8.75, 5.5, 6), (10, 4, 5, 11.5, 5.5, 6)]
-BANK_PRIMARIES = [(4.5, 13, 10.25, 6, 16, 12.25), (7.25, 13, 10.25, 8.75, 16, 12.25), (10, 13, 10.25, 11.5, 16, 12.25)]
-BANK_SECONDARIES = [(4.5, 8, 5, 6, 9.5, 6), (7.25, 8, 5, 8.75, 9.5, 6), (10, 8, 5, 11.5, 9.5, 6), (7.25, 3.5, 5, 8.75, 5, 6)]
+# id, kind (2 or 3 phases), size
+SPECS = [
+    ("pole_480v_240v", 2, "POLE_S"), ("pole_1kv_240v", 2, "POLE_M"), ("pole_10kv_240v", 2, "POLE_M"), ("pole_35kv_240v", 2, "POLE_L"),
+    ("pad_1kv_240v", 2, "PAD"), ("pad_10kv_240v", 2, "PAD"), ("pad_1kv_208v", 3, "PAD"), ("pad_10kv_208v", 3, "PAD"), ("pad_10kv_480v", 3, "PAD"),
+    ("sub_35kv_480v", 3, "POWER_S"), ("sub_35kv_10kv", 3, "POWER_S"), ("sub_100kv_35kv", 3, "POWER_L"),
+    ("dry_480v_240v", 2, "DRY"), ("dry_480v_208v", 3, "DRY"),
+]
+POLES = {"POLE_S", "POLE_M", "POLE_L"}
 
-
-def name_of(mount, kind):
-    return "transformer_%s_%s" % (mount, kind)
-
-
-def hubs(mount):
-    out = []
-    if mount == "dry":
-        for u in HUB_U:
-            x = 16 - u
-            out += [(x - 1, 0, 9, x + 1, 1, 11), (x - 1, 3, 3, x + 1, 5, 4)]
-    elif mount == "pad":
-        for u in HUB_U:
-            x = 16 - u
-            out += [(x - 1, 3, 0.5, x + 1, 5, 1.5), (x - 1, 8, 0.5, x + 1, 10, 1.5)]
-    return out
+BODY = {
+    "POLE_S": (4.5, 0, 3.5, 11.5, 10.5, 11.5), "POLE_M": (3.75, 0, 2.75, 12.25, 12, 12.25), "POLE_L": (2.5, 0, 1.5, 13.5, 18, 13.5),
+    "PAD": (-3, 2, -1, 19, 18, 17), "POWER_S": (-7.5, 3.5, -2.5, 23.5, 24.5, 18.5), "POWER_L": (-10, 3.5, -4.5, 26, 24.5, 20.5),
+    "DRY": (2, 0, 4, 14, 30, 16),
+}
+LID = {
+    "POLE_S": (4.25, 10.5, 3.25, 11.75, 11.5, 11.75), "POLE_M": (3.5, 12, 2.5, 12.5, 13, 12.5), "POLE_L": (2.25, 18, 1.25, 13.75, 19.5, 13.75),
+    "PAD": (-4, 18, -2, 20, 19.5, 18), "POWER_S": (-9, 24.5, -4, 25, 27, 20), "POWER_L": (-11.5, 24.5, -6, 27.5, 27, 22), "DRY": None,
+}
+SKID = {"PAD": (-4, 0, -2, 20, 2, 18), "POWER_S": (-9, 0, -4, 25, 3.5, 20), "POWER_L": (-11.5, 0, -6, 27.5, 3.5, 22)}
+HUNG_SHIFT = {"POLE_S": (0, 2, 4.5), "POLE_M": (0, 0, 3.75), "POLE_L": (0, 9, 2.5)}
+HV_X = {"POLE_S": [10.25, 5.75], "POLE_M": [10.25, 5.75], "POLE_L": [11.5, 4.5],
+        ("PAD", 2): [12, 4], ("PAD", 3): [14, 8, 2], "POWER_S": [18, 8, -2], "POWER_L": [20, 8, -4]}
+LV_X = {"POLE_S": [10.25, 8, 5.75], "POLE_M": [10.75, 8, 5.25], "POLE_L": [11.5, 8, 4.5],
+        ("PAD", 3): [14, 8, 2], ("PAD", 4): [15.5, 10.5, 5.5, 0.5], "POWER_S": [19, 11.67, 4.33, -3], "POWER_L": [21, 12.33, 3.67, -5]}
 
 
-def bushing(x1, y1, z1, x2, y2, z2, texture):
-    """A porcelain bushing: stacked, tapering skirts up to a cap."""
+def hv_x(size, count):
+    return HV_X[(size, count)] if (size, count) in HV_X else HV_X[size]
+
+
+def lv_x(size, count):
+    return LV_X[(size, count)] if (size, count) in LV_X else LV_X[size]
+
+
+def hv_bushing(size, i, count):
+    x = hv_x(size, count)[i]
+    top = LID[size][4]
+    return {
+        "POLE_S": (x - 0.75, top, 8, x + 0.75, top + 2, 9.5), "POLE_M": (x - 1, top, 8.75, x + 1, top + 3, 10.75),
+        "POLE_L": (x - 1, top, 9.5, x + 1, top + 3, 11.5), "PAD": (x - 2.5, top, 10.5, x + 2.5, 28, 15.5),
+        "POWER_S": (x - 2.5, top, 12.5, x + 2.5, 32, 17.5), "POWER_L": (x - 2.5, top, 14.5, x + 2.5, 32, 19.5),
+    }[size]
+
+
+def lv_bushing(size, j, count):
+    x = lv_x(size, count)[j]
+    z1 = BODY[size][2]
+    return {
+        "POLE_S": (x - 0.75, 3.5, z1 - 1, x + 0.75, 4.75, z1), "POLE_M": (x - 0.75, 4, z1 - 1, x + 0.75, 5.5, z1),
+        "POLE_L": (x - 0.75, 6, z1 - 1, x + 0.75, 7.5, z1), "PAD": (x - 1.5, 19.5, 0.5, x + 1.5, 24, 3.5),
+        "POWER_S": (x - 1.5, 27, -1.5, x + 1.5, 30, 1.5), "POWER_L": (x - 1.5, 27, -3.5, x + 1.5, 30, -0.5),
+    }[size]
+
+
+def shift(box, by):
+    return (box[0] + by[0], box[1] + by[1], box[2] + by[2], box[3] + by[0], box[4] + by[1], box[5] + by[2])
+
+
+def stack(box, texture, steps=3, cap=1.5):
+    """A porcelain bushing: tapering skirts up to a brass cap."""
+    x1, y1, z1, x2, y2, z2 = box
     cx, cz = (x1 + x2) / 2, (z1 + z2) / 2
     w, d = (x2 - x1) / 2, (z2 - z1) / 2
-    h = y2 - y1
-    steps = 3
+    h = (y2 - cap) - y1
     els = []
     for i in range(steps):
-        f = 1 - 0.18 * i
+        f = 1 - 0.15 * i
         ya, yb = y1 + h * i / steps, y1 + h * (i + 1) / steps
         els.append(element(cx - w * f, ya, cz - d * f, cx + w * f, yb, cz + d * f, texture))
-    els.append(element(cx - w * 0.5, y2 - 0.75, cz - d * 0.5, cx + w * 0.5, y2, cz + d * 0.5, "#cap"))
+    els.append(element(cx - w * 0.55, y2 - cap, cz - d * 0.55, cx + w * 0.55, y2, cz + d * 0.55, "#cap"))
     return els
 
 
@@ -76,30 +104,32 @@ def textures():
     grey = (0x9a, 0x9e, 0xa4)
     front = plain("transformer_dry_front", grey)
     for y in range(3, 13, 2):
-        fill(front, 3, y, 13, y + 1, shade(grey, 0.6))      # vent slots
-    fill(front, 6, 13, 10, 14, (0xd8, 0xc0, 0x30))            # nameplate
+        fill(front, 3, y, 13, y + 1, shade(grey, 0.6))
+    fill(front, 6, 13, 10, 14, (0xd8, 0xc0, 0x30))
     write_png(os.path.join(tex, "transformer_dry_front.png"), front)
     plain("transformer_dry_side", grey)
 
-    tank = (0x4c, 0x52, 0x50)
+    tank = (0x56, 0x5c, 0x5e)
     plain("transformer_tank", tank, 0.55, 1.2)
+    dark = (0x3e, 0x42, 0x46)
+    plain("transformer_tank_dark", dark, 0.55, 1.25)
     fin = canvas(16, 16, shade(tank, 0.8) + (255,))
     for y in range(0, 16, 2):
         fill(fin, 0, y, 16, y + 1, shade(tank, 1.05))
     write_png(os.path.join(tex, "transformer_fin.png"), fin)
-    skid = plain("transformer_skid", (0x2e, 0x30, 0x34), 0.6, 1.3)
-    lid = plain("transformer_lid", shade(tank, 1.15), 0.7, 1.1)
+    plain("transformer_skid", (0x2a, 0x2c, 0x30), 0.6, 1.3)
+    plain("transformer_lid", shade(tank, 1.15), 0.7, 1.1)
 
-    drum = (0xd8, 0xdc, 0xdc)
-    can = canvas(16, 16, drum + (255,))
+    white = (0xe4, 0xe6, 0xe4)
+    can = canvas(16, 16, white + (255,))
     for x in range(16):
-        fill(can, x, 0, x + 1, 16, shade(drum, 0.78 + 0.32 * (1 - abs(x - 7.5) / 7.5)))
-    fill(can, 0, 0, 16, 1, shade(drum, 1.05))
-    fill(can, 0, 15, 16, 16, shade(drum, 0.5))
-    fill(can, 0, 5, 16, 6, shade(drum, 0.7))
-    fill(can, 0, 11, 16, 12, shade(drum, 0.7))
+        fill(can, x, 0, x + 1, 16, shade(white, 0.72 + 0.3 * (1 - abs(x - 7.5) / 7.5)))
+    fill(can, 0, 0, 16, 1, shade(white, 1.02))
+    fill(can, 0, 15, 16, 16, shade(white, 0.5))
+    fill(can, 0, 5, 16, 6, shade(white, 0.72))
+    fill(can, 0, 11, 16, 12, shade(white, 0.72))
     write_png(os.path.join(tex, "transformer_can.png"), can)
-    plain("transformer_can_lid", shade(drum, 0.85), 0.6, 1.05)
+    plain("transformer_can_lid", shade(white, 0.8), 0.6, 1.05)
 
     porcelain = (0x8a, 0x8e, 0x92)
     bush = canvas(16, 16, porcelain + (255,))
@@ -111,100 +141,95 @@ def textures():
     plain("transformer_cap", (0xb8, 0x73, 0x33), 0.6, 1.2)
 
 
-# ---------------------------------------------------------------- models
-
-def write_block(name, model, item_parent=None):
-    dump(os.path.join(ASSETS, "models", "block", name + ".json"), model)
-    dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s" % (MOD, item_parent or name)})
-    m = "%s:block/%s" % (MOD, name)
-    dump(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": {
-        "facing=north": {"model": m}, "facing=east": {"model": m, "y": 90},
-        "facing=south": {"model": m, "y": 180}, "facing=west": {"model": m, "y": 270},
-    }})
-    loot_table(name)
-
-
 TEX = {
-    "front": "%s:block/transformer_dry_front" % MOD,
-    "side": "%s:block/transformer_dry_side" % MOD,
-    "tank": "%s:block/transformer_tank" % MOD,
-    "fin": "%s:block/transformer_fin" % MOD,
-    "skid": "%s:block/transformer_skid" % MOD,
-    "lid": "%s:block/transformer_lid" % MOD,
-    "can": "%s:block/transformer_can" % MOD,
-    "canlid": "%s:block/transformer_can_lid" % MOD,
-    "bushing": "%s:block/transformer_bushing" % MOD,
-    "cap": "%s:block/transformer_cap" % MOD,
+    "front": "%s:block/transformer_dry_front" % MOD, "side": "%s:block/transformer_dry_side" % MOD,
+    "tank": "%s:block/transformer_tank" % MOD, "dark": "%s:block/transformer_tank_dark" % MOD,
+    "fin": "%s:block/transformer_fin" % MOD, "skid": "%s:block/transformer_skid" % MOD, "lid": "%s:block/transformer_lid" % MOD,
+    "can": "%s:block/transformer_can" % MOD, "canlid": "%s:block/transformer_can_lid" % MOD,
+    "bushing": "%s:block/transformer_bushing" % MOD, "cap": "%s:block/transformer_cap" % MOD,
     "terminal": "%s:block/panel_terminal" % MOD,
 }
 
 
-def dry_model(kind):
-    name = name_of("dry", kind)
-    elements = [element(*DRY_BODY, "#side", cull_south=True)]
-    elements[0]["faces"]["north"]["texture"] = "#front"
-    for h in hubs("dry"):
-        elements.append(element(*h, "#terminal"))
-    # A vent band up top; the three-phase unit gets a second nameplate stripe.
-    elements.append(element(3, 20, 3.75, 13, 27, 4, "#fin"))
-    if kind == "3ph":
-        elements.append(element(4, 17, 3.75, 12, 18, 4, "#cap"))
-    write_block(name, {"parent": "block/block", "textures": dict(TEX, particle=TEX["side"]), "elements": elements})
+# ---------------------------------------------------------------- models
 
-
-def pad_model(kind):
-    name = name_of("pad", kind)
-    elements = [element(*PAD_SKID, "#skid"), element(*PAD_TANK, "#tank"), element(*PAD_LID, "#lid")]
-    # Radiator fins down both sides of the tank.
-    for z in (2.5, 4.5, 6.5, 8.5, 10.5, 12.5):
-        elements.append(element(0, 4, z, 1.5, 22, z + 1, "#fin"))
-        elements.append(element(14.5, 4, z, 16, 22, z + 1, "#fin"))
-    for h in hubs("pad"):
-        elements.append(element(*h, "#terminal"))
-    # Bushings on the lid: HV stacks along the back, LV shorter ones along the front.
-    hv = 3 if kind == "3ph" else 2
-    lv = 4 if kind == "3ph" else 3
-    for i in range(hv):
-        x = 16 - (3.5 + 9 * i / max(1, hv - 1))
-        elements += bushing(x - 1, 28, 11.5, x + 1, 32, 13.5, "#bushing")
-    for i in range(lv):
-        x = 16 - (3 + 10 * i / max(1, lv - 1))
-        elements += bushing(x - 0.75, 28, 3, x + 0.75, 30.5, 4.5, "#bushing")
-    elements.append(element(6, 10, 1.25, 10, 13, 1.5, "#cap"))     # nameplate
-    write_block(name, {"parent": "block/block", "textures": dict(TEX, particle=TEX["tank"]), "elements": elements})
-
-
-def can_elements(dx, primaries, secondaries):
-    els = [element(CAN[0] + dx, CAN[1], CAN[2], CAN[3] + dx, CAN[4], CAN[5], "#can"),
-           element(CAN_LID[0] + dx, CAN_LID[1], CAN_LID[2], CAN_LID[3] + dx, CAN_LID[4], CAN_LID[5], "#canlid"),
-           element(7 + dx, 12, 15, 9, 14, 16.5, "#skid")]      # hanger bracket to the pole
-    for b in primaries:
-        els += bushing(b[0] + dx, b[1], b[2], b[3] + dx, b[4], b[5], "#bushing")
-    for b in secondaries:
-        els.append(element(b[0] + dx, b[1], b[2], b[3] + dx, b[4], b[5], "#cap"))
+def unit_elements(size, phases, hung):
+    by = HUNG_SHIFT[size] if hung and size in HUNG_SHIFT else (0, 0, 0)
+    primaries = phases
+    secondaries = 3 if phases == 2 else 4
+    els = []
+    if size == "DRY":
+        e = element(*BODY[size], "#side", cull_south=True)
+        e["faces"]["north"]["texture"] = "#front"
+        els.append(e)
+        els.append(element(3, 20, 3.75, 13, 27, 4, "#fin"))
+        if phases == 3:
+            els.append(element(4, 17, 3.75, 12, 18, 4, "#cap"))
+        for u in HUB_U:
+            x = 16 - u
+            els.append(element(x - 1, 0, 9, x + 1, 1, 11, "#terminal"))
+            els.append(element(x - 1, 3, 3, x + 1, 5, 4, "#terminal"))
+        return els
+    is_pole = size in POLES
+    body_tex = "#can" if is_pole else ("#dark" if size == "POWER_L" else "#tank")
+    lid_tex = "#canlid" if is_pole else "#lid"
+    if size in SKID:
+        els.append(element(*SKID[size], "#skid"))
+    els.append(element(*shift(BODY[size], by), body_tex))
+    els.append(element(*shift(LID[size], by), lid_tex))
+    if size in ("POWER_S", "POWER_L"):
+        # Radiator banks down both sides.
+        x1, _, z1, x2, _, z2 = SKID[size]
+        for z in range(int(z1) + 2, int(z2) - 2, 3):
+            els.append(element(x1, 7, z, BODY[size][0], 21, z + 1.5, "#fin"))
+            els.append(element(BODY[size][3], 7, z, x2, 21, z + 1.5, "#fin"))
+    for i in range(primaries):
+        els += stack(shift(hv_bushing(size, i, primaries), by), "#bushing", cap=1 if is_pole else 2)
+    for j in range(secondaries):
+        b = shift(lv_bushing(size, j, secondaries), by)
+        if is_pole:
+            els.append(element(*b, "#cap"))                       # a stud on the front
+        else:
+            els += stack(b, "#bushing", steps=2, cap=1.5)
+    if is_pole:
+        # Hanger bracket to the pole.
+        top = LID[size][4] + by[1]
+        els.append(element(7, top - 2, 15, 9, top, 16.5, "#skid"))
+    else:
+        els.append(element(6, 10, BODY[size][2] - 0.25, 10, 13, BODY[size][2], "#cap"))   # nameplate
     return els
 
 
-def pole_model(kind):
-    name = name_of("pole", kind)
-    if kind == "split":
-        elements = can_elements(0, CAN_PRIMARIES, CAN_SECONDARIES)
+def unit(spec_id, phases, size):
+    name = "transformer_" + spec_id
+    standing = {"parent": "block/block", "textures": dict(TEX, particle=TEX["can"] if size in POLES else TEX["tank"]), "elements": unit_elements(size, phases, False)}
+    dump(os.path.join(ASSETS, "models", "block", name + ".json"), standing)
+    dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s" % (MOD, name),
+         "display": {"gui": {"rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.4, 0.4, 0.4]}}})
+    models = {False: "%s:block/%s" % (MOD, name)}
+    if size in POLES:
+        hung = dict(standing, elements=unit_elements(size, phases, True))
+        dump(os.path.join(ASSETS, "models", "block", name + "_hung.json"), hung)
+        models[True] = "%s:block/%s_hung" % (MOD, name)
     else:
-        elements = []
-        # Outer cans carry the bank's other two phases; only the middle can has terminals.
-        for dx in (-16, 16):
-            elements += can_elements(dx, [CAN_PRIMARIES[0], CAN_PRIMARIES[1]], [])
-        elements += can_elements(0, BANK_PRIMARIES, BANK_SECONDARIES)
-        elements.append(element(-14, 13, 14.5, 30, 14.5, 16, "#skid"))    # crossarm
-    write_block(name, {"parent": "block/block", "textures": dict(TEX, particle=TEX["can"]), "elements": elements})
+        models[True] = models[False]
+    variants = {}
+    for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
+        for hung in (False, True):
+            v = {"model": models[hung]}
+            v.update(rot)
+            variants["facing=%s,hung=%s" % (facing, "true" if hung else "false")] = v
+    dump(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": variants})
+    loot_table(name)
 
 
 def filler():
     dump(os.path.join(ASSETS, "models", "block", "transformer_filler.json"), {"textures": {"particle": TEX["tank"]}})
     variants = {}
-    for facing in ("north", "east", "south", "west"):
-        for part in ("above", "left", "right"):
-            variants["facing=%s,part=%s" % (facing, part)] = {"model": "%s:block/transformer_filler" % MOD}
+    for ox in range(3):
+        for oy in range(2):
+            for oz in range(3):
+                variants["ox=%d,oy=%d,oz=%d" % (ox, oy, oz)] = {"model": "%s:block/transformer_filler" % MOD}
     dump(os.path.join(ASSETS, "blockstates", "transformer_filler.json"), {"variants": variants})
     dump(os.path.join(DATA, "loot_table", "blocks", "transformer_filler.json"), {"type": "minecraft:block", "pools": []})
 
@@ -216,22 +241,28 @@ def recipes():
     coil = {"item": "powergrid:copper_coil"}
     core = {"item": "powergrid:transformer_core"}
     stone = {"item": "minecraft:smooth_stone"}
+    copper = {"tag": "c:storage_blocks/copper"}
     unlock = {"items": "powergrid:transformer_core"}
-    recipe("transformer_dry_split", ["III", "CTC", "III"], {"I": iron, "C": coil, "T": core}, 1, unlock)
-    recipe("transformer_dry_3ph", ["CTC", "CTC", "CTC"], {"C": coil, "T": core}, 1, unlock)
-    recipe("transformer_pad_split", ["III", "CTC", "SSS"], {"I": iron, "C": coil, "T": core, "S": stone}, 1, unlock)
-    recipe("transformer_pad_3ph", ["CTC", "CTC", "SSS"], {"C": coil, "T": core, "S": stone}, 1, unlock)
-    recipe("transformer_pole_split", [" I ", "CTC", " I "], {"I": iron, "C": coil, "T": core}, 1, unlock)
-    recipe_shapeless("transformer_pole_3ph", [{"item": "%s:transformer_pole_split" % MOD}] * 3 + [iron], 1,
-                     {"items": "%s:transformer_pole_split" % MOD})
+    by_size = {
+        "POLE_S": (["I", "C", "T"], {"I": iron, "C": coil, "T": core}),
+        "POLE_M": ([" I ", "CTC", " I "], {"I": iron, "C": coil, "T": core}),
+        "POLE_L": (["III", "CTC", "CTC"], {"I": iron, "C": coil, "T": core}),
+        "PAD": (["III", "CTC", "SSS"], {"I": iron, "C": coil, "T": core, "S": stone}),
+        "POWER_S": (["CTC", "CTC", "SSS"], {"C": coil, "T": core, "S": stone}),
+        "POWER_L": (["CTC", "TTT", "SSS"], {"C": coil, "T": core, "S": stone}),
+        "DRY": (["III", "CTC", "III"], {"I": iron, "C": coil, "T": core}),
+    }
+    for spec_id, phases, size in SPECS:
+        pattern, key = by_size[size]
+        if phases == 3 and size != "POWER_L":
+            pattern = [row.replace("I", "C", 1) if "I" in row else row for row in pattern]
+        recipe("transformer_" + spec_id, pattern, key, 1, unlock)
 
 
 def main():
     textures()
-    for kind in KINDS:
-        dry_model(kind)
-        pad_model(kind)
-        pole_model(kind)
+    for spec_id, phases, size in SPECS:
+        unit(spec_id, phases, size)
     filler()
     recipes()
     print("transformer assets written")

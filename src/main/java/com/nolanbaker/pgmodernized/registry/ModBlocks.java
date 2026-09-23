@@ -12,8 +12,7 @@ import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlock;
 import com.nolanbaker.pgmodernized.device.meter.LineVoltmeterBlock;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlock;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerFillerBlock;
-import com.nolanbaker.pgmodernized.device.transformer.TransformerKind;
-import com.nolanbaker.pgmodernized.device.transformer.TransformerMount;
+import com.nolanbaker.pgmodernized.device.transformer.TransformerSpec;
 import com.nolanbaker.pgmodernized.device.vfd.VfdBlock;
 import com.nolanbaker.pgmodernized.network.NetworkJackBlock;
 import com.nolanbaker.pgmodernized.network.NetworkSwitchBlock;
@@ -150,7 +149,7 @@ public class ModBlocks {
                 .build()
             .register();
 
-    /** The invisible upper and side cells of the two-block and three-block transformers. */
+    /** The invisible cells of a transformer beyond its base block. */
     public static final BlockEntry<TransformerFillerBlock> TRANSFORMER_FILLER = REGISTRATE.block("transformer_filler", TransformerFillerBlock::new)
             .blockstate(NonNullBiConsumer.noop())
             .initialProperties(SharedProperties::softMetal)
@@ -159,32 +158,24 @@ public class ModBlocks {
             .lang("Transformer")
             .register();
 
-    /** Transformers by mount, then winding kind. */
-    public static final Map<TransformerMount, Map<TransformerKind, BlockEntry<TransformerBlock>>> TRANSFORMERS;
+    /** One block per nameplate. */
+    public static final Map<TransformerSpec, BlockEntry<TransformerBlock>> TRANSFORMERS;
 
     static {
-        var byMount = new EnumMap<TransformerMount, Map<TransformerKind, BlockEntry<TransformerBlock>>>(TransformerMount.class);
-        for(var mount : TransformerMount.values()) {
-            var byKind = new EnumMap<TransformerKind, BlockEntry<TransformerBlock>>(TransformerKind.class);
-            for(var kind : TransformerKind.values()) {
-                byKind.put(kind, REGISTRATE.block(TransformerBlock.id(mount, kind), p -> new TransformerBlock(p, kind, mount))
-                        .blockstate(NonNullBiConsumer.noop())
-                        .initialProperties(SharedProperties::softMetal)
-                        .properties(p -> p.noOcclusion())
-                        .transform(pickaxeOnly())
-                        .lang(mount.label() + " Transformer (" + kind.label() + ")")
-                        .item()
-                            .model(NonNullBiConsumer.noop())
-                            .build()
-                        .register());
-            }
-            byMount.put(mount, Collections.unmodifiableMap(byKind));
+        var map = new EnumMap<TransformerSpec, BlockEntry<TransformerBlock>>(TransformerSpec.class);
+        for(var spec : TransformerSpec.values()) {
+            map.put(spec, REGISTRATE.block(spec.id(), p -> new TransformerBlock(p, spec))
+                    .blockstate(NonNullBiConsumer.noop())
+                    .initialProperties(SharedProperties::softMetal)
+                    .properties(p -> p.noOcclusion())
+                    .transform(pickaxeOnly())
+                    .lang(spec.displayName())
+                    .item()
+                        .model(NonNullBiConsumer.noop())
+                        .build()
+                    .register());
         }
-        TRANSFORMERS = Collections.unmodifiableMap(byMount);
-    }
-
-    public static BlockEntry<TransformerBlock> transformer(TransformerMount mount, TransformerKind kind) {
-        return TRANSFORMERS.get(mount).get(kind);
+        TRANSFORMERS = Collections.unmodifiableMap(map);
     }
 
     // ---- conduit system ----

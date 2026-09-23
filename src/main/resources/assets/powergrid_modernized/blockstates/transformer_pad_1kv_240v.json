@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,hung=false": {
+      "model": "powergrid_modernized:block/transformer_pad_1kv_240v"
+    },
+    "facing=north,hung=true": {
+      "model": "powergrid_modernized:block/transformer_pad_1kv_240v"
+    },
+    "facing=east,hung=false": {
+      "model": "powergrid_modernized:block/transformer_pad_1kv_240v",
+      "y": 90
+    },
+    "facing=east,hung=true": {
+      "model": "powergrid_modernized:block/transformer_pad_1kv_240v",
+      "y": 90
+    },
+    "facing=south,hung=false": {
+      "model": "powergrid_modernized:block/transformer_pad_1kv_240v",
+      "y": 180
+    },
+    "facing=south,hung=true": {
+      "model": "powergrid_modernized:block/transformer_pad_1kv_240v",
+      "y": 180
+    },
+    "facing=west,hung=false": {
+      "model": "powergrid_modernized:block/transformer_pad_1kv_240v",
+      "y": 270
+    },
+    "facing=west,hung=true": {
+      "model": "powergrid_modernized:block/transformer_pad_1kv_240v",
+      "y": 270
+    }
+  }
+}

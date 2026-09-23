@@ -1,7 +1,9 @@
 package com.nolanbaker.pgmodernized.device.transformer;
 
+import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -10,59 +12,57 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * The cells of a transformer beyond its base block: invisible, its collision the part of the unit
- * that stands in that cell. It remembers which way the base lies, breaks with it, and gives the
- * base's item when picked.
+ * A cell of a transformer beyond its base block: invisible, its collision the part of the unit
+ * that stands in that cell. Its block entity answers for the base's terminals and circuit, so
+ * bushings in the cell above a tank take hanging wire. It remembers where the base is, breaks
+ * with it, and gives the base's item when picked.
  */
-public class TransformerFillerBlock extends Block {
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
-    public static final EnumProperty<TransformerGeometry.Part> PART = EnumProperty.create("part", TransformerGeometry.Part.class);
+public class TransformerFillerBlock extends Block implements EntityBlock {
+    /** World offset of the base from this cell, each stored as offset + 1. */
+    public static final IntegerProperty OX = IntegerProperty.create("ox", 0, 2);
+    public static final IntegerProperty OY = IntegerProperty.create("oy", 0, 1);
+    public static final IntegerProperty OZ = IntegerProperty.create("oz", 0, 2);
 
     public TransformerFillerBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH).setValue(PART, TransformerGeometry.Part.ABOVE));
+        registerDefaultState(defaultBlockState().setValue(OX, 1).setValue(OY, 1).setValue(OZ, 1));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, PART);
+        builder.add(OX, OY, OZ);
     }
 
-    /** The base block's position for a filler in that state at that position. */
+    /** A filler state for the cell at that world offset from its base. */
+    public static BlockState forOffset(BlockState filler, Vec3i cellOffset) {
+        return filler.setValue(OX, 1 - cellOffset.getX()).setValue(OY, 1 - cellOffset.getY()).setValue(OZ, 1 - cellOffset.getZ());
+    }
+
+    /** The base block's position. */
     public static BlockPos basePos(BlockPos pos, BlockState state) {
-        var facing = state.getValue(FACING);
-        return switch(state.getValue(PART)) {
-            case ABOVE -> pos.below();
-            // The viewer's left is +x in the north frame, which is the facing's clockwise side.
-            case LEFT -> pos.relative(facing.getClockWise().getOpposite());
-            case RIGHT -> pos.relative(facing.getClockWise());
-        };
-    }
-
-    /** Where the filler for a part of a base at that position goes. */
-    public static BlockPos partPos(BlockPos base, Direction facing, TransformerGeometry.Part part) {
-        return switch(part) {
-            case ABOVE -> base.above();
-            case LEFT -> base.relative(facing.getClockWise());
-            case RIGHT -> base.relative(facing.getClockWise().getOpposite());
-        };
+        return pos.offset(state.getValue(OX) - 1, state.getValue(OY) - 1, state.getValue(OZ) - 1);
     }
 
     @Nullable
     private static TransformerBlock base(BlockGetter level, BlockPos pos, BlockState state) {
         return level.getBlockState(basePos(pos, state)).getBlock() instanceof TransformerBlock block ? block : null;
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return ModBlockEntities.TRANSFORMER_FILLER.create(pos, state);
     }
 
     @Override
@@ -72,11 +72,13 @@ public class TransformerFillerBlock extends Block {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        var base = base(level, pos, state);
-        if(base == null)
+        var basePos = basePos(pos, state);
+        var baseState = level.getBlockState(basePos);
+        if(!(baseState.getBlock() instanceof TransformerBlock base))
             return box(2, 0, 2, 14, 12, 14);
-        var shape = TransformerGeometry.partShape(base.mount(), base.kind(), state.getValue(PART));
-        return TransformerBlock.rotateShape(shape, state.getValue(FACING));
+        var facing = TransformerBlock.facing(baseState);
+        var cell = TransformerGeometry.unrotateCell(pos.subtract(basePos), facing);
+        return TransformerGeometry.rotate(TransformerGeometry.cellShape(base.spec().size(), base.spec().kind(), TransformerBlock.hung(baseState), cell), facing);
     }
 
     /** Breaking the filler breaks the base, which drops the unit. */

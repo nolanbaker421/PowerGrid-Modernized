@@ -1,39 +1,57 @@
 {
   "variants": {
-    "facing=north,part=above": {
+    "ox=0,oy=0,oz=0": {
       "model": "powergrid_modernized:block/transformer_filler"
     },
-    "facing=north,part=left": {
+    "ox=0,oy=0,oz=1": {
       "model": "powergrid_modernized:block/transformer_filler"
     },
-    "facing=north,part=right": {
+    "ox=0,oy=0,oz=2": {
       "model": "powergrid_modernized:block/transformer_filler"
     },
-    "facing=east,part=above": {
+    "ox=0,oy=1,oz=0": {
       "model": "powergrid_modernized:block/transformer_filler"
     },
-    "facing=east,part=left": {
+    "ox=0,oy=1,oz=1": {
       "model": "powergrid_modernized:block/transformer_filler"
     },
-    "facing=east,part=right": {
+    "ox=0,oy=1,oz=2": {
       "model": "powergrid_modernized:block/transformer_filler"
     },
-    "facing=south,part=above": {
+    "ox=1,oy=0,oz=0": {
       "model": "powergrid_modernized:block/transformer_filler"
     },
-    "facing=south,part=left": {
+    "ox=1,oy=0,oz=1": {
       "model": "powergrid_modernized:block/transformer_filler"
     },
-    "facing=south,part=right": {
+    "ox=1,oy=0,oz=2": {
       "model": "powergrid_modernized:block/transformer_filler"
     },
-    "facing=west,part=above": {
+    "ox=1,oy=1,oz=0": {
       "model": "powergrid_modernized:block/transformer_filler"
     },
-    "facing=west,part=left": {
+    "ox=1,oy=1,oz=1": {
       "model": "powergrid_modernized:block/transformer_filler"
     },
-    "facing=west,part=right": {
+    "ox=1,oy=1,oz=2": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "ox=2,oy=0,oz=0": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "ox=2,oy=0,oz=1": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "ox=2,oy=0,oz=2": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "ox=2,oy=1,oz=0": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "ox=2,oy=1,oz=1": {
+      "model": "powergrid_modernized:block/transformer_filler"
+    },
+    "ox=2,oy=1,oz=2": {
       "model": "powergrid_modernized:block/transformer_filler"
     }
   }

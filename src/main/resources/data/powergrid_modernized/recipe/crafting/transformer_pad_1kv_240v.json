@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "C": {
+      "item": "powergrid:copper_coil"
+    },
+    "T": {
+      "item": "powergrid:transformer_core"
+    },
+    "S": {
+      "item": "minecraft:smooth_stone"
+    }
+  },
+  "pattern": [
+    "III",
+    "CTC",
+    "SSS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:transformer_pad_1kv_240v"
+  }
+}

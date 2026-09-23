@@ -21,20 +21,20 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.List;
 
 /**
- * Ideal couplings from the primary to each secondary leg, at the ratio set on the value box, with
- * a small winding resistance in series. Every leg carries a tiny shunt for its current and a
- * high-resistance sense branch to the neutral for its voltage, which the goggles show.
+ * Ideal couplings from the primary to each secondary leg at the nameplate ratio moved by the two
+ * taps, with a small winding resistance in series. Every leg carries a tiny shunt for its current
+ * and a high-resistance sense branch to the neutral for its voltage, which the goggles show.
  */
 public class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, IDeviceSpliceHost {
     public static final float SHUNT = 0.001f;
     public static final float SENSE = 1_000_000f;
 
     // No initialisers: buildCircuit and addBehaviours run from the superclass constructor.
-    private TransformerKind kind;
-    private TransformerMount mount;
+    private TransformerSpec spec;
     private TransformerBlock block;
     private DeviceSpliceHost deviceHubs;
-    private TransformerRatioBehaviour ratio;
+    private TransformerTapBehaviour hvTap;
+    private TransformerTapBehaviour lvTap;
     private TransformerCoupling[] couplings;
     private ElectricWire[] shunts;
     private ElectricWire[] senses;
@@ -49,18 +49,16 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
     }
 
     private void ensureInit() {
-        if(kind != null)
+        if(spec != null)
             return;
         var state = getBlockState();
         if(state != null && state.getBlock() instanceof TransformerBlock b) {
             block = b;
-            kind = b.kind();
-            mount = b.mount();
+            spec = b.spec();
         } else {
-            kind = TransformerKind.SPLIT_PHASE;
-            mount = TransformerMount.DRY;
+            spec = TransformerSpec.PAD_10KV_240V;
         }
-        int legs = kind.legs().length;
+        int legs = spec.kind().legs().length;
         couplings = new TransformerCoupling[legs];
         shunts = new ElectricWire[legs];
         senses = new ElectricWire[legs];
@@ -69,21 +67,20 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
         syncedAmps = new float[legs];
     }
 
-    public TransformerKind kind() {
+    public TransformerSpec spec() {
         ensureInit();
-        return kind;
+        return spec;
     }
 
-    public TransformerMount mount() {
-        ensureInit();
-        return mount;
+    public TransformerKind kind() {
+        return spec().kind();
     }
 
     @Override
     public DeviceSpliceHost deviceHubs() {
         if(deviceHubs == null) {
             ensureInit();
-            var layout = block != null ? block.layout() : new DeviceHubs.Layout(kind.pointCount(), 0, new int[0]);
+            var layout = block != null ? block.layout() : new DeviceHubs.Layout(spec.kind().pointCount(), 0, new int[0]);
             deviceHubs = new DeviceSpliceHost(this, layout);
         }
         return deviceHubs;
@@ -92,22 +89,29 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         ensureInit();
-        // Before the electric behaviour, whose construction builds the circuit at this ratio.
-        ratio = new TransformerRatioBehaviour(this, new TransformerRatioBehaviour.FrontBox(TransformerGeometry.valueBox(mount, kind)));
-        ratio.withCallback(i -> applyRatio());
-        behaviours.add(ratio);
+        // Before the electric behaviour, whose construction builds the circuit at these taps.
+        hvTap = new TransformerTapBehaviour(this, true);
+        hvTap.withCallback(i -> applyRatio());
+        lvTap = new TransformerTapBehaviour(this, false);
+        lvTap.withCallback(i -> applyRatio());
+        behaviours.add(hvTap);
+        behaviours.add(lvTap);
         super.addBehaviours(behaviours);
     }
 
     // ---- circuit ----
 
-    public int ratioIndex() {
-        return ratio == null ? TransformerRatio.UNITY : TransformerRatio.clamp(ratio.getValue());
+    public int hvTap() {
+        return hvTap == null ? 0 : hvTap.tap();
     }
 
-    /** Secondary volts per primary volt for one leg's coupling. */
-    private float legRatio(int leg) {
-        return TransformerRatio.value(ratioIndex()) * kind.legRatio(leg);
+    public int lvTap() {
+        return lvTap == null ? 0 : lvTap.tap();
+    }
+
+    /** Secondary volts per primary volt for each leg's coupling at the present taps. */
+    private float legRatio() {
+        return spec.legRatio(hvTap(), lvTap());
     }
 
     @Override
@@ -115,6 +119,7 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
         ensureInit();
         deviceHubs().buildCircuit(builder);
         float winding = resistance("winding");
+        var kind = spec.kind();
         var neutral = builder.terminalNode(kind.neutralTerminal());
         var legs = kind.legs();
         for(int i = 0; i < legs.length; ++i) {
@@ -124,22 +129,46 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
             var out = builder.terminalNode(kind.secondaryTerminal(legs[i]));
             var mid = builder.addInternalNode();
             couplings[i] = kind.reversed(i)
-                    ? builder.couple(legRatio(i), winding, p1, p2, neutral, mid)
-                    : builder.couple(legRatio(i), winding, p1, p2, mid, neutral);
+                    ? builder.couple(legRatio(), winding, p1, p2, neutral, mid)
+                    : builder.couple(legRatio(), winding, p1, p2, mid, neutral);
             shunts[i] = builder.connect(SHUNT, mid, out);
             senses[i] = builder.connect(SENSE, out, neutral);
         }
     }
 
-    /** Re-tunes the couplings in place; the ratio is the only thing the value box changes. */
+    /** Re-tunes the couplings in place; the taps are the only thing the value boxes change. */
     public void applyRatio() {
         if(couplings == null)
             return;
-        for(int i = 0; i < couplings.length; ++i) {
-            if(couplings[i] != null)
-                couplings[i].setRatio(legRatio(i));
+        for(var coupling : couplings) {
+            if(coupling != null)
+                coupling.setRatio(legRatio());
         }
         setChanged();
+    }
+
+    /** The highest voltage on one side, for the tap changer's arc. */
+    public float liveVolts(boolean highSide) {
+        float max = 0;
+        if(!highSide) {
+            for(float v : volts)
+                max = Math.max(max, Math.abs(v));
+            return max;
+        }
+        var behaviour = getElectricBehaviour();
+        if(behaviour == null)
+            return 0;
+        var kind = spec.kind();
+        var reference = behaviour.getTerminal(kind.primaryTerminal(0));
+        for(int k = 1; k < kind.primaries(); ++k) {
+            var node = behaviour.getTerminal(kind.primaryTerminal(k));
+            if(node == null || reference == null)
+                continue;
+            double v = Math.abs(node.getVoltage() - reference.getVoltage());
+            if(Double.isFinite(v))
+                max = Math.max(max, (float) v);
+        }
+        return max;
     }
 
     @Override
@@ -223,7 +252,7 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
                 amps[i] = list.getFloat(i * 2 + 1);
             }
         }
-        // The value box read its setting with the other behaviours; the couplings were built before it.
+        // The taps read their settings with the other behaviours; the couplings were built before them.
         applyRatio();
     }
 
@@ -232,18 +261,23 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().add(getBlockState().getBlock().getName()).style(ChatFormatting.GRAY).forGoggles(tooltip);
-        Lang.builder().translate("gui.transformer.ratio_line", TransformerRatio.describe(ratioIndex())).style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
-        var legs = kind.legs();
+        Lang.builder().translate("gui.transformer.taps",
+                        String.format("%+d", hvTap()), TransformerSpec.volts(spec.hvAt(hvTap())),
+                        String.format("%+d", lvTap()), TransformerSpec.volts(spec.lvAt(lvTap())))
+                .style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.transformer.rating", String.format("%.0f", spec.ratedVa() / 1000), String.format("%.0f", spec.ratedAmps()))
+                .style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
+        var legs = spec.kind().legs();
         for(int i = 0; i < legs.length; ++i) {
             Lang.builder()
-                    .add(Component.translatable("powergrid." + kind.secondaryKey(legs[i])).copy().withStyle(ChatFormatting.GRAY))
+                    .add(Component.translatable("powergrid." + spec.kind().secondaryKey(legs[i])).copy().withStyle(ChatFormatting.GRAY))
                     .text(": ")
                     .add(Lang.builder().text(String.format("%.1f ", volts[i])).add(Unit.VOLTAGE.get()).style(ChatFormatting.GOLD))
                     .text("  ")
                     .add(Lang.builder().text(String.format("%.2f ", amps[i])).add(Unit.CURRENT.get()).style(ChatFormatting.GOLD))
                     .forGoggles(tooltip, 1);
         }
-        if(mount.hasHubs())
+        if(spec.size().hasHubs())
             deviceHubs().addGoggleLines(tooltip);
         return true;
     }
