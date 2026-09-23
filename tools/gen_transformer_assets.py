@@ -8,9 +8,33 @@ both. North frame: the back (wall or pole) is the south side, the front faces no
 viewer's left. Models reach into neighbouring cells (-16..32 px), which the game allows; the
 matching filler blocks carry the collision there. Sized after Create: PowerPlantGrid.
 """
+import math
 import os
 
-from gen_breaker_panel_assets import ASSETS, DATA, MOD, canvas, dump, element, fill, loot_table, recipe, shade, write_png
+from gen_breaker_panel_assets import ASSETS, DATA, MOD, canvas, dump, fill, loot_table, recipe, shade, write_png
+from gen_breaker_panel_assets import element as raw_element
+
+
+def _wrap(a, b):
+    """A UV span moved into the 16 px texture: whole tiles shifted, oversize spans stretched."""
+    if b - a >= 16:
+        return 0, 16
+    k = math.floor(a / 16)
+    a, b = a - 16 * k, b - 16 * k
+    if b > 16:
+        a, b = 16 - (b - a), 16
+    return a, b
+
+
+def element(x1, y1, z1, x2, y2, z2, texture, cull_south=False):
+    """The shared helper, with UVs of parts beyond the block (y > 16, x or z outside 0..16) wrapped into range."""
+    e = raw_element(x1, y1, z1, x2, y2, z2, texture, cull_south)
+    for face in e["faces"].values():
+        u1, v1, u2, v2 = face["uv"]
+        u1, u2 = _wrap(u1, u2)
+        v1, v2 = _wrap(v1, v2)
+        face["uv"] = [u1, v1, u2, v2]
+    return e
 
 HUB_U = [3.5, 6.5, 9.5, 12.5]
 
