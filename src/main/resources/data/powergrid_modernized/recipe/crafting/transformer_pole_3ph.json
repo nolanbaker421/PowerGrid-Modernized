@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powergrid_modernized:transformer_pole_split"
+    },
+    {
+      "item": "powergrid_modernized:transformer_pole_split"
+    },
+    {
+      "item": "powergrid_modernized:transformer_pole_split"
+    },
+    {
+      "tag": "c:plates/iron"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:transformer_pole_3ph"
+  }
+}

@@ -18,8 +18,9 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
  * Draws the installed breakers. The panel model itself is static; each breaker is the unit-cube
- * breaker model scaled into its space, and right-column breakers are rolled 180 degrees so their
- * handles still point at the centre bus when on.
+ * breaker model scaled into its space (a multi-pole breaker into the spaces it spans, under one
+ * handle), and right-column breakers are rolled 180 degrees so their handles still point at the
+ * centre bus when on.
  */
 public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBlockEntity> {
     public BreakerPanelRenderer(BlockEntityRendererProvider.Context context) {}
@@ -42,9 +43,9 @@ public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBl
 
         for(int slot = BreakerPanelBlockEntity.MAIN; slot < spec.slots(); ++slot) {
             var breaker = be.breaker(slot);
-            if(!breaker.installed())
+            if(!breaker.installed() || breaker.isCovered())
                 continue;
-            var box = PanelLayout.breakerBox(spec, slot);
+            var box = PanelLayout.breakerBox(spec, slot, breaker.poles());
             boolean roll = slot >= 0 && PanelLayout.rightColumn(slot);
             if(breaker.isBlank()) {
                 draw(ms, consumer, renderer, BreakerPanelModels.get(BreakerPanelModels.BLANK), box, roll, light, overlay);

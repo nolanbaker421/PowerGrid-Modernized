@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powergrid_modernized:breaker_800a"
+    },
+    {
+      "item": "powergrid_modernized:breaker_800a"
+    },
+    {
+      "item": "powergrid_modernized:breaker_800a"
+    },
+    {
+      "tag": "c:nuggets/iron"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:breaker_800a_3p"
+  }
+}

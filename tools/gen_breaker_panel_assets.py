@@ -18,13 +18,18 @@ MOD = "powergrid_modernized"
 ASSETS = os.path.join(ROOT, "assets", MOD)
 DATA = os.path.join(ROOT, "data", MOD)
 
-# Panel specs: id, rating, branch slots, enclosure colours (body, edge)
+# Panel specs: id, rating, branch slots, lugs, enclosure colours (body, edge)
 PANELS = [
-    ("breaker_panel_200", 200, 8, (0x9d, 0x9d, 0x9d), (0x6b, 0x6b, 0x6b)),
-    ("breaker_panel_400", 400, 12, (0x7f, 0x87, 0x94), (0x4f, 0x55, 0x63)),
-    ("breaker_panel_800", 800, 12, (0x5c, 0x5c, 0x5c), (0x33, 0x33, 0x33)),
+    ("breaker_panel_200", 200, 8, 1, (0x9d, 0x9d, 0x9d), (0x6b, 0x6b, 0x6b)),
+    ("breaker_panel_400", 400, 12, 1, (0x7f, 0x87, 0x94), (0x4f, 0x55, 0x63)),
+    ("breaker_panel_800", 800, 12, 1, (0x5c, 0x5c, 0x5c), (0x33, 0x33, 0x33)),
+    ("breaker_panel_200_2p", 200, 12, 2, (0xa8, 0xa4, 0x9c), (0x6e, 0x6a, 0x62)),
+    ("breaker_panel_400_2p", 400, 12, 2, (0x86, 0x8c, 0x96), (0x52, 0x58, 0x64)),
+    ("breaker_panel_400_3p", 400, 12, 3, (0x7a, 0x84, 0x7e), (0x48, 0x52, 0x4c)),
+    ("breaker_panel_800_3p", 800, 12, 3, (0x55, 0x58, 0x5e), (0x2e, 0x30, 0x36)),
 ]
 BREAKERS = [10, 20, 50, 60, 100, 200, 400, 800]
+MULTI_POLES = [2, 3]
 
 # Layout constants (pixels, north frame) - keep in sync with PanelLayout.java
 BODY = (1, 1, 10, 15, 15, 16)
@@ -88,10 +93,12 @@ FONT = {
     "0": ["111", "101", "101", "101", "111"],
     "1": ["010", "110", "010", "010", "111"],
     "2": ["111", "001", "111", "100", "111"],
+    "3": ["111", "001", "111", "001", "111"],
     "4": ["101", "101", "111", "001", "001"],
     "5": ["111", "100", "111", "001", "111"],
     "6": ["111", "100", "111", "101", "111"],
     "8": ["111", "101", "111", "101", "111"],
+    "P": ["111", "101", "111", "100", "100"],
 }
 
 
@@ -107,7 +114,7 @@ def text(img, x, y, s, rgb):
 
 # ---------------------------------------------------------------- textures
 
-def panel_textures(name, body, edge):
+def panel_textures(name, body, edge, lugs):
     tex = os.path.join(ASSETS, "textures", "block")
     # Front: enclosure interior. Drawn as the viewer sees it (u left->right, v top->bottom).
     front = canvas(16, 16, body + (255,))
@@ -117,10 +124,12 @@ def panel_textures(name, body, edge):
     fill(front, 1, 15, 15, 16, edge)
     fill(front, 1, 0, 2, 16, edge)
     fill(front, 14, 0, 15, 16, edge)
-    # Vertical bus bars behind the breaker columns (copper), and the mounting rails.
+    # Vertical bus bars behind the breaker columns (copper), one per lug, and the mounting rails.
     copper = (0xb8, 0x73, 0x33)
-    fill(front, 7, 2, 8, 14, copper)
-    fill(front, 8, 2, 9, 14, shade(copper, 0.8))
+    bars = {1: [(7, 9)], 2: [(6, 7), (9, 10)], 3: [(5, 6), (7, 8), (9, 10)]}[lugs]
+    for x1, x2 in bars:
+        fill(front, x1, 2, x2, 14, copper)
+        fill(front, x2 - 1, 2, x2, 14, shade(copper, 0.8))
     rail = shade(interior, 0.7)
     fill(front, 2, 5, 7, 6, rail)
     fill(front, 9, 5, 14, 6, rail)
@@ -175,18 +184,36 @@ def shared_textures():
     write_png(os.path.join(tex, "breaker_handle.png"), handle)
 
 
-def breaker_item_texture(rating):
+def breaker_item_texture(rating, poles=1):
     img = canvas(16, 16)
     black = (0x1c, 0x1c, 0x1c)
-    fill(img, 0, 3, 16, 13, black)
-    fill(img, 0, 3, 16, 4, shade(black, 1.8))
-    fill(img, 0, 12, 16, 13, shade(black, 0.5))
-    fill(img, 1, 5, 15, 11, (0x2e, 0x2e, 0x2e))
-    fill(img, 11, 4, 15, 12, (0x11, 0x11, 0x11))
-    fill(img, 12, 6, 14, 10, (0x3c, 0x3c, 0x3c))
-    fill(img, 12, 7, 13, 9, (0xe8, 0xe8, 0xe8))
-    text(img, 1, 6, str(rating), (0xe8, 0xe8, 0xe8))
-    write_png(os.path.join(ASSETS, "textures", "item", "breaker_%da.png" % rating), img)
+    if poles == 1:
+        fill(img, 0, 3, 16, 13, black)
+        fill(img, 0, 3, 16, 4, shade(black, 1.8))
+        fill(img, 0, 12, 16, 13, shade(black, 0.5))
+        fill(img, 1, 5, 15, 11, (0x2e, 0x2e, 0x2e))
+        fill(img, 11, 4, 15, 12, (0x11, 0x11, 0x11))
+        fill(img, 12, 6, 14, 10, (0x3c, 0x3c, 0x3c))
+        fill(img, 12, 7, 13, 9, (0xe8, 0xe8, 0xe8))
+        text(img, 1, 6, str(rating), (0xe8, 0xe8, 0xe8))
+        name = "breaker_%da" % rating
+    else:
+        # Stacked bodies under one handle tie; the pole count is stamped in the corner.
+        height = 14 // poles
+        for p in range(poles):
+            y1 = 1 + p * height
+            fill(img, 0, y1, 16, y1 + height, black)
+            fill(img, 0, y1, 16, y1 + 1, shade(black, 1.8))
+            fill(img, 0, y1 + height - 1, 16, y1 + height, shade(black, 0.5))
+            fill(img, 1, y1 + 1, 10, y1 + height - 1, (0x2e, 0x2e, 0x2e))
+        fill(img, 11, 1, 15, 15, (0x11, 0x11, 0x11))           # handle tie down the right
+        fill(img, 12, 3, 14, 13, (0x3c, 0x3c, 0x3c))
+        fill(img, 12, 7, 13, 9, (0xe8, 0xe8, 0xe8))
+        text(img, 1, 2, str(rating), (0xe8, 0xe8, 0xe8))
+        text(img, 1, 9, "%dP" % poles, (0xe8, 0xc8, 0x60))
+        name = "breaker_%da_%dp" % (rating, poles)
+    write_png(os.path.join(ASSETS, "textures", "item", name + ".png"), img)
+    return name
 
 
 # ---------------------------------------------------------------- models
@@ -321,10 +348,12 @@ def blank_and_lock():
 
 
 def breaker_item_models():
-    for rating in BREAKERS:
-        dump(os.path.join(ASSETS, "models", "item", "breaker_%da.json" % rating), {
+    names = ["breaker_%da" % rating for rating in BREAKERS]
+    names += ["breaker_%da_%dp" % (rating, poles) for poles in MULTI_POLES for rating in BREAKERS]
+    for name in names:
+        dump(os.path.join(ASSETS, "models", "item", name + ".json"), {
             "parent": "minecraft:item/generated",
-            "textures": {"layer0": "%s:item/breaker_%da" % (MOD, rating)},
+            "textures": {"layer0": "%s:item/%s" % (MOD, name)},
         })
 
 
@@ -343,14 +372,7 @@ def loot_table(name):
     })
 
 
-def recipe(name, pattern, key, count, unlock_item):
-    dump(os.path.join(DATA, "recipe", "crafting", name + ".json"), {
-        "type": "minecraft:crafting_shaped",
-        "category": "misc",
-        "key": key,
-        "pattern": pattern,
-        "result": {"count": count, "id": "%s:%s" % (MOD, name)},
-    })
+def advancement(name, unlock_item):
     dump(os.path.join(DATA, "advancement", "recipes", "misc", "crafting", name + ".json"), {
         "parent": "minecraft:recipes/root",
         "criteria": {
@@ -368,6 +390,27 @@ def recipe(name, pattern, key, count, unlock_item):
     })
 
 
+def recipe(name, pattern, key, count, unlock_item):
+    dump(os.path.join(DATA, "recipe", "crafting", name + ".json"), {
+        "type": "minecraft:crafting_shaped",
+        "category": "misc",
+        "key": key,
+        "pattern": pattern,
+        "result": {"count": count, "id": "%s:%s" % (MOD, name)},
+    })
+    advancement(name, unlock_item)
+
+
+def recipe_shapeless(name, ingredients, count, unlock_item):
+    dump(os.path.join(DATA, "recipe", "crafting", name + ".json"), {
+        "type": "minecraft:crafting_shapeless",
+        "category": "misc",
+        "ingredients": ingredients,
+        "result": {"count": count, "id": "%s:%s" % (MOD, name)},
+    })
+    advancement(name, unlock_item)
+
+
 def recipes():
     iron_plate = {"tag": "c:plates/iron"}
     copper_plate = {"tag": "c:plates/copper"}
@@ -382,6 +425,20 @@ def recipes():
     recipe("breaker_panel_800", ["BIB", "I4I", "BIB"],
            {"B": brass_plate, "I": iron_plate, "4": {"item": "%s:breaker_panel_400" % MOD}}, 1,
            {"items": "%s:breaker_panel_400" % MOD})
+    # Multi-lug panels: the single-lug panel of the same rating with a lug and bus bar per extra
+    # line conductor (a heavy connector and a copper plate each).
+    recipe("breaker_panel_200_2p", ["H2H", " P "],
+           {"H": heavy, "P": copper_plate, "2": {"item": "%s:breaker_panel_200" % MOD}}, 1,
+           {"items": "%s:breaker_panel_200" % MOD})
+    recipe("breaker_panel_400_2p", ["H4H", " P "],
+           {"H": heavy, "P": copper_plate, "4": {"item": "%s:breaker_panel_400" % MOD}}, 1,
+           {"items": "%s:breaker_panel_400" % MOD})
+    recipe("breaker_panel_400_3p", ["H4H", "PHP"],
+           {"H": heavy, "P": copper_plate, "4": {"item": "%s:breaker_panel_400" % MOD}}, 1,
+           {"items": "%s:breaker_panel_400" % MOD})
+    recipe("breaker_panel_800_3p", ["H8H", "PHP"],
+           {"H": heavy, "P": copper_plate, "8": {"item": "%s:breaker_panel_800" % MOD}}, 1,
+           {"items": "%s:breaker_panel_800" % MOD})
 
     # Breakers: a column of iron, redstone and copper. The material tier sets the rating and the
     # double-width version of each tier is the next rating up.
@@ -399,6 +456,12 @@ def recipes():
         pattern = ["II", "RR", "CC"] if wide else ["I", "R", "C"]
         recipe("breaker_%da" % rating, pattern, {"I": iron, "R": {"item": "minecraft:redstone"}, "C": copper},
                count, {"items": "minecraft:redstone"})
+    # Multi-pole breakers: that many single-pole breakers tied together with an iron nugget.
+    for poles in MULTI_POLES:
+        for rating in BREAKERS:
+            single = {"item": "%s:breaker_%da" % (MOD, rating)}
+            recipe_shapeless("breaker_%da_%dp" % (rating, poles), [single] * poles + [{"tag": "c:nuggets/iron"}], 1,
+                             {"items": "%s:breaker_%da" % (MOD, rating)})
 
 
 def main():
@@ -408,8 +471,10 @@ def main():
     blank_and_lock()
     for rating in BREAKERS:
         breaker_item_texture(rating)
-    for name, rating, slots, body, edge in PANELS:
-        panel_textures(name, body, edge)
+        for poles in MULTI_POLES:
+            breaker_item_texture(rating, poles)
+    for name, rating, slots, lugs, body, edge in PANELS:
+        panel_textures(name, body, edge, lugs)
         panel_model(name, slots)
         loot_table(name)
     recipes()

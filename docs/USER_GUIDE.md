@@ -115,22 +115,43 @@ turn the hub to any of the four directions. There is nothing to splice.
 
 ## 4. Breaker panels
 
-Three wall-mounted load centres. The rating is the main breaker's job and the largest breaker any
-space accepts.
+Seven wall-mounted load centres. The rating is the main breaker's job and the largest breaker any
+space accepts. The lug count is how many line conductors feed the panel.
 
-| Panel | Largest breaker | Branch spaces |
-| --- | --- | --- |
-| 200 A | 200 A | 8 |
-| 400 A | 400 A | 12 |
-| 800 A | 800 A | 12 |
+| Panel | Largest breaker | Lugs | Branch spaces |
+| --- | --- | --- | --- |
+| 200 A | 200 A | 1: Line + Neutral | 8 |
+| 400 A | 400 A | 1 | 12 |
+| 800 A | 800 A | 1 | 12 |
+| 200 A Split-Phase | 200 A | 2: L1, L2 + Neutral | 12 |
+| 400 A Split-Phase | 400 A | 2 | 12 |
+| 400 A Three-Phase | 400 A | 3: L1, L2, L3 + Neutral | 12 |
+| 800 A Three-Phase | 800 A | 3 | 12 |
 
 The main space sits at the top. Branch spaces run in two columns, odd circuits on the left, even on
 the right, top to bottom. **Without a main breaker the panel is dead.**
 
+### Lugs, rows and multi-pole breakers
+
+Each row of spaces sits on the next lug down the panel, both columns of a row on the same lug, and
+the sequence repeats: on a split-phase panel rows alternate L1, L2, L1, L2; on a three-phase panel
+they cycle L1, L2, L3. A single-pole breaker in any space gives you that row's lug against neutral.
+
+Breakers also come as **2-pole** and **3-pole** (craft that many single-pole breakers of one rating
+with an iron nugget). A multi-pole breaker takes that many *adjacent rows in one column*, so it
+bridges that many lugs: a 2-pole in spaces 1 and 3 of a split-phase panel gives L1 and L2, 240 V
+across its two circuit points. All its poles share one handle and trip together. Its name is the
+spaces it spans, "Circuit 1/3", and each space is still its own circuit point in the editor.
+
+- A 2-pole breaker fits split-phase and three-phase panels; a 3-pole only three-phase.
+- The **main** must have as many poles as the panel has lugs: a 2-pole main in a split-phase
+  panel, a 3-pole main in a three-phase one.
+- With a breaker in hand only the spaces it would fit are outlined.
+
 ### Breakers
 
-- With a breaker in hand every free space is outlined and the one under the crosshair is bright.
-  Right-click a space to plug it in. New breakers start OFF.
+- With a breaker in hand every free space it fits is outlined and the one under the crosshair is
+  bright. Right-click a space to plug it in. New breakers start OFF.
 - Right-click a breaker with an empty hand to flip it. A tripped breaker goes to OFF on the first
   click and ON on the next, like the real thing.
 - Shift-right-click a breaker with an empty hand to pull it.
@@ -181,6 +202,32 @@ Splice pulled wires to those points exactly as in a conduit box.
 
 Goggles list every space: label, rating, handle position (ON / OFF / TRIPPED), live current, and
 LOCKED where a lock is hung, followed by the knockouts in use and a splice count.
+
+### Transformers
+
+Six one-block transformers, in two windings and three mounts. All have a **turns ratio** on the
+value box on the front: scroll it (or click it for the board) through 1:60, 1:30 ... 1:2, 1:1,
+2:1 ... 60:1, primary : secondary.
+
+| Mount | Wiring |
+| --- | --- |
+| Dry-Type (indoor cabinet) | conduit knockouts, four on top and two on each side; splice inside like a panel |
+| Pad-Mount (outdoor box) | knockouts, four underneath and two on each side |
+| Pole-Mount (can on a pole) | bushings for hanging wire: primaries on top, secondaries on the front |
+
+- **Split-Phase**: primary H1, H2; centre-tapped secondary X1, N, X2. Each half is half the ratio,
+  so on a 1:2 unit 120 V in gives X1 at +120 V and X2 at -120 V against N: 120/240 V, ready for a
+  split-phase panel (X1 to L1, X2 to L2, N to Neutral).
+- **Three-Phase**: delta primary H1, H2, H3; star secondary X1, X2, X3 and neutral X0. The
+  secondary phase voltage is the ratio times the primary line voltage, shifted 30° (a delta-star
+  bank). Feed a three-phase panel with X1..X3 to L1..L3 and X0 to Neutral.
+- The three-phase pole bank is three cans on a crossarm: H1..H3 on top, X1..X3 on the fronts, X0
+  low on the middle can.
+- Goggles show the ratio and each secondary leg's voltage against the neutral and its current.
+
+On the regular (DC) Power Grid these pass DC at the ratio, as Power Grid's own transformer does.
+On the AC build they carry the phases; a delta primary needs a three-wire three-phase source (three
+alternators at 0°, 120°, 240°).
 
 ---
 
@@ -361,5 +408,8 @@ adapter placed next to them:
 | Breaker Blank (4) | two iron nuggets |
 | Breaker Lock | an iron ingot ringed by five nuggets |
 | CT Cabinet | pins, comparator, pins / iron plate, conductive casing, iron plate / copper wire, iron plate, copper wire |
+| Split-phase / three-phase panels | the single-lug panel of the same rating with heavy wire connectors either side and a copper plate (two for three-phase) below |
+| 2-pole / 3-pole breakers | two or three single-pole breakers of one rating and an iron nugget, shapeless |
+| Transformers | copper coils either side of a transformer core; iron plates above and below for the dry-type, smooth stone below for the pad-mount, an iron plate above and below for the pole can; three pole cans and an iron plate make the three-phase bank |
 
 Look the rest up in the recipe book; every recipe unlocks from its main ingredient.

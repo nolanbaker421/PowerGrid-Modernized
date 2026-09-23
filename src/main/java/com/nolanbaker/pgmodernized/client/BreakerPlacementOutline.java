@@ -16,8 +16,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 /**
- * While a breaker or blank is in hand and the crosshair is on a panel, every free space is outlined
- * and the one under the crosshair is drawn bright, so it is clear where the breaker will go.
+ * While a breaker or blank is in hand and the crosshair is on a panel, every space that breaker
+ * would fit is outlined (a multi-pole breaker as the whole span it would take) and the one under
+ * the crosshair is drawn bright, so it is clear where the breaker will go.
  */
 public final class BreakerPlacementOutline {
     private BreakerPlacementOutline() {}
@@ -31,7 +32,7 @@ public final class BreakerPlacementOutline {
         var level = mc.level;
         if(player == null || level == null || !(mc.hitResult instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK)
             return;
-        if(!(player.getMainHandItem().getItem() instanceof BreakerItem))
+        if(!(player.getMainHandItem().getItem() instanceof BreakerItem item))
             return;
         var pos = hit.getBlockPos();
         var state = level.getBlockState(pos);
@@ -41,6 +42,7 @@ public final class BreakerPlacementOutline {
         var spec = be.spec();
         var facing = BreakerPanelBlock.facing(state);
         int hovered = PanelLayout.slotAt(spec, facing, hit.getDirection(), hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        int poles = item.isBlank() ? 1 : item.poles();
 
         var poseStack = event.getPoseStack();
         var camera = event.getCamera().getPosition();
@@ -48,9 +50,9 @@ public final class BreakerPlacementOutline {
         poseStack.pushPose();
         poseStack.translate(pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z);
         for(int slot = BreakerPanelBlockEntity.MAIN; slot < spec.slots(); ++slot) {
-            if(be.breaker(slot).installed())
+            if(!be.canInstall(slot, item))
                 continue;
-            var box = toWorld(PanelLayout.breakerBox(spec, slot), facing).inflate(0.002);
+            var box = toWorld(PanelLayout.breakerBox(spec, slot, slot == BreakerPanelBlockEntity.MAIN ? 1 : poles), facing).inflate(0.002);
             boolean bright = slot == hovered;
             LevelRenderer.renderLineBox(poseStack, buffer, box, 1f, bright ? 0.95f : 0.8f, bright ? 0.3f : 0.2f, bright ? 1f : 0.35f);
         }

@@ -9,12 +9,19 @@ import com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlock;
 import com.nolanbaker.pgmodernized.device.meter.ClampMeterBlock;
 import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlock;
 import com.nolanbaker.pgmodernized.device.meter.LineVoltmeterBlock;
+import com.nolanbaker.pgmodernized.device.transformer.TransformerBlock;
+import com.nolanbaker.pgmodernized.device.transformer.TransformerKind;
+import com.nolanbaker.pgmodernized.device.transformer.TransformerMount;
 import com.nolanbaker.pgmodernized.device.vfd.VfdBlock;
 import com.nolanbaker.pgmodernized.network.NetworkJackBlock;
 import com.nolanbaker.pgmodernized.network.NetworkSwitchBlock;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
 
 import static com.nolanbaker.pgmodernized.PowerGridModernized.REGISTRATE;
 import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
@@ -100,6 +107,10 @@ public class ModBlocks {
     public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_200 = breakerPanel(PanelSpec.A200, "200 A Breaker Panel");
     public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_400 = breakerPanel(PanelSpec.A400, "400 A Breaker Panel");
     public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_800 = breakerPanel(PanelSpec.A800, "800 A Breaker Panel");
+    public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_200_2P = breakerPanel(PanelSpec.SPLIT_200, "200 A Split-Phase Breaker Panel");
+    public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_400_2P = breakerPanel(PanelSpec.SPLIT_400, "400 A Split-Phase Breaker Panel");
+    public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_400_3P = breakerPanel(PanelSpec.THREE_400, "400 A Three-Phase Breaker Panel");
+    public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_800_3P = breakerPanel(PanelSpec.THREE_800, "800 A Three-Phase Breaker Panel");
 
     private static BlockEntry<BreakerPanelBlock> breakerPanel(PanelSpec spec, String name) {
         return REGISTRATE.block(spec.id(), p -> new BreakerPanelBlock(p, spec))
@@ -124,6 +135,34 @@ public class ModBlocks {
                 .model(NonNullBiConsumer.noop())
                 .build()
             .register();
+
+    /** Transformers by mount, then winding kind. */
+    public static final Map<TransformerMount, Map<TransformerKind, BlockEntry<TransformerBlock>>> TRANSFORMERS;
+
+    static {
+        var byMount = new EnumMap<TransformerMount, Map<TransformerKind, BlockEntry<TransformerBlock>>>(TransformerMount.class);
+        for(var mount : TransformerMount.values()) {
+            var byKind = new EnumMap<TransformerKind, BlockEntry<TransformerBlock>>(TransformerKind.class);
+            for(var kind : TransformerKind.values()) {
+                byKind.put(kind, REGISTRATE.block(TransformerBlock.id(mount, kind), p -> new TransformerBlock(p, kind, mount))
+                        .blockstate(NonNullBiConsumer.noop())
+                        .initialProperties(SharedProperties::softMetal)
+                        .properties(p -> p.noOcclusion())
+                        .transform(pickaxeOnly())
+                        .lang(mount.label() + " Transformer (" + kind.label() + ")")
+                        .item()
+                            .model(NonNullBiConsumer.noop())
+                            .build()
+                        .register());
+            }
+            byMount.put(mount, Collections.unmodifiableMap(byKind));
+        }
+        TRANSFORMERS = Collections.unmodifiableMap(byMount);
+    }
+
+    public static BlockEntry<TransformerBlock> transformer(TransformerMount mount, TransformerKind kind) {
+        return TRANSFORMERS.get(mount).get(kind);
+    }
 
     // ---- conduit system ----
 
