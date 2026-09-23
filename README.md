@@ -76,30 +76,24 @@ with a wrench like a panel breaker. The bus bars carry 2000 A and burn like any 
 
 ## Transformers
 
-Six one-block transformers, each an ideal coupling per secondary leg with a small winding
-resistance, and a turns ratio set on the value box on the front (scroll it, from 1:60 step-up
-through 1:1 to 60:1 step-down):
+Fourteen nameplates, sized after Create: PowerPlantGrid, each one block whose model spills into the
+cells around it (invisible filler blocks carry the collision there and break with the unit):
 
-| Block | Windings | Wiring |
-| --- | --- | --- |
-| Dry-Type Transformer (Split-Phase / Three-Phase) | see below | indoor cabinet two blocks tall; conduit knockouts underneath and low on the front, spliced inside |
-| Pad-Mount Transformer (Split-Phase / Three-Phase) | see below | oil tank on a skid, two blocks tall, radiators either side, bushings on the lid; knockouts in two rows on the front |
-| Pole-Mount Transformer (Split-Phase) | one can | a can the size of a real one hung on its pole; HV bushings on the lid (H1, H2), LV studs on the front (X1, N, X2), all for hanging wire |
-| Pole-Mount Transformer Bank (Three-Phase) | three cans across three blocks | the middle can carries every terminal: H1..H3 on its lid, X1..X3 and X0 on its front |
+| Nameplate | Size |
+| --- | --- |
+| Pole 480 V / 240 V, 1 kV / 240 V, 10 kV / 240 V, 35 kV / 240 V | White cans, from under a block to a block and a half tall; stand them on the ground or hang them on a pole by placing against its side. HV bushings on the lid, LV studs on the front, all for hanging wire. |
+| Pad 1 kV / 240 V, 10 kV / 240 V, 1 kV / 208 V, 10 kV / 208 V, 10 kV / 480 V | Grey tanks on a skid, 1.5 blocks wide and 1.75 tall, bushings on the lid: tall HV at the back, short LV at the front. |
+| Substation 35 kV / 480 V, 35 kV / 10 kV, 100 kV / 35 kV | Two to two and a half blocks wide and two tall, radiators down both sides, bushings on the lid. |
+| Dry-Type 480 V / 240 V, 480 V / 208 V | An indoor cabinet two blocks tall, wired through knockouts and spliced inside like a panel. |
 
-- **Split-phase**: primary H1, H2; centre-tapped secondary X1, N, X2. X1 to X2 is the full ratio,
-  each half is half of it, so a 1:2 unit on 120 V gives 120/240 V for a split-phase panel.
-- **Three-phase**: delta primary H1, H2, H3; star secondary X1, X2, X3 with neutral X0. Secondary
-  phase voltage is the ratio times the primary line voltage, shifted 30°, the standard delta-star
-  distribution bank.
-- Goggles show the ratio and each leg's voltage against the neutral and its current.
-- The cabinets open their splice editor on an empty-hand right-click away from the value box.
-- The units are sized after Create: PowerPlantGrid's transformers. A ground unit needs the block above
-  it free and the bank needs the blocks either side; those cells are filled with invisible parts that
-  break with the unit.
-
-On stock Power Grid these pass DC exactly as Power Grid's own transformer does; the phases mean
-something on the AC build.
+- **Split-phase** nameplates (a 240 V low side) have H1, H2 and a centre-tapped X1, N, X2.
+  **Three-phase** ones (a 208 or 480 V low side, line-to-line) are delta primary H1, H2, H3 and
+  star secondary X1, X2, X3 with neutral X0, the standard distribution bank with its 30° shift.
+- Two **tap** value boxes on the front, HV on the left and LV on the right, move each winding in
+  2.5% steps up to 10% either way of its nameplate. There is no on-load tap changer: changing a tap
+  on a live winding arcs and shocks you.
+- Goggles show the taps, the rating and each leg's voltage and current. Feed either side; the other
+  follows the ratio. On stock Power Grid these pass DC exactly as Power Grid's own transformer does.
 
 ## Conduit and conduit boxes
 

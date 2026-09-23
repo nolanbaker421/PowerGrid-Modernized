@@ -22,90 +22,96 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.BooleanOp;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.utility.Lang;
 
 /**
- * A split-phase or three-phase transformer. The cabinets (dry-type, pad-mount) are wired through
- * conduit knockouts and spliced in their editor like a panel; the pole can has bushings that
- * hanging wire lands on. The turns ratio is set on the value box on the front. The base block
- * carries the model and the wiring; the unit's other cells are {@link TransformerFillerBlock}s
- * placed with it and taken with it.
+ * One nameplate of transformer. Pole cans stand on the ground or hang on a pole, and take hanging
+ * wire on their bushings and studs; tanks stand on a skid with bushings on the lid; the dry-type
+ * cabinet is wired through knockouts and spliced in its editor. The base block carries the model
+ * and the wiring; the unit's other cells are {@link TransformerFillerBlock}s placed with it and
+ * taken with it. Taps on the two value boxes on the front move each winding ten percent either way.
  */
 public class TransformerBlock extends HorizontalElectricBlock implements IBE<TransformerBlockEntity> {
-    private final TransformerKind kind;
-    private final TransformerMount mount;
+    /** A pole can hung on the pole behind it rather than standing on the ground. */
+    public static final BooleanProperty HUNG = BooleanProperty.create("hung");
+
+    private final TransformerSpec spec;
     private final DeviceHubs.Layout layout;
 
-    public TransformerBlock(Properties properties, TransformerKind kind, TransformerMount mount) {
+    public TransformerBlock(Properties properties, TransformerSpec spec) {
         super(properties);
-        this.kind = kind;
-        this.mount = mount;
-        var base = TransformerGeometry.terminals(mount, kind);
-        var hubs = TransformerGeometry.hubs(mount);
-        var points = new int[base.length];
+        this.spec = spec;
+        registerDefaultState(defaultBlockState().setValue(HUNG, false));
+        var size = spec.size();
+        var hubs = TransformerGeometry.hubs(size);
+        var points = new int[spec.kind().pointCount()];
         for(int i = 0; i < points.length; ++i)
             points[i] = i;
-        layout = new DeviceHubs.Layout(base.length, hubs.length, points);
-        var terminals = hubs.length > 0 ? DeviceHubs.withHubs(base, TransformerGeometry.hidden(mount), hubs) : base;
-        setTerminalCollection(horizontalNorthTerminals(this, terminals, DeviceHubs.withHubs(TransformerGeometry.shape(mount, kind), hubs)));
+        layout = new DeviceHubs.Layout(points.length, hubs.length, points);
+        setTerminalCollection(BlockStateTerminalCollection.builder(this)
+                .forAllStates(state -> {
+                    var base = TransformerGeometry.terminals(spec, hung(state));
+                    var all = hubs.length > 0 ? DeviceHubs.withHubs(base, TransformerGeometry.hidden(), hubs) : base;
+                    return BlockStateTerminalCollection.each(all, terminal -> switch(state.getValue(HORIZONTAL_FACING)) {
+                        case SOUTH -> terminal.rotateAroundY(180);
+                        case EAST -> terminal.rotateAroundY(90);
+                        case WEST -> terminal.rotateAroundY(-90);
+                        default -> terminal;
+                    });
+                })
+                .withShapeMapper(state -> TransformerGeometry.rotate(
+                        TransformerGeometry.shape(size, spec.kind(), hung(state)), facing(state)))
+                .build());
     }
 
-    public static String id(TransformerMount mount, TransformerKind kind) {
-        return "transformer_" + mount.id() + "_" + kind.id();
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(HUNG);
     }
 
-    public TransformerKind kind() {
-        return kind;
-    }
-
-    public TransformerMount mount() {
-        return mount;
+    public TransformerSpec spec() {
+        return spec;
     }
 
     public DeviceHubs.Layout layout() {
         return layout;
     }
 
-    /** A north-frame shape turned to face that way, as Power Grid turns the terminals. */
-    public static VoxelShape rotateShape(VoxelShape north, Direction facing) {
-        int turns = switch(facing) {
-            case EAST -> 1;
-            case SOUTH -> 2;
-            case WEST -> 3;
-            default -> 0;
-        };
-        var shape = north;
-        for(int i = 0; i < turns; ++i) {
-            VoxelShape[] out = {Shapes.empty()};
-            shape.forAllBoxes((x1, y1, z1, x2, y2, z2) ->
-                    out[0] = Shapes.joinUnoptimized(out[0], Shapes.box(1 - z2, y1, x1, 1 - z1, y2, x2), BooleanOp.OR));
-            shape = out[0].optimize();
-        }
-        return shape;
+    /** Direction the front faces. */
+    public static Direction facing(BlockState state) {
+        return state.getValue(HORIZONTAL_FACING);
+    }
+
+    public static boolean hung(BlockState state) {
+        return state.hasProperty(HUNG) && state.getValue(HUNG);
     }
 
     // ---- placement with fillers ----
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
-        // Against a wall or pole the back goes on it; on a floor or ceiling it faces the player.
         var face = ctx.getClickedFace();
-        var facing = face.getAxis().isHorizontal() ? face : ctx.getHorizontalDirection().getOpposite();
-        if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
+        boolean onWall = face.getAxis().isHorizontal();
+        boolean hung = spec.size().isPole() && onWall;
+        // Hung: the can hangs on the pole behind it and faces away. Standing, or a tank against a
+        // wall: the front faces the player, or the wall's outward side.
+        var facing = hung || onWall ? face : ctx.getHorizontalDirection().getOpposite();
+        if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown() && !hung)
             facing = facing.getOpposite();
-        for(var part : TransformerGeometry.parts(mount, kind)) {
-            var pos = TransformerFillerBlock.partPos(ctx.getClickedPos(), facing, part);
+        for(var cell : TransformerGeometry.cells(spec.size(), spec.kind(), hung)) {
+            var pos = ctx.getClickedPos().offset(TransformerGeometry.rotateCell(cell, facing));
             if(!ctx.getLevel().getBlockState(pos).canBeReplaced(ctx))
                 return null;
         }
-        return defaultBlockState().setValue(HORIZONTAL_FACING, facing);
+        return defaultBlockState().setValue(HORIZONTAL_FACING, facing).setValue(HUNG, hung);
     }
 
     @Override
@@ -114,11 +120,10 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
         if(level.isClientSide)
             return;
         var facing = facing(state);
-        for(var part : TransformerGeometry.parts(mount, kind)) {
-            var filler = ModBlocks.TRANSFORMER_FILLER.getDefaultState()
-                    .setValue(TransformerFillerBlock.FACING, facing)
-                    .setValue(TransformerFillerBlock.PART, part);
-            level.setBlock(TransformerFillerBlock.partPos(pos, facing, part), filler, Block.UPDATE_ALL);
+        for(var cell : TransformerGeometry.cells(spec.size(), spec.kind(), hung(state))) {
+            var offset = TransformerGeometry.rotateCell(cell, facing);
+            var filler = TransformerFillerBlock.forOffset(ModBlocks.TRANSFORMER_FILLER.getDefaultState(), offset);
+            level.setBlock(pos.offset(offset), filler, Block.UPDATE_ALL);
         }
     }
 
@@ -126,18 +131,13 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
         if(!state.is(newState.getBlock())) {
             var facing = facing(state);
-            for(var part : TransformerGeometry.parts(mount, kind)) {
-                var at = TransformerFillerBlock.partPos(pos, facing, part);
+            for(var cell : TransformerGeometry.cells(spec.size(), spec.kind(), hung(state))) {
+                var at = pos.offset(TransformerGeometry.rotateCell(cell, facing));
                 if(level.getBlockState(at).getBlock() instanceof TransformerFillerBlock)
                     level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             }
         }
         super.onRemove(state, level, pos, newState, moved);
-    }
-
-    /** Direction the front faces. */
-    public static Direction facing(BlockState state) {
-        return state.getValue(HORIZONTAL_FACING);
     }
 
     @Override
@@ -147,7 +147,7 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
 
     @Override
     public InteractionResult onWire(BlockState state, UseOnContext context) {
-        if(!mount.hasHubs())
+        if(!spec.size().hasHubs())
             return super.onWire(state, context);
         return DeviceHubs.onWire(this, layout, state, context, (s, c) -> {
             if(c.getClickedFace() == facing(s) && WireAcceptance.electrical(c.getItemInHand())) {
@@ -163,10 +163,10 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
         return stack.isEmpty() ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
 
-    /** Empty hand on a cabinet opens the splice editor; the value box on the front is handled by Create before this. */
+    /** Empty hand on a cabinet opens the splice editor; the tap boxes on the front are handled by Create before this. */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(!mount.hasHubs() || hand != InteractionHand.MAIN_HAND || player.isShiftKeyDown() || !player.getMainHandItem().isEmpty())
+        if(!spec.size().hasHubs() || hand != InteractionHand.MAIN_HAND || player.isShiftKeyDown() || !player.getMainHandItem().isEmpty())
             return InteractionResult.PASS;
         if(level.isClientSide)
             ClientHooks.openSplices(pos);

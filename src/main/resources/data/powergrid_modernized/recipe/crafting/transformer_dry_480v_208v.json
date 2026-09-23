@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "C": {
+      "item": "powergrid:copper_coil"
+    },
+    "T": {
+      "item": "powergrid:transformer_core"
+    }
+  },
+  "pattern": [
+    "CII",
+    "CTC",
+    "CII"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:transformer_dry_480v_208v"
+  }
+}

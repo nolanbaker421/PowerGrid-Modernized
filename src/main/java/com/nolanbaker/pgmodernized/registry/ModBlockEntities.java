@@ -17,6 +17,7 @@ import com.nolanbaker.pgmodernized.device.motor.ThreePhaseMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
+import com.nolanbaker.pgmodernized.device.transformer.TransformerFillerBlockEntity;
 import com.nolanbaker.pgmodernized.device.vfd.VfdBlockEntity;
 import com.nolanbaker.pgmodernized.network.NetworkJackBlockEntity;
 import com.nolanbaker.pgmodernized.network.NetworkSwitchBlockEntity;
@@ -92,7 +93,12 @@ public class ModBlockEntities {
     @SuppressWarnings("unchecked")
     public static final BlockEntityEntry<TransformerBlockEntity> TRANSFORMER =
             REGISTRATE.blockEntity("transformer", TransformerBlockEntity::new)
-                    .validBlocks(ModBlocks.TRANSFORMERS.values().stream().flatMap(m -> m.values().stream()).toArray(BlockEntry[]::new))
+                    .validBlocks(ModBlocks.TRANSFORMERS.values().toArray(BlockEntry[]::new))
+                    .register();
+
+    public static final BlockEntityEntry<TransformerFillerBlockEntity> TRANSFORMER_FILLER =
+            REGISTRATE.blockEntity("transformer_filler", TransformerFillerBlockEntity::new)
+                    .validBlock(ModBlocks.TRANSFORMER_FILLER)
                     .register();
 
     public static final BlockEntityEntry<ThreePhaseMotorBlockEntity> THREE_PHASE_MOTOR =

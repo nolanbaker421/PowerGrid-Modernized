@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "powergrid_modernized:transformer_pole_480v_240v"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "powergrid_modernized:blocks/transformer_pole_480v_240v"
+}

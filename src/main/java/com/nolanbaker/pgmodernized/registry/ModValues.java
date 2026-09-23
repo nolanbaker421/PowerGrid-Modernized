@@ -1,9 +1,7 @@
 package com.nolanbaker.pgmodernized.registry;
 
 import com.nolanbaker.pgmodernized.device.breaker.PanelSpec;
-import com.nolanbaker.pgmodernized.device.transformer.TransformerBlock;
-import com.nolanbaker.pgmodernized.device.transformer.TransformerKind;
-import com.nolanbaker.pgmodernized.device.transformer.TransformerMount;
+import com.nolanbaker.pgmodernized.device.transformer.TransformerSpec;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -46,9 +44,8 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         resistance("three_phase_drive", "output", 0.05);
         thermal("three_phase_drive", 600, 5.0);
         // Transformers: winding resistance in series with each secondary leg.
-        for(var mount : TransformerMount.values())
-            for(var kind : TransformerKind.values())
-                resistance(TransformerBlock.id(mount, kind), "winding", 0.02);
+        for(var spec : TransformerSpec.values())
+            resistance(spec.id(), "winding", 0.02);
     }
 
     private ModValues() {}
