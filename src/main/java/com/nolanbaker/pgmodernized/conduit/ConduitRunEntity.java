@@ -42,6 +42,8 @@ import java.util.List;
  */
 public class ConduitRunEntity extends BlockWireEntity {
     private static final int NIPPLE_CHECK = 20;
+    /** Galvanized steel; Power Grid's colourable wires would otherwise start out black. */
+    public static final int DEFAULT_COLOR = 0xB8BCC0;
     /** Laid by a pull box to the panel above or below it; never picked up, never dropped. */
     private boolean nipple;
     private int nippleTimer;
@@ -52,6 +54,7 @@ public class ConduitRunEntity extends BlockWireEntity {
     public static ConduitRunEntity create(Level level, IWireEndpoint endpoint1, ItemStack item, List<Point> segments) {
         var entity = new ConduitRunEntity(ModEntities.CONDUIT_RUN.get(), level);
         entity.setItem(item.getItem(), item.getCount());
+        entity.setColor(DEFAULT_COLOR);
         var pos = BlockTrace.alignPosition(endpoint1.getExactPosition(level));
         entity.setPosRaw(pos.x, pos.y, pos.z);
         entity.segments.addAll(segments);
@@ -75,6 +78,7 @@ public class ConduitRunEntity extends BlockWireEntity {
         var entity = new ConduitRunEntity(ModEntities.CONDUIT_RUN.get(), level);
         entity.nipple = true;
         entity.setItem(ModItems.CONDUIT.get(ConduitSize.FOUR).get(), 1);
+        entity.setColor(DEFAULT_COLOR);
         entity.setPosRaw(start.x, start.y, start.z);
         entity.segments.addAll(path);
         entity.bakeBoundingBoxes();
@@ -126,6 +130,8 @@ public class ConduitRunEntity extends BlockWireEntity {
     protected void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
         nipple = nbt.getBoolean("Nipple");
+        if(getColor() == 0)
+            setColor(DEFAULT_COLOR); // laid before runs had a colour
     }
 
     // ------------------------------------------------------------------ no current of its own
