@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": {
+      "item": "powergrid:heavy_wire_connector"
+    },
+    "P": {
+      "tag": "c:plates/copper"
+    },
+    "8": {
+      "item": "powergrid_modernized:breaker_panel_800"
+    }
+  },
+  "pattern": [
+    "H8H",
+    " P "
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:breaker_panel_800_2p"
+  }
+}

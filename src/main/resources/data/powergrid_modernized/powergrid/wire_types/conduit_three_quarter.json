@@ -1,5 +1,5 @@
 {
-  "colorable": false,
+  "colorable": true,
   "cord": false,
   "horizontalCoefficient": 1.0,
   "insulated": true,

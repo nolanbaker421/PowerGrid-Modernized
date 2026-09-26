@@ -1,5 +1,10 @@
 package com.nolanbaker.pgmodernized.device.transformer;
 
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.player.Player;
+import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
@@ -29,6 +34,8 @@ import java.util.List;
 public class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, IDeviceSpliceHost {
     public static final float SHUNT = 0.001f;
     public static final float SENSE = 1_000_000f;
+    /** Contact resistance of a closed fused cutout on a pole can's bushing. */
+    public static final float CUTOUT = 0.0005f;
 
     // No initialisers: buildCircuit and addBehaviours run from the superclass constructor.
     private TransformerSpec spec;
@@ -43,6 +50,9 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
     private float[] volts;
     private float[] syncedAmps;
     private AcReadings.Filter[] readings;
+    private SwitchedWire[] cutouts;
+    private IElectricNode[] primaryNodes;
+    private boolean cutoutOpen;
 
     public TransformerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -70,6 +80,8 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
         readings = new AcReadings.Filter[legs];
         for(int i = 0; i < legs; ++i)
             readings[i] = new AcReadings.Filter();
+        cutouts = new SwitchedWire[spec.kind().primaries()];
+        primaryNodes = new IElectricNode[spec.kind().primaries()];
     }
 
     public TransformerSpec spec() {
@@ -126,11 +138,23 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
         float winding = resistance("winding");
         var kind = spec.kind();
         var neutral = builder.terminalNode(kind.neutralTerminal());
+        // A pole can carries a fused cutout on each high-side bushing; open them to work the taps dead.
+        for(int k = 0; k < kind.primaries(); ++k) {
+            var bushing = builder.terminalNode(kind.primaryTerminal(k));
+            if(spec.size().isPole()) {
+                var live = builder.addInternalNode();
+                cutouts[k] = builder.connectSwitch(CUTOUT, bushing, live, !cutoutOpen);
+                primaryNodes[k] = live;
+            } else {
+                cutouts[k] = null;
+                primaryNodes[k] = bushing;
+            }
+        }
         var legs = kind.legs();
         for(int i = 0; i < legs.length; ++i) {
             var pair = kind.primaryPair(i);
-            var p1 = builder.terminalNode(kind.primaryTerminal(pair[0]));
-            var p2 = builder.terminalNode(kind.primaryTerminal(pair[1]));
+            var p1 = primaryNodes[pair[0]];
+            var p2 = primaryNodes[pair[1]];
             var out = builder.terminalNode(kind.secondaryTerminal(legs[i]));
             var mid = builder.addInternalNode();
             couplings[i] = kind.reversed(i)
@@ -160,13 +184,11 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
                 max = Math.max(max, Math.abs(v));
             return max;
         }
-        var behaviour = getElectricBehaviour();
-        if(behaviour == null)
-            return 0;
+        // Measured past the cutouts: a can with its cutouts open is dead at the winding.
         var kind = spec.kind();
-        var reference = behaviour.getTerminal(kind.primaryTerminal(0));
+        var reference = primaryNodes[0];
         for(int k = 1; k < kind.primaries(); ++k) {
-            var node = behaviour.getTerminal(kind.primaryTerminal(k));
+            var node = primaryNodes[k];
             if(node == null || reference == null)
                 continue;
             double v = Math.abs(node.getVoltage() - reference.getVoltage());
@@ -174,6 +196,34 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
                 max = Math.max(max, (float) v);
         }
         return max;
+    }
+
+    // ---- cutout ----
+
+    /** Pole cans have fused cutouts on their high-side bushings. */
+    public boolean hasCutout() {
+        return spec().size().isPole();
+    }
+
+    public boolean isCutoutOpen() {
+        return cutoutOpen;
+    }
+
+    /** Server side: pull the cutouts open or push them closed with the hot stick. */
+    public void toggleCutout(Player player) {
+        cutoutOpen = !cutoutOpen;
+        if(cutouts != null) {
+            for(var wire : cutouts) {
+                if(wire != null)
+                    wire.setState(!cutoutOpen);
+            }
+        }
+        if(level != null)
+            level.playSound(null, worldPosition, cutoutOpen ? SoundEvents.IRON_TRAPDOOR_OPEN : SoundEvents.IRON_TRAPDOOR_CLOSE, SoundSource.BLOCKS, 0.5f, 1.4f);
+        player.displayClientMessage(Lang.builder().translate(cutoutOpen ? "message.transformer.cutout_open" : "message.transformer.cutout_closed")
+                .style(ChatFormatting.GRAY).component(), true);
+        setChanged();
+        sendData();
     }
 
     @Override
@@ -225,6 +275,7 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         deviceHubs().write(tag, registries, clientPacket);
+        tag.putBoolean("Cutout", cutoutOpen);
         if(clientPacket) {
             var list = new net.minecraft.nbt.ListTag();
             for(int i = 0; i < amps.length; ++i) {
@@ -247,6 +298,13 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
                 amps[i] = list.getFloat(i * 2 + 1);
             }
         }
+        cutoutOpen = tag.getBoolean("Cutout");
+        if(cutouts != null) {
+            for(var wire : cutouts) {
+                if(wire != null)
+                    wire.setState(!cutoutOpen);
+            }
+        }
         // The taps read their settings with the other behaviours; the couplings were built before them.
         applyRatio();
     }
@@ -262,6 +320,9 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
                 .style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.transformer.rating", String.format("%.0f", spec.ratedVa() / 1000), String.format("%.0f", spec.ratedAmps()))
                 .style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
+        if(hasCutout())
+            Lang.builder().translate(cutoutOpen ? "gui.transformer.cutout_open" : "gui.transformer.cutout_closed")
+                    .style(cutoutOpen ? ChatFormatting.RED : ChatFormatting.GREEN).forGoggles(tooltip, 1);
         var legs = spec.kind().legs();
         for(int i = 0; i < legs.length; ++i) {
             Lang.builder()

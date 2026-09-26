@@ -369,7 +369,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         breaker.frame = item.frame();
         breaker.rating = item.rating();
         breaker.blank = item.isBlank();
-        breaker.poles = item.isBlank() || slot == MAIN ? 1 : item.poles();
+        breaker.poles = item.isBlank() ? 1 : slot == MAIN ? spec.lugs() : item.poles();
         breaker.state = BreakerState.OFF;
         breaker.heat = 0;
         breaker.current = 0;

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "L": {
+      "item": "minecraft:lever"
+    }
+  },
+  "pattern": [
+    "NLN",
+    " N "
+  ],
+  "result": {
+    "count": 2,
+    "id": "powergrid_modernized:conduit_switch"
+  }
+}

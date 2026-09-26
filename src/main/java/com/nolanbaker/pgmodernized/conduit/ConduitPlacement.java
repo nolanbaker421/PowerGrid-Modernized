@@ -44,11 +44,11 @@ public final class ConduitPlacement {
         if(!hub.isValid(level))
             return InteractionResult.FAIL;
 
-        var existing = ConduitConnection.get(stack);
+        var existing = ConduitConnection.get(stack, level);
         if(existing == null) {
             if(!hubFree(level, player, hub))
                 return InteractionResult.FAIL;
-            ConduitConnection.set(stack, hub);
+            ConduitConnection.set(stack, hub, level);
             message(player, "message.connection_next", ChatFormatting.GRAY);
             return InteractionResult.SUCCESS;
         }
@@ -68,7 +68,7 @@ public final class ConduitPlacement {
     /** A plain block was clicked: route the pending run along blocks up to the click point. */
     public static InteractionResult groundClick(UseOnContext context) {
         var stack = context.getItemInHand();
-        var existing = ConduitConnection.get(stack);
+        var existing = ConduitConnection.get(stack, context.getLevel());
         if(existing == null)
             return InteractionResult.PASS;
         var target = new ImaginaryWireEndpoint(context.getClickLocation().relative(context.getClickedFace(), 1 / 32f));
@@ -76,7 +76,7 @@ public final class ConduitPlacement {
         if(run.getResult().consumesAction()) {
             var entity = run.getObject();
             if(entity != null)
-                ConduitConnection.set(stack, new BlockWireEntityEndpoint(entity, true));
+                ConduitConnection.set(stack, new BlockWireEntityEndpoint(entity, true), context.getLevel());
             return InteractionResult.SUCCESS;
         }
         return run.getResult();
@@ -108,9 +108,9 @@ public final class ConduitPlacement {
         }
         var endpoint = new BlockWireEntityEndpoint(run, true);
 
-        var existing = ConduitConnection.get(stack);
+        var existing = ConduitConnection.get(stack, level);
         if(existing == null) {
-            ConduitConnection.set(stack, endpoint);
+            ConduitConnection.set(stack, endpoint, level);
             message(player, "message.connection_next", ChatFormatting.GRAY);
             return InteractionResult.SUCCESS;
         }

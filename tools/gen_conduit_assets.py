@@ -60,7 +60,7 @@ def textures():
     write_png(os.path.join(block, "conduit_box.png"), body)
 
     # Tube texture used by Power Grid's block wire renderer for the runs: galvanized steel.
-    steel = (0xa8, 0xad, 0xb0)
+    steel = (0x8c, 0x90, 0x94)
     tube = canvas(16, 16, steel + (255,))
     for y in range(0, 16, 4):
         fill(tube, 0, y, 16, y + 1, shade(steel, 1.1))
@@ -162,6 +162,29 @@ def socket_model():
     dump(os.path.join(ASSETS, "blockstates", "conduit_socket.json"), {"variants": variants})
 
 
+SWITCH_PLATE = (6, 3, 6, 10, 3.5, 10)
+SWITCH_TOGGLE = {False: (7, 3.5, 8.5, 9, 5.5, 10), True: (7, 3.5, 6, 9, 5.5, 7.5)}
+
+
+def switch_model():
+    """The conduit switch: the socket's body and knockout with a toggle plate on top; the toggle leans back when off, forward when on."""
+    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/conduit_box" % MOD}
+    for on in (False, True):
+        boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#terminal"), (SWITCH_PLATE, "#box"), (SWITCH_TOGGLE[on], "#terminal")]
+        for suffix, transform in (("v", lambda b: b), ("h", to_h)):
+            elements = [element(*transform(box), texture) for box, texture in boxes]
+            dump(os.path.join(ASSETS, "models", "block", "conduit_switch", "block_%s_%s.json" % (suffix, "on" if on else "off")),
+                 {"parent": "block/block", "textures": tex, "elements": elements})
+    dump(os.path.join(ASSETS, "models", "item", "conduit_switch.json"), {"parent": "%s:block/conduit_switch/block_v_off" % MOD})
+    variants = {}
+    for key, (suffix, rot) in ROTATION4.items():
+        for on in (False, True):
+            v = {"model": "%s:block/conduit_switch/block_%s_%s" % (MOD, suffix, "on" if on else "off")}
+            v.update(rot)
+            variants[key + ",on=" + ("true" if on else "false")] = v
+    dump(os.path.join(ASSETS, "blockstates", "conduit_switch.json"), {"variants": variants})
+
+
 def item_models():
     for sid, *_ in SIZES:
         dump(os.path.join(ASSETS, "models", "item", "conduit_%s.json" % sid), {
@@ -220,12 +243,13 @@ def recipes():
     shaped("conduit_four", ["BWB", "WBW", "BWB"], {"B": block, "W": wire}, 8, {"items": "powergrid:wire"})
     shaped("conduit_box", ["NNN", "N N", "NNN"], {"N": nugget}, 2, {"items": "powergrid:wire"})
     shaped("conduit_socket", ["NCN", " N "], {"N": nugget, "C": {"tag": "c:nuggets/copper"}}, 2, {"items": "powergrid:wire"})
+    shaped("conduit_switch", ["NLN", " N "], {"N": nugget, "L": {"item": "minecraft:lever"}}, 2, {"items": "powergrid:wire"})
 
 
 def wire_types():
     for sid, _conductors, thickness in SIZES:
         dump(os.path.join(DATA, "powergrid", "wire_types", "conduit_%s.json" % sid), {
-            "colorable": False, "cord": False, "horizontalCoefficient": 1.0, "insulated": True,
+            "colorable": True, "cord": False, "horizontalCoefficient": 1.0, "insulated": True,
             "itemsPerMeter": 1.0, "maximumCurrent": 1.0, "maximumLength": 64.0,
             "resistancePerItem": 0.001, "texture": "%s:textures/special/conduit.png" % MOD,
             "thermalMass": 1.0, "verticalCoefficient": 1.0, "wireThickness": thickness,
@@ -236,9 +260,11 @@ def main():
     textures()
     box_model()
     socket_model()
+    switch_model()
     item_models()
     loot_table("conduit_box")
     loot_table("conduit_socket")
+    loot_table("conduit_switch")
     recipes()
     wire_types()
     print("conduit assets written")

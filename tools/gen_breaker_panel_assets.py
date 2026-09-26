@@ -9,6 +9,7 @@ open front facing north. A viewer looking at the front sees +x on their left, so
 coordinate u maps to model x = 16 - u.
 """
 import json
+import math
 import os
 import struct
 import zlib
@@ -27,6 +28,8 @@ PANELS = [
     ("breaker_panel_400_2p", 400, 12, 2, (0x86, 0x8c, 0x96), (0x52, 0x58, 0x64)),
     ("breaker_panel_400_3p", 400, 12, 3, (0x7a, 0x84, 0x7e), (0x48, 0x52, 0x4c)),
     ("breaker_panel_800_3p", 800, 12, 3, (0x55, 0x58, 0x5e), (0x2e, 0x30, 0x36)),
+    ("breaker_panel_800_2p", 800, 12, 2, (0x60, 0x5e, 0x5a), (0x36, 0x34, 0x30)),
+    ("breaker_panel_200_3p", 200, 12, 3, (0x9a, 0xa4, 0x9e), (0x62, 0x6c, 0x66)),
 ]
 BREAKERS = [50, 200, 400, 800]
 FRAMES = {50: "1-50", 200: "51-200", 400: "201-400", 800: "401-800"}
@@ -220,6 +223,17 @@ def breaker_item_texture(rating, poles=1):
 
 # ---------------------------------------------------------------- models
 
+def _wrap(a, b):
+    """A UV span moved into the 16 px texture: whole tiles shifted, oversize spans stretched."""
+    if b - a >= 16:
+        return 0, 16
+    k = math.floor(a / 16)
+    a, b = a - 16 * k, b - 16 * k
+    if b > 16:
+        a, b = 16 - (b - a), 16
+    return a, b
+
+
 def element(x1, y1, z1, x2, y2, z2, texture, cull_south=False):
     faces = {}
     for face in ("north", "south", "east", "west", "up", "down"):
@@ -235,7 +249,10 @@ def element(x1, y1, z1, x2, y2, z2, texture, cull_south=False):
             uv = [x1, z1, x2, z2]
         else:
             uv = [x1, 16 - z2, x2, 16 - z1]
-        f = {"uv": uv, "texture": texture}
+        u1, v1, u2, v2 = uv
+        u1, u2 = _wrap(u1, u2)
+        v1, v2 = _wrap(v1, v2)
+        f = {"uv": [u1, v1, u2, v2], "texture": texture}
         if face == "south" and cull_south:
             f["cullface"] = "south"
         faces[face] = f
@@ -445,6 +462,12 @@ def recipes():
     recipe("breaker_panel_800_3p", ["H8H", "PHP"],
            {"H": heavy, "P": copper_plate, "8": {"item": "%s:breaker_panel_800" % MOD}}, 1,
            {"items": "%s:breaker_panel_800" % MOD})
+    recipe("breaker_panel_800_2p", ["H8H", " P "],
+           {"H": heavy, "P": copper_plate, "8": {"item": "%s:breaker_panel_800" % MOD}}, 1,
+           {"items": "%s:breaker_panel_800" % MOD})
+    recipe("breaker_panel_200_3p", ["H2H", "PHP"],
+           {"H": heavy, "P": copper_plate, "2": {"item": "%s:breaker_panel_200" % MOD}}, 1,
+           {"items": "%s:breaker_panel_200" % MOD})
 
     # Breakers: a column of iron, redstone and copper. The material tier sets the rating and the
     # double-width version of each tier is the next rating up.

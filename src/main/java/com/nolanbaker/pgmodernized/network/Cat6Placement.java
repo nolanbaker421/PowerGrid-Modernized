@@ -41,11 +41,11 @@ public final class Cat6Placement {
         if(!clicked.isValid(level))
             return InteractionResult.FAIL;
 
-        var existing = Cat6Connection.get(stack);
+        var existing = Cat6Connection.get(stack, level);
         if(existing == null) {
             if(!portFree(level, player, clicked))
                 return InteractionResult.FAIL;
-            Cat6Connection.set(stack, clicked);
+            Cat6Connection.set(stack, clicked, level);
             message(player, "message.connection_next", ChatFormatting.GRAY);
             return InteractionResult.SUCCESS;
         }
@@ -58,7 +58,7 @@ public final class Cat6Placement {
     /** A plain block was clicked: route the pending cable along blocks up to the click point. */
     public static InteractionResult groundClick(UseOnContext context) {
         var stack = context.getItemInHand();
-        var existing = Cat6Connection.get(stack);
+        var existing = Cat6Connection.get(stack, context.getLevel());
         if(existing == null)
             return InteractionResult.PASS;
         var target = new ImaginaryWireEndpoint(context.getClickLocation().relative(context.getClickedFace(), 1 / 32f));
@@ -66,7 +66,7 @@ public final class Cat6Placement {
         if(run.getResult().consumesAction()) {
             var entity = run.getObject();
             if(entity != null)
-                Cat6Connection.set(stack, new BlockWireEntityEndpoint(entity, true));
+                Cat6Connection.set(stack, new BlockWireEntityEndpoint(entity, true), context.getLevel());
             return InteractionResult.SUCCESS;
         }
         return run.getResult();
@@ -94,9 +94,9 @@ public final class Cat6Placement {
         }
         var endpoint = new BlockWireEntityEndpoint(wire, true);
 
-        var existing = Cat6Connection.get(stack);
+        var existing = Cat6Connection.get(stack, level);
         if(existing == null) {
-            Cat6Connection.set(stack, endpoint);
+            Cat6Connection.set(stack, endpoint, level);
             message(player, "message.connection_next", ChatFormatting.GRAY);
             return InteractionResult.SUCCESS;
         }

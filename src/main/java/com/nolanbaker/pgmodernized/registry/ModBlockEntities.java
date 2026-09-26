@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlockEntity;
 import com.nolanbaker.pgmodernized.client.BreakerPanelRenderer;
 import com.nolanbaker.pgmodernized.client.SwitchgearRenderer;
 import com.nolanbaker.pgmodernized.device.breaker.SwitchgearBlockEntity;
@@ -65,7 +66,8 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<BreakerPanelBlockEntity> BREAKER_PANEL =
             REGISTRATE.blockEntity("breaker_panel", BreakerPanelBlockEntity::new)
                     .validBlocks(ModBlocks.BREAKER_PANEL_200, ModBlocks.BREAKER_PANEL_400, ModBlocks.BREAKER_PANEL_800,
-                            ModBlocks.BREAKER_PANEL_200_2P, ModBlocks.BREAKER_PANEL_400_2P, ModBlocks.BREAKER_PANEL_400_3P, ModBlocks.BREAKER_PANEL_800_3P)
+                            ModBlocks.BREAKER_PANEL_200_2P, ModBlocks.BREAKER_PANEL_400_2P, ModBlocks.BREAKER_PANEL_400_3P, ModBlocks.BREAKER_PANEL_800_3P,
+                            ModBlocks.BREAKER_PANEL_800_2P, ModBlocks.BREAKER_PANEL_200_3P)
                     .renderer(() -> BreakerPanelRenderer::new)
                     .register();
 
@@ -83,6 +85,11 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<ConduitSocketBlockEntity> CONDUIT_SOCKET =
             REGISTRATE.blockEntity("conduit_socket", ConduitSocketBlockEntity::new)
                     .validBlock(ModBlocks.CONDUIT_SOCKET)
+                    .register();
+
+    public static final BlockEntityEntry<ConduitSwitchBlockEntity> CONDUIT_SWITCH =
+            REGISTRATE.blockEntity("conduit_switch", ConduitSwitchBlockEntity::new)
+                    .validBlock(ModBlocks.CONDUIT_SWITCH)
                     .register();
 
     public static final BlockEntityEntry<CtCabinetBlockEntity> CT_CABINET =

@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitSocketBlock;
 import com.nolanbaker.pgmodernized.device.analogio.AnalogIOBlock;
@@ -117,6 +118,8 @@ public class ModBlocks {
     public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_400_2P = breakerPanel(PanelSpec.SPLIT_400, "400 A Split-Phase Breaker Panel");
     public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_400_3P = breakerPanel(PanelSpec.THREE_400, "400 A Three-Phase Breaker Panel");
     public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_800_3P = breakerPanel(PanelSpec.THREE_800, "800 A Three-Phase Breaker Panel");
+    public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_800_2P = breakerPanel(PanelSpec.SPLIT_800, "800 A Split-Phase Breaker Panel");
+    public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_200_3P = breakerPanel(PanelSpec.THREE_200, "200 A Three-Phase Breaker Panel");
 
     private static BlockEntry<BreakerPanelBlock> breakerPanel(PanelSpec spec, String name) {
         return REGISTRATE.block(spec.id(), p -> new BreakerPanelBlock(p, spec))
@@ -230,6 +233,18 @@ public class ModBlocks {
             .properties(p -> p.noOcclusion())
             .transform(pickaxeOnly())
             .lang("Conduit Socket")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** A light switch on the end of a run: the first two pulled wires land on its poles and the toggle joins them. */
+    public static final BlockEntry<ConduitSwitchBlock> CONDUIT_SWITCH = REGISTRATE.block("conduit_switch", ConduitSwitchBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Conduit Switch")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

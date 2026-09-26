@@ -97,7 +97,12 @@ Right-click a **closed** run (a hub on both ends) with any Power Grid wire item.
 wire goes through, consuming that wire's usual items per metre. Repeat with the same or a different
 wire until the conduit is full. Pulled wires are numbered and coloured in US order:
 
-1 black, 2 red, 3 blue, 4 white, 5 green, 6 orange, 7 brown, 8 yellow, 9 gray, 10 purple, 11 pink, 12 tan.
+1 black, 2 white, 3 red, 4 blue, 5 orange, 6 brown, 7 yellow, 8 purple, 9 pink, 10 tan, 11 gray, 12 green.
+
+So a two-wire pull is a black hot and a white neutral, and a three-phase pull with neutral is black,
+white, red, blue. If a run needs another neutral, or you keep your own colour code, **right-click a
+wire's pin in the splice editor** to step it through the twelve colours; the colour follows the wire
+everywhere it is named. A run itself takes dye like any Power Grid wire, so conduit can be painted.
 
 **Conduit fill** is figured by the book (NEC Chapter 9, Table 1): the pulled conductors' total
 cross-section may take 53% of the conduit's internal area with one wire in it, 31% with two, and
@@ -166,6 +171,14 @@ two wires pulled through its run land on the socket's two poles automatically, a
 copper cord plugs into it with one click, then splits onto the machine as usual. Click the socket
 with an empty hand to unplug the cord. Place it with the clicked face as its back; wrench its face to
 turn the hub to any of the four directions. There is nothing to splice.
+
+### Conduit Switch
+
+The same 6 x 6 pixel fitting as the socket with a toggle on top instead of a cord socket: one hub,
+and the first two wires pulled through its run land on its **Line** and **Load** poles by themselves.
+Right-click it with an empty hand to flip it; the toggle leans forward when on. Goggles show the
+state. Place and wrench it like the socket. It is a plain contact between the two wires, so put it in
+the hot conductor of a lighting circuit and give the light its own conduit run back to a box.
 
 ---
 
@@ -306,6 +319,13 @@ free (a tank needs the block above, the substation units a ring around them).
 - **Taps**: two value boxes on the front of the base block, HV on the left and LV on the right.
   Scroll or click them to move that winding in 2.5% steps up to 10% either way. Changing a tap
   while that winding is live arcs and shocks you: there is no on-load tap changer.
+- **Pole cutouts**: every pole can has fused cutouts on its high-side bushings. Sneak-right-click the
+  can with an empty hand to pull them open (the high side goes dead, so the taps can be worked without
+  an arc) and again to close them. Goggles show whether they are open.
+- Nameplates for the AC fork's generators: Pad 3.5 kV / 480 V, Pad 8 kV / 480 V and Substation
+  35 kV / 8 kV (a step-up when fed from the low side).
+- Three-phase units are delta on the primary, which only makes sense with an alternating feed. On
+  stock DC Power Grid three DC sources on H1, H2, H3 are a dead short across the delta.
 - Goggles show the taps and their voltages, the kVA rating and low-side current, and each leg's
   voltage against neutral and its current.
 - On the regular (DC) Power Grid these pass DC at the ratio, as Power Grid's own transformer does.
@@ -350,6 +370,8 @@ Four **analog outputs** (red terminals) that put out a commanded voltage of −2
 sides are referenced to.
 
 ### CT Cabinet
+
+Sneak-right-click the cabinet with an empty hand to zero its energy counters.
 
 A wall cabinet with four current transformers for power monitoring. It has no exposed terminals:
 wiring comes in through eight knockouts (four top, four bottom) and is spliced in its editor, like
@@ -428,6 +450,19 @@ one cable, so fanning out means going through a switch. Cables re-link themselve
 reloaded chunks and rebuilt networks recover on their own.
 
 ---
+
+### Network Switch modes
+
+Sneak-right-click the switch with an empty hand to change its mode:
+
+- **Switch mode** (default): all eight ports are one network. Computers on it see each other's
+  components, exactly as if they shared one OpenComputers cable.
+- **Relay mode**: each port is its own network. Components stay behind their port; only network
+  messages (modem sends and broadcasts) are repeated out of the other ports, hop counted like the
+  OpenComputers relay. Use it to keep component sharing off a building's backbone.
+
+ComputerCraft traffic is always shared. Conduit and Cat6 will not land on Power Grid's own wire
+connectors or nodes; they need a knockout or a jack.
 
 ## 8. Computer integration
 
@@ -532,6 +567,7 @@ adapter placed next to them:
 | Conduit Box (2) | ring of eight iron nuggets |
 | Blank Cover Plate (2) | an iron plate |
 | Node Cover Plate | a blank cover plate and pins, shapeless |
+| Conduit Switch (2) | iron nugget, lever, iron nugget over an iron nugget |
 | Conduit Socket (2) | iron nugget, copper nugget, iron nugget over an iron nugget |
 | Breaker Panel 200 A | iron plates and copper plates around a conductive casing, heavy wire connector at the bottom |
 | Breaker Panel 400 A / 800 A | the smaller panel surrounded by copper and brass plates / brass and iron |

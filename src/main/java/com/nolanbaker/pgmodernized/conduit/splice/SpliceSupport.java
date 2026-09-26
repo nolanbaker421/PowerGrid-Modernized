@@ -25,6 +25,9 @@ public final class SpliceSupport {
     private final ElectricBlockEntity be;
     private final ISpliceHost host;
     private final List<int[]> splices = new ArrayList<>();
+    /** Prune calls skipped after loading: a run's entities arrive after the block that holds them. */
+    private static final int PRUNE_GRACE = 6;
+    private int pruneCalls;
 
     public <T extends ElectricBlockEntity & ISpliceHost> SpliceSupport(T be) {
         this.be = be;
@@ -78,10 +81,29 @@ public final class SpliceSupport {
         changed();
     }
 
-    /** Drops splices whose conductor is gone. Call from the server lazy tick. */
+    /**
+     * Drops splices whose conductor is gone. Call from the server lazy tick. A conductor counts
+     * as gone only when its run is here and no longer carries it: a run that is not found may be
+     * in a chunk that has not loaded, and the first calls after loading are skipped altogether
+     * because entities arrive after the blocks of their chunk.
+     */
     public void prune() {
-        if(splices.removeIf(s -> !terminalUsable(s[0]) || !terminalUsable(s[1])))
+        if(pruneCalls < PRUNE_GRACE) {
+            ++pruneCalls;
+            return;
+        }
+        if(splices.removeIf(s -> gone(s[0]) || gone(s[1])))
             changed();
+    }
+
+    private boolean gone(int terminal) {
+        if(host.isPoint(terminal))
+            return false;
+        int hub = host.hubOf(terminal);
+        if(hub < 0)
+            return true;
+        var run = host.hubRun(hub);
+        return run != null && run.conductor(host.conductorOf(terminal)) == null;
     }
 
     private void changed() {
@@ -131,8 +153,12 @@ public final class SpliceSupport {
             }
         }
         int hub = host.hubOf(terminal);
-        if(hub >= 0)
-            return Lang.builder().add(host.hubName(hub)).text(" ").add(ConductorColors.name(host.conductorOf(terminal))).component();
+        if(hub >= 0) {
+            var run = host.hubRun(hub);
+            var conductor = run == null ? null : run.conductor(host.conductorOf(terminal));
+            int colour = conductor == null ? host.conductorOf(terminal) : conductor.colorIndex();
+            return Lang.builder().add(host.hubName(hub)).text(" ").add(ConductorColors.name(colour)).component();
+        }
         return Component.literal("#" + terminal);
     }
 

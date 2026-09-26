@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,hung=false": {
+      "model": "powergrid_modernized:block/transformer_sub_35kv_8kv"
+    },
+    "facing=north,hung=true": {
+      "model": "powergrid_modernized:block/transformer_sub_35kv_8kv"
+    },
+    "facing=east,hung=false": {
+      "model": "powergrid_modernized:block/transformer_sub_35kv_8kv",
+      "y": 90
+    },
+    "facing=east,hung=true": {
+      "model": "powergrid_modernized:block/transformer_sub_35kv_8kv",
+      "y": 90
+    },
+    "facing=south,hung=false": {
+      "model": "powergrid_modernized:block/transformer_sub_35kv_8kv",
+      "y": 180
+    },
+    "facing=south,hung=true": {
+      "model": "powergrid_modernized:block/transformer_sub_35kv_8kv",
+      "y": 180
+    },
+    "facing=west,hung=false": {
+      "model": "powergrid_modernized:block/transformer_sub_35kv_8kv",
+      "y": 270
+    },
+    "facing=west,hung=true": {
+      "model": "powergrid_modernized:block/transformer_sub_35kv_8kv",
+      "y": 270
+    }
+  }
+}

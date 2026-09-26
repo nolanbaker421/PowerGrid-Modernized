@@ -15,8 +15,11 @@ public enum TransformerSpec {
     PAD_1KV_208V("pad_1kv_208v", TransformerKind.THREE_PHASE, TransformerSize.PAD, 1_000, 208, 150_000),
     PAD_10KV_208V("pad_10kv_208v", TransformerKind.THREE_PHASE, TransformerSize.PAD, 10_000, 208, 500_000),
     PAD_10KV_480V("pad_10kv_480v", TransformerKind.THREE_PHASE, TransformerSize.PAD, 10_000, 480, 1_000_000),
+    PAD_3500V_480V("pad_3500v_480v", TransformerKind.THREE_PHASE, TransformerSize.PAD, 3_500, 480, 500_000),
+    PAD_8KV_480V("pad_8kv_480v", TransformerKind.THREE_PHASE, TransformerSize.PAD, 8_000, 480, 1_000_000),
     SUB_35KV_480V("sub_35kv_480v", TransformerKind.THREE_PHASE, TransformerSize.POWER_S, 35_000, 480, 2_500_000),
     SUB_35KV_10KV("sub_35kv_10kv", TransformerKind.THREE_PHASE, TransformerSize.POWER_S, 35_000, 10_000, 10_000_000),
+    SUB_35KV_8KV("sub_35kv_8kv", TransformerKind.THREE_PHASE, TransformerSize.POWER_S, 35_000, 8_000, 10_000_000),
     SUB_100KV_35KV("sub_100kv_35kv", TransformerKind.THREE_PHASE, TransformerSize.POWER_L, 100_000, 35_000, 50_000_000),
     DRY_480V_240V("dry_480v_240v", TransformerKind.SPLIT_PHASE, TransformerSize.DRY, 480, 240, 25_000),
     DRY_480V_208V("dry_480v_208v", TransformerKind.THREE_PHASE, TransformerSize.DRY, 480, 208, 75_000);
@@ -97,7 +100,12 @@ public enum TransformerSpec {
     }
 
     public static String volts(float v) {
-        return v >= 1000 ? String.format("%.3g kV", v / 1000).replace(".00", "").replace(".0 ", " ") : String.format("%.0f V", v);
+        if(v < 1000)
+            return String.format("%.0f V", v);
+        String kv = String.format("%.2f", v / 1000);
+        if(kv.contains("."))
+            kv = kv.replaceAll("0+$", "").replaceAll("\\.$", "");
+        return kv + " kV";
     }
 
     /** "10 kV / 208 V". */

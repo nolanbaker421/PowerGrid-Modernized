@@ -1,5 +1,10 @@
 package com.nolanbaker.pgmodernized.network;
 
+import org.patryk3211.powergrid.utility.Lang;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionResult;
 import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
@@ -169,6 +174,21 @@ public class NetworkSwitchBlock extends Block implements IBE<NetworkSwitchBlockE
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         IBE.onRemove(state, level, pos, newState);
+    }
+
+    /** Sneak with an empty hand: switch mode (one shared network) or relay mode (network messages only). */
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if(!player.isShiftKeyDown() || !player.getMainHandItem().isEmpty())
+            return InteractionResult.PASS;
+        if(!level.isClientSide) {
+            withBlockEntityDo(level, pos, be -> {
+                be.toggleMode();
+                player.displayClientMessage(Lang.builder().translate(be.isIsolated() ? "gui.network_switch.mode.relay" : "gui.network_switch.mode.shared")
+                        .style(ChatFormatting.GRAY).component(), true);
+            });
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override

@@ -7,8 +7,8 @@ import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 /**
  * The network side of a Cat6 cable, shared by the hanging and the block-routed entity.
  * Replaces Power Grid's "make wire" step: instead of joining an electrical network the cable
- * links the two jacks' computer network nodes, and re-checks that link once a second so jacks
- * that unload and reload with fresh nodes are picked up again.
+ * links the two jacks' computer network nodes, port to port, and re-checks that link once a
+ * second so jacks that unload and reload with fresh nodes are picked up again.
  */
 public final class Cat6LinkState {
     private static final int RELINK_INTERVAL = 20;
@@ -17,6 +17,7 @@ public final class Cat6LinkState {
     private final ICat6Cable cable;
     @Nullable
     private JackSupport linkedA, linkedB;
+    private int portA, portB;
     private int relinkTimer;
 
     public <T extends BaseWireEntity & ICat6Cable> Cat6LinkState(T owner) {
@@ -36,12 +37,14 @@ public final class Cat6LinkState {
         b.addCable(cable);
         linkedA = a;
         linkedB = b;
-        a.connect(b);
+        portA = port(owner.getEndpoint1());
+        portB = port(owner.getEndpoint2());
+        a.connect(b, portA, portB);
     }
 
     public void dropWire() {
         if(linkedA != null && linkedB != null)
-            linkedA.disconnect(linkedB);
+            linkedA.disconnect(linkedB, portA, portB);
         linkedA = null;
         linkedB = null;
     }
@@ -65,7 +68,7 @@ public final class Cat6LinkState {
         if(a != linkedA || b != linkedB || !a.isLoaded() || !b.isLoaded()) {
             makeWire(); // a jack reloaded with fresh nodes
         } else {
-            a.connect(b); // idempotent, survives network rebuilds
+            a.connect(b, portA, portB); // idempotent, survives network rebuilds
         }
     }
 
@@ -82,5 +85,9 @@ public final class Cat6LinkState {
     @Nullable
     private JackSupport jackAt(@Nullable IWireEndpoint endpoint) {
         return endpoint instanceof JackEndpoint jack ? jack.jack(owner.level()) : null;
+    }
+
+    private static int port(@Nullable IWireEndpoint endpoint) {
+        return endpoint instanceof JackEndpoint jack ? jack.getPort() : 0;
     }
 }

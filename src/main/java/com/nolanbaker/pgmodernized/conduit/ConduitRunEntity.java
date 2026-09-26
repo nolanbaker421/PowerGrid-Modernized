@@ -216,7 +216,7 @@ public class ConduitRunEntity extends BlockWireEntity {
             if(conductor == null) {
                 lines.add(Lang.builder().translate("gui.conduit.slot_empty", k + 1).style(ChatFormatting.DARK_GRAY).component());
             } else {
-                lines.add(Lang.builder().text("  " + (k + 1) + " ").add(ConductorColors.name(k)).text(": ")
+                lines.add(Lang.builder().text("  " + (k + 1) + " ").add(ConductorColors.name(conductor.colorIndex())).text(": ")
                         .add(Lang.builder().add(conductor.getItem().getDescription()).style(ChatFormatting.WHITE))
                         .text(String.format(" (%s), %.1f A", WireGauge.of(level(), conductor.getItem()).label(), conductor.measuredCurrent())).style(ChatFormatting.GRAY).component());
             }
@@ -291,6 +291,7 @@ public class ConduitRunEntity extends BlockWireEntity {
         entity.setEndpoint1(getEndpoint2());
         entity.setEndpoint2(getEndpoint1());
         entity.getEntityData().set(TEMPERATURE, getTemperature());
+        entity.setColor(getColor());
         var pos = position();
         for(var segment : segments) {
             pos = pos.add(segment.vector());

@@ -1,6 +1,7 @@
 package com.nolanbaker.pgmodernized.util;
 
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
+import com.nolanbaker.pgmodernized.device.breaker.BusBarItem;
 import com.nolanbaker.pgmodernized.network.Cat6CableItem;
 import net.minecraft.world.item.ItemStack;
 
@@ -15,6 +16,6 @@ public final class WireAcceptance {
     /** True for real conductors; false for the network cable and conduit, which only fit their own ports. */
     public static boolean electrical(ItemStack wireStack) {
         var item = wireStack.getItem();
-        return !(item instanceof Cat6CableItem) && !(item instanceof ConduitItem);
+        return !(item instanceof Cat6CableItem) && !(item instanceof ConduitItem) && !(item instanceof BusBarItem);
     }
 }

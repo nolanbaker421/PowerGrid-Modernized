@@ -34,6 +34,12 @@
     "powergrid_modernized:transformer_sub_100kv_35kv",
     "powergrid_modernized:transformer_dry_480v_240v",
     "powergrid_modernized:transformer_dry_480v_208v",
+    "powergrid_modernized:conduit_switch",
+    "powergrid_modernized:transformer_pad_3500v_480v",
+    "powergrid_modernized:transformer_pad_8kv_480v",
+    "powergrid_modernized:transformer_sub_35kv_8kv",
+    "powergrid_modernized:breaker_panel_800_2p",
+    "powergrid_modernized:breaker_panel_200_3p",
     "powergrid_modernized:three_phase_motor",
     "powergrid_modernized:three_phase_drive"
   ]
