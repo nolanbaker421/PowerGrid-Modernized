@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.breaker;
 
+import net.minecraft.world.phys.AABB;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
@@ -69,6 +70,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     private SpliceSupport splices;
     private List<SplicePoint> points;
     private boolean needsRebuild;
+    /** The head plus the extensions below it, from the block state. */
+    private int sections = 1;
 
     public BreakerPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -81,19 +84,21 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             return;
         var state = getBlockState();
         spec = state != null && state.getBlock() instanceof BreakerPanelBlock block ? block.spec() : PanelSpec.A200;
+        sections = state != null ? BreakerPanelBlock.sectionsOf(state) : 1;
         main = new Breaker();
-        branches = new Breaker[spec.slots()];
+        // Room for every extension the panel could get; spaces past slotCount() stay empty.
+        branches = new Breaker[PanelLayout.maxSlots(spec)];
         for(int i = 0; i < branches.length; ++i)
             branches[i] = new Breaker();
         mainWires = new SwitchedWire[spec.lugs()];
-        branchWires = new SwitchedWire[spec.slots()];
+        branchWires = new SwitchedWire[branches.length];
     }
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         ensureInit();
-        ratings = new BreakerRatingBehaviour[1 + spec.slots()];
-        for(int slot = MAIN; slot < spec.slots(); ++slot) {
+        ratings = new BreakerRatingBehaviour[1 + branches.length];
+        for(int slot = MAIN; slot < branches.length; ++slot) {
             final int s = slot;
             var behaviour = new BreakerRatingBehaviour(this, slot);
             behaviour.withCallback(value -> onRating(s, value));
@@ -105,6 +110,78 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
     private BreakerRatingBehaviour rating(int slot) {
         return ratings[slot + 1];
+    }
+
+    /** The rating box of a space, for the extension blocks' mirrors. */
+    public BreakerRatingBehaviour ratingBehaviour(int slot) {
+        return ratings[slot + 1];
+    }
+
+    /** The head and its extensions. */
+    public int sections() {
+        ensureInit();
+        return sections;
+    }
+
+    /** Branch spaces the panel has with its present extensions. */
+    public int slotCount() {
+        ensureInit();
+        return spec.slots() * sections;
+    }
+
+    /** Whether any of the head's bottom knockouts carries a run, which an extension would cover. */
+    public boolean bottomHubsUsed() {
+        for(int h = 4; h < PanelLayout.EDGE_HUBS; ++h) {
+            if(SpliceSupport.runAt(this, PanelLayout.hubTerminal(spec(), h)) != null)
+                return true;
+        }
+        return false;
+    }
+
+    /** An extension came or went: the spaces beyond the new end are emptied and their breakers dropped. */
+    @Override
+    public void setBlockState(BlockState state) {
+        super.setBlockState(state);
+        if(spec == null)
+            return;
+        int now = BreakerPanelBlock.sectionsOf(state);
+        if(now == sections)
+            return;
+        sections = now;
+        trimTo(slotCount());
+        points = null;
+        if(level != null && !level.isClientSide) {
+            rebuild();
+            notifyUpdate();
+        }
+    }
+
+    private void trimTo(int count) {
+        for(int slot = 0; slot < branches.length; ++slot) {
+            var breaker = branches[slot];
+            int head = breaker.isCovered() ? breaker.head : slot;
+            if(head < 0 || head >= branches.length || !branches[head].installed())
+                continue;
+            int last = head + 2 * (branches[head].rows() - 1);
+            if(last < count)
+                continue;
+            var stack = branches[head].item();
+            boolean locked = branches[head].locked;
+            uninstall(head);
+            if(level instanceof ServerLevel) {
+                var center = worldPosition.getCenter();
+                Containers.dropItemStack(level, center.x, center.y, center.z, stack);
+                if(locked)
+                    Containers.dropItemStack(level, center.x, center.y, center.z, ModItems.BREAKER_LOCK.asStack());
+            }
+        }
+    }
+
+    /** The breakers of the extensions are drawn by this block entity, a block or two below it. */
+    @Override
+    public AABB getRenderBoundingBox() {
+        return new AABB(worldPosition.getX(), worldPosition.getY() - (sections - 1), worldPosition.getZ(),
+                worldPosition.getX() + 1, worldPosition.getY() + 1, worldPosition.getZ() + 1);
     }
 
     private void onRating(int slot, int value) {
@@ -200,7 +277,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         }
         for(int slot = 0; slot < branchWires.length; ++slot) {
             branchWires[slot] = builder.connectSwitch(resistance("branch"), buses[lugFor(slot)],
-                    builder.terminalNode(spec.branchTerminal(slot)), wireClosed(slot));
+                    builder.terminalNode(PanelLayout.branchTerminal(spec, slot)), wireClosed(slot));
         }
     }
 
@@ -340,7 +417,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         if(!spec.acceptsPoles(item.poles()))
             return Lang.builder().translate("message.breaker_panel.too_many_poles", item.poles(), spec.lugs()).style(ChatFormatting.RED).component();
         int rows = rowsFor(slot, item);
-        if(!spec.fits(slot, rows))
+        if(!spec.fits(slot, rows, slotCount()))
             return Lang.builder().translate("message.breaker_panel.no_room", rows).style(ChatFormatting.RED).component();
         for(int i = 1; i < rows; ++i) {
             if(branches[slot + 2 * i].installed())
@@ -672,7 +749,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate(spec.titleKey(), spec.rating()).style(ChatFormatting.GRAY).forGoggles(tooltip);
         goggleLine(tooltip, MAIN);
-        for(int i = 0; i < branches.length; ++i) {
+        for(int i = 0; i < slotCount(); ++i) {
             if(!branches[i].isCovered())
                 goggleLine(tooltip, i);
         }
@@ -718,10 +795,10 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             for(int lug = 0; lug < spec.lugs(); ++lug)
                 points.add(new SplicePoint(spec.lineTerminal(lug), PanelLayout.lineName(spec, lug), PanelLayout.lineRgb(spec, lug)));
             points.add(new SplicePoint(spec.neutralTerminal(), Lang.builder().translate("breaker_panel.neutral").style(ChatFormatting.BLUE).component(), IDecoratedTerminal.BLUE));
-            for(int i = 0; i < spec.slots(); ++i) {
+            for(int i = 0; i < slotCount(); ++i) {
                 if(branches[i].isDeadRow())
                     continue;
-                points.add(new SplicePoint(spec.branchTerminal(i), Lang.builder().add(pointName(i)).style(ChatFormatting.WHITE).component(), 0xC8C8C8));
+                points.add(new SplicePoint(PanelLayout.branchTerminal(spec, i), Lang.builder().add(pointName(i)).style(ChatFormatting.WHITE).component(), 0xC8C8C8));
             }
         }
         return points;
@@ -731,8 +808,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     public boolean isPoint(int terminal) {
         if(!PanelLayout.isPoint(spec(), terminal))
             return false;
-        int slot = terminal - spec.branchFirst();
-        return slot < 0 || slot >= branches.length || !branches[slot].isDeadRow();
+        int slot = PanelLayout.branchSlot(spec, terminal);
+        return slot < 0 || (slot < slotCount() && !branches[slot].isDeadRow());
     }
 
     @Override
@@ -742,7 +819,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
     @Override
     public int hubCount() {
-        return PanelLayout.HUB_COUNT;
+        return PanelLayout.HUB_COUNT + PanelLayout.EXT_HUBS * (sections() - 1);
     }
 
     @Override
@@ -777,7 +854,9 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
     @Override
     public @Nullable ConduitRunEntity hubRun(int hub) {
-        return hub < 0 || hub >= PanelLayout.HUB_COUNT ? null : SpliceSupport.runAt(this, hubTerminal(hub));
+        if(hub < 0 || hub >= hubCount() || (sections() > 1 && PanelLayout.isHeadBottomHub(hub)))
+            return null;
+        return SpliceSupport.runAt(this, hubTerminal(hub));
     }
 
     // ------------------------------------------------------------------ breaker record

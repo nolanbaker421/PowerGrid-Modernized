@@ -54,7 +54,7 @@ public record SplicePayload(BlockPos pos, int action, int a, int b) implements C
         var level = player.level();
         if(!level.isLoaded(payload.pos) || player.distanceToSqr(payload.pos.getCenter()) > 64)
             return;
-        if(!(level.getBlockEntity(payload.pos) instanceof ISpliceHost host))
+        if(!(level.getBlockEntity(payload.pos) instanceof ISpliceHost host) || host.splices() == null)
             return;
         if(payload.action == RECOLOR) {
             // Tape on a wire's end: no electrical change, nothing live is touched.

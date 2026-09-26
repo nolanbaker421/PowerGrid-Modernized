@@ -259,5 +259,12 @@
   "powergrid.gui.pull_box.hub.back": "Back knockout %1$s",
   "powergrid.message.pull_box.no_terminals": "A pull box has no terminals; wires go through the conduit and are spliced inside",
   "powergrid.message.conduit.too_big": "%1$s conduit does not fit this knockout; %2$s is the largest it takes",
-  "powergrid.message.conduit.nipple": "The gutter nipple stays as long as the pull box and the panel stand together"
+  "powergrid.message.conduit.nipple": "The gutter nipple stays as long as the pull box and the panel stand together",
+  "block.powergrid_modernized.panel_extension": "Panel Extension",
+  "powergrid.gui.breaker_panel.hub.ext_bottom": "Extension %1$s bottom knockout %2$s",
+  "powergrid.gui.breaker_panel.hub.ext_left": "Extension %1$s left knockout %2$s",
+  "powergrid.gui.breaker_panel.hub.ext_right": "Extension %1$s right knockout %2$s",
+  "powergrid.message.panel_extension.needs_panel": "Place it directly under a breaker panel, or under that panel's extension",
+  "powergrid.message.panel_extension.full": "This panel already has two extensions",
+  "powergrid.message.panel_extension.bottom_used": "Take the conduit off the panel's bottom knockouts first; the extension covers them"
 }

@@ -28,7 +28,7 @@ import org.patryk3211.powergrid.utility.Lang;
  */
 public class BreakerRatingBehaviour extends ScrollValueBehaviour {
     /** One type per space: index 0 is the main, 1.. the branch spaces. */
-    private static final BehaviourType<?>[] TYPES = new BehaviourType<?>[1 + 12];
+    private static final BehaviourType<?>[] TYPES = new BehaviourType<?>[1 + 12 * (1 + PanelLayout.MAX_EXT)];
 
     static {
         for(int i = 0; i < TYPES.length; ++i)
@@ -120,6 +120,9 @@ public class BreakerRatingBehaviour extends ScrollValueBehaviour {
         @Override
         public Vec3 getLocalOffset(LevelAccessor level, BlockPos pos, BlockState state) {
             if(!(state.getBlock() instanceof BreakerPanelBlock))
+                return null;
+            // Spaces in an extension show their box on the extension block, not here.
+            if(PanelLayout.sectionOfSlot(panel.spec(), slot) > 0)
                 return null;
             var breaker = panel.breaker(slot);
             if(!breaker.isBreaker())

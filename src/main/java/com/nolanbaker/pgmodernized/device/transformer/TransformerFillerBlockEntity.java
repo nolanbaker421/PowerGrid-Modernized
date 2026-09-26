@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.transformer;
 
+import com.nolanbaker.pgmodernized.util.IElectricDelegate;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -22,13 +23,18 @@ import java.util.List;
  * clicked on a bushing in the cell above a tank therefore lands on the tank. Goggles looking at a
  * filler read the base as well.
  */
-public class TransformerFillerBlockEntity extends BlockEntity implements IElectric, IHaveGoggleInformation {
+public class TransformerFillerBlockEntity extends BlockEntity implements IElectric, IElectricDelegate, IHaveGoggleInformation {
     public TransformerFillerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
     private BlockPos basePos() {
         return TransformerFillerBlock.basePos(worldPosition, getBlockState());
+    }
+
+    @Override
+    public BlockPos headPos() {
+        return basePos();
     }
 
     @Nullable

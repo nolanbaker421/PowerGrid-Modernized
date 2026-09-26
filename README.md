@@ -63,6 +63,13 @@ main breaker the panel is dead. The main must have as many poles as the panel ha
 - Splicing a live terminal, or cutting or pulling live wire out of conduit, shocks you. Damage grows
   with the voltage or current involved, and the death message says who forgot their lockout tagout.
 
+**Panel Extension**: place one directly under a panel (or under its first extension) on the same
+wall and the panel grows by its row count again on the same bus, up to two extensions for 36 spaces.
+A breaker may span down into an extension, so a 9-row 3-pole 800 A fits. The extension has four
+knockouts along its bottom and two down each side and covers the head's bottom ones; every click,
+wire and wrench setting on it goes to the head panel. Taking an extension out drops the breakers in
+it and any below it.
+
 ## Switchgear
 
 For loads beyond what a panel carries, a **Switchgear Section** is a floor-standing cabinet with a

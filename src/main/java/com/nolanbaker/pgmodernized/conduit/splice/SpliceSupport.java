@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit.splice;
 
+import com.nolanbaker.pgmodernized.util.IElectricDelegate;
 import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import com.nolanbaker.pgmodernized.conduit.ConduitFill;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
@@ -187,22 +188,35 @@ public final class SpliceSupport {
         if(level == null)
             return null;
         BlockPos pos = be.getBlockPos();
-        var endpoint = new BlockWireEndpoint(pos, hubTerminal);
         var behaviour = be.getElectricBehaviour();
         if(behaviour != null) {
-            var wires = behaviour.getConnections().get(endpoint);
-            if(wires != null) {
-                for(var wire : wires) {
+            // A run on a delegate cell (a transformer filler, a panel extension) is keyed by that cell's position.
+            for(var entry : behaviour.getConnections().entrySet()) {
+                var key = entry.getKey();
+                if(key.getTerminal() != hubTerminal || !delegatesTo(level, key.getPos(), pos))
+                    continue;
+                for(var wire : entry.getValue()) {
                     if(wire instanceof ConduitRunEntity run && !run.isRemoved())
                         return run;
                 }
             }
         }
         // The client may not have the connection registered yet; look for the entity itself.
-        for(var run : level.getEntitiesOfClass(ConduitRunEntity.class, new AABB(pos).inflate(1.5))) {
-            if(!run.isRemoved() && run.isConnectedTo(pos, hubTerminal))
+        for(var run : level.getEntitiesOfClass(ConduitRunEntity.class, new AABB(pos).inflate(3.5))) {
+            if(run.isRemoved())
+                continue;
+            if(endsOn(level, run.getEndpoint1(), pos, hubTerminal) || endsOn(level, run.getEndpoint2(), pos, hubTerminal))
                 return run;
         }
         return null;
+    }
+
+    /** The position itself, or a cell whose block entity answers for the block at {@code head}. */
+    private static boolean delegatesTo(Level level, BlockPos at, BlockPos head) {
+        return at.equals(head) || (level.getBlockEntity(at) instanceof IElectricDelegate delegate && delegate.headPos().equals(head));
+    }
+
+    private static boolean endsOn(Level level, @Nullable org.patryk3211.powergrid.electricity.wire.IWireEndpoint endpoint, BlockPos head, int terminal) {
+        return endpoint instanceof BlockWireEndpoint block && block.getTerminal() == terminal && delegatesTo(level, block.getPos(), head);
     }
 }

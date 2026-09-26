@@ -489,6 +489,59 @@ def recipes():
                              {"items": "%s:breaker_%da" % (MOD, rating)})
 
 
+def extension_assets():
+    """The extension block: the enclosure with rails and no lugs or main, knockouts along the bottom and sides only."""
+    name = "panel_extension"
+    body, edge = (0x8a, 0x8e, 0x94), (0x58, 0x5c, 0x62)
+    tex = os.path.join(ASSETS, "textures", "block")
+    front = canvas(16, 16, body + (255,))
+    interior = shade(body, 0.82)
+    fill(front, 1, 0, 15, 16, interior)
+    fill(front, 1, 0, 15, 1, edge)
+    fill(front, 1, 15, 15, 16, edge)
+    fill(front, 1, 0, 2, 16, edge)
+    fill(front, 14, 0, 15, 16, edge)
+    copper = (0xb8, 0x73, 0x33)
+    fill(front, 7, 0, 9, 16, copper)
+    fill(front, 8, 0, 9, 16, shade(copper, 0.8))
+    rail = shade(interior, 0.7)
+    for y in (3, 8, 13):
+        fill(front, 2, y, 7, y + 1, rail)
+        fill(front, 9, y, 14, y + 1, rail)
+    write_png(os.path.join(tex, name + "_front.png"), front)
+    side = canvas(16, 16, body + (255,))
+    fill(side, 0, 0, 16, 1, shade(body, 1.12))
+    fill(side, 0, 15, 16, 16, edge)
+    fill(side, 0, 0, 1, 16, edge)
+    fill(side, 15, 0, 16, 16, edge)
+    write_png(os.path.join(tex, name + "_side.png"), side)
+
+    elements = [element(*BODY, "#side", cull_south=True)]
+    elements[0]["faces"]["north"]["texture"] = "#front"
+    for u in HUB_U:
+        x = 16 - u
+        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#terminal"))
+    for y in SIDE_HUB_Y:
+        elements.append(element(15, y, HUB_Z1, 16, y + 2, HUB_Z2, "#terminal"))
+        elements.append(element(0, y, HUB_Z1, 1, y + 2, HUB_Z2, "#terminal"))
+    dump(os.path.join(ASSETS, "models", "block", name + ".json"), {
+        "parent": "block/block",
+        "textures": {"front": "%s:block/%s_front" % (MOD, name), "side": "%s:block/%s_side" % (MOD, name),
+                     "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/%s_side" % (MOD, name)},
+        "elements": elements,
+    })
+    dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s" % (MOD, name)})
+    dump(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": {
+        "facing=north": {"model": "%s:block/%s" % (MOD, name)},
+        "facing=east": {"model": "%s:block/%s" % (MOD, name), "y": 90},
+        "facing=south": {"model": "%s:block/%s" % (MOD, name), "y": 180},
+        "facing=west": {"model": "%s:block/%s" % (MOD, name), "y": 270},
+    }})
+    loot_table(name)
+    recipe(name, ["III", "P P", "III"], {"I": {"tag": "c:plates/iron"}, "P": {"tag": "c:plates/copper"}}, 1,
+           {"items": "%s:breaker_panel_200" % MOD})
+
+
 def main():
     shared_textures()
     breaker_models()
@@ -503,6 +556,7 @@ def main():
         panel_model(name, slots)
         loot_table(name)
     recipes()
+    extension_assets()
     print("breaker panel assets written under", os.path.abspath(ROOT))
 
 

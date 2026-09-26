@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.client;
 
+import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlock;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerItem;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlock;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlockEntity;
@@ -53,12 +54,20 @@ public final class BreakerPlacementOutline {
             mc.renderBuffers().bufferSource().endBatch(RenderType.lines());
             return;
         }
+        // An extension shows the head's spaces, from the head's position.
+        if(state.getBlock() instanceof PanelExtensionBlock) {
+            var headPos = PanelExtensionBlock.headPos(level, pos);
+            if(headPos == null)
+                return;
+            pos = headPos;
+            state = level.getBlockState(pos);
+        }
         if(!(state.getBlock() instanceof BreakerPanelBlock) || !(level.getBlockEntity(pos) instanceof BreakerPanelBlockEntity be))
             return;
 
         var spec = be.spec();
         var facing = BreakerPanelBlock.facing(state);
-        int hovered = PanelLayout.slotAt(spec, facing, hit.getDirection(), hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        int hovered = PanelLayout.slotAt(spec, facing, hit.getDirection(), hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()), be.slotCount());
         int rows = item.isBlank() ? 1 : item.poles() * item.frame().rows();
 
         var poseStack = event.getPoseStack();
@@ -66,7 +75,7 @@ public final class BreakerPlacementOutline {
         var buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.lines());
         poseStack.pushPose();
         poseStack.translate(pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z);
-        for(int slot = BreakerPanelBlockEntity.MAIN; slot < spec.slots(); ++slot) {
+        for(int slot = BreakerPanelBlockEntity.MAIN; slot < be.slotCount(); ++slot) {
             if(!be.canInstall(slot, item))
                 continue;
             var box = toWorld(PanelLayout.breakerBox(spec, slot, slot == BreakerPanelBlockEntity.MAIN ? 1 : rows), facing).inflate(0.002);

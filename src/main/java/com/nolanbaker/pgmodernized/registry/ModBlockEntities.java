@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlockEntity;
 import com.nolanbaker.pgmodernized.client.BreakerPanelRenderer;
@@ -108,6 +109,11 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<TransformerFillerBlockEntity> TRANSFORMER_FILLER =
             REGISTRATE.blockEntity("transformer_filler", TransformerFillerBlockEntity::new)
                     .validBlock(ModBlocks.TRANSFORMER_FILLER)
+                    .register();
+
+    public static final BlockEntityEntry<PanelExtensionBlockEntity> PANEL_EXTENSION =
+            REGISTRATE.blockEntity("panel_extension", PanelExtensionBlockEntity::new)
+                    .validBlock(ModBlocks.PANEL_EXTENSION)
                     .register();
 
     public static void register() {}

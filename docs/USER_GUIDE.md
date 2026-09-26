@@ -217,6 +217,17 @@ spaces it spans, "Circuit 1/3", and each space is still its own circuit point in
   panel, a 3-pole main in a three-phase one.
 - With a breaker in hand only the spaces it would fit are outlined.
 
+### Panel extensions
+
+A panel is one block, six rows a column, and a 3-pole 800 A breaker alone takes nine. The **Panel
+Extension** block adds rows: place it directly under the panel, on the same wall, and the panel
+grows by its row count again (twelve more spaces) on the same bus, numbered on from the head's. A
+second extension goes under the first; two is the limit, 36 spaces. Breakers may span down into an
+extension, and are installed, flipped, pulled, locked, labelled and wrench-set on whichever block
+they show on. The extension has four knockouts along its bottom and two down each side; it covers
+the head's bottom knockouts, so those must be free before it goes on. Its front opens the same
+splice editor. Take an extension out and the breakers in it drop, with any extension below it.
+
 ### Breakers
 
 Breakers come as four **frames**: 1-50 A, 51-200 A, 201-400 A and 401-800 A. The frame is the
