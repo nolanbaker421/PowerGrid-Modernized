@@ -85,17 +85,20 @@ public class SpliceScreen extends Screen {
         return key;
     }
 
+    /** Pins per line before a row wraps; a panel with two extensions has forty points. */
+    private static final int PINS_PER_LINE = 14;
+
     private void layout(ISpliceHost host) {
         pins.clear();
         rows.clear();
         layoutKey = layoutKey(host);
-        int maxPins = host.points().size();
-        int rowCount = 1;
+        int maxPins = Math.min(PINS_PER_LINE, host.points().size());
+        int lineCount = lines(host.points().size());
         for(int h = 0; h < host.hubCount(); ++h) {
             var run = host.hubRun(h);
             if(run != null) {
-                ++rowCount;
-                maxPins = Math.max(maxPins, run.size().conductors());
+                maxPins = Math.max(maxPins, Math.min(PINS_PER_LINE, run.size().conductors()));
+                lineCount += lines(run.size().conductors());
             }
         }
         panelW = PADDING * 2 + LABEL_WIDTH + maxPins * (PIN + GAP);
@@ -108,35 +111,45 @@ public class SpliceScreen extends Screen {
             if(headerHeight > 0)
                 headerHeight += 6;
         }
-        panelH = PADDING * 2 + 16 + headerHeight + rowCount * ROW + 24;
+        panelH = PADDING * 2 + 16 + headerHeight + lineCount * ROW + 24;
         panelX = (width - panelW) / 2;
         panelY = (height - panelH) / 2;
 
         int y = panelY + PADDING + 16 + headerHeight;
         rows.add(new Row(-1, Component.translatable("powergrid.gui.splice.points"), y));
-        int x = panelX + PADDING + LABEL_WIDTH;
+        int i = 0;
         for(var point : host.points()) {
-            pins.add(new Pin(point.terminal(), x, y + (ROW - PIN) / 2, point.rgb(), true, false, point.name()));
-            x += PIN + GAP;
+            var at = pinAt(i++, y);
+            pins.add(new Pin(point.terminal(), at[0], at[1], point.rgb(), true, false, point.name()));
         }
-        y += ROW;
+        y += lines(host.points().size()) * ROW;
         for(int h = 0; h < host.hubCount(); ++h) {
             var run = host.hubRun(h);
             if(run == null)
                 continue;
             rows.add(new Row(h, host.hubName(h).copy().append(" " + run.size().label()), y));
-            x = panelX + PADDING + LABEL_WIDTH;
             for(int k = 0; k < run.size().conductors(); ++k) {
                 var conductor = run.conductor(k);
                 int colour = conductor == null ? k : conductor.colorIndex();
                 Component name = conductor == null
                         ? Component.translatable("powergrid.gui.splice.empty_slot", k + 1)
                         : Component.literal((k + 1) + " ").append(ConductorColors.name(colour)).append(", ").append(conductor.getItem().getDescription());
-                pins.add(new Pin(host.conductorTerminal(h, k), x, y + (ROW - PIN) / 2, ConductorColors.rgb(colour), conductor != null, true, name));
-                x += PIN + GAP;
+                var at = pinAt(k, y);
+                pins.add(new Pin(host.conductorTerminal(h, k), at[0], at[1], ConductorColors.rgb(colour), conductor != null, true, name));
             }
-            y += ROW;
+            y += lines(run.size().conductors()) * ROW;
         }
+    }
+
+    private static int lines(int pinCount) {
+        return Math.max(1, (pinCount + PINS_PER_LINE - 1) / PINS_PER_LINE);
+    }
+
+    /** Where the n-th pin of a row starting at that y goes, wrapping onto further lines. */
+    private int[] pinAt(int n, int rowY) {
+        int line = n / PINS_PER_LINE;
+        int column = n % PINS_PER_LINE;
+        return new int[] {panelX + PADDING + LABEL_WIDTH + column * (PIN + GAP), rowY + line * ROW + (ROW - PIN) / 2};
     }
 
     /** Every terminal electrically joined to the given one through splices, including itself. */
