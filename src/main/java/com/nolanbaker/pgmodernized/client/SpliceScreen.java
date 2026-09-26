@@ -63,7 +63,7 @@ public class SpliceScreen extends Screen {
     @Nullable
     private ISpliceHost host() {
         var level = Minecraft.getInstance().level;
-        return level != null && level.getBlockEntity(pos) instanceof ISpliceHost host ? host : null;
+        return level != null && level.getBlockEntity(pos) instanceof ISpliceHost host && host.splices() != null ? host : null;
     }
 
     /** Changes whenever a hub gains or loses a run, or a run's pulled set or colours change. */

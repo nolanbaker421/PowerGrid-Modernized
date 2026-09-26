@@ -41,7 +41,7 @@ public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBl
         ms.mulPose(Axis.YP.rotationDegrees(-(facing.toYRot() + 180)));
         ms.translate(-0.5, -0.5, -0.5);
 
-        for(int slot = BreakerPanelBlockEntity.MAIN; slot < spec.slots(); ++slot) {
+        for(int slot = BreakerPanelBlockEntity.MAIN; slot < be.slotCount(); ++slot) {
             var breaker = be.breaker(slot);
             if(!breaker.installed() || breaker.isCovered())
                 continue;

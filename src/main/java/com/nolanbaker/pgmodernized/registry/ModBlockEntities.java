@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlockEntity;
 import com.nolanbaker.pgmodernized.client.BreakerPanelRenderer;
@@ -124,6 +125,11 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<ThreePhaseDriveBlockEntity> THREE_PHASE_DRIVE =
             REGISTRATE.blockEntity("three_phase_drive", ComputerBlockEntityFactories.threePhaseDrive())
                     .validBlock(ModBlocks.THREE_PHASE_DRIVE)
+                    .register();
+
+    public static final BlockEntityEntry<PanelExtensionBlockEntity> PANEL_EXTENSION =
+            REGISTRATE.blockEntity("panel_extension", PanelExtensionBlockEntity::new)
+                    .validBlock(ModBlocks.PANEL_EXTENSION)
                     .register();
 
     public static void register() {}

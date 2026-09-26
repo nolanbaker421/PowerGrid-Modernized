@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "P": {
+      "tag": "c:plates/copper"
+    }
+  },
+  "pattern": [
+    "III",
+    "P P",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:panel_extension"
+  }
+}

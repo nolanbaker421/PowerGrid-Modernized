@@ -69,7 +69,12 @@ public enum PanelSpec {
 
     /** A breaker occupies its own space and the next {@code rows - 1} rows of the same column. */
     public boolean fits(int slot, int rows) {
-        return slot >= 0 && slot < slots && slot + 2 * (rows - 1) < slots;
+        return fits(slot, rows, slots);
+    }
+
+    /** The same against the spaces a panel has with its extensions. */
+    public boolean fits(int slot, int rows, int total) {
+        return slot >= 0 && slot < total && slot + 2 * (rows - 1) < total;
     }
 
     // ---- terminal indices: lines, then the neutral, then one per branch space ----

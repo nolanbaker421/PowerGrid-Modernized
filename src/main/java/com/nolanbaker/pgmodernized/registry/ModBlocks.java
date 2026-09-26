@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlock;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitBoxBlock;
@@ -121,6 +122,18 @@ public class ModBlocks {
     public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_800_3P = breakerPanel(PanelSpec.THREE_800, "800 A Three-Phase Breaker Panel");
     public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_800_2P = breakerPanel(PanelSpec.SPLIT_800, "800 A Split-Phase Breaker Panel");
     public static final BlockEntry<BreakerPanelBlock> BREAKER_PANEL_200_3P = breakerPanel(PanelSpec.THREE_200, "200 A Three-Phase Breaker Panel");
+
+    /** More rows under a panel, on the same bus, with its own knockouts. */
+    public static final BlockEntry<PanelExtensionBlock> PANEL_EXTENSION = REGISTRATE.block("panel_extension", PanelExtensionBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Panel Extension")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
 
     private static BlockEntry<BreakerPanelBlock> breakerPanel(PanelSpec spec, String name) {
         return REGISTRATE.block(spec.id(), p -> new BreakerPanelBlock(p, spec))
