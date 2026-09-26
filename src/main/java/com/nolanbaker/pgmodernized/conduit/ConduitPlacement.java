@@ -46,7 +46,7 @@ public final class ConduitPlacement {
 
         var existing = ConduitConnection.get(stack, level);
         if(existing == null) {
-            if(!hubFree(level, player, hub))
+            if(!hubFree(level, player, hub, stack))
                 return InteractionResult.FAIL;
             ConduitConnection.set(stack, hub, level);
             message(player, "message.connection_next", ChatFormatting.GRAY);
@@ -57,7 +57,7 @@ public final class ConduitPlacement {
             message(player, "message.connection_reset", ChatFormatting.GRAY);
             return InteractionResult.SUCCESS;
         }
-        if(!hubFree(level, player, hub))
+        if(!hubFree(level, player, hub, stack))
             return InteractionResult.FAIL;
         var result = connectBlockWire(level, stack, player, existing, hub).getResult();
         if(result.consumesAction())
@@ -121,7 +121,7 @@ public final class ConduitPlacement {
     }
 
     /** Any splice host (box, socket, breaker panel) can take a run on a free hub. */
-    private static boolean hubFree(Level level, @Nullable Player player, BlockWireEndpoint hub) {
+    private static boolean hubFree(Level level, @Nullable Player player, BlockWireEndpoint hub, ItemStack stack) {
         if(!(level.getBlockEntity(hub.getPos()) instanceof ISpliceHost host))
             return false;
         int index = host.hubAt(hub.getTerminal());
@@ -129,6 +129,12 @@ public final class ConduitPlacement {
             return false;
         if(host.hubRun(index) != null) {
             message(player, "message.conduit.hub_used", ChatFormatting.RED);
+            return false;
+        }
+        if(stack.getItem() instanceof ConduitItem conduit && conduit.size().ordinal() > host.maxConduit().ordinal()) {
+            if(player != null)
+                player.displayClientMessage(Lang.builder().translate("message.conduit.too_big", conduit.size().label(), host.maxConduit().label())
+                        .style(ChatFormatting.RED).component(), true);
             return false;
         }
         return true;
@@ -154,7 +160,7 @@ public final class ConduitPlacement {
             message(player, "message.connection_failed", ChatFormatting.RED);
             return InteractionResultHolder.fail(null);
         }
-        if(from instanceof BlockWireEndpoint hub && !hubFree(level, player, hub)) {
+        if(from instanceof BlockWireEndpoint hub && !hubFree(level, player, hub, stack)) {
             ConduitConnection.clear(stack);
             return InteractionResultHolder.fail(null);
         }

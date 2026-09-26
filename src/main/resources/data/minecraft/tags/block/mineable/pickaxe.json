@@ -39,6 +39,7 @@
     "powergrid_modernized:transformer_pad_8kv_480v",
     "powergrid_modernized:transformer_sub_35kv_8kv",
     "powergrid_modernized:breaker_panel_800_2p",
-    "powergrid_modernized:breaker_panel_200_3p"
+    "powergrid_modernized:breaker_panel_200_3p",
+    "powergrid_modernized:pull_box"
   ]
 }

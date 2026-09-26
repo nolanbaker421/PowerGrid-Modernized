@@ -249,5 +249,15 @@
   "block.powergrid_modernized.transformer_pad_8kv_480v": "Pad Transformer (8 kV / 480 V)",
   "block.powergrid_modernized.transformer_sub_35kv_8kv": "Substation Transformer (35 kV / 8 kV)",
   "block.powergrid_modernized.breaker_panel_800_2p": "800 A Split-Phase Breaker Panel",
-  "block.powergrid_modernized.breaker_panel_200_3p": "200 A Three-Phase Breaker Panel"
+  "block.powergrid_modernized.breaker_panel_200_3p": "200 A Three-Phase Breaker Panel",
+  "block.powergrid_modernized.pull_box": "Pull Box",
+  "powergrid.gui.pull_box.title": "Pull box",
+  "powergrid.gui.pull_box.hub.top": "Top knockout %1$s",
+  "powergrid.gui.pull_box.hub.bottom": "Bottom knockout %1$s",
+  "powergrid.gui.pull_box.hub.left": "Left knockout %1$s",
+  "powergrid.gui.pull_box.hub.right": "Right knockout %1$s",
+  "powergrid.gui.pull_box.hub.back": "Back knockout %1$s",
+  "powergrid.message.pull_box.no_terminals": "A pull box has no terminals; wires go through the conduit and are spliced inside",
+  "powergrid.message.conduit.too_big": "%1$s conduit does not fit this knockout; %2$s is the largest it takes",
+  "powergrid.message.conduit.nipple": "The gutter nipple stays as long as the pull box and the panel stand together"
 }

@@ -89,6 +89,11 @@ public class ConduitSocketBlockEntity extends ElectricBlockEntity implements ISp
     }
 
     @Override
+    public ConduitSize maxConduit() {
+        return ConduitSize.ONE;
+    }
+
+    @Override
     public int hubCount() {
         return 1;
     }

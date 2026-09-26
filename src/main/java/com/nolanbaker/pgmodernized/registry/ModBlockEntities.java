@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.conduit.PullBoxBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlockEntity;
 import com.nolanbaker.pgmodernized.client.BreakerPanelRenderer;
 import com.nolanbaker.pgmodernized.client.SwitchgearRenderer;
@@ -81,6 +82,11 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<ConduitSocketBlockEntity> CONDUIT_SOCKET =
             REGISTRATE.blockEntity("conduit_socket", ConduitSocketBlockEntity::new)
                     .validBlock(ModBlocks.CONDUIT_SOCKET)
+                    .register();
+
+    public static final BlockEntityEntry<PullBoxBlockEntity> PULL_BOX =
+            REGISTRATE.blockEntity("pull_box", PullBoxBlockEntity::new)
+                    .validBlock(ModBlocks.PULL_BOX)
                     .register();
 
     public static final BlockEntityEntry<ConduitSwitchBlockEntity> CONDUIT_SWITCH =

@@ -17,12 +17,12 @@ SIZES = [
     ("half", 4, 0.09),
     ("three_quarter", 8, 0.125),
     ("one", 12, 0.16),
-    ("one_quarter", 12, 0.19),
-    ("one_half", 12, 0.22),
-    ("two", 12, 0.26),
-    ("two_half", 12, 0.30),
-    ("three", 12, 0.34),
-    ("four", 12, 0.40),
+    ("one_quarter", 12, 0.17),
+    ("one_half", 12, 0.19),
+    ("two", 12, 0.22),
+    ("two_half", 12, 0.25),
+    ("three", 12, 0.28),
+    ("four", 12, 0.32),
 ]
 COLORS = [0x1a1a1a, 0xc62828, 0x1e5bc6, 0xf0f0f0, 0x2e8b3a, 0xf07f1a,
           0x6b3f1f, 0xe8c800, 0x8a8a8a, 0x7b3fa0, 0xf08fb0, 0xc9a97a]
@@ -185,6 +185,50 @@ def switch_model():
     dump(os.path.join(ASSETS, "blockstates", "conduit_switch.json"), {"variants": variants})
 
 
+PULL_BOX_KNOCKOUTS = {"h": [(5, 8), (11, 8)], "v": [(8, 5), (8, 11)]}
+
+
+def pull_box_assets():
+    """A full-block grey cabinet: a door with a handle on the front, two flush knockouts on every other face."""
+    block = os.path.join(ASSETS, "textures", "block")
+    body = (0x78, 0x7c, 0x82)
+
+    def base():
+        img = canvas(16, 16, body + (255,))
+        fill(img, 0, 0, 16, 1, shade(body, 1.15))
+        fill(img, 0, 15, 16, 16, shade(body, 0.6))
+        fill(img, 0, 0, 1, 16, shade(body, 0.85))
+        fill(img, 15, 0, 16, 16, shade(body, 0.6))
+        return img
+
+    for suffix, spots in PULL_BOX_KNOCKOUTS.items():
+        img = base()
+        for cx, cy in spots:
+            fill(img, cx - 1, cy - 1, cx + 2, cy + 2, shade(body, 0.45))
+            fill(img, cx, cy, cx + 1, cy + 1, shade(body, 0.8))
+        write_png(os.path.join(block, "pull_box_side_%s.png" % suffix), img)
+    front = base()
+    fill(front, 2, 2, 14, 14, shade(body, 1.05))
+    fill(front, 2, 2, 3, 14, shade(body, 0.7))
+    fill(front, 11, 7, 12, 10, shade(body, 0.4))
+    fill(front, 12, 7, 13, 10, shade(body, 0.55))
+    write_png(os.path.join(block, "pull_box_front.png"), front)
+    side_h = "%s:block/pull_box_side_h" % MOD
+    side_v = "%s:block/pull_box_side_v" % MOD
+    dump(os.path.join(ASSETS, "models", "block", "pull_box.json"), {
+        "parent": "block/cube",
+        "textures": {"north": "%s:block/pull_box_front" % MOD, "south": side_h, "up": side_h, "down": side_h,
+                     "east": side_v, "west": side_v, "particle": side_h},
+    })
+    dump(os.path.join(ASSETS, "models", "item", "pull_box.json"), {"parent": "%s:block/pull_box" % MOD})
+    variants = {}
+    for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
+        v = {"model": "%s:block/pull_box" % MOD}
+        v.update(rot)
+        variants["facing=%s" % facing] = v
+    dump(os.path.join(ASSETS, "blockstates", "pull_box.json"), {"variants": variants})
+
+
 def item_models():
     for sid, *_ in SIZES:
         dump(os.path.join(ASSETS, "models", "item", "conduit_%s.json" % sid), {
@@ -244,6 +288,7 @@ def recipes():
     shaped("conduit_box", ["NNN", "N N", "NNN"], {"N": nugget}, 2, {"items": "powergrid:wire"})
     shaped("conduit_socket", ["NCN", " N "], {"N": nugget, "C": {"tag": "c:nuggets/copper"}}, 2, {"items": "powergrid:wire"})
     shaped("conduit_switch", ["NLN", " N "], {"N": nugget, "L": {"item": "minecraft:lever"}}, 2, {"items": "powergrid:wire"})
+    shaped("pull_box", ["PPP", "P P", "PPP"], {"P": {"tag": "c:plates/iron"}}, 1, {"items": "powergrid:wire"})
 
 
 def wire_types():
@@ -261,10 +306,12 @@ def main():
     box_model()
     socket_model()
     switch_model()
+    pull_box_assets()
     item_models()
     loot_table("conduit_box")
     loot_table("conduit_socket")
     loot_table("conduit_switch")
+    loot_table("pull_box")
     recipes()
     wire_types()
     print("conduit assets written")

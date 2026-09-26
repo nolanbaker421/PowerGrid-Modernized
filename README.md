@@ -158,6 +158,13 @@ machine as usual. A cord's split end can also land directly on two cover termina
 The **Conduit Switch** is the same fitting with a toggle instead of a socket: the first two wires
 pulled through its run land on Line and Load, and an empty-hand click joins or parts them.
 
+Each fitting takes conduit up to a trade size: 1-1/2" at a Conduit Box or a device knockout, 1" at a
+socket or switch, 2" at a breaker panel, anything at switchgear and at the **Pull Box**, a full-block
+cabinet with two knockouts on each face but the door and no terminals, spliced inside like a blank box.
+Put a pull box directly under or over a panel on the same wall and the two join through a 4" **gutter
+nipple** by themselves: a short run the box lays, that wire is pulled through like any other, so the
+feeders come up the gutter and into the panel without a conduit small enough to fit a knockout.
+
 The Variable Frequency Drive, Analog I/O Module, Line Voltmeter and Line Ammeter each carry two
 knockouts as well as their ordinary terminals. Land conduit on a knockout, pull wire, then click the
 device body with an empty hand to open its splice editor, where the points are the device's own

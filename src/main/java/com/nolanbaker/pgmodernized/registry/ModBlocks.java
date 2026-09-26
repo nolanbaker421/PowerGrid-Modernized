@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.conduit.PullBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitSocketBlock;
@@ -202,6 +203,17 @@ public class ModBlocks {
             .properties(p -> p.noOcclusion())
             .transform(pickaxeOnly())
             .lang("Conduit Socket")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** A full-block pull box: ten knockouts that take conduit of any size, spliced inside; links to a panel above or below by itself. */
+    public static final BlockEntry<PullBoxBlock> PULL_BOX = REGISTRATE.block("pull_box", PullBoxBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .lang("Pull Box")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

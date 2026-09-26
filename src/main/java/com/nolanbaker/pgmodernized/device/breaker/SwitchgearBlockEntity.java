@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.breaker;
 
+import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.SplicePoint;
@@ -484,6 +485,11 @@ public class SwitchgearBlockEntity extends ElectricBlockEntity implements IHaveG
     @Override
     public boolean isPoint(int terminal) {
         return SwitchgearLayout.isPoint(terminal);
+    }
+
+    @Override
+    public ConduitSize maxConduit() {
+        return ConduitSize.FOUR;
     }
 
     @Override

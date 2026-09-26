@@ -71,7 +71,9 @@ wire keeps its own gauge (resistance and ampacity). Nine EMT trade sizes:
 3. Click the walls, floors or ceilings the run should follow. It hugs surfaces and turns corners.
 4. Finish by clicking a hub on the other fitting.
 
-One run per hub. A run cannot tee; if you need a branch, put a box there. To continue an open run,
+One run per hub. A run cannot tee; if you need a branch, put a box there. Every fitting has a largest
+size it takes: a Conduit Box and the device knockouts stop at 1-1/2", a socket or switch at 1", a
+breaker panel at 2"; switchgear and the Pull Box take anything up to 4". To continue an open run,
 click its free end with conduit. The route is previewed in green (or red where it cannot go) while
 a run is pending. Shift-right-click in the air cancels a pending run. Sneak and right-click a run
 with wire cutters to take the whole run back up; it drops any wire inside it.
@@ -156,6 +158,19 @@ two wires pulled through its run land on the socket's two poles automatically, a
 copper cord plugs into it with one click, then splits onto the machine as usual. Click the socket
 with an empty hand to unplug the cord. Place it with the clicked face as its back; wrench its face to
 turn the hub to any of the four directions. There is nothing to splice.
+
+### Pull Box
+
+A full-block cabinet for the big pipe: two knockouts on the top, bottom, left, right and back, each
+taking conduit of any size, and a door on the front that opens the splice editor. It has no
+terminals; like a blank-covered box it only joins runs to each other. Place it with the door
+towards you (sneak to face it away).
+
+**Gutter**: set a pull box directly under or directly over a breaker panel on the same wall and,
+within a second, the box lays a short 4" **nipple** between one of its knockouts and one of the
+panel's. Pull wire through the nipple exactly as through any run, right-click it with the wire, and
+splice in the panel editor as usual. The nipple cannot be cut or picked up; it goes away when the
+box or the panel does. That is how feeders too big for a 2" panel knockout get in: up the gutter.
 
 ### Conduit Switch
 
@@ -506,6 +521,7 @@ adapter placed next to them:
 | Conduit Box (2) | ring of eight iron nuggets |
 | Blank Cover Plate (2) | an iron plate |
 | Node Cover Plate | a blank cover plate and pins, shapeless |
+| Pull Box | ring of eight iron plates |
 | Conduit Switch (2) | iron nugget, lever, iron nugget over an iron nugget |
 | Conduit Socket (2) | iron nugget, copper nugget, iron nugget over an iron nugget |
 | Breaker Panel 200 A | iron plates and copper plates around a conductive casing, heavy wire connector at the bottom |
