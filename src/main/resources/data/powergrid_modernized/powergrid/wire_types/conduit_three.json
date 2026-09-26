@@ -10,5 +10,5 @@
   "texture": "powergrid_modernized:textures/special/conduit.png",
   "thermalMass": 1.0,
   "verticalCoefficient": 1.0,
-  "wireThickness": 0.34
+  "wireThickness": 0.28
 }

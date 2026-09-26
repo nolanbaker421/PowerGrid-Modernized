@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.breaker;
 
+import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.SplicePoint;
@@ -736,6 +737,11 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             return false;
         int slot = terminal - spec.branchFirst();
         return slot < 0 || slot >= branches.length || !branches[slot].isDeadRow();
+    }
+
+    @Override
+    public ConduitSize maxConduit() {
+        return ConduitSize.TWO;
     }
 
     @Override

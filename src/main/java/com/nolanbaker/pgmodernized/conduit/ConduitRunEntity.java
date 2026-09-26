@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import net.minecraft.nbt.CompoundTag;
+import com.nolanbaker.pgmodernized.registry.ModItems;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.registry.ModEntities;
 import com.nolanbaker.pgmodernized.util.ShockDamage;
@@ -39,6 +41,10 @@ import java.util.List;
  * wire item pulls one {@link ConductorEntity} of that wire through it, up to the size's capacity.
  */
 public class ConduitRunEntity extends BlockWireEntity {
+    private static final int NIPPLE_CHECK = 20;
+    /** Laid by a pull box to the panel above or below it; never picked up, never dropped. */
+    private boolean nipple;
+    private int nippleTimer;
     public ConduitRunEntity(EntityType<?> type, Level level) {
         super(type, level);
     }
@@ -58,8 +64,68 @@ public class ConduitRunEntity extends BlockWireEntity {
         return entity;
     }
 
+    /** A short 4" run between a pull box knockout and a panel knockout, laid by the box itself. */
+    @Nullable
+    public static ConduitRunEntity createNipple(Level level, BlockWireEndpoint a, BlockWireEndpoint b) {
+        var start = IElectric.getTerminalPos(level, a.getPos(), a.getTerminal());
+        var end = IElectric.getTerminalPos(level, b.getPos(), b.getTerminal());
+        var path = manhattan(start, end);
+        if(path.isEmpty())
+            return null;
+        var entity = new ConduitRunEntity(ModEntities.CONDUIT_RUN.get(), level);
+        entity.nipple = true;
+        entity.setItem(ModItems.CONDUIT.get(ConduitSize.FOUR).get(), 1);
+        entity.setPosRaw(start.x, start.y, start.z);
+        entity.segments.addAll(path);
+        entity.bakeBoundingBoxes();
+        entity.setEndpoint1(a);
+        entity.setEndpoint2(b);
+        entity.setYRot(0);
+        entity.setXRot(0);
+        entity.setOldPosAndRot();
+        entity.reapplyPosition();
+        return entity;
+    }
+
+    public boolean isNipple() {
+        return nipple;
+    }
+
     public ConduitSize size() {
         return getItem() instanceof ConduitItem conduit ? conduit.size() : ConduitSize.HALF;
+    }
+
+    /** A nipple lives exactly as long as its pull box and panel stand next to each other. */
+    @Override
+    public void tick() {
+        super.tick();
+        if(!nipple || level().isClientSide || isRemoved() || ++nippleTimer < NIPPLE_CHECK)
+            return;
+        nippleTimer = 0;
+        if(!(getEndpoint1() instanceof BlockWireEndpoint a) || !(getEndpoint2() instanceof BlockWireEndpoint b)) {
+            kill();
+            return;
+        }
+        if(!level().isLoaded(a.getPos()) || !level().isLoaded(b.getPos()))
+            return;
+        var beA = level().getBlockEntity(a.getPos());
+        var beB = level().getBlockEntity(b.getPos());
+        boolean pair = (beA instanceof PullBoxBlockEntity && beB instanceof com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlockEntity)
+                || (beB instanceof PullBoxBlockEntity && beA instanceof com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlockEntity);
+        if(!pair || !a.getPos().closerThan(b.getPos(), 1.5))
+            kill();
+    }
+
+    @Override
+    protected void addAdditionalSaveData(CompoundTag nbt) {
+        super.addAdditionalSaveData(nbt);
+        nbt.putBoolean("Nipple", nipple);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(CompoundTag nbt) {
+        super.readAdditionalSaveData(nbt);
+        nipple = nbt.getBoolean("Nipple");
     }
 
     // ------------------------------------------------------------------ no current of its own
@@ -259,7 +325,7 @@ public class ConduitRunEntity extends BlockWireEntity {
     }
 
     /** Axis-aligned segments from one point to the next; the conductor is invisible so the route only needs to be legal. */
-    static List<Point> manhattan(Vec3 from, Vec3 to) {
+    public static List<Point> manhattan(Vec3 from, Vec3 to) {
         var points = new ArrayList<Point>(3);
         float dx = (float) (to.x - from.x), dy = (float) (to.y - from.y), dz = (float) (to.z - from.z);
         if(Math.abs(dx) >= 1 / 32f)
@@ -277,6 +343,10 @@ public class ConduitRunEntity extends BlockWireEntity {
         if(!level().isClientSide) {
             for(var conductor : conductors())
                 conductor.kill();
+        }
+        if(nipple) {
+            discard(); // nothing to hand back: the box laid it
+            return;
         }
         super.kill();
     }
@@ -322,12 +392,14 @@ public class ConduitRunEntity extends BlockWireEntity {
         var stack = player.getItemInHand(hand);
         boolean client = level().isClientSide;
         if(stack.getItem() instanceof ConduitItem)
-            return client ? InteractionResult.SUCCESS : ConduitPlacement.attach(this, player, stack);
+            return client ? InteractionResult.SUCCESS : nipple ? fail(player, "message.conduit.no_tee") : ConduitPlacement.attach(this, player, stack);
         if(stack.is(ModdedTags.Item.WIRE_CUTTERS.tag) || stack.is(ModdedTags.Item.BAD_WIRE_CUTTERS.tag)) {
             if(client)
                 return InteractionResult.SUCCESS;
             if(!player.isShiftKeyDown())
                 return pullOut(player);
+            if(nipple)
+                return fail(player, "message.conduit.nipple");
             // Sneaking takes the whole run. Power Grid would cut out a segment and respawn
             // electrical wire; the run goes as one piece instead.
             ShockDamage.shockAmps(player, maxAmps());

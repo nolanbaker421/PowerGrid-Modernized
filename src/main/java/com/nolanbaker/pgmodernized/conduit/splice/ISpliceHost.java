@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit.splice;
 
+import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
@@ -15,6 +16,11 @@ import java.util.List;
  */
 public interface ISpliceHost {
     SpliceSupport splices();
+
+    /** The largest trade size this fitting's hubs take. Boxes and devices stop at 1-1/2". */
+    default ConduitSize maxConduit() {
+        return ConduitSize.ONE_HALF;
+    }
 
     List<SplicePoint> points();
 

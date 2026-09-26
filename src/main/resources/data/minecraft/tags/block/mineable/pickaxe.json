@@ -40,6 +40,7 @@
     "powergrid_modernized:transformer_sub_35kv_8kv",
     "powergrid_modernized:breaker_panel_800_2p",
     "powergrid_modernized:breaker_panel_200_3p",
+    "powergrid_modernized:pull_box",
     "powergrid_modernized:three_phase_motor",
     "powergrid_modernized:three_phase_drive"
   ]

@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "north": "powergrid_modernized:block/pull_box_front",
+    "south": "powergrid_modernized:block/pull_box_side_h",
+    "up": "powergrid_modernized:block/pull_box_side_h",
+    "down": "powergrid_modernized:block/pull_box_side_h",
+    "east": "powergrid_modernized:block/pull_box_side_v",
+    "west": "powergrid_modernized:block/pull_box_side_v",
+    "particle": "powergrid_modernized:block/pull_box_side_h"
+  }
+}
