@@ -16,6 +16,8 @@ public enum PanelSpec {
     A800("breaker_panel_800", 800, 12, 1),
     SPLIT_200("breaker_panel_200_2p", 200, 12, 2),
     SPLIT_400("breaker_panel_400_2p", 400, 12, 2),
+    SPLIT_800("breaker_panel_800_2p", 800, 12, 2),
+    THREE_200("breaker_panel_200_3p", 200, 12, 3),
     THREE_400("breaker_panel_400_3p", 400, 12, 3),
     THREE_800("breaker_panel_800_3p", 800, 12, 3);
 

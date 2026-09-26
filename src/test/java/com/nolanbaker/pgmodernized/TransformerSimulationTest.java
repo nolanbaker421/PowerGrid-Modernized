@@ -32,9 +32,10 @@ public class TransformerSimulationTest extends TestHelper {
         Assertions.assertEquals(java.util.List.of(new Vec3i(0, 1, 0)), tall, "the tall can only needs the block above");
         var pad = TransformerGeometry.cells(TransformerSize.PAD, TransformerKind.THREE_PHASE, false);
         Assertions.assertTrue(pad.contains(new Vec3i(0, 1, 0)) && pad.contains(new Vec3i(1, 0, 0)) && pad.contains(new Vec3i(-1, 1, 0)), "the tank takes the block above and 4 px either side");
-        Assertions.assertFalse(pad.contains(new Vec3i(0, 0, -1)), "a 2 px overhang in front takes no cell");
+        Assertions.assertFalse(pad.contains(new Vec3i(0, 0, -1)), "nothing stands in front of the base cell");
+        Assertions.assertTrue(pad.contains(new Vec3i(0, 0, 1)), "the tank reaches into the cell behind");
         var power = TransformerGeometry.cells(TransformerSize.POWER_L, TransformerKind.THREE_PHASE, false);
-        Assertions.assertEquals(17, power.size(), "the biggest unit fills a 3 x 2 x 3 ring around its base");
+        Assertions.assertEquals(11, power.size(), "the biggest unit fills 3 x 2 x 2 cells: beside, above and behind its base");
         Assertions.assertEquals(new Vec3i(-1, 0, 1), TransformerGeometry.rotateCell(new Vec3i(1, 0, 1), net.minecraft.core.Direction.EAST));
         Assertions.assertEquals(new Vec3i(1, 0, 1), TransformerGeometry.unrotateCell(new Vec3i(-1, 0, 1), net.minecraft.core.Direction.EAST));
     }

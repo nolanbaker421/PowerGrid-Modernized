@@ -92,6 +92,11 @@ cells around it (invisible filler blocks carry the collision there and break wit
 - Two **tap** value boxes on the front, HV on the left and LV on the right, move each winding in
   2.5% steps up to 10% either way of its nameplate. There is no on-load tap changer: changing a tap
   on a live winding arcs and shocks you.
+- Pole cans carry **fused cutouts** on their high-side bushings: sneak-click the can with an empty
+  hand to pull them open, work the taps dead, and push them closed again.
+- Pad 3.5 kV and 8 kV to 480 V and a 35 kV to 8 kV substation unit match the AC fork's generator
+  voltages. Three-phase units need an alternating feed: on stock DC Power Grid a delta primary is a
+  short, which is physics, not a bug.
 - Goggles show the taps, the rating and each leg's voltage and current. Feed either side; the other
   follows the ratio. On stock Power Grid these pass DC exactly as Power Grid's own transformer does.
 
@@ -133,7 +138,9 @@ run cannot tee; give it a box. One run per hub.
 or another addon. One conductor of that wire goes through, consuming the wire's usual items per
 metre, and keeps that wire's resistance and ampacity. A wire that would overfill the run is refused
 with the fill it would reach. Pulled wires are invisible inside the tube and are numbered and
-coloured in US order (black, red, blue, white, green, orange, ...). Wire cutters pull the last wire
+coloured in pull order (black, white, red, blue, orange, brown, ...), so a two-wire pull is a black hot
+and a white neutral; right-click a wire's pin in the splice editor to give it any of the twelve colours.
+A run takes dye like any Power Grid wire. Wire cutters pull the last wire
 back out; an empty hand or a multimeter on the run lists the fill and every slot with its wire,
 gauge and current, and the splice editor names the wire under each pin; taking the conduit up drops
 all of them. A wire that is overloaded burns out like any Power Grid wire and frees its slot.
@@ -148,6 +155,8 @@ The **Conduit Socket** is the equipment end of a run: a 6 x 6 px fitting with on
 cord socket, placed like Power Grid's socket: wrench its face to turn the knockout. The first two wires pulled through its run land on the socket's two poles by
 themselves, and a Power Grid copper cord plugs into it with one click, then splits onto the
 machine as usual. A cord's split end can also land directly on two cover terminals of a Conduit Box.
+The **Conduit Switch** is the same fitting with a toggle instead of a socket: the first two wires
+pulled through its run land on Line and Load, and an empty-hand click joins or parts them.
 
 The Variable Frequency Drive, Analog I/O Module, Line Voltmeter and Line Ammeter each carry two
 knockouts as well as their ordinary terminals. Land conduit on a knockout, pull wire, then click the
@@ -162,6 +171,12 @@ When OpenComputers is present the mod also registers a block driver that exposes
 energy meter and batteries as read-only OpenComputers components.
 
 ## Cat6 cable and network jacks
+
+The Network Switch has two modes, cycled by sneak-clicking it with an empty hand: **switch** mode
+joins every port into one network (components cross, like one long cable), **relay** mode gives each
+port its own network and only passes network messages between them, hop counted, like the
+OpenComputers relay. Conduit and Cat6 refuse Power Grid's own connectors and nodes: they only land on
+knockouts and jacks.
 
 The **Cat6 Cable** is a Power Grid hanging wire that carries computer network traffic instead of current.
 It renders and sags like any other wire, is placed with two clicks, and is picked up or cut the same way,

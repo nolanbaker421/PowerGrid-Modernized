@@ -28,6 +28,15 @@ public final class JackSupport {
         String kind();
         void connect(Link other);
         void disconnect(Link other);
+
+        /** Port-aware join; jacks whose ports share one node ignore the ports. */
+        default void connect(Link other, int localPort, int remotePort) {
+            connect(other);
+        }
+
+        default void disconnect(Link other, int localPort, int remotePort) {
+            disconnect(other);
+        }
         /** Nodes exist now: publish peripherals, join networks. */
         default void onLoad() {}
         /** Attach to adjacent cables of the same mod. Only standalone jacks do this. */
@@ -117,6 +126,26 @@ public final class JackSupport {
             var remote = other.links.get(link.kind());
             if(remote != null)
                 link.disconnect(remote);
+        }
+    }
+
+    public void connect(JackSupport other, int myPort, int otherPort) {
+        if(!loaded || !other.loaded || removed || other.removed || other == this)
+            return;
+        for(var link : links.values()) {
+            var remote = other.links.get(link.kind());
+            if(remote != null)
+                link.connect(remote, myPort, otherPort);
+        }
+    }
+
+    public void disconnect(JackSupport other, int myPort, int otherPort) {
+        if(other == this)
+            return;
+        for(var link : links.values()) {
+            var remote = other.links.get(link.kind());
+            if(remote != null)
+                link.disconnect(remote, myPort, otherPort);
         }
     }
 

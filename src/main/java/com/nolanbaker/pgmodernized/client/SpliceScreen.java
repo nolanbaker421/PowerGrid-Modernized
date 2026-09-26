@@ -22,15 +22,16 @@ import java.util.Set;
  * Splice editor for any {@link ISpliceHost}. The first row is the host's fixed points (a box's
  * cover terminals, a panel's line, neutral and circuits); every hub with a run is a row with one
  * pin per conductor slot, filled when a wire is pulled through it. Click a pin, then another, to
- * draw a splice; click the pair again to remove it. Clicking a hub's label lands all its pulled
- * conductors on the points of the same number. The block entity is the source of truth.
+ * draw a splice; click the pair again to remove it. Right-click a pulled wire's pin to cycle its
+ * colour. Clicking a hub's label lands all its pulled conductors on the points of the same
+ * number. The block entity is the source of truth.
  */
 public class SpliceScreen extends Screen {
     private static final int PIN = 12, GAP = 4, ROW = 26, LABEL_WIDTH = 100, PADDING = 12;
     private static final int PANEL_BG = 0xF0202225, PANEL_BORDER = 0xFF5A5E66, TEXT = 0xFFE8E8E8, DIM = 0xFF9A9A9A, LINE = 0xFFE0C060;
     private static final int GLOW = 0xFFFFF4A0, LINE_DIM = 0xFF6A5A30;
 
-    private record Pin(int terminal, int x, int y, int rgb, boolean usable, Component name) {
+    private record Pin(int terminal, int x, int y, int rgb, boolean usable, boolean conductor, Component name) {
         boolean contains(double mx, double my) {
             return mx >= x && mx < x + PIN && my >= y && my < y + PIN;
         }
@@ -65,17 +66,21 @@ public class SpliceScreen extends Screen {
         return level != null && level.getBlockEntity(pos) instanceof ISpliceHost host ? host : null;
     }
 
-    /** Changes whenever a hub gains or loses a run, or a run's pulled set changes. */
+    /** Changes whenever a hub gains or loses a run, or a run's pulled set or colours change. */
     private static long layoutKey(ISpliceHost host) {
         long key = 0;
         for(int h = 0; h < host.hubCount(); ++h) {
             var run = host.hubRun(h);
             int pulled = 0;
+            int colours = 0;
             if(run != null) {
-                for(var conductor : run.conductors())
+                for(var conductor : run.conductors()) {
                     pulled |= 1 << conductor.slot();
+                    colours = colours * 13 + conductor.colorIndex() + 1;
+                }
             }
             key = key * 65536 + (run == null ? 0 : (run.size().ordinal() + 1) * 4096 + pulled);
+            key = key * 31 + colours;
         }
         return key;
     }
@@ -111,7 +116,7 @@ public class SpliceScreen extends Screen {
         rows.add(new Row(-1, Component.translatable("powergrid.gui.splice.points"), y));
         int x = panelX + PADDING + LABEL_WIDTH;
         for(var point : host.points()) {
-            pins.add(new Pin(point.terminal(), x, y + (ROW - PIN) / 2, point.rgb(), true, point.name()));
+            pins.add(new Pin(point.terminal(), x, y + (ROW - PIN) / 2, point.rgb(), true, false, point.name()));
             x += PIN + GAP;
         }
         y += ROW;
@@ -123,10 +128,11 @@ public class SpliceScreen extends Screen {
             x = panelX + PADDING + LABEL_WIDTH;
             for(int k = 0; k < run.size().conductors(); ++k) {
                 var conductor = run.conductor(k);
+                int colour = conductor == null ? k : conductor.colorIndex();
                 Component name = conductor == null
                         ? Component.translatable("powergrid.gui.splice.empty_slot", k + 1)
-                        : ConductorColors.name(k).copy().append(", ").append(conductor.getItem().getDescription());
-                pins.add(new Pin(host.conductorTerminal(h, k), x, y + (ROW - PIN) / 2, ConductorColors.rgb(k), conductor != null, name));
+                        : Component.literal((k + 1) + " ").append(ConductorColors.name(colour)).append(", ").append(conductor.getItem().getDescription());
+                pins.add(new Pin(host.conductorTerminal(h, k), x, y + (ROW - PIN) / 2, ConductorColors.rgb(colour), conductor != null, true, name));
                 x += PIN + GAP;
             }
             y += ROW;
@@ -233,8 +239,13 @@ public class SpliceScreen extends Screen {
         graphics.drawString(font, hint, panelX + PADDING, panelY + panelH - PADDING - 8, DIM);
 
         for(var pin : pins) {
-            if(pin.contains(mouseX, mouseY))
-                graphics.renderTooltip(font, pin.name, mouseX, mouseY);
+            if(pin.contains(mouseX, mouseY)) {
+                var lines = new ArrayList<Component>();
+                lines.add(pin.name);
+                if(pin.usable && pin.conductor)
+                    lines.add(Component.translatable("powergrid.gui.splice.recolor_hint"));
+                graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
+            }
         }
         for(var row : rows) {
             if(row.hub >= 0 && labelContains(row, mouseX, mouseY))
@@ -283,6 +294,19 @@ public class SpliceScreen extends Screen {
                 }
             }
             selected = -1;
+        } else if(button == 1) {
+            // Right-click a pulled wire: next colour round the sequence.
+            var host = host();
+            for(var pin : pins) {
+                if(!pin.contains(mouseX, mouseY) || !pin.usable || !pin.conductor || host == null)
+                    continue;
+                int hub = host.hubOf(pin.terminal);
+                var run = hub < 0 ? null : host.hubRun(hub);
+                var conductor = run == null ? null : run.conductor(host.conductorOf(pin.terminal));
+                if(conductor != null)
+                    PacketDistributor.sendToServer(new SplicePayload(pos, SplicePayload.RECOLOR, pin.terminal, (conductor.colorIndex() + 1) % ConductorColors.COUNT));
+                return true;
+            }
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }

@@ -24,7 +24,8 @@ import java.util.List;
  */
 public class BusLinkEntity extends BlockWireEntity {
     private static final int CHECK_INTERVAL = 20;
-    private int checkTimer;
+    private static final int LOAD_GRACE = 100;
+    private int checkTimer = -LOAD_GRACE;
 
     public BusLinkEntity(EntityType<?> type, Level level) {
         super(type, level);
@@ -59,8 +60,11 @@ public class BusLinkEntity extends BlockWireEntity {
             return;
         if(++checkTimer >= CHECK_INTERVAL) {
             checkTimer = 0;
-            if(!(getEndpoint1() instanceof BlockWireEndpoint a) || !(getEndpoint2() instanceof BlockWireEndpoint b)
-                    || !SwitchgearBlockEntity.linked(level(), a.getPos(), b.getPos()))
+            if(!(getEndpoint1() instanceof BlockWireEndpoint a) || !(getEndpoint2() instanceof BlockWireEndpoint b)) {
+                kill();
+                return;
+            }
+            if(level().isLoaded(a.getPos()) && level().isLoaded(b.getPos()) && !SwitchgearBlockEntity.linked(level(), a.getPos(), b.getPos()))
                 kill();
         }
     }

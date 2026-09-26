@@ -166,7 +166,15 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
     /** Empty hand on a cabinet opens the splice editor; the tap boxes on the front are handled by Create before this. */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(!spec.size().hasHubs() || hand != InteractionHand.MAIN_HAND || player.isShiftKeyDown() || !player.getMainHandItem().isEmpty())
+        if(hand != InteractionHand.MAIN_HAND || !player.getMainHandItem().isEmpty())
+            return InteractionResult.PASS;
+        // Sneak on a pole can: work its fused cutouts.
+        if(spec.size().isPole() && player.isShiftKeyDown()) {
+            if(!level.isClientSide)
+                withBlockEntityDo(level, pos, be -> be.toggleCutout(player));
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        if(!spec.size().hasHubs() || player.isShiftKeyDown())
             return InteractionResult.PASS;
         if(level.isClientSide)
             ClientHooks.openSplices(pos);

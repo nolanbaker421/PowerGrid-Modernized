@@ -146,8 +146,18 @@ public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCab
     /** Empty hand opens the readings and splice editor. */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(hand != InteractionHand.MAIN_HAND || player.isShiftKeyDown() || !player.getMainHandItem().isEmpty())
+        if(hand != InteractionHand.MAIN_HAND || !player.getMainHandItem().isEmpty())
             return InteractionResult.PASS;
+        if(player.isShiftKeyDown()) {
+            // Sneak with an empty hand zeroes the energy counters, the reset button of a real meter.
+            if(!level.isClientSide) {
+                withBlockEntityDo(level, pos, be -> {
+                    be.resetEnergy();
+                    player.displayClientMessage(Lang.builder().translate("message.ct_cabinet.zeroed").style(ChatFormatting.GRAY).component(), true);
+                });
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if(level.isClientSide)
             ClientHooks.openSplices(pos);
         return InteractionResult.SUCCESS;

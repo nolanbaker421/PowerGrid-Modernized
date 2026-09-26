@@ -9,6 +9,7 @@ import com.nolanbaker.pgmodernized.conduit.WireGauge;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerFrame;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerItem;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerLockItem;
+import com.nolanbaker.pgmodernized.device.breaker.BusBarItem;
 import com.nolanbaker.pgmodernized.network.Cat6CableItem;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
@@ -45,7 +46,7 @@ public class ModItems {
             .register();
 
     /** Copper bus bar: a crafting part, and the hidden wire type that joins switchgear sections (wire_types/bus_bar.json). */
-    public static final ItemEntry<Item> BUS_BAR = REGISTRATE.item("bus_bar", Item::new)
+    public static final ItemEntry<BusBarItem> BUS_BAR = REGISTRATE.item("bus_bar", BusBarItem::new)
             .model(NonNullBiConsumer.noop())
             .lang("Copper Bus Bar")
             .register();

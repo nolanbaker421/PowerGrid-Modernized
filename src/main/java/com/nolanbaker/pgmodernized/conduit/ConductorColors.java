@@ -3,15 +3,21 @@ package com.nolanbaker.pgmodernized.conduit;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 
-/** US conductor colour sequence, in conductor order. The name and colour show up on terminals and in the junction box GUI. */
+/**
+ * Conductor colour sequence, in pull order: black, white, red, blue, then the rest, so the first
+ * wire of a pull is a hot, the second the neutral and the third and fourth the other hots. The NEC
+ * only reserves white and gray for the neutral and green for ground; the hot colours are
+ * convention. A pulled wire can be given any of these from the splice editor whatever its slot.
+ * The name and colour show up on terminals and in the junction box GUI.
+ */
 public final class ConductorColors {
     private static final String[] KEYS = {
-            "black", "red", "blue", "white", "green", "orange",
-            "brown", "yellow", "gray", "purple", "pink", "tan"
+            "black", "white", "red", "blue", "orange", "brown",
+            "yellow", "purple", "pink", "tan", "gray", "green"
     };
     private static final int[] RGB = {
-            0x1a1a1a, 0xc62828, 0x1e5bc6, 0xf0f0f0, 0x2e8b3a, 0xf07f1a,
-            0x6b3f1f, 0xe8c800, 0x8a8a8a, 0x7b3fa0, 0xf08fb0, 0xc9a97a
+            0x1a1a1a, 0xf0f0f0, 0xc62828, 0x1e5bc6, 0xf07f1a, 0x6b3f1f,
+            0xe8c800, 0x7b3fa0, 0xf08fb0, 0xc9a97a, 0x8a8a8a, 0x2e8b3a
     };
 
     public static final int COUNT = KEYS.length;

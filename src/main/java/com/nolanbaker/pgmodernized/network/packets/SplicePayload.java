@@ -15,10 +15,12 @@ import static com.nolanbaker.pgmodernized.PowerGridModernized.asResource;
 /**
  * Client edits a splice host's splices.
  * @param action {@link #TOGGLE} joins or separates terminals {@code a} and {@code b};
- *               {@link #LAND} lands every pulled conductor of hub {@code a} on the points.
+ *               {@link #LAND} lands every pulled conductor of hub {@code a} on the points;
+ *               {@link #RECOLOR} gives the pulled conductor on terminal {@code a} colour {@code b}
+ *               (negative: back to its slot's colour).
  */
 public record SplicePayload(BlockPos pos, int action, int a, int b) implements CustomPacketPayload {
-    public static final int TOGGLE = 0, LAND = 1;
+    public static final int TOGGLE = 0, LAND = 1, RECOLOR = 2;
 
     public static final Type<SplicePayload> TYPE = new Type<>(asResource("splice"));
     public static final StreamCodec<RegistryFriendlyByteBuf, SplicePayload> STREAM_CODEC = StreamCodec.composite(
@@ -54,6 +56,15 @@ public record SplicePayload(BlockPos pos, int action, int a, int b) implements C
             return;
         if(!(level.getBlockEntity(payload.pos) instanceof ISpliceHost host))
             return;
+        if(payload.action == RECOLOR) {
+            // Tape on a wire's end: no electrical change, nothing live is touched.
+            int hub = host.hubOf(payload.a);
+            var run = hub < 0 ? null : host.hubRun(hub);
+            var conductor = run == null ? null : run.conductor(host.conductorOf(payload.a));
+            if(conductor != null)
+                conductor.setColorIndex(payload.b);
+            return;
+        }
         // Working a live terminal hurts; the edit still happens, as it would in real life.
         if(level.getBlockEntity(payload.pos) instanceof ElectricBlockEntity be) {
             int[] touched = switch(payload.action) {

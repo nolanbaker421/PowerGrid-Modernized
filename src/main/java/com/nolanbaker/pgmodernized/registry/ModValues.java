@@ -39,6 +39,7 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         for(var spec : PanelSpec.values())
             resistance(spec.id(), "main", 0.002, "branch", 0.005);
         resistance("switchgear", "pole", 0.0005);
+        resistance("conduit_switch", "contact", 0.001);
         // Transformers: winding resistance in series with each secondary leg.
         for(var spec : TransformerSpec.values())
             resistance(spec.id(), "winding", 0.02);

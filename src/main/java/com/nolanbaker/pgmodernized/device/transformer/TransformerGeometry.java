@@ -37,9 +37,9 @@ public final class TransformerGeometry {
             case POLE_S -> new AABB(4.5, 0, 3.5, 11.5, 10.5, 11.5);
             case POLE_M -> new AABB(3.75, 0, 2.75, 12.25, 12, 12.25);
             case POLE_L -> new AABB(2.5, 0, 1.5, 13.5, 18, 13.5);
-            case PAD -> new AABB(-3, 2, -1, 19, 18, 17);
-            case POWER_S -> new AABB(-7.5, 3.5, -2.5, 23.5, 24.5, 18.5);
-            case POWER_L -> new AABB(-10, 3.5, -4.5, 26, 24.5, 20.5);
+            case PAD -> new AABB(-3, 2, 1, 19, 18, 19);
+            case POWER_S -> new AABB(-7.5, 3.5, 1.5, 23.5, 24.5, 22.5);
+            case POWER_L -> new AABB(-10, 3.5, 1.5, 26, 24.5, 26.5);
             case DRY -> new AABB(2, 0, 4, 14, 30, 16);
         };
     }
@@ -49,18 +49,18 @@ public final class TransformerGeometry {
             case POLE_S -> new AABB(4.25, 10.5, 3.25, 11.75, 11.5, 11.75);
             case POLE_M -> new AABB(3.5, 12, 2.5, 12.5, 13, 12.5);
             case POLE_L -> new AABB(2.25, 18, 1.25, 13.75, 19.5, 13.75);
-            case PAD -> new AABB(-4, 18, -2, 20, 19.5, 18);
-            case POWER_S -> new AABB(-9, 24.5, -4, 25, 27, 20);
-            case POWER_L -> new AABB(-11.5, 24.5, -6, 27.5, 27, 22);
+            case PAD -> new AABB(-4, 18, 0, 20, 19.5, 20);
+            case POWER_S -> new AABB(-9, 24.5, 0, 25, 27, 24);
+            case POWER_L -> new AABB(-11.5, 24.5, 0, 27.5, 27, 28);
             case DRY -> null;
         };
     }
 
     public static AABB skid(TransformerSize size) {
         return switch(size) {
-            case PAD -> new AABB(-4, 0, -2, 20, 2, 18);
-            case POWER_S -> new AABB(-9, 0, -4, 25, 3.5, 20);
-            case POWER_L -> new AABB(-11.5, 0, -6, 27.5, 3.5, 22);
+            case PAD -> new AABB(-4, 0, 0, 20, 2, 20);
+            case POWER_S -> new AABB(-9, 0, 0, 25, 3.5, 24);
+            case POWER_L -> new AABB(-11.5, 0, 0, 27.5, 3.5, 28);
             default -> null;
         };
     }
@@ -109,9 +109,9 @@ public final class TransformerGeometry {
             case POLE_S -> new AABB(x - 0.75, top, 8, x + 0.75, top + 2, 9.5);
             case POLE_M -> new AABB(x - 1, top, 8.75, x + 1, top + 3, 10.75);
             case POLE_L -> new AABB(x - 1, top, 9.5, x + 1, top + 3, 11.5);
-            case PAD -> new AABB(x - 2.5, top, 10.5, x + 2.5, 28, 15.5);
-            case POWER_S -> new AABB(x - 2.5, top, 12.5, x + 2.5, 32, 17.5);
-            case POWER_L -> new AABB(x - 2.5, top, 14.5, x + 2.5, 32, 19.5);
+            case PAD -> new AABB(x - 2.5, top, 12.5, x + 2.5, 28, 17.5);
+            case POWER_S -> new AABB(x - 2.5, top, 16.5, x + 2.5, 32, 21.5);
+            case POWER_L -> new AABB(x - 2.5, top, 20.5, x + 2.5, 32, 25.5);
             case DRY -> null;
         };
     }
@@ -124,9 +124,9 @@ public final class TransformerGeometry {
             case POLE_S -> new AABB(x - 0.75, 3.5, body.minZ - 1, x + 0.75, 4.75, body.minZ);
             case POLE_M -> new AABB(x - 0.75, 4, body.minZ - 1, x + 0.75, 5.5, body.minZ);
             case POLE_L -> new AABB(x - 0.75, 6, body.minZ - 1, x + 0.75, 7.5, body.minZ);
-            case PAD -> new AABB(x - 1.5, 19.5, 0.5, x + 1.5, 24, 3.5);
-            case POWER_S -> new AABB(x - 1.5, 27, -1.5, x + 1.5, 30, 1.5);
-            case POWER_L -> new AABB(x - 1.5, 27, -3.5, x + 1.5, 30, -0.5);
+            case PAD -> new AABB(x - 1.5, 19.5, 2.5, x + 1.5, 24, 5.5);
+            case POWER_S -> new AABB(x - 1.5, 27, 2.5, x + 1.5, 30, 5.5);
+            case POWER_L -> new AABB(x - 1.5, 27, 2.5, x + 1.5, 30, 5.5);
             case DRY -> null;
         };
     }

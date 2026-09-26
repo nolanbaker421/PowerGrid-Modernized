@@ -37,6 +37,7 @@ import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.forge.ElectricProperties;
 import org.patryk3211.powergrid.forge.ForgePowerGridRegistrate;
 import org.slf4j.Logger;
+import com.nolanbaker.pgmodernized.util.WireGuard;
 import org.slf4j.LoggerFactory;
 
 @Mod(PowerGridModernized.MOD_ID)
@@ -70,6 +71,7 @@ public class PowerGridModernized {
         if(Platform.isModLoaded("computercraft")) {
             CCBridge.init();
         }
+        NeoForge.EVENT_BUS.register(WireGuard.class);
         if(FMLEnvironment.dist.isClient()) {
             NeoForge.EVENT_BUS.register(Cat6Preview.class);
             NeoForge.EVENT_BUS.register(ConduitPreview.class);
