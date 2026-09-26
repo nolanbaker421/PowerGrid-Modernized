@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.computer;
 
+import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlockEntity;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.nolanbaker.pgmodernized.device.analogio.AnalogIOBlockEntity;
 import com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlockEntity;
@@ -28,6 +29,7 @@ public final class ComputerBlockEntityFactories {
     public static BlockEntityFactory<CtCabinetBlockEntity> CT_CABINET = CtCabinetBlockEntity::new;
     public static BlockEntityFactory<ThreePhaseMotorBlockEntity> THREE_PHASE_MOTOR = ThreePhaseMotorBlockEntity::new;
     public static BlockEntityFactory<ThreePhaseDriveBlockEntity> THREE_PHASE_DRIVE = ThreePhaseDriveBlockEntity::new;
+    public static BlockEntityFactory<SynchroscopeBlockEntity> SYNCHROSCOPE = SynchroscopeBlockEntity::new;
 
     public static BlockEntityFactory<NetworkSwitchBlockEntity> networkSwitch() {
         return (type, pos, state) -> NETWORK_SWITCH.create(type, pos, state);
@@ -51,6 +53,10 @@ public final class ComputerBlockEntityFactories {
 
     public static BlockEntityFactory<ThreePhaseDriveBlockEntity> threePhaseDrive() {
         return (type, pos, state) -> THREE_PHASE_DRIVE.create(type, pos, state);
+    }
+
+    public static BlockEntityFactory<SynchroscopeBlockEntity> synchroscope() {
+        return (type, pos, state) -> SYNCHROSCOPE.create(type, pos, state);
     }
 
     private ComputerBlockEntityFactories() {}

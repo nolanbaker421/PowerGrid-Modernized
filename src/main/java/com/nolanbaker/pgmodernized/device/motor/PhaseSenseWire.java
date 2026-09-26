@@ -52,6 +52,13 @@ public class PhaseSenseWire extends ElectricWire implements IOuterHook {
         return period > 0 ? 1 / period : 0;
     }
 
+    /** Where in its cycle the voltage stood at the latest step: 0..1 from the last rise, or -1 without a period. */
+    public double phaseFraction() {
+        if(period <= 0 || lastRise < 0)
+            return -1;
+        return ((clock - lastRise) / period) % 1.0;
+    }
+
     public double period() {
         return period;
     }

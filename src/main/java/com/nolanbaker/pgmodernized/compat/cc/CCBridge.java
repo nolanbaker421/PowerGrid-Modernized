@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.compat.cc;
 
+import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlockEntity;
+import com.nolanbaker.pgmodernized.compat.cc.sync.SynchroscopePeripheral;
 import com.nolanbaker.pgmodernized.compat.cc.ctcabinet.CtCabinetPeripheral;
 import com.nolanbaker.pgmodernized.compat.cc.drive.ThreePhaseDrivePeripheral;
 import com.nolanbaker.pgmodernized.compat.cc.motor.ThreePhaseMotorPeripheral;
@@ -50,6 +52,8 @@ public class CCBridge {
                 (be, direction) -> new ThreePhaseMotorPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.THREE_PHASE_DRIVE.get(),
                 (be, direction) -> new ThreePhaseDrivePeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.SYNCHROSCOPE.get(),
+                (be, direction) -> new SynchroscopePeripheral(be));
 
         // The standalone jack behaves like a piece of CC cable towards its neighbours.
         // Device jacks deliberately do not: a modem next to a device already sees it as a local peripheral.
@@ -75,6 +79,8 @@ public class CCBridge {
             return new CtCabinetPeripheral(cabinet);
         if(be instanceof ThreePhaseDriveBlockEntity drive)
             return new ThreePhaseDrivePeripheral(drive);
+        if(be instanceof SynchroscopeBlockEntity scope)
+            return new SynchroscopePeripheral(scope);
         return null;
     }
 }

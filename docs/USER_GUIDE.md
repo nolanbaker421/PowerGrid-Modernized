@@ -458,6 +458,25 @@ Reads the signed current.
 
 ---
 
+### Synchroscope (AC build)
+
+A wall meter for paralleling a machine onto a live bus. Four lugs along its bottom: **Bus** and
+**Bus neutral** on the left, **Incoming** and **Incoming neutral** on the right. Feed each pair
+from the two sides of the open tie (a switch, a breaker). The needle points straight up when the
+incoming is in phase with the bus and turns clockwise when it leads, at the slip frequency; the
+face turns green when the slip is under 0.1 Hz, the angle within 10° and the voltages within 5%,
+which is the moment to close. Goggles show both frequencies and voltages, the slip and the angle.
+Computers see it as `powergrid_synchroscope` with getBusFrequency, getIncomingFrequency,
+getBusVoltage, getIncomingVoltage, getSlip, getPhaseAngle and isInSync.
+
+### Creative AC Source (AC build)
+
+A creative-only source: L1, L2 and L3 along the front of its top and a neutral at the back, at
+the line-to-neutral voltage and frequency on its two value boxes (the voltage steps through the
+mod's nameplate voltages, 120 V to 100 kV; the frequency runs 1 to 120 Hz). Current is unlimited.
+It is three-phase by default; sneak-right-click it with an empty hand for split-phase, where L1
+and L2 are half a turn apart and L3 repeats L1.
+
 ## 7. Cat6 network
 
 The **Cat6 Cable** is a Power Grid wire that carries computer network traffic instead of current.

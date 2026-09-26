@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.source.CreativeAcSourceBlock;
+import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlock;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlock;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlock;
@@ -221,6 +223,30 @@ public class ModBlocks {
             .properties(p -> p.noOcclusion())
             .transform(pickaxeOnly())
             .lang("Three-Phase Drive")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** Synchroscope: phase angle and slip of an incoming machine against the bus. */
+    public static final BlockEntry<SynchroscopeBlock> SYNCHROSCOPE = REGISTRATE.block("synchroscope", SynchroscopeBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Synchroscope")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** Creative-only alternating source at a set voltage and frequency. */
+    public static final BlockEntry<CreativeAcSourceBlock> CREATIVE_AC_SOURCE = REGISTRATE.block("creative_ac_source", CreativeAcSourceBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Creative AC Source")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.client.SynchroscopeRenderer;
+import com.nolanbaker.pgmodernized.device.source.CreativeAcSourceBlockEntity;
+import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlockEntity;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlockEntity;
@@ -130,6 +133,17 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<PanelExtensionBlockEntity> PANEL_EXTENSION =
             REGISTRATE.blockEntity("panel_extension", PanelExtensionBlockEntity::new)
                     .validBlock(ModBlocks.PANEL_EXTENSION)
+                    .register();
+
+    public static final BlockEntityEntry<SynchroscopeBlockEntity> SYNCHROSCOPE =
+            REGISTRATE.blockEntity("synchroscope", ComputerBlockEntityFactories.synchroscope())
+                    .validBlock(ModBlocks.SYNCHROSCOPE)
+                    .renderer(() -> SynchroscopeRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<CreativeAcSourceBlockEntity> CREATIVE_AC_SOURCE =
+            REGISTRATE.blockEntity("creative_ac_source", CreativeAcSourceBlockEntity::new)
+                    .validBlock(ModBlocks.CREATIVE_AC_SOURCE)
                     .register();
 
     public static void register() {}

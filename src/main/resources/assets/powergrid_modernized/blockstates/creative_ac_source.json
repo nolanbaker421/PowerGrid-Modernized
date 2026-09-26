@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powergrid_modernized:block/creative_ac_source"
+    },
+    "facing=east": {
+      "model": "powergrid_modernized:block/creative_ac_source",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "powergrid_modernized:block/creative_ac_source",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid_modernized:block/creative_ac_source",
+      "y": 270
+    }
+  }
+}

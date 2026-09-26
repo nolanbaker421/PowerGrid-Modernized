@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized;
 
+import com.nolanbaker.pgmodernized.client.SynchroscopeRenderer;
 import com.nolanbaker.pgmodernized.client.BreakerPanelModels;
 import com.nolanbaker.pgmodernized.client.BreakerPlacementOutline;
 import com.nolanbaker.pgmodernized.client.Cat6Preview;
@@ -78,6 +79,7 @@ public class PowerGridModernized {
             NeoForge.EVENT_BUS.register(ConduitPreview.class);
             NeoForge.EVENT_BUS.register(BreakerPlacementOutline.class);
             bus.register(BreakerPanelModels.class);
+            bus.register(SynchroscopeRenderer.Models.class);
         }
 
         TABS.register("main", () -> CreativeModeTab.builder()

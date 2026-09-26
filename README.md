@@ -260,6 +260,13 @@ The main build does load on the fork, but its meters would sample the waveform o
 Building: drop the fork jar in `libs/` and point `powergrid_jar` in `gradle.properties` at it, as
 the branch already does.
 
+- **Synchroscope**: a wall meter with Bus and Incoming potential inputs (each a line and its
+  neutral). The needle shows the angle the incoming leads the bus and turns at the slip; the face
+  goes green when slip, angle and voltage are within a tenth of a hertz, ten degrees and five
+  percent. Goggles read it out; computers see it as `powergrid_synchroscope`.
+- **Creative AC Source**: L1, L2, L3 and a neutral at a chosen line-to-neutral voltage and
+  frequency, unlimited current; sneak-click for split-phase.
+
 ## Building
 
 1. Drop a Power Grid NeoForge release jar into `libs/` and point `powergrid_jar` in `gradle.properties` at it.

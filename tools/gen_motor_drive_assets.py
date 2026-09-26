@@ -151,18 +151,117 @@ def drive():
 
 # ---------------------------------------------------------------- data
 
+SCOPE = "synchroscope"
+SOURCE = "creative_ac_source"
+
+
+def synchroscope():
+    """Wall meter: grey case, a round dial face (green when in sync), four lugs along the bottom, a needle model for the renderer."""
+    tex = os.path.join(ASSETS, "textures", "block")
+    case = (0x50, 0x54, 0x5a)
+    side = canvas(16, 16, case + (255,))
+    fill(side, 0, 0, 16, 1, shade(case, 1.2))
+    fill(side, 0, 15, 16, 16, shade(case, 0.6))
+    write_png(os.path.join(tex, SCOPE + "_side.png"), side)
+    for suffix, face_rgb in (("", (0xe8, 0xe4, 0xd8)), ("_synced", (0x9c, 0xe0, 0x9c))):
+        face = canvas(16, 16, case + (255,))
+        # Round-ish dial: a 12 px disc drawn as rows.
+        rows = {2: (5, 11), 3: (3, 13), 4: (2, 14), 5: (2, 14), 6: (1, 15), 7: (1, 15), 8: (1, 15), 9: (1, 15), 10: (2, 14), 11: (2, 14), 12: (3, 13), 13: (5, 11)}
+        for y, (x1, x2) in rows.items():
+            fill(face, x1, y, x2, y + 1, face_rgb)
+        dark = (0x20, 0x20, 0x24)
+        fill(face, 7, 2, 9, 3, dark)          # twelve o'clock mark
+        fill(face, 1, 7, 2, 9, dark)          # nine
+        fill(face, 14, 7, 15, 9, dark)        # three
+        fill(face, 7, 13, 9, 14, dark)        # six
+        fill(face, 7, 7, 9, 9, shade(case, 0.8))   # hub
+        write_png(os.path.join(tex, SCOPE + "_face%s.png" % suffix), face)
+    needle = canvas(16, 16, (0xd0, 0x28, 0x28, 255))
+    write_png(os.path.join(tex, SCOPE + "_needle.png"), needle)
+
+    lugs = [(12.5, 0, 13, 14.5, 2, 15), (9.5, 0, 13, 11.5, 2, 15), (4.5, 0, 13, 6.5, 2, 15), (1.5, 0, 13, 3.5, 2, 15)]
+    for suffix in ("", "_synced"):
+        elements = [element(2, 2, 12, 14, 14, 16, "#side", cull_south=True)]
+        elements[0]["faces"]["north"]["texture"] = "#face"
+        for lug in lugs:
+            elements.append(element(*lug, "#terminal"))
+        dump(os.path.join(ASSETS, "models", "block", SCOPE + suffix + ".json"), {
+            "parent": "block/block",
+            "textures": {"side": "%s:block/%s_side" % (MOD, SCOPE), "face": "%s:block/%s_face%s" % (MOD, SCOPE, suffix),
+                         "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/%s_side" % (MOD, SCOPE)},
+            "elements": elements,
+        })
+    # The needle, pointing up from the dial centre (8, 8.5) just in front of the face; the renderer turns it.
+    dump(os.path.join(ASSETS, "models", "block", SCOPE, "needle.json"), {
+        "textures": {"needle": "%s:block/%s_needle" % (MOD, SCOPE), "particle": "%s:block/%s_needle" % (MOD, SCOPE)},
+        "elements": [element(7.6, 8.5, 11.7, 8.4, 13.2, 12.1, "#needle"), element(7.2, 8.1, 11.7, 8.8, 8.9, 12.1, "#needle")],
+    })
+    dump(os.path.join(ASSETS, "models", "item", SCOPE + ".json"), {"parent": "%s:block/%s" % (MOD, SCOPE)})
+    variants = {}
+    for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
+        for synced in (False, True):
+            v = {"model": "%s:block/%s%s" % (MOD, SCOPE, "_synced" if synced else "")}
+            v.update(rot)
+            variants["facing=%s,synced=%s" % (facing, "true" if synced else "false")] = v
+    dump(os.path.join(ASSETS, "blockstates", SCOPE + ".json"), {"variants": variants})
+    loot_table(SCOPE)
+
+
+def creative_source():
+    """A hazard-striped box with four lugs on top and two value boxes."""
+    tex = os.path.join(ASSETS, "textures", "block")
+    yellow, black = (0xe0, 0xb8, 0x20), (0x24, 0x24, 0x28)
+    side = canvas(16, 16, yellow + (255,))
+    for i in range(-16, 32, 4):
+        for d in range(16):
+            x = i + d
+            if 0 <= x < 16 and (i // 4) % 2 == 0:
+                fill(side, x, d, x + 1, d + 1, black)
+    fill(side, 0, 0, 16, 1, shade(yellow, 1.1))
+    fill(side, 0, 15, 16, 16, shade(black, 0.8))
+    write_png(os.path.join(tex, SOURCE + "_side.png"), side)
+    top = canvas(16, 16, black + (255,))
+    fill(top, 0, 0, 16, 1, shade(black, 1.6))
+    fill(top, 3, 6, 13, 10, (0x10, 0x30, 0x18))
+    fill(top, 4, 7, 12, 9, (0x40, 0xc0, 0x60))
+    write_png(os.path.join(tex, SOURCE + "_top.png"), top)
+    lugs = [(11.5, 10, 2.5, 13.5, 12, 4.5), (7, 10, 2.5, 9, 12, 4.5), (2.5, 10, 2.5, 4.5, 12, 4.5), (7, 10, 11.5, 9, 12, 13.5)]
+    elements = [element(2, 0, 2, 14, 10, 14, "#side")]
+    elements[0]["faces"]["up"]["texture"] = "#top"
+    for lug in lugs:
+        elements.append(element(*lug, "#terminal"))
+    dump(os.path.join(ASSETS, "models", "block", SOURCE + ".json"), {
+        "parent": "block/block",
+        "textures": {"side": "%s:block/%s_side" % (MOD, SOURCE), "top": "%s:block/%s_top" % (MOD, SOURCE),
+                     "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/%s_side" % (MOD, SOURCE)},
+        "elements": elements,
+    })
+    dump(os.path.join(ASSETS, "models", "item", SOURCE + ".json"), {"parent": "%s:block/%s" % (MOD, SOURCE)})
+    variants = {}
+    for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
+        v = {"model": "%s:block/%s" % (MOD, SOURCE)}
+        v.update(rot)
+        variants["facing=%s" % facing] = v
+    dump(os.path.join(ASSETS, "blockstates", SOURCE + ".json"), {"variants": variants})
+    loot_table(SOURCE)
+
+
 def recipes():
     coil = {"item": "powergrid:copper_coil"}
     iron = {"tag": "c:plates/iron"}
     recipe(MOTOR, ["CCC", "ISI", "CCC"], {"C": coil, "I": iron, "S": {"item": "create:shaft"}}, 1, {"items": "powergrid:copper_coil"})
     recipe(DRIVE, ["III", "RVR", "III"], {"I": iron, "R": {"item": "minecraft:comparator"}, "V": {"item": "%s:vfd" % MOD}}, 1,
            {"items": "%s:vfd" % MOD})
+    recipe(SCOPE, ["III", "RCR", "III"], {"I": iron, "R": {"item": "minecraft:comparator"}, "C": {"item": "minecraft:compass"}}, 1,
+           {"items": "minecraft:comparator"})
 
 
 def main():
     textures()
     motor()
     drive()
+    synchroscope()
+    creative_source()
     recipes()
     print("motor and drive assets written")
 

@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,synced=false": {
+      "model": "powergrid_modernized:block/synchroscope"
+    },
+    "facing=north,synced=true": {
+      "model": "powergrid_modernized:block/synchroscope_synced"
+    },
+    "facing=east,synced=false": {
+      "model": "powergrid_modernized:block/synchroscope",
+      "y": 90
+    },
+    "facing=east,synced=true": {
+      "model": "powergrid_modernized:block/synchroscope_synced",
+      "y": 90
+    },
+    "facing=south,synced=false": {
+      "model": "powergrid_modernized:block/synchroscope",
+      "y": 180
+    },
+    "facing=south,synced=true": {
+      "model": "powergrid_modernized:block/synchroscope_synced",
+      "y": 180
+    },
+    "facing=west,synced=false": {
+      "model": "powergrid_modernized:block/synchroscope",
+      "y": 270
+    },
+    "facing=west,synced=true": {
+      "model": "powergrid_modernized:block/synchroscope_synced",
+      "y": 270
+    }
+  }
+}
