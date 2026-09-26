@@ -351,7 +351,8 @@ public final class PanelLayout {
 
     /** An extension block in its own frame: the enclosure with bottom and side knockouts, no top ones. */
     public static VoxelShape extensionShape() {
-        var shape = box(BODY);
+        // Up to the top of its block: the model continues a pixel into the head to close the seam.
+        var shape = box(new AABB(BODY.minX, BODY.minY, BODY.minZ, BODY.maxX, 16, BODY.maxZ));
         for(int h = 4; h < HUB_COUNT; ++h)
             shape = Shapes.or(shape, box(hub(h)));
         return shape;

@@ -516,7 +516,9 @@ def extension_assets():
     fill(side, 15, 0, 16, 16, edge)
     write_png(os.path.join(tex, name + "_side.png"), side)
 
-    elements = [element(*BODY, "#side", cull_south=True)]
+    # The body reaches a pixel into the head block above, closing the seam and covering the head's bottom knockouts.
+    x1, y1, z1, x2, y2, z2 = BODY
+    elements = [element(x1, y1, z1, x2, 17, z2, "#side", cull_south=True)]
     elements[0]["faces"]["north"]["texture"] = "#front"
     for u in HUB_U:
         x = 16 - u
