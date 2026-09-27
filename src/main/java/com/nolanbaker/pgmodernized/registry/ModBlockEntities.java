@@ -87,7 +87,7 @@ public class ModBlockEntities {
 
     public static final BlockEntityEntry<PullBoxBlockEntity> PULL_BOX =
             REGISTRATE.blockEntity("pull_box", PullBoxBlockEntity::new)
-                    .validBlock(ModBlocks.PULL_BOX)
+                    .validBlocks(ModBlocks.PULL_BOX, ModBlocks.TERMINAL_CABINET)
                     .register();
 
     public static final BlockEntityEntry<ConduitSwitchBlockEntity> CONDUIT_SWITCH =

@@ -232,6 +232,18 @@ public class ModBlocks {
                 .build()
             .register();
 
+    /** The pull box with twelve lugs on its door: the place big wire meets big conduit. */
+    public static final BlockEntry<PullBoxBlock> TERMINAL_CABINET = REGISTRATE.block("terminal_cabinet", p -> new PullBoxBlock(p, true))
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Terminal Cabinet")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
     /** A light switch on the end of a run: the first two pulled wires land on its poles and the toggle joins them. */
     public static final BlockEntry<ConduitSwitchBlock> CONDUIT_SWITCH = REGISTRATE.block("conduit_switch", ConduitSwitchBlock::new)
             .blockstate(NonNullBiConsumer.noop())

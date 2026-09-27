@@ -104,6 +104,8 @@ cells around it (invisible filler blocks carry the collision there and break wit
 - Pad 3.5 kV and 8 kV to 480 V and a 35 kV to 8 kV substation unit match the AC fork's generator
   voltages. Three-phase units need an alternating feed: on stock DC Power Grid a delta primary is a
   short, which is physics, not a bug.
+- Units heat with their copper losses and have a thermal limit sized to their rating; a pole can's
+  cutout fuses blow on sustained overload, and closing the cutouts by hand replaces them.
 - Goggles show the taps, the rating and each leg's voltage and current. Feed either side; the other
   follows the ratio. On stock Power Grid these pass DC exactly as Power Grid's own transformer does.
 
@@ -171,6 +173,10 @@ cabinet with two knockouts on each face but the door and no terminals, spliced i
 Put a pull box directly under or over a panel on the same wall and the two join through a 4" **gutter
 nipple** by themselves: a short run the box lays, that wire is pulled through like any other, so the
 feeders come up the gutter and into the panel without a conduit small enough to fit a knockout.
+The **Terminal Cabinet** is the same cabinet with twelve lugs on its door, the meeting point of big wire
+and big conduit: hang 500 kcmil on a lug, splice it to a conductor in a 4" run inside.
+Sockets and switches carry two knockouts, one on each edge, so a switch sits in line on a run with the
+neutral passing through; sneak-click a switch, or click a socket with no cord, for their splice editor.
 
 The Variable Frequency Drive, Analog I/O Module, Line Voltmeter and Line Ammeter each carry two
 knockouts as well as their ordinary terminals. Land conduit on a knockout, pull wire, then click the
@@ -225,6 +231,8 @@ without any manual action. Breaking a jack drops a hanging cable and trims the l
 ## Building
 
 1. Drop a Power Grid NeoForge release jar into `libs/` and point `powergrid_jar` in `gradle.properties` at it.
+   GitHub Actions does the same from the repository variables `POWERGRID_JAR_URL` (main) and
+   `POWERGRID_AC_JAR_URL` (ac) and publishes the jar as a workflow artifact on every push.
 2. Run `./gradlew build`. The mod jar lands in `build/libs/`.
 3. Run `./gradlew test` for the circuit-simulation unit tests.
 

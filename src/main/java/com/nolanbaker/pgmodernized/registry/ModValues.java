@@ -41,8 +41,11 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         resistance("switchgear", "pole", 0.0005);
         resistance("conduit_switch", "contact", 0.001);
         // Transformers: winding resistance in series with each secondary leg.
-        for(var spec : TransformerSpec.values())
+        for(var spec : TransformerSpec.values()) {
             resistance(spec.id(), "winding", 0.02);
+            // Full-load losses of a few percent of the rating are the most it can shed; the tank's mass grows with it.
+            thermal(spec.id(), Math.max(200, spec.ratedVa() * 0.03), 10 + spec.ratedVa() / 20000.0);
+        }
     }
 
     private ModValues() {}

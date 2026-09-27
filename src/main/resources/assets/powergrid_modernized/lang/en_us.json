@@ -266,5 +266,11 @@
   "powergrid.gui.breaker_panel.hub.ext_right": "Extension %1$s right knockout %2$s",
   "powergrid.message.panel_extension.needs_panel": "Place it directly under a breaker panel, or under that panel's extension",
   "powergrid.message.panel_extension.full": "This panel already has two extensions",
-  "powergrid.message.panel_extension.bottom_used": "Take the conduit off the panel's bottom knockouts first; the extension covers them"
+  "powergrid.message.panel_extension.bottom_used": "Take the conduit off the panel's bottom knockouts first; the extension covers them",
+  "block.powergrid_modernized.terminal_cabinet": "Terminal Cabinet",
+  "powergrid.gui.terminal_cabinet.title": "Terminal cabinet",
+  "powergrid.gui.terminal_cabinet.lug": "Lug",
+  "powergrid.message.terminal_cabinet.lugs_only": "Wires land on the lugs on the door; conduit on the knockouts",
+  "powergrid.conduit_socket.hub2": "Knockout 2",
+  "powergrid.gui.transformer.fuses_blown": "Cutout fuses blown: sneak-click to replace them"
 }

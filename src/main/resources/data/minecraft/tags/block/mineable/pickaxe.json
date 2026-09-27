@@ -41,6 +41,7 @@
     "powergrid_modernized:breaker_panel_800_2p",
     "powergrid_modernized:breaker_panel_200_3p",
     "powergrid_modernized:pull_box",
-    "powergrid_modernized:panel_extension"
+    "powergrid_modernized:panel_extension",
+    "powergrid_modernized:terminal_cabinet"
   ]
 }

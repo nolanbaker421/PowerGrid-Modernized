@@ -1,5 +1,9 @@
 package com.nolanbaker.pgmodernized.device.transformer;
 
+import org.jetbrains.annotations.Nullable;
+import com.nolanbaker.pgmodernized.device.breaker.BreakerTripCurve;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
@@ -35,6 +39,8 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
     public static final float SENSE = 1_000_000f;
     /** Contact resistance of a closed fused cutout on a pole can's bushing. */
     public static final float CUTOUT = 0.0005f;
+    /** Idle losses as a fraction of the rating, and how far over the rated current the fuses hold. */
+    public static final float NO_LOAD_FRACTION = 0.002f, FUSE_MARGIN = 1.25f;
 
     // No initialisers: buildCircuit and addBehaviours run from the superclass constructor.
     private TransformerSpec spec;
@@ -51,6 +57,9 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
     private SwitchedWire[] cutouts;
     private IElectricNode[] primaryNodes;
     private boolean cutoutOpen;
+    /** Thermal element of the pole can's fused cutouts, on the breaker trip curve against the rated current. */
+    private float fuseHeat;
+    private boolean fusesBlown;
 
     public TransformerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -207,6 +216,8 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
     /** Server side: pull the cutouts open or push them closed with the hot stick. */
     public void toggleCutout(Player player) {
         cutoutOpen = !cutoutOpen;
+        if(!cutoutOpen)
+            fusesBlown = false;
         if(cutouts != null) {
             for(var wire : cutouts) {
                 if(wire != null)
@@ -219,6 +230,52 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
                 .style(ChatFormatting.GRAY).component(), true);
         setChanged();
         sendData();
+    }
+
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return ThermalBehaviour.fromConfig(this);
+    }
+
+    /** Copper losses in the windings heat the unit; a pole can's fuses open on sustained overload. */
+    @Override
+    public void tick() {
+        super.tick();
+        if(level == null || level.isClientSide || amps == null)
+            return;
+        float winding = resistance("winding");
+        double watts = spec.ratedVa() * NO_LOAD_FRACTION;
+        float total = 0;
+        for(float a : amps) {
+            watts += a * a * winding;
+            total += Math.abs(a);
+        }
+        if(thermalBehaviour != null)
+            thermalBehaviour.applyTickPower((float) watts);
+        if(!hasCutout())
+            return;
+        if(cutoutOpen) {
+            fuseHeat = BreakerTripCurve.cool(fuseHeat);
+            return;
+        }
+        float rating = spec.ratedAmps() * FUSE_MARGIN;
+        fuseHeat = BreakerTripCurve.step(fuseHeat, total, rating);
+        if(BreakerTripCurve.trips(fuseHeat, total, rating)) {
+            fuseHeat = 0;
+            fusesBlown = true;
+            cutoutOpen = true;
+            for(var wire : cutouts) {
+                if(wire != null)
+                    wire.setState(false);
+            }
+            ModdedSoundEvents.BREAKER_OFF.playOnServer(level, worldPosition);
+            setChanged();
+            sendData();
+        }
+    }
+
+    public boolean fusesBlown() {
+        return fusesBlown;
     }
 
     @Override
@@ -281,6 +338,7 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
         super.write(tag, registries, clientPacket);
         deviceHubs().write(tag, registries, clientPacket);
         tag.putBoolean("Cutout", cutoutOpen);
+        tag.putBoolean("FusesBlown", fusesBlown);
         if(clientPacket) {
             var list = new net.minecraft.nbt.ListTag();
             for(int i = 0; i < amps.length; ++i) {
@@ -304,6 +362,7 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
             }
         }
         cutoutOpen = tag.getBoolean("Cutout");
+        fusesBlown = tag.getBoolean("FusesBlown");
         if(cutouts != null) {
             for(var wire : cutouts) {
                 if(wire != null)
@@ -326,7 +385,7 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
         Lang.builder().translate("gui.transformer.rating", String.format("%.0f", spec.ratedVa() / 1000), String.format("%.0f", spec.ratedAmps()))
                 .style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
         if(hasCutout())
-            Lang.builder().translate(cutoutOpen ? "gui.transformer.cutout_open" : "gui.transformer.cutout_closed")
+            Lang.builder().translate(fusesBlown ? "gui.transformer.fuses_blown" : cutoutOpen ? "gui.transformer.cutout_open" : "gui.transformer.cutout_closed")
                     .style(cutoutOpen ? ChatFormatting.RED : ChatFormatting.GREEN).forGoggles(tooltip, 1);
         var legs = spec.kind().legs();
         for(int i = 0; i < legs.length; ++i) {

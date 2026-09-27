@@ -95,32 +95,34 @@ public class ConduitSocketBlockEntity extends ElectricBlockEntity implements ISp
 
     @Override
     public int hubCount() {
-        return 1;
+        return 2;
     }
 
     @Override
     public Component hubName(int hub) {
-        return Lang.builder().translate("conduit_socket.hub").style(ChatFormatting.AQUA).component();
+        return Lang.builder().translate(hub == 0 ? "conduit_socket.hub" : "conduit_socket.hub2").style(ChatFormatting.AQUA).component();
     }
 
     @Override
     public int hubTerminal(int hub) {
-        return TERMINAL_HUB;
+        return hub == 0 ? TERMINAL_HUB : TERMINAL_HUB2;
     }
 
     @Override
     public int hubAt(int terminal) {
-        return terminal == TERMINAL_HUB ? 0 : -1;
+        return terminal == TERMINAL_HUB ? 0 : terminal == TERMINAL_HUB2 ? 1 : -1;
     }
 
     @Override
     public int conductorTerminal(int hub, int conductor) {
-        return CONDUCTOR_BASE + conductor;
+        return (hub == 0 ? CONDUCTOR_BASE : CONDUCTOR2_BASE) + conductor;
     }
 
     @Override
     public int hubOf(int terminal) {
-        return terminal >= CONDUCTOR_BASE && terminal < TERMINAL_COUNT ? 0 : -1;
+        if(terminal >= CONDUCTOR_BASE && terminal < TERMINAL_HUB2)
+            return 0;
+        return terminal >= CONDUCTOR2_BASE && terminal < TERMINAL_COUNT ? 1 : -1;
     }
 
     /** The socket placement terminal is neither a point nor a landing. */
@@ -130,12 +132,12 @@ public class ConduitSocketBlockEntity extends ElectricBlockEntity implements ISp
 
     @Override
     public int conductorOf(int terminal) {
-        return terminal - CONDUCTOR_BASE;
+        return terminal >= CONDUCTOR2_BASE ? terminal - CONDUCTOR2_BASE : terminal - CONDUCTOR_BASE;
     }
 
     @Override
     public @Nullable ConduitRunEntity hubRun(int hub) {
-        return hub == 0 ? SpliceSupport.runAt(this, TERMINAL_HUB) : null;
+        return hub == 0 ? SpliceSupport.runAt(this, TERMINAL_HUB) : hub == 1 ? SpliceSupport.runAt(this, TERMINAL_HUB2) : null;
     }
 
     // ---- persistence ----

@@ -77,7 +77,7 @@ public class ConduitRunEntity extends BlockWireEntity {
             return null;
         var entity = new ConduitRunEntity(ModEntities.CONDUIT_RUN.get(), level);
         entity.nipple = true;
-        entity.setItem(ModItems.CONDUIT.get(ConduitSize.FOUR).get(), 1);
+        entity.setItem(ModItems.CONDUIT.get(ConduitSize.HALF).get(), 1);
         entity.setColor(DEFAULT_COLOR);
         entity.setPosRaw(start.x, start.y, start.z);
         entity.segments.addAll(path);
@@ -95,7 +95,10 @@ public class ConduitRunEntity extends BlockWireEntity {
         return nipple;
     }
 
+    /** A nipple takes anything (it is a 4" fitting) but is drawn as the thinnest tube so it hides nothing. */
     public ConduitSize size() {
+        if(nipple)
+            return ConduitSize.FOUR;
         return getItem() instanceof ConduitItem conduit ? conduit.size() : ConduitSize.HALF;
     }
 

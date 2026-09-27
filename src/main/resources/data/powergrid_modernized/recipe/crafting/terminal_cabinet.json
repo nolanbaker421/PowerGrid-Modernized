@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/copper"
+    },
+    "B": {
+      "item": "powergrid_modernized:pull_box"
+    }
+  },
+  "pattern": [
+    "NNN",
+    "NBN",
+    "NNN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:terminal_cabinet"
+  }
+}

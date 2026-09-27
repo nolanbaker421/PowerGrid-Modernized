@@ -684,6 +684,9 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         splices().read(tag);
         applyWireStates();
         points = null;
+        // Multi-lug mains installed before 0.9.0 were stored as one pole; they are the panel's pole count.
+        if(main.installed() && !main.blank && main.poles < spec.lugs())
+            main.poles = spec.lugs();
         if(!clientPacket) {
             // Loaded from disk: multi-pole wiring depends on what is installed, so rebuild once ticking.
             for(var branch : branches) {

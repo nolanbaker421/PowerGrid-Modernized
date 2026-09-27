@@ -82,7 +82,7 @@ public class OCVfdBlockEntity extends VfdBlockEntity implements Environment {
         return result((double) getVoltage());
     }
 
-    @Callback(doc = "function(amps:number) -- Set the output current limit, 0 to 3 A.")
+    @Callback(doc = "function(amps:number) -- Set the output current limit, 0 to 20 A.")
     public Object[] setCurrentLimit(Context context, Arguments args) {
         setCurrentLimit((float) args.checkDouble(0));
         return result();

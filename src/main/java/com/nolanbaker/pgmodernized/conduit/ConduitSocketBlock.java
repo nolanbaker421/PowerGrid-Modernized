@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.ChatFormatting;
@@ -42,16 +43,19 @@ import org.patryk3211.powergrid.utility.Lang;
  */
 public class ConduitSocketBlock extends Rotation4ElectricBlock implements IBE<ConduitSocketBlockEntity>, ISocketElectric {
     public static final int TERMINAL_POLE_A = 0, TERMINAL_POLE_B = 1, TERMINAL_HUB = 2, TERMINAL_SOCKET = 3, CONDUCTOR_BASE = 4;
-    public static final int TERMINAL_COUNT = CONDUCTOR_BASE + ConductorColors.COUNT;
+    /** The second knockout on the opposite edge and its landings come after the first set, so older sockets keep their indices. */
+    public static final int TERMINAL_HUB2 = CONDUCTOR_BASE + ConductorColors.COUNT, CONDUCTOR2_BASE = TERMINAL_HUB2 + 1;
+    public static final int TERMINAL_COUNT = CONDUCTOR2_BASE + ConductorColors.COUNT;
 
     private static final AABB BODY = new AABB(5, 0, 5, 11, 3, 11);
     private static final AABB HUB = new AABB(7, 0.5, 4, 9, 2.5, 5);
+    private static final AABB HUB2 = new AABB(7, 0.5, 11, 9, 2.5, 12);
     private static final AABB SOCKET = new AABB(6.5, 3, 6.5, 9.5, 4, 9.5);
     private static final AABB HIDDEN = new AABB(7.5, 1, 7.5, 8.5, 2, 8.5);
 
     public ConduitSocketBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(rotation4DownTerminals(this, terminals(), Shapes.or(box(BODY), box(HUB), box(SOCKET))));
+        setTerminalCollection(rotation4DownTerminals(this, terminals(), Shapes.or(box(BODY), box(HUB), box(HUB2), box(SOCKET))));
     }
 
     private static TerminalBoundingBox[] terminals() {
@@ -62,6 +66,9 @@ public class ConduitSocketBlock extends Rotation4ElectricBlock implements IBE<Co
         terminals[TERMINAL_SOCKET] = terminal(IDecoratedTerminal.SOCKET, SOCKET);
         for(int k = 0; k < ConductorColors.COUNT; ++k)
             terminals[CONDUCTOR_BASE + k] = terminal(ConductorColors.name(k), HIDDEN).withColor(ConductorColors.rgb(k));
+        terminals[TERMINAL_HUB2] = terminal(name("conduit_socket.hub2", ChatFormatting.AQUA), HUB2).withColor(0x2FB8D6);
+        for(int k = 0; k < ConductorColors.COUNT; ++k)
+            terminals[CONDUCTOR2_BASE + k] = terminal(ConductorColors.name(k), HIDDEN).withColor(ConductorColors.rgb(k));
         return terminals;
     }
 
@@ -100,22 +107,32 @@ public class ConduitSocketBlock extends Rotation4ElectricBlock implements IBE<Co
 
     @Override
     public ITerminalPlacement terminalAt(BlockState state, Vec3 pos) {
-        var hub = terminal(state, TERMINAL_HUB);
-        return hub != null && hub.check(pos) ? hub : null;
+        for(int t : new int[] {TERMINAL_HUB, TERMINAL_HUB2}) {
+            var hub = terminal(state, t);
+            if(hub != null && hub.check(pos))
+                return hub;
+        }
+        return null;
     }
 
-    private boolean onHub(BlockState state, UseOnContext context) {
+    /** The knockout terminal under the click, or -1. */
+    private int hubClicked(BlockState state, UseOnContext context) {
         var pos = context.getClickedPos();
-        var hub = terminal(state, TERMINAL_HUB);
-        return hub != null && hub.check(context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        var local = context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+        for(int t : new int[] {TERMINAL_HUB, TERMINAL_HUB2}) {
+            var hub = terminal(state, t);
+            if(hub != null && hub.check(local))
+                return t;
+        }
+        return -1;
     }
 
     @Override
     public InteractionResult onWire(BlockState state, UseOnContext context) {
         var pos = context.getClickedPos();
-        int terminal = onHub(state, context) ? TERMINAL_HUB : -1;
+        int terminal = hubClicked(state, context);
         boolean conduit = ConduitItem.isConduit(context.getItemInHand());
-        if(terminal == TERMINAL_HUB) {
+        if(terminal >= 0) {
             if(!conduit) {
                 IElectric.sendMessage(context, Lang.builder().translate("message.conduit.hub_only").style(ChatFormatting.RED).component());
                 return InteractionResult.FAIL;
@@ -133,15 +150,18 @@ public class ConduitSocketBlock extends Rotation4ElectricBlock implements IBE<Co
         return stack.isEmpty() ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
 
-    /** Empty hand on the socket unplugs the cord, as on Power Grid's own socket. */
+    /** Empty hand on the socket unplugs the cord, as on Power Grid's own socket; with no cord it opens the splice editor. */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(hand != InteractionHand.MAIN_HAND)
+        if(hand != InteractionHand.MAIN_HAND || !player.getMainHandItem().isEmpty())
             return InteractionResult.PASS;
         var endpoint = new SocketEndpoint(pos);
         var cord = endpoint.getConnection(level);
-        if(cord == null)
-            return InteractionResult.PASS;
+        if(cord == null || player.isShiftKeyDown()) {
+            if(level.isClientSide)
+                ClientHooks.openSplices(pos);
+            return InteractionResult.SUCCESS;
+        }
         if(cord.getEndpoint1().equals(endpoint))
             return cord.cordDetach(player, false) ? InteractionResult.SUCCESS : InteractionResult.PASS;
         if(cord.getEndpoint2().equals(endpoint))
