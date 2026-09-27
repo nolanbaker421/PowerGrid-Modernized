@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import net.minecraft.world.level.block.Block;
+import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
 import com.simibubi.create.foundation.block.IBE;
@@ -31,9 +33,28 @@ import org.patryk3211.powergrid.utility.Lang;
  * brings the feeders into the panel. The door faces the player when placed.
  */
 public class PullBoxBlock extends HorizontalElectricBlock implements IBE<PullBoxBlockEntity> {
+    private final boolean lugs;
+
     public PullBoxBlock(Properties properties) {
+        this(properties, false);
+    }
+
+    /** @param lugs a terminal cabinet: twelve lugs on the door that hanging wire lands on and the editor offers as points */
+    public PullBoxBlock(Properties properties, boolean lugs) {
         super(properties);
-        setTerminalCollection(horizontalNorthTerminals(this, PullBoxGeometry.terminals(), Shapes.block()));
+        this.lugs = lugs;
+        var shape = Shapes.block();
+        if(lugs) {
+            for(int k = 0; k < PullBoxGeometry.FRONT_COUNT; ++k) {
+                var lug = PullBoxGeometry.frontLug(k);
+                shape = Shapes.or(shape, Block.box(lug.minX, lug.minY, lug.minZ, lug.maxX, lug.maxY, lug.maxZ));
+            }
+        }
+        setTerminalCollection(horizontalNorthTerminals(this, PullBoxGeometry.terminals(lugs), shape));
+    }
+
+    public boolean hasLugs() {
+        return lugs;
     }
 
     public static Direction facing(BlockState state) {
@@ -50,7 +71,7 @@ public class PullBoxBlock extends HorizontalElectricBlock implements IBE<PullBox
 
     @Override
     public boolean accepts(ItemStack wireStack) {
-        return false;
+        return lugs && WireAcceptance.electrical(wireStack);
     }
 
     @Override
@@ -69,7 +90,9 @@ public class PullBoxBlock extends HorizontalElectricBlock implements IBE<PullBox
             IElectric.sendMessage(context, Lang.builder().translate("message.conduit.needs_hub").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
         }
-        IElectric.sendMessage(context, Lang.builder().translate("message.pull_box.no_terminals").style(ChatFormatting.RED).component());
+        if(lugs && PullBoxGeometry.isFront(terminal))
+            return super.onWire(state, context);
+        IElectric.sendMessage(context, Lang.builder().translate(lugs ? "message.terminal_cabinet.lugs_only" : "message.pull_box.no_terminals").style(ChatFormatting.RED).component());
         return InteractionResult.FAIL;
     }
 

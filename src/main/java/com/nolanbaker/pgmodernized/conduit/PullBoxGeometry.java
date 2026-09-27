@@ -17,13 +17,18 @@ public final class PullBoxGeometry {
     public static final int HUB_COUNT = 10;
     public static final int HUB_BASE = 0;
     public static final int CONDUCTOR_BASE = HUB_BASE + HUB_COUNT;
-    public static final int TERMINAL_COUNT = CONDUCTOR_BASE + HUB_COUNT * ConductorColors.COUNT;
+    /** The terminal cabinet's twelve door lugs come after everything else. */
+    public static final int FRONT_BASE = CONDUCTOR_BASE + HUB_COUNT * ConductorColors.COUNT;
+    public static final int FRONT_COUNT = ConductorColors.COUNT;
+    public static final int TERMINAL_COUNT = FRONT_BASE + FRONT_COUNT;
     public static final String[] HUB_KEYS = {"top", "bottom", "left", "right", "back"};
     /** Knockout centres along a face, in viewer coordinates from the viewer's left (or top). */
     private static final double[] ALONG = {5, 11};
     private static final double HALF = 1.5, DEPTH = 0.5;
     private static final AABB[] HUBS = new AABB[HUB_COUNT];
     private static final AABB HIDDEN = new AABB(7.5, 7.5, 7.5, 8.5, 8.5, 8.5);
+    private static final double[] LUG_U = {3.5, 6.5, 9.5, 12.5};
+    private static final double[] LUG_Y = {11.5, 8, 4.5};
 
     static {
         for(int i = 0; i < 2; ++i) {
@@ -76,12 +81,25 @@ public final class PullBoxGeometry {
         return isConductor(terminal) ? (terminal - CONDUCTOR_BASE) % ConductorColors.COUNT : -1;
     }
 
+    public static boolean isFront(int terminal) {
+        return terminal >= FRONT_BASE && terminal < TERMINAL_COUNT;
+    }
+
+    /** A door lug of the terminal cabinet, a 4 x 3 grid read left to right, top to bottom, standing a pixel proud of the door. */
+    public static AABB frontLug(int k) {
+        double x = 16 - LUG_U[k % 4], y = LUG_Y[k / 4];
+        return new AABB(x - 1, y - 1, -1, x + 1, y + 1, 0);
+    }
+
     public static Component hubName(int hub) {
         return Lang.builder().translate("gui.pull_box.hub." + HUB_KEYS[hub / 2], hub % 2 + 1).style(ChatFormatting.AQUA).component();
     }
 
-    public static TerminalBoundingBox[] terminals() {
-        var terminals = new TerminalBoundingBox[TERMINAL_COUNT];
+    /** @param lugs with the terminal cabinet's door lugs; a plain pull box leaves them out */
+    public static TerminalBoundingBox[] terminals(boolean lugs) {
+        var terminals = new TerminalBoundingBox[lugs ? TERMINAL_COUNT : FRONT_BASE];
+        if(lugs) for(int k = 0; k < FRONT_COUNT; ++k)
+            terminals[FRONT_BASE + k] = terminal(ConductorColors.name(k), frontLug(k)).withColor(ConductorColors.rgb(k));
         for(int h = 0; h < HUB_COUNT; ++h) {
             terminals[hubTerminal(h)] = terminal(hubName(h), HUBS[h]).withColor(0x2FB8D6);
             for(int k = 0; k < ConductorColors.COUNT; ++k) {

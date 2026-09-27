@@ -134,6 +134,7 @@ def box_model():
 # Floor frame (FACING = down): body on the floor, socket face up, knockout on the north edge.
 SOCKET_BODY = (5, 0, 5, 11, 3, 11)
 SOCKET_HUB = (7, 0.5, 4, 9, 2.5, 5)
+SOCKET_HUB2 = (7, 0.5, 11, 9, 2.5, 12)
 SOCKET_FACE = (6.5, 3, 6.5, 9.5, 4, 9.5)
 # Same rotation table Power Grid's Rotation4 blocks use (copied from the line ammeter): block_v for
 # floor and ceiling, block_h = (16 - y, x, z) of block_v for walls.
@@ -148,7 +149,7 @@ def to_h(box):
 
 def socket_model():
     tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/conduit_box" % MOD}
-    boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#terminal"), (SOCKET_FACE, "#terminal")]
+    boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#terminal"), (SOCKET_HUB2, "#terminal"), (SOCKET_FACE, "#terminal")]
     for suffix, transform in (("v", lambda b: b), ("h", to_h)):
         elements = [element(*transform(box), texture) for box, texture in boxes]
         dump(os.path.join(ASSETS, "models", "block", "conduit_socket", "block_%s.json" % suffix),
@@ -170,7 +171,7 @@ def switch_model():
     """The conduit switch: the socket's body and knockout with a toggle plate on top; the toggle leans back when off, forward when on."""
     tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/conduit_box" % MOD}
     for on in (False, True):
-        boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#terminal"), (SWITCH_PLATE, "#box"), (SWITCH_TOGGLE[on], "#terminal")]
+        boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#terminal"), (SOCKET_HUB2, "#terminal"), (SWITCH_PLATE, "#box"), (SWITCH_TOGGLE[on], "#terminal")]
         for suffix, transform in (("v", lambda b: b), ("h", to_h)):
             elements = [element(*transform(box), texture) for box, texture in boxes]
             dump(os.path.join(ASSETS, "models", "block", "conduit_switch", "block_%s_%s.json" % (suffix, "on" if on else "off")),
@@ -227,6 +228,29 @@ def pull_box_assets():
         v.update(rot)
         variants["facing=%s" % facing] = v
     dump(os.path.join(ASSETS, "blockstates", "pull_box.json"), {"variants": variants})
+
+    # Terminal cabinet: the same cabinet with twelve lugs on the door for big wire to land on.
+    elements = [element(0, 0, 0, 16, 16, 16, "#side")]
+    elements[0]["faces"]["north"]["texture"] = "#front"
+    elements[0]["faces"]["east"]["texture"] = "#side_v"
+    elements[0]["faces"]["west"]["texture"] = "#side_v"
+    for u in (3.5, 6.5, 9.5, 12.5):
+        x = 16 - u
+        for y in (11.5, 8, 4.5):
+            elements.append(element(x - 1, y - 1, -1, x + 1, y + 1, 0, "#terminal"))
+    dump(os.path.join(ASSETS, "models", "block", "terminal_cabinet.json"), {
+        "parent": "block/block",
+        "textures": {"front": "%s:block/pull_box_front" % MOD, "side": side_h, "side_v": side_v,
+                     "terminal": "%s:block/panel_terminal" % MOD, "particle": side_h},
+        "elements": elements,
+    })
+    dump(os.path.join(ASSETS, "models", "item", "terminal_cabinet.json"), {"parent": "%s:block/terminal_cabinet" % MOD})
+    variants = {}
+    for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
+        v = {"model": "%s:block/terminal_cabinet" % MOD}
+        v.update(rot)
+        variants["facing=%s" % facing] = v
+    dump(os.path.join(ASSETS, "blockstates", "terminal_cabinet.json"), {"variants": variants})
 
 
 def item_models():
@@ -289,6 +313,8 @@ def recipes():
     shaped("conduit_socket", ["NCN", " N "], {"N": nugget, "C": {"tag": "c:nuggets/copper"}}, 2, {"items": "powergrid:wire"})
     shaped("conduit_switch", ["NLN", " N "], {"N": nugget, "L": {"item": "minecraft:lever"}}, 2, {"items": "powergrid:wire"})
     shaped("pull_box", ["PPP", "P P", "PPP"], {"P": {"tag": "c:plates/iron"}}, 1, {"items": "powergrid:wire"})
+    shaped("terminal_cabinet", ["NNN", "NBN", "NNN"], {"N": {"tag": "c:nuggets/copper"}, "B": {"item": "%s:pull_box" % MOD}}, 1,
+           {"items": "%s:pull_box" % MOD})
 
 
 def wire_types():
@@ -312,6 +338,7 @@ def main():
     loot_table("conduit_socket")
     loot_table("conduit_switch")
     loot_table("pull_box")
+    loot_table("terminal_cabinet")
     recipes()
     wire_types()
     print("conduit assets written")

@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import java.util.ArrayList;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.SplicePoint;
 import com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport;
@@ -30,6 +31,9 @@ import java.util.List;
  */
 public class PullBoxBlockEntity extends ElectricBlockEntity implements ISpliceHost, IHaveGoggleInformation {
     private SpliceSupport splices;
+    /** Box knockout to panel knockout, nearest first: a box under the panel uses its top hubs and the panel's bottom ones. */
+    private static final int[][] PAIRS_BELOW = {{0, 5}, {0, 4}, {1, 6}, {1, 7}};
+    private static final int[][] PAIRS_ABOVE = {{2, 1}, {2, 0}, {3, 2}, {3, 3}};
 
     public PullBoxBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -99,13 +103,12 @@ public class PullBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             return;
         if(nippleTo(panelPos) != null)
             return;
-        int myHub = freeHub(PullBoxGeometry.hubsOn(dir == Direction.UP ? "top" : "bottom"));
-        int panelHub = -1;
-        // A box below the panel meets the panel's bottom knockouts (4..7); a box above its top ones (0..3).
-        int first = dir == Direction.UP ? 4 : 0;
-        for(int h = first; h < first + 4; ++h) {
-            if(panel.hubRun(h) == null) {
-                panelHub = h;
+        // The box knockout and panel knockout that line up best, so the nipple runs straight and covers nothing.
+        int myHub = -1, panelHub = -1;
+        for(var pair : dir == Direction.UP ? PAIRS_BELOW : PAIRS_ABOVE) {
+            if(hubRun(pair[0]) == null && panel.hubRun(pair[1]) == null) {
+                myHub = pair[0];
+                panelHub = pair[1];
                 break;
             }
         }
@@ -120,14 +123,29 @@ public class PullBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     // ---- splice host ----
 
+    private List<SplicePoint> points;
+
+    private boolean hasLugs() {
+        return getBlockState().getBlock() instanceof PullBoxBlock box && box.hasLugs();
+    }
+
     @Override
     public List<SplicePoint> points() {
-        return List.of();
+        if(!hasLugs())
+            return List.of();
+        if(points == null) {
+            points = new ArrayList<>();
+            for(int k = 0; k < PullBoxGeometry.FRONT_COUNT; ++k) {
+                var name = Lang.builder().translate("gui.terminal_cabinet.lug").style(ChatFormatting.GRAY).text(" ").add(ConductorColors.name(k)).component();
+                points.add(new SplicePoint(PullBoxGeometry.FRONT_BASE + k, name, ConductorColors.rgb(k)));
+            }
+        }
+        return points;
     }
 
     @Override
     public boolean isPoint(int terminal) {
-        return false;
+        return hasLugs() && PullBoxGeometry.isFront(terminal);
     }
 
     @Override
@@ -192,7 +210,7 @@ public class PullBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        Lang.builder().translate("gui.pull_box.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
+        Lang.builder().translate(hasLugs() ? "gui.terminal_cabinet.title" : "gui.pull_box.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
         splices().addGoggleLines(tooltip);
         return true;
     }

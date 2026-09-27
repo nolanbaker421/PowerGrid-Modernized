@@ -51,7 +51,7 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
     }
 
     public static final float MAX_VOLTAGE = 2000.0f;
-    public static final float MAX_CURRENT = 3.0f;
+    public static final float MAX_CURRENT = 20.0f;
     private static final float MAX_RATIO = 500.0f;
     private static final float MIN_RATIO = 0.001f;
     private static final float MIN_INPUT_VOLTAGE = 0.5f;

@@ -171,7 +171,8 @@ Goggles on a box show each run and a splice count; open the editor to see the sp
 A 6 x 6 pixel fitting for the equipment end of a run. It has one hub and a **cord socket**: the first
 two wires pulled through its run land on the socket's two poles automatically, and a Power Grid
 copper cord plugs into it with one click, then splits onto the machine as usual. Click the socket
-with an empty hand to unplug the cord. Place it with the clicked face as its back; wrench its face to
+with an empty hand to unplug the cord, or, with no cord in it, to open the splice editor for its two
+knockouts. Place it with the clicked face as its back; wrench its face to
 turn the hub to any of the four directions. There is nothing to splice.
 
 ### Pull Box
@@ -187,12 +188,21 @@ panel's. Pull wire through the nipple exactly as through any run, right-click it
 splice in the panel editor as usual. The nipple cannot be cut or picked up; it goes away when the
 box or the panel does. That is how feeders too big for a 2" panel knockout get in: up the gutter.
 
+### Terminal Cabinet
+
+The Pull Box with twelve colour-coded lugs on its door. Any wire hangs on a lug, 500 kcmil THHN
+included, and the editor offers the lugs as points, so a feeder that arrives as hanging wire is
+spliced to conductors in a 4" run inside, and the other way round. Crafted from a pull box ringed
+with copper nuggets.
+
 ### Conduit Switch
 
 The same 6 x 6 pixel fitting as the socket with a toggle on top instead of a cord socket: one hub,
 and the first two wires pulled through its run land on its **Line** and **Load** poles by themselves.
 Right-click it with an empty hand to flip it; the toggle leans forward when on. Goggles show the
-state. Place and wrench it like the socket. It is a plain contact between the two wires, so put it in
+state. Like the socket it has a second knockout on the opposite edge, so it can sit in line on a run,
+and sneak-clicking it opens the splice editor for both runs: put the switch in the hot and splice the
+neutral straight through. Place and wrench it like the socket. It is a plain contact between the two wires, so put it in
 the hot conductor of a lighting circuit and give the light its own conduit run back to a box.
 
 ---
@@ -345,6 +355,9 @@ free (a tank needs the block above, the substation units a ring around them).
 - **Taps**: two value boxes on the front of the base block, HV on the left and LV on the right.
   Scroll or click them to move that winding in 2.5% steps up to 10% either way. Changing a tap
   while that winding is live arcs and shocks you: there is no on-load tap changer.
+- **Heat**: a unit heats with its copper losses and has a thermal limit sized to its rating, so a
+  25 kVA can feeding a 100 kVA load cooks. A pole can's cutout **fuses** blow on sustained overload
+  (a quarter over the rating, on the breaker curve); sneak-click the can to fit new ones.
 - **Pole cutouts**: every pole can has fused cutouts on its high-side bushings. Sneak-right-click the
   can with an empty hand to pull them open (the high side goes dead, so the taps can be worked without
   an arc) and again to close them. Goggles show whether they are open.
@@ -385,7 +398,7 @@ A computer-controlled source. Two input terminals (+ / −) take power; two outp
 deliver a commanded voltage.
 
 - Output voltage: −2000 V to +2000 V (negative reverses polarity).
-- Output current limit: 0 to 3 A. The drive backs off to hold the limit and to avoid dragging its
+- Output current limit: 0 to 20 A. The drive backs off to hold the limit and to avoid dragging its
   input down.
 - Output can be enabled or disabled. Goggles show the setpoint and the measured input and output.
 

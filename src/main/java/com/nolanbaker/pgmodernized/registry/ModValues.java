@@ -45,8 +45,11 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         resistance("three_phase_drive", "output", 0.05);
         thermal("three_phase_drive", 600, 5.0);
         // Transformers: winding resistance in series with each secondary leg.
-        for(var spec : TransformerSpec.values())
+        for(var spec : TransformerSpec.values()) {
             resistance(spec.id(), "winding", 0.02);
+            // Full-load losses of a few percent of the rating are the most it can shed; the tank's mass grows with it.
+            thermal(spec.id(), Math.max(200, spec.ratedVa() * 0.03), 10 + spec.ratedVa() / 20000.0);
+        }
     }
 
     private ModValues() {}
