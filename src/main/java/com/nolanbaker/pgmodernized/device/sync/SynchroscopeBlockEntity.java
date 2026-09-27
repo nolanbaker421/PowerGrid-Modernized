@@ -46,6 +46,7 @@ public class SynchroscopeBlockEntity extends ElectricBlockEntity implements IHav
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
+        builder.setTerminalCount(4);
         busSense = new PhaseSenseWire(SENSE, builder.terminalNode(BUS), builder.terminalNode(BUS_N));
         incomingSense = new PhaseSenseWire(SENSE, builder.terminalNode(INCOMING), builder.terminalNode(INCOMING_N));
         builder.add(busSense);

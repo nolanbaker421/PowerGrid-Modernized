@@ -59,6 +59,7 @@ public class CreativeAcSourceBlockEntity extends ElectricBlockEntity implements 
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
+        builder.setTerminalCount(4);
         sources = new ACVoltageSourceCoupling[3];
         var neutral = builder.terminalNode(N);
         for(int k = 0; k < 3; ++k) {

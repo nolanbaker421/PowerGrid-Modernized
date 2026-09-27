@@ -40,7 +40,7 @@ import static com.nolanbaker.pgmodernized.device.drive.ThreePhaseDriveBlock.*;
  */
 public class ThreePhaseDriveBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, INetworkJack, IDeviceSpliceHost {
     public static final int MAX_HZ = 30;
-    public static final float MAX_VOLTS = 1000f;
+    public static final float MAX_VOLTS = 1400f;
     public static final float OUTPUT_R = 0.05f;
     public static final float SERIES_R = 0.005f;
     public static final float SENSE = 1_000_000f;
