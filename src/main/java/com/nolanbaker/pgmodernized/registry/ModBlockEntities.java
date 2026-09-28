@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlockEntity;
 import com.nolanbaker.pgmodernized.client.SynchroscopeRenderer;
 import com.nolanbaker.pgmodernized.device.source.CreativeAcSourceBlockEntity;
 import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlockEntity;
@@ -109,8 +110,15 @@ public class ModBlockEntities {
 
     @SuppressWarnings("unchecked")
     public static final BlockEntityEntry<TransformerBlockEntity> TRANSFORMER =
-            REGISTRATE.blockEntity("transformer", TransformerBlockEntity::new)
+            REGISTRATE.blockEntity("transformer", ComputerBlockEntityFactories.transformer())
                     .validBlocks(ModBlocks.TRANSFORMERS.values().toArray(BlockEntry[]::new))
+                    .register();
+
+    public static final BlockEntityEntry<TapActuatorBlockEntity> TAP_ACTUATOR =
+            REGISTRATE.blockEntity("tap_actuator", TapActuatorBlockEntity::new)
+                    .visual(() -> HalfShaftVisual::new)
+                    .validBlock(ModBlocks.TAP_ACTUATOR)
+                    .renderer(() -> ElectricMotorRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<TransformerFillerBlockEntity> TRANSFORMER_FILLER =

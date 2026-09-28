@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlockEntity;
+import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlock;
 import com.nolanbaker.pgmodernized.device.source.CreativeAcSourceBlock;
 import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlock;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlock;
@@ -247,6 +249,19 @@ public class ModBlocks {
             .properties(p -> p.noOcclusion())
             .transform(pickaxeOnly())
             .lang("Creative AC Source")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** The tap changer drive: bolts onto a transformer, one turn of its shaft per tap step. */
+    public static final BlockEntry<TapActuatorBlock> TAP_ACTUATOR = REGISTRATE.block("tap_actuator", TapActuatorBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .onRegister(block -> BlockStressValues.IMPACTS.register(block, () -> (double) TapActuatorBlockEntity.STRESS))
+            .lang("Tap Changer Drive")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

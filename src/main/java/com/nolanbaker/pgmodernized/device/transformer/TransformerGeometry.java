@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.transformer;
 
+import com.nolanbaker.pgmodernized.network.JackTerminals;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
@@ -316,6 +317,22 @@ public final class TransformerGeometry {
             frontZ = 0;
         }
         return new Vec3(x, y, 16 - frontZ);
+    }
+
+    /** The network jack pin, low on the front of the base cell. */
+    public static TerminalBoundingBox jack(TransformerSize size, boolean hung) {
+        AABB box;
+        if(size.isPole()) {
+            var body = shift(body(size), hung ? hungShift(size) : Vec3.ZERO);
+            box = new AABB(7, body.minY + 6, body.minZ - 1, 9, body.minY + 8, body.minZ);
+        } else if(size == TransformerSize.DRY) {
+            box = new AABB(7, 6, 3, 9, 8, 4);
+        } else if(size == TransformerSize.PAD) {
+            box = new AABB(7, 4, 0, 9, 6, 1);
+        } else {
+            box = new AABB(7, 6, 0, 9, 8, 1);
+        }
+        return JackTerminals.jack(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
     }
 
     private static TerminalBoundingBox terminal(Component name, AABB px) {

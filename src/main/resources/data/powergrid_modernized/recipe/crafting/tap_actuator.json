@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "S": {
+      "item": "create:shaft"
+    },
+    "C": {
+      "item": "create:cogwheel"
+    },
+    "G": {
+      "item": "create:large_cogwheel"
+    }
+  },
+  "pattern": [
+    "ISI",
+    "CGC",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:tap_actuator"
+  }
+}

@@ -43,6 +43,12 @@ public class VfdPeripheral implements IPeripheral {
         return drive.isEnabled();
     }
 
+    /** Why the output is what it is: "ok", "disabled", "no_input", "reversed", "setpoint_zero", "input_low", "current_limit" or "input_sag". */
+    @LuaFunction
+    public String getStatus() {
+        return drive.status().key();
+    }
+
     @LuaFunction
     public double getOutputVoltage() {
         return drive.getOutputVoltage();

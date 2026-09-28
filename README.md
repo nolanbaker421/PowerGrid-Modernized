@@ -106,6 +106,13 @@ cells around it (invisible filler blocks carry the collision there and break wit
   short, which is physics, not a bug.
 - Units heat with their copper losses and have a thermal limit sized to their rating; a pole can's
   cutout fuses blow on sustained overload, and closing the cutouts by hand replaces them.
+- Every unit carries a **network jack** low on its front: computers read the nameplate, taps, each
+  leg's voltage and current, the temperature and the cutouts as `powergrid_transformer`.
+- Three tiers of tap control. Tier 1, pole cans and dry-types: taps by hand, dead. Tier 2, pad
+  units: a **Tap Changer Drive** bolted to the tank steps the HV tap towards a target, one step per
+  turn of its shaft, but only dead; live, it arcs and stalls. Tier 3, substation units: an on-load
+  changer, the same drive moves the tap live, one step every two seconds. The target is set on the
+  drive's value box or by a computer through the jack.
 - Goggles show the taps, the rating and each leg's voltage and current. Feed either side; the other
   follows the ratio. On stock Power Grid these pass DC exactly as Power Grid's own transformer does.
 

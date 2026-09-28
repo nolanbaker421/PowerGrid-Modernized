@@ -104,6 +104,11 @@ public class OCVfdBlockEntity extends VfdBlockEntity implements Environment {
         return result(isEnabled());
     }
 
+    @Callback(direct = true, doc = "function():string -- Why the output is what it is: ok, disabled, no_input, reversed, setpoint_zero, input_low, current_limit or input_sag.")
+    public Object[] getStatus(Context context, Arguments args) {
+        return result(status().key());
+    }
+
     @Callback(direct = true, doc = "function():number -- Measured output voltage (V), signed.")
     public Object[] getOutputVoltage(Context context, Arguments args) {
         return result((double) getOutputVoltage());

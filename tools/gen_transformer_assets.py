@@ -172,6 +172,7 @@ TEX = {
     "can": "%s:block/transformer_can" % MOD, "canlid": "%s:block/transformer_can_lid" % MOD,
     "bushing": "%s:block/transformer_bushing" % MOD, "cap": "%s:block/transformer_cap" % MOD,
     "terminal": "%s:block/panel_terminal" % MOD,
+    "jack": "%s:block/jack_pin" % MOD,
 }
 
 
@@ -186,6 +187,7 @@ def unit_elements(size, phases, hung):
         e = element(*BODY[size], "#side", cull_south=True)
         e["faces"]["north"]["texture"] = "#front"
         els.append(e)
+        els.append(element(7, 6, 3, 9, 8, 4, "#jack"))
         els.append(element(3, 20, 3.75, 13, 27, 4, "#fin"))
         if phases == 3:
             els.append(element(4, 17, 3.75, 12, 18, 4, "#cap"))
@@ -216,11 +218,15 @@ def unit_elements(size, phases, hung):
         else:
             els += stack(b, "#bushing", steps=2, cap=1.5)
     if is_pole:
-        # Hanger bracket to the pole.
+        # Hanger bracket to the pole, and the network jack low on the can's front.
         top = LID[size][4] + by[1]
         els.append(element(7, top - 2, 15, 9, top, 16.5, "#skid"))
+        z1 = BODY[size][2] + by[2]
+        els.append(element(7, by[1] + 6, z1 - 1, 9, by[1] + 8, z1, "#jack"))
     else:
         els.append(element(6, 10, BODY[size][2] - 0.25, 10, 13, BODY[size][2], "#cap"))   # nameplate
+        jy = 4 if size == "PAD" else 6
+        els.append(element(7, jy, 0, 9, jy + 2, 1, "#jack"))
     return els
 
 
@@ -283,11 +289,51 @@ def recipes():
         recipe("transformer_" + spec_id, pattern, key, 1, unlock)
 
 
+def actuator():
+    """The tap changer drive: a dark gearbox with a coupling flange on the back (the transformer side); Create draws the shaft."""
+    name = "tap_actuator"
+    tex = os.path.join(ASSETS, "textures", "block")
+    body = (0x3a, 0x3e, 0x44)
+    img = canvas(16, 16, body + (255,))
+    fill(img, 0, 0, 16, 1, shade(body, 1.4))
+    fill(img, 0, 15, 16, 16, shade(body, 0.6))
+    fill(img, 0, 0, 1, 16, shade(body, 0.85))
+    fill(img, 15, 0, 16, 16, shade(body, 0.6))
+    for x, y in ((3, 3), (12, 3), (3, 12), (12, 12)):
+        fill(img, x, y, x + 1, y + 1, shade(body, 1.6))
+    fill(img, 5, 6, 11, 10, shade(body, 0.75))
+    write_png(os.path.join(tex, name + ".png"), img)
+    flange = canvas(16, 16, shade(body, 1.15) + (255,))
+    fill(flange, 0, 0, 16, 1, shade(body, 1.5))
+    fill(flange, 0, 15, 16, 16, shade(body, 0.7))
+    write_png(os.path.join(tex, name + "_flange.png"), flange)
+    elements = [element(3, 3, 3, 13, 13, 13, "#body"), element(5, 5, 13, 11, 11, 16, "#flange"), element(6, 6, 1, 10, 10, 3, "#flange")]
+    model = "%s:block/%s" % (MOD, name)
+    dump(os.path.join(ASSETS, "models", "block", name + ".json"), {
+        "parent": "block/block",
+        "textures": {"body": "%s:block/%s" % (MOD, name), "flange": "%s:block/%s_flange" % (MOD, name), "particle": "%s:block/%s" % (MOD, name)},
+        "elements": elements,
+    })
+    dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": model})
+    dump(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": {
+        "facing=north": {"model": model},
+        "facing=east": {"model": model, "y": 90},
+        "facing=south": {"model": model, "y": 180},
+        "facing=west": {"model": model, "y": 270},
+        "facing=up": {"model": model, "x": 270},
+        "facing=down": {"model": model, "x": 90},
+    }})
+    loot_table(name)
+    recipe(name, ["ISI", "CGC", "III"], {"I": {"tag": "c:plates/iron"}, "S": {"item": "create:shaft"}, "C": {"item": "create:cogwheel"},
+                                         "G": {"item": "create:large_cogwheel"}}, 1, {"items": "create:shaft"})
+
+
 def main():
     textures()
     for spec_id, phases, size in SPECS:
         unit(spec_id, phases, size)
     filler()
+    actuator()
     recipes()
     print("transformer assets written")
 

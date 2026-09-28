@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.compat.cc;
 
+import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
+import com.nolanbaker.pgmodernized.compat.cc.transformer.TransformerPeripheral;
 import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlockEntity;
 import com.nolanbaker.pgmodernized.compat.cc.sync.SynchroscopePeripheral;
 import com.nolanbaker.pgmodernized.compat.cc.ctcabinet.CtCabinetPeripheral;
@@ -48,6 +50,8 @@ public class CCBridge {
                 (be, direction) -> new LineAmmeterPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.CT_CABINET.get(),
                 (be, direction) -> new CtCabinetPeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.TRANSFORMER.get(),
+                (be, direction) -> new TransformerPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.THREE_PHASE_MOTOR.get(),
                 (be, direction) -> new ThreePhaseMotorPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.THREE_PHASE_DRIVE.get(),
@@ -77,6 +81,8 @@ public class CCBridge {
             return new LineAmmeterPeripheral(meter);
         if(be instanceof CtCabinetBlockEntity cabinet)
             return new CtCabinetPeripheral(cabinet);
+        if(be instanceof TransformerBlockEntity transformer)
+            return new TransformerPeripheral(transformer);
         if(be instanceof ThreePhaseDriveBlockEntity drive)
             return new ThreePhaseDrivePeripheral(drive);
         if(be instanceof SynchroscopeBlockEntity scope)
