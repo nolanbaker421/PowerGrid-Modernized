@@ -67,6 +67,29 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
     private float ratioCap; // 0 means "not initialised yet" (see electricalTick)
     private float inputReference;
     private float inputVoltage, outputVoltage, outputCurrent;
+    private Status status = Status.OK;
+    /** Heat a drive with its input wired backwards takes, watts. */
+    private static final float REVERSE_WATTS = 150f;
+
+    /** Why the output is what it is, for the goggles and the computer. */
+    public enum Status {
+        OK("ok"), DISABLED("disabled"), NO_INPUT("no_input"), REVERSED("reversed"), SETPOINT_ZERO("setpoint_zero"),
+        INPUT_LOW("input_low"), CURRENT_LIMIT("current_limit"), INPUT_SAG("input_sag");
+
+        private final String key;
+
+        Status(String key) {
+            this.key = key;
+        }
+
+        public String key() {
+            return key;
+        }
+    }
+
+    public Status status() {
+        return status;
+    }
 
     private TransformerCoupling coupling;
     private FloatingNode inPos, inNeg, outPos, outNeg;
@@ -136,6 +159,7 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
             inputVoltage = finite((float) (inPos.getVoltage() - inNeg.getVoltage()));
             outputVoltage = 0;
             outputCurrent = 0;
+            status = Status.DISABLED;
             return;
         }
         inputVoltage = finite((float) (inPos.getVoltage() - inNeg.getVoltage()));
@@ -161,8 +185,20 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
             ratioCap = Math.min(MAX_RATIO, ratioCap * CAP_RECOVERY + MIN_RATIO);
         }
 
+        // Wired backwards: nothing comes out and the input stage cooks until someone notices.
+        boolean reversed = inputVoltage < -MIN_INPUT_VOLTAGE;
+        if(reversed && thermalBehaviour != null)
+            thermalBehaviour.applyTickPower(REVERSE_WATTS);
+        status = reversed ? Status.REVERSED
+                : absVin < MIN_INPUT_VOLTAGE ? Status.NO_INPUT
+                : setpoint == 0 ? Status.SETPOINT_ZERO
+                : overCurrent ? Status.CURRENT_LIMIT
+                : inputSagging ? Status.INPUT_SAG
+                : Math.abs(setpoint) > absVin * MAX_RATIO ? Status.INPUT_LOW
+                : Status.OK;
+
         float target;
-        if(setpoint == 0 || Math.abs(inputVoltage) < MIN_INPUT_VOLTAGE) {
+        if(setpoint == 0 || reversed || Math.abs(inputVoltage) < MIN_INPUT_VOLTAGE) {
             target = Math.copySign(MIN_RATIO, ratio);
         } else {
             float magnitude = Mth.clamp(Math.abs(setpoint / inputVoltage), MIN_RATIO, MAX_RATIO);
@@ -265,6 +301,8 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
         deviceHubs().read(tag, registries, clientPacket);
         setpoint = tag.getFloat("Setpoint");
         currentLimit = tag.contains("CurrentLimit") ? tag.getFloat("CurrentLimit") : MAX_CURRENT;
+        int statusIndex = tag.getByte("Status");
+        status = statusIndex >= 0 && statusIndex < Status.values().length ? Status.values()[statusIndex] : Status.OK;
         enabled = !tag.contains("Enabled") || tag.getBoolean("Enabled");
         if(clientPacket) {
             inputVoltage = tag.getFloat("VIn");
@@ -283,6 +321,7 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
         deviceHubs().write(tag, registries, clientPacket);
         tag.putFloat("Setpoint", setpoint);
         tag.putFloat("CurrentLimit", currentLimit);
+        tag.putByte("Status", (byte) status.ordinal());
         tag.putBoolean("Enabled", enabled);
         if(clientPacket) {
             tag.putFloat("VIn", inputVoltage);
@@ -298,6 +337,9 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
         line(tooltip, inputVoltage, Unit.VOLTAGE, ChatFormatting.AQUA);
         line(tooltip, getInputCurrent(), Unit.CURRENT, ChatFormatting.AQUA);
         Lang.builder().translate("gui.vfd.output").style(ChatFormatting.GRAY).forGoggles(tooltip);
+        Lang.builder().translate("gui.vfd.status." + status.key())
+                .style(status == Status.OK ? ChatFormatting.GREEN : status == Status.CURRENT_LIMIT || status == Status.INPUT_SAG ? ChatFormatting.GOLD : ChatFormatting.RED)
+                .forGoggles(tooltip, 1);
         if(!enabled) {
             Lang.builder().translate("gui.vfd.disabled").style(ChatFormatting.RED).forGoggles(tooltip, 1);
         } else {

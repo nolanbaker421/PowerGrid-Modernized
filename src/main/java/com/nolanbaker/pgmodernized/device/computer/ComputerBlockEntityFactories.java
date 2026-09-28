@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.computer;
 
+import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.nolanbaker.pgmodernized.device.analogio.AnalogIOBlockEntity;
 import com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlockEntity;
@@ -24,6 +25,7 @@ public final class ComputerBlockEntityFactories {
     public static BlockEntityFactory<NetworkJackBlockEntity> NETWORK_JACK = NetworkJackBlockEntity::new;
     public static BlockEntityFactory<NetworkSwitchBlockEntity> NETWORK_SWITCH = NetworkSwitchBlockEntity::new;
     public static BlockEntityFactory<CtCabinetBlockEntity> CT_CABINET = CtCabinetBlockEntity::new;
+    public static BlockEntityFactory<TransformerBlockEntity> TRANSFORMER = TransformerBlockEntity::new;
 
     public static BlockEntityFactory<NetworkSwitchBlockEntity> networkSwitch() {
         return (type, pos, state) -> NETWORK_SWITCH.create(type, pos, state);
@@ -39,6 +41,10 @@ public final class ComputerBlockEntityFactories {
 
     public static BlockEntityFactory<CtCabinetBlockEntity> ctCabinet() {
         return (type, pos, state) -> CT_CABINET.create(type, pos, state);
+    }
+
+    public static BlockEntityFactory<TransformerBlockEntity> transformer() {
+        return (type, pos, state) -> TRANSFORMER.create(type, pos, state);
     }
 
     private ComputerBlockEntityFactories() {}

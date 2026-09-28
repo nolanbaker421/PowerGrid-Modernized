@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.device.transformer;
 
+import java.util.Arrays;
+import com.nolanbaker.pgmodernized.network.JackTerminals;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
 import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
@@ -44,6 +46,8 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
 
     private final TransformerSpec spec;
     private final DeviceHubs.Layout layout;
+    /** The network jack: after every point, knockout and landing, so it disturbs no saved splice. */
+    private final int jackIndex;
 
     public TransformerBlock(Properties properties, TransformerSpec spec) {
         super(properties);
@@ -55,10 +59,13 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
         for(int i = 0; i < points.length; ++i)
             points[i] = i;
         layout = new DeviceHubs.Layout(points.length, hubs.length, points);
+        jackIndex = hubs.length > 0 ? layout.terminalCount() : points.length;
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
                 .forAllStates(state -> {
                     var base = TransformerGeometry.terminals(spec, hung(state));
-                    var all = hubs.length > 0 ? DeviceHubs.withHubs(base, TransformerGeometry.hidden(), hubs) : base;
+                    var electrical = hubs.length > 0 ? DeviceHubs.withHubs(base, TransformerGeometry.hidden(), hubs) : base;
+                    var all = Arrays.copyOf(electrical, electrical.length + 1);
+                    all[electrical.length] = TransformerGeometry.jack(size, hung(state));
                     return BlockStateTerminalCollection.each(all, terminal -> switch(state.getValue(HORIZONTAL_FACING)) {
                         case SOUTH -> terminal.rotateAroundY(180);
                         case EAST -> terminal.rotateAroundY(90);
@@ -83,6 +90,10 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
 
     public DeviceHubs.Layout layout() {
         return layout;
+    }
+
+    public int jackIndex() {
+        return jackIndex;
     }
 
     /** Direction the front faces. */
@@ -147,14 +158,16 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
 
     @Override
     public InteractionResult onWire(BlockState state, UseOnContext context) {
-        if(!spec.size().hasHubs())
-            return super.onWire(state, context);
-        return DeviceHubs.onWire(this, layout, state, context, (s, c) -> {
-            if(c.getClickedFace() == facing(s) && WireAcceptance.electrical(c.getItemInHand())) {
-                IElectric.sendMessage(c, Lang.builder().translate("message.transformer.conduit_only").style(ChatFormatting.RED).component());
-                return InteractionResult.FAIL;
-            }
-            return InteractionResult.PASS;
+        return JackTerminals.onWire(this, jackIndex, state, context, (state1, context1) -> {
+            if(!spec.size().hasHubs())
+                return super.onWire(state1, context1);
+            return DeviceHubs.onWire(this, layout, state1, context1, (s, c) -> {
+                if(c.getClickedFace() == facing(s) && WireAcceptance.electrical(c.getItemInHand())) {
+                    IElectric.sendMessage(c, Lang.builder().translate("message.transformer.conduit_only").style(ChatFormatting.RED).component());
+                    return InteractionResult.FAIL;
+                }
+                return InteractionResult.PASS;
+            });
         });
     }
 

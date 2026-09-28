@@ -1,5 +1,10 @@
 package com.nolanbaker.pgmodernized.device.transformer;
 
+import org.patryk3211.powergrid.electricity.base.IElectric;
+import net.minecraft.world.phys.Vec3;
+import com.nolanbaker.pgmodernized.util.ShockDamage;
+import com.nolanbaker.pgmodernized.network.JackSupport;
+import com.nolanbaker.pgmodernized.network.INetworkJack;
 import org.jetbrains.annotations.Nullable;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerTripCurve;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
@@ -34,13 +39,15 @@ import java.util.List;
  * taps, with a small winding resistance in series. Every leg carries a tiny shunt for its current
  * and a high-resistance sense branch to the neutral for its voltage, which the goggles show.
  */
-public class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, IDeviceSpliceHost {
+public class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, IDeviceSpliceHost, INetworkJack {
     public static final float SHUNT = 0.001f;
     public static final float SENSE = 1_000_000f;
     /** Contact resistance of a closed fused cutout on a pole can's bushing. */
     public static final float CUTOUT = 0.0005f;
     /** Idle losses as a fraction of the rating, and how far over the rated current the fuses hold. */
     public static final float NO_LOAD_FRACTION = 0.002f, FUSE_MARGIN = 1.25f;
+    /** An on-load tap changer moves one step every two seconds at most. */
+    public static final int ON_LOAD_STEP_TICKS = 40;
 
     // No initialisers: buildCircuit and addBehaviours run from the superclass constructor.
     private TransformerSpec spec;
@@ -60,6 +67,33 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
     /** Thermal element of the pole can's fused cutouts, on the breaker trip curve against the rated current. */
     private float fuseHeat;
     private boolean fusesBlown;
+    /** Where the tap actuator is driving the HV tap, and what its last step did. */
+    private int hvTapTarget;
+    private TapStatus tapStatus = TapStatus.IDLE;
+    private long lastStepTick;
+    private final JackSupport jack = new JackSupport(this, false);
+
+    /** What a turn of the tap actuator did. */
+    public enum TapStatus {
+        IDLE("idle", ChatFormatting.GRAY), AT_TARGET("at_target", ChatFormatting.GREEN), OK("ok", ChatFormatting.GREEN),
+        LIVE("live", ChatFormatting.RED), NO_DRIVE("no_drive", ChatFormatting.RED);
+
+        private final String key;
+        private final ChatFormatting colour;
+
+        TapStatus(String key, ChatFormatting colour) {
+            this.key = key;
+            this.colour = colour;
+        }
+
+        public String key() {
+            return key;
+        }
+
+        public ChatFormatting colour() {
+            return colour;
+        }
+    }
 
     public TransformerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -91,6 +125,84 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
     public TransformerSpec spec() {
         ensureInit();
         return spec;
+    }
+
+    // ---- tiers and the tap drive ----
+
+    /** 1: pole cans and dry-types, taps by hand and dead. 2: pad units, an actuator moves the HV tap dead. 3: substation units, on-load. */
+    public int tier() {
+        var size = spec().size();
+        return size == TransformerSize.PAD ? 2 : size == TransformerSize.POWER_S || size == TransformerSize.POWER_L ? 3 : 1;
+    }
+
+    public float temperature() {
+        return thermalBehaviour == null ? 0 : (float) thermalBehaviour.getTemperature();
+    }
+
+    public int hvTapTarget() {
+        return hvTapTarget;
+    }
+
+    public TapStatus tapStatus() {
+        return tapStatus;
+    }
+
+    /** Server side, from the actuator's box or a computer. */
+    public void setHvTapTarget(int tap) {
+        int clamped = Math.max(-TransformerSpec.TAP_RANGE, Math.min(TransformerSpec.TAP_RANGE, tap));
+        if(clamped == hvTapTarget)
+            return;
+        hvTapTarget = clamped;
+        setChanged();
+        sendData();
+    }
+
+    /** One turn of the actuator: the HV tap moves one step towards its target if this unit's changer allows it now. */
+    public TapStatus stepTapTowardTarget() {
+        if(tier() == 1 || hvTap == null)
+            return tapStatus = TapStatus.NO_DRIVE;
+        int now = hvTap();
+        if(now == hvTapTarget)
+            return tapStatus = TapStatus.AT_TARGET;
+        if(tier() == 2 && liveVolts(true) >= ShockDamage.SAFE_VOLTS)
+            return tapStatus = TapStatus.LIVE;
+        if(tier() == 3 && level != null && level.getGameTime() - lastStepTick < ON_LOAD_STEP_TICKS)
+            return tapStatus;
+        hvTap.setValue(now + Integer.signum(hvTapTarget - now));
+        applyRatio();
+        if(level != null)
+            lastStepTick = level.getGameTime();
+        return tapStatus = TapStatus.OK;
+    }
+
+    // ---- network jack ----
+
+    @Override
+    public JackSupport networkJack() {
+        return jack;
+    }
+
+    @Override
+    public Vec3 jackPosition(int port) {
+        return IElectric.getTerminalPos(level, worldPosition, jackTerminalIndex());
+    }
+
+    @Override
+    public int jackTerminalIndex() {
+        ensureInit();
+        return block == null ? -1 : block.jackIndex();
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        jack.remove();
+    }
+
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        jack.unload();
     }
 
     public TransformerKind kind() {
@@ -241,6 +353,7 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
     @Override
     public void tick() {
         super.tick();
+        jack.tick();
         if(level == null || level.isClientSide || amps == null)
             return;
         float winding = resistance("winding");
@@ -339,6 +452,8 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
         deviceHubs().write(tag, registries, clientPacket);
         tag.putBoolean("Cutout", cutoutOpen);
         tag.putBoolean("FusesBlown", fusesBlown);
+        tag.putInt("HvTapTarget", hvTapTarget);
+        tag.putByte("TapStatus", (byte) tapStatus.ordinal());
         if(clientPacket) {
             var list = new net.minecraft.nbt.ListTag();
             for(int i = 0; i < amps.length; ++i) {
@@ -363,6 +478,9 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
         }
         cutoutOpen = tag.getBoolean("Cutout");
         fusesBlown = tag.getBoolean("FusesBlown");
+        hvTapTarget = tag.getInt("HvTapTarget");
+        int statusIndex = tag.getByte("TapStatus");
+        tapStatus = statusIndex >= 0 && statusIndex < TapStatus.values().length ? TapStatus.values()[statusIndex] : TapStatus.IDLE;
         if(cutouts != null) {
             for(var wire : cutouts) {
                 if(wire != null)
@@ -383,6 +501,8 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
                         String.format("%+d", lvTap()), TransformerSpec.volts(spec.lvAt(lvTap())))
                 .style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.transformer.rating", String.format("%.0f", spec.ratedVa() / 1000), String.format("%.0f", spec.ratedAmps()))
+                .style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.transformer.tier", tier(), String.format("%+d", hvTapTarget), String.format("%.0f", temperature()))
                 .style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
         if(hasCutout())
             Lang.builder().translate(fusesBlown ? "gui.transformer.fuses_blown" : cutoutOpen ? "gui.transformer.cutout_open" : "gui.transformer.cutout_closed")

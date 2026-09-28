@@ -19,6 +19,7 @@ public class OCBridge {
         expose(event, ModBlockEntities.LINE_VOLTMETER.get());
         expose(event, ModBlockEntities.LINE_AMMETER.get());
         expose(event, ModBlockEntities.CT_CABINET.get());
+        expose(event, ModBlockEntities.TRANSFORMER.get());
         expose(event, ModBlockEntities.NETWORK_JACK.get());
         expose(event, ModBlockEntities.NETWORK_SWITCH.get());
     }
@@ -38,6 +39,7 @@ public class OCBridge {
         ComputerBlockEntityFactories.LINE_VOLTMETER = OCLineVoltmeterBlockEntity::new;
         ComputerBlockEntityFactories.LINE_AMMETER = OCLineAmmeterBlockEntity::new;
         ComputerBlockEntityFactories.CT_CABINET = OCCtCabinetBlockEntity::new;
+        ComputerBlockEntityFactories.TRANSFORMER = OCTransformerBlockEntity::new;
         ComputerBlockEntityFactories.NETWORK_JACK = OCNetworkJackBlockEntity::new;
         ComputerBlockEntityFactories.NETWORK_SWITCH = OCNetworkSwitchBlockEntity::new;
         // Cat6 cables link the OC nodes of the jacks they join.

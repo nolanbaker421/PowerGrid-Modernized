@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.simibubi.create.api.stress.BlockStressValues;
+import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlockEntity;
+import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlock;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlock;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlock;
@@ -194,6 +197,19 @@ public class ModBlocks {
         }
         TRANSFORMERS = Collections.unmodifiableMap(map);
     }
+
+    /** The tap changer drive: bolts onto a transformer, one turn of its shaft per tap step. */
+    public static final BlockEntry<TapActuatorBlock> TAP_ACTUATOR = REGISTRATE.block("tap_actuator", TapActuatorBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .onRegister(block -> BlockStressValues.IMPACTS.register(block, () -> (double) TapActuatorBlockEntity.STRESS))
+            .lang("Tap Changer Drive")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
 
     // ---- conduit system ----
 

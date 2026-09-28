@@ -20,6 +20,12 @@ You need, on Minecraft 1.21.1 with NeoForge:
 Optional, picked up automatically if present: **CC: Tweaked** (peripherals) and **OpenComputers**
 (components). Nothing in the addon changes Power Grid itself; it is a plain addon jar.
 
+**The AC fork.** DaRealML's powergrid-ac is a replacement for the Power Grid jar, not an addon:
+swap the jar and use this mod's `-ac-` build with it. Everything already built keeps working, DC
+circuits included; the fork only adds alternating sources and the maths for them. The three-phase
+motor and drive, the synchroscope and the creative AC source exist only in the `-ac-` build, and
+the three-phase transformers only make sense there.
+
 Everything is in its own creative tab, "PowerGrid: Modernized". All blocks are mined with a pickaxe.
 
 ---
@@ -343,6 +349,13 @@ free (a tank needs the block above, the substation units a ring around them).
 - **Heat**: a unit heats with its copper losses and has a thermal limit sized to its rating, so a
   25 kVA can feeding a 100 kVA load cooks. A pole can's cutout **fuses** blow on sustained overload
   (a quarter over the rating, on the breaker curve); sneak-click the can to fit new ones.
+- **Network jack**: low on the front of every unit. Computers see it as `powergrid_transformer`
+  with the nameplate, rating, tier, both taps and their nominal voltages, every leg's voltage and
+  current, the temperature, the cutout state and the HV tap target.
+- **Tap tiers**. Tier 1 (pole cans, dry-types): taps by hand on the value boxes, dead only.
+  Tier 2 (pad units): a **Tap Changer Drive** bolted to the tank moves the HV tap for you, but the
+  unit must be dead; live, it arcs and the drive stalls. Tier 3 (substation units): an on-load tap
+  changer, the same drive moves the tap live, one step every two seconds.
 - **Pole cutouts**: every pole can has fused cutouts on its high-side bushings. Sneak-right-click the
   can with an empty hand to pull them open (the high side goes dead, so the taps can be worked without
   an arc) and again to close them. Goggles show whether they are open.
@@ -356,6 +369,15 @@ free (a tank needs the block above, the substation units a ring around them).
   On the AC build they carry the phases.
 
 ---
+
+### Tap Changer Drive
+
+A gearbox that bolts to any cell of a tier 2 or 3 transformer: click the tank's side with it and
+its shaft points away from the tank. Give the shaft rotation from any Create source and every
+full turn is one attempt to move the HV tap one step towards the **target** on the drive's value
+box, which a computer can also set through the transformer's jack. Goggles say what the last turn
+did: stepping, at target, winding live (tier 2 must be dead first), or no drive (tier 1). It
+draws a little stress while turning. A servo with a computer behind it makes a voltage regulator.
 
 ## 5. Safety
 
@@ -383,6 +405,11 @@ A computer-controlled source. Two input terminals (+ / −) take power; two outp
 deliver a commanded voltage.
 
 - Output voltage: −2000 V to +2000 V (negative reverses polarity).
+- Goggles show a status line under the output: running, output disabled, no input voltage, input
+  wired backwards, setpoint 0 V, input too low for the setpoint, holding the current limit, or
+  input sagging. If nothing comes out, the line says why.
+- Wire the input backwards (+ and - swapped) and nothing comes out while the drive heats until it
+  fails; the status line says so.
 - Output current limit: 0 to 20 A. The drive backs off to hold the limit and to avoid dragging its
   input down.
 - Output can be enabled or disabled. Goggles show the setpoint and the measured input and output.
@@ -432,7 +459,7 @@ Reads the signed current.
 The **Cat6 Cable** is a Power Grid wire that carries computer network traffic instead of current.
 It is placed with two clicks like any wire and only connects **network jacks**:
 
-- The VFD, Analog I/O Module, Line Voltmeter and Line Ammeter have a jack built in (the cyan
+- The VFD, Analog I/O Module, Line Voltmeter, Line Ammeter and every transformer have a jack built in (the cyan
   terminal). Ordinary wires refuse it and the Cat6 refuses the electrical terminals.
 - The **Network Jack** block is a small wall plate for the computer end. Adjacent ComputerCraft wired
   modems and cables, and OpenComputers cables, join its network.
@@ -479,6 +506,22 @@ coordinates prefixed by `n`, so `peripheral.find("powergrid_vfd")` or
 | `getOutputVoltage()` / `getOutputCurrent()` | Measured output |
 | `getInputVoltage()` / `getInputCurrent()` | Measured input |
 | `getPower()` | Output power in W |
+| `getStatus()` | Why the output is what it is: `ok`, `disabled`, `no_input`, `reversed`, `setpoint_zero`, `input_low`, `current_limit`, `input_sag` |
+
+**powergrid_transformer** (legs are 1 to the leg count; taps are −4 to 4)
+
+| Method | Meaning |
+| --- | --- |
+| `getNameplate()` / `getRatedVa()` | "10 kV / 480 V" and the rating in VA |
+| `getTier()` | 1 manual taps, 2 drive moves the HV tap dead, 3 on-load tap changer |
+| `getHvTap()` / `getLvTap()` | Present taps |
+| `getHvVoltage()` / `getLvVoltage()` | Nominal volts at the present taps |
+| `getLegCount()` | Low-side legs metered |
+| `getVoltage(leg)` / `getCurrent(leg)` | Measured on that low-side leg |
+| `getTemperature()` | Winding temperature |
+| `isCutoutOpen()` / `areFusesBlown()` | Pole can cutouts |
+| `getHvTapTarget()` / `setHvTapTarget(tap)` | Where a Tap Changer Drive on the tank moves the HV tap |
+| `getTapStatus()` | Last drive step: `ok`, `at_target`, `live`, `no_drive`, `idle` |
 
 **powergrid_analog_io** (channels are 1 to 4)
 
@@ -512,7 +555,7 @@ coordinates prefixed by `n`, so `peripheral.find("powergrid_vfd")` or
 ### OpenComputers
 
 The same devices are components with the same names (`powergrid_vfd`, `powergrid_analog_io`,
-`powergrid_clamp_meter`, `powergrid_ammeter`, `powergrid_voltmeter`, `powergrid_ct_cabinet`) reachable over the Cat6
+`powergrid_clamp_meter`, `powergrid_ammeter`, `powergrid_voltmeter`, `powergrid_ct_cabinet`, `powergrid_transformer`) reachable over the Cat6
 network from an OpenComputers cable next to a jack or switch. `component.doc` on any method prints
 its signature. Methods match the ComputerCraft ones, plus:
 
@@ -559,5 +602,6 @@ adapter placed next to them:
 | Copper Bus Bar (4) | three copper blocks in a row |
 | Switchgear Section | bus bars either side of a 400 A three-phase panel, iron plates above and below, a bus bar top centre |
 | Transformers | copper coils either side of a transformer core, bigger housings with more of each; iron plates for cans and cabinets, smooth stone under the tanks |
+| Tap Changer Drive | a shaft between iron plates, a large cogwheel between two cogwheels, iron plates below |
 
 Look the rest up in the recipe book; every recipe unlocks from its main ingredient.

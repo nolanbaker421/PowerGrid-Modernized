@@ -1,0 +1,214 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "body": "powergrid_modernized:block/tap_actuator",
+    "flange": "powergrid_modernized:block/tap_actuator_flange",
+    "particle": "powergrid_modernized:block/tap_actuator"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        3,
+        3
+      ],
+      "to": [
+        13,
+        13,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#body"
+        },
+        "south": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#body"
+        },
+        "east": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#body"
+        },
+        "west": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#body"
+        },
+        "up": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#body"
+        },
+        "down": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#body"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        5,
+        13
+      ],
+      "to": [
+        11,
+        11,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            5,
+            11,
+            11
+          ],
+          "texture": "#flange"
+        },
+        "south": {
+          "uv": [
+            5,
+            5,
+            11,
+            11
+          ],
+          "texture": "#flange"
+        },
+        "east": {
+          "uv": [
+            0,
+            5,
+            3,
+            11
+          ],
+          "texture": "#flange"
+        },
+        "west": {
+          "uv": [
+            13,
+            5,
+            16,
+            11
+          ],
+          "texture": "#flange"
+        },
+        "up": {
+          "uv": [
+            5,
+            13,
+            11,
+            16
+          ],
+          "texture": "#flange"
+        },
+        "down": {
+          "uv": [
+            5,
+            0,
+            11,
+            3
+          ],
+          "texture": "#flange"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        6,
+        1
+      ],
+      "to": [
+        10,
+        10,
+        3
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#flange"
+        },
+        "south": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#flange"
+        },
+        "east": {
+          "uv": [
+            13,
+            6,
+            15,
+            10
+          ],
+          "texture": "#flange"
+        },
+        "west": {
+          "uv": [
+            1,
+            6,
+            3,
+            10
+          ],
+          "texture": "#flange"
+        },
+        "up": {
+          "uv": [
+            6,
+            1,
+            10,
+            3
+          ],
+          "texture": "#flange"
+        },
+        "down": {
+          "uv": [
+            6,
+            13,
+            10,
+            15
+          ],
+          "texture": "#flange"
+        }
+      }
+    }
+  ]
+}

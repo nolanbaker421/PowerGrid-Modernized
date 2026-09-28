@@ -13,6 +13,7 @@
     "bushing": "powergrid_modernized:block/transformer_bushing",
     "cap": "powergrid_modernized:block/transformer_cap",
     "terminal": "powergrid_modernized:block/panel_terminal",
+    "jack": "powergrid_modernized:block/jack_pin",
     "particle": "powergrid_modernized:block/transformer_can"
   },
   "elements": [
@@ -965,6 +966,74 @@
             16
           ],
           "texture": "#skid"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        8,
+        7.0
+      ],
+      "to": [
+        9,
+        10,
+        8.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            6,
+            9,
+            8
+          ],
+          "texture": "#jack"
+        },
+        "south": {
+          "uv": [
+            7,
+            6,
+            9,
+            8
+          ],
+          "texture": "#jack"
+        },
+        "east": {
+          "uv": [
+            8.0,
+            6,
+            9.0,
+            8
+          ],
+          "texture": "#jack"
+        },
+        "west": {
+          "uv": [
+            7.0,
+            6,
+            8.0,
+            8
+          ],
+          "texture": "#jack"
+        },
+        "up": {
+          "uv": [
+            7,
+            7.0,
+            9,
+            8.0
+          ],
+          "texture": "#jack"
+        },
+        "down": {
+          "uv": [
+            7,
+            8.0,
+            9,
+            9.0
+          ],
+          "texture": "#jack"
         }
       }
     }
