@@ -614,17 +614,25 @@ Any right-click, placement, pull or splice on an electrical block counts as elec
 you have worked in the last five minutes there is a small chance every second (one visit per ten
 minutes of work on average) that the **Electrical Inspector** spawns twelve to twenty blocks away
 and walks over. He goes to the last block you touched, looks it over with a "Hmmmm", then asks for
-your **Electrical License**:
+your **Electrical License**. Having it in your inventory is not enough; he has to see it:
 
-- The card anywhere in your inventory: he nods and leaves. Holding it out (right-click him with it)
-  ends the visit at once.
-- No card: he pulls a knife and stabs you for twenty seconds, or until you find a card, run more
-  than thirty blocks, or kill him.
+- **Drop the card** (Q) on the ground near him, or right-click him with it. He walks over, picks it
+  up, reads it for a couple of seconds, says "All in order" and tosses it back to you. Pick it up
+  again.
+- Nothing within twelve seconds: he pulls a knife and stabs you for twenty seconds, or until you
+  drop the card, run more than thirty blocks, or kill him.
 - **Bribe**: right-click him with eight emeralds while he is asking or stabbing and he pockets them
   and leaves.
 
-He never visits within ten minutes of the last visit, never visits creative or spectator players,
-and gives up if he cannot reach you in four minutes.
+He is never sent after creative or spectator players and never within ten minutes of the last
+visit, and he gives up if he cannot reach you in four minutes. But an inspector who is already
+about, whether he came from a spawn egg or is on his way out from someone else's inspection, asks
+**anyone** who does electrical work within sixteen blocks of him, creative players included. If he
+dies holding a card, it drops.
+
+All of this is configurable in `config/powergrid_modernized-common.toml`: the spawn odds (`0`
+turns visits off), the cooldown, the work window, the bribe, the notice range, the training
+center's village weight, the scrap chance and whether push brooms spawn naturally.
 
 ### Electrical License
 

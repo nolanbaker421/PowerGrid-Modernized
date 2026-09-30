@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.PgmConfig;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.entity.monster.Monster;
@@ -73,7 +74,9 @@ public class ModEntities {
                     .attributes(PushBroomEntity::attributes)
                     .renderer(() -> PushBroomRenderer::new)
                     .spawnPlacement(SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                            Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE)
+                            (type, level, spawnType, pos, random) -> PgmConfig.PUSH_BROOM_SPAWNS.get()
+                                    && Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random),
+                            RegisterSpawnPlacementsEvent.Operation.REPLACE)
                     .lang("Push Broom")
                     .spawnEgg(0xAA7D46, 0xDEBE5A)
                         .model(NonNullBiConsumer.noop())

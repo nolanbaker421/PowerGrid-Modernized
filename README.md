@@ -239,9 +239,12 @@ without any manual action. Breaking a jack drops a hanging cable and trims the l
 
 - **The electrical inspector.** Wire long enough and a villager in a hard hat and hi-vis turns up,
   walks to what you were working on, looks it over with a "Hmmmm", and asks for your **Electrical
-  License**. Have the card anywhere in your inventory and he nods and leaves. Have none and he stabs
-  you, unless you right-click him with eight emeralds first. On average he visits once per ten
-  minutes of electrical work, never twice within ten minutes, and never in creative.
+  License**. Drop the card on the ground for him (or right-click him with it): he picks it up, reads
+  it and tosses it back. Produce nothing and he stabs you, unless you right-click him with eight
+  emeralds first. On average he visits once per ten minutes of electrical work, never twice within
+  ten minutes, and he is never sent after creative players; but an inspector already about asks
+  anyone, creative included, who does electrical work near him. Odds, cooldown, bribe and range are
+  in `config/powergrid_modernized-common.toml`.
 - **Electrical License.** Not craftable. Every village gets a chance at an **Electrical Training
   Center** (a stone-brick school with a lightning rod on the roof) whose chest holds one, along with
   wire and books.

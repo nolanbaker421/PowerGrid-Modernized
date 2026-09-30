@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.inspector;
 
+import com.nolanbaker.pgmodernized.PgmConfig;
 import com.nolanbaker.pgmodernized.PowerGridModernized;
 import com.nolanbaker.pgmodernized.registry.ModEntities;
 import com.nolanbaker.pgmodernized.registry.ModItems;
@@ -31,12 +32,6 @@ import java.util.UUID;
  * {@link ElectricalInspectorEntity} their way. Also teaches village smiths to buy copper scrap.
  */
 public final class Inspections {
-    /** Work done within this many ticks counts as "doing electrical work". */
-    public static final int WORK_WINDOW = 6000;
-    /** Each second of recent work has a one-in-this chance of a visit: on average one every ten minutes. */
-    public static final int CHANCE = 600;
-    /** No second visit for this long after one ends. */
-    public static final int COOLDOWN = 12000;
     /** Emeralds for a stack of scrap at any village smith. */
     public static final int SCRAP_PER_EMERALD = 8;
 
@@ -47,10 +42,22 @@ public final class Inspections {
 
     private Inspections() {}
 
-    /** Any right-click, placement, pull or splice on an electrical block counts as work. */
+    /**
+     * Any right-click, placement, pull or splice on an electrical block counts as work. An inspector
+     * already about (idle from an egg, or on his way out) who sees it comes over and asks, creative
+     * players included.
+     */
     public static void noteWork(ServerPlayer player, BlockPos pos) {
         lastWork.put(player.getUUID(), player.level().getGameTime());
         lastWorkPos.put(player.getUUID(), pos.immutable());
+        int range = PgmConfig.INSPECTOR_NOTICE_RANGE.get();
+        var nearby = player.serverLevel().getEntitiesOfClass(ElectricalInspectorEntity.class,
+                player.getBoundingBox().inflate(range), ElectricalInspectorEntity::available);
+        if(nearby.isEmpty())
+            return;
+        var inspector = nearby.get(0);
+        inspector.assign(player, pos);
+        active.put(player.getUUID(), inspector.getUUID());
     }
 
     public static boolean isElectrical(BlockState state) {
@@ -94,14 +101,15 @@ public final class Inspections {
             if(level.getEntity(current) instanceof ElectricalInspectorEntity inspector && inspector.isAlive())
                 return;
             active.remove(id);
-            nextVisit.put(id, now + COOLDOWN);
+            nextVisit.put(id, now + PgmConfig.INSPECTOR_COOLDOWN_SECONDS.get() * 20L);
         }
         Long worked = lastWork.get(id);
-        if(worked == null || now - worked > WORK_WINDOW)
+        if(worked == null || now - worked > PgmConfig.INSPECTOR_WORK_WINDOW_SECONDS.get() * 20L)
             return;
         if(nextVisit.getOrDefault(id, 0L) > now)
             return;
-        if(level.random.nextInt(CHANCE) != 0)
+        int chance = PgmConfig.INSPECTOR_CHANCE.get();
+        if(chance <= 0 || level.random.nextInt(chance) != 0)
             return;
         var inspector = spawn(level, player);
         if(inspector != null)
