@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.network.packets;
 
+import com.nolanbaker.pgmodernized.inspector.CopperScrap;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.util.ShockDamage;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -79,5 +80,7 @@ public record SplicePayload(BlockPos pos, int action, int a, int b) implements C
             case LAND -> host.splices().land(payload.a);
             default -> {}
         }
+        if(payload.action == TOGGLE || payload.action == LAND)
+            CopperScrap.roll(player, payload.pos);
     }
 }

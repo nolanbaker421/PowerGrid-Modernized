@@ -685,3 +685,42 @@ adapter placed next to them:
 | Tap Changer Drive | a shaft between iron plates, a large cogwheel between two cogwheels, iron plates below |
 
 Look the rest up in the recipe book; every recipe unlocks from its main ingredient.
+
+## 10. Real life components
+
+### The electrical inspector
+
+Any right-click, placement, pull or splice on an electrical block counts as electrical work. While
+you have worked in the last five minutes there is a small chance every second (one visit per ten
+minutes of work on average) that the **Electrical Inspector** spawns twelve to twenty blocks away
+and walks over. He goes to the last block you touched, looks it over with a "Hmmmm", then asks for
+your **Electrical License**:
+
+- The card anywhere in your inventory: he nods and leaves. Holding it out (right-click him with it)
+  ends the visit at once.
+- No card: he pulls a knife and stabs you for twenty seconds, or until you find a card, run more
+  than thirty blocks, or kill him.
+- **Bribe**: right-click him with eight emeralds while he is asking or stabbing and he pockets them
+  and leaves.
+
+He never visits within ten minutes of the last visit, never visits creative or spectator players,
+and gives up if he cannot reach you in four minutes.
+
+### Electrical License
+
+Not craftable and not tradeable. Villages generate an **Electrical Training Center**, a stone-brick
+schoolhouse with yellow trim and a lightning rod on the roof, in the same pool as their houses.
+Its chest always holds one license plus some wire, scrap, books and the odd emerald.
+
+### Copper scrap
+
+Pulling a wire into a conduit run, or toggling or landing a splice, has a one-in-eight chance of
+giving you **Copper Scrap**. Toolsmiths, armorers and weaponsmiths buy eight for an emerald from
+their first trade level. The training center chest has some too.
+
+### The push broom
+
+The **Push Broom** is a hostile mob that spawns at night anywhere in the overworld (weight 20, in
+groups of one or two). It hops toward the nearest player and sweeps for three damage. Sixteen
+health; drops up to two sticks and, one time in four, a copper scrap. Both new mobs have spawn eggs
+in the creative tab.

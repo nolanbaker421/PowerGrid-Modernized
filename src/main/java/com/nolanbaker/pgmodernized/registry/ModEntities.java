@@ -1,5 +1,14 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.SpawnPlacementTypes;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+import com.nolanbaker.pgmodernized.mob.PushBroomEntity;
+import com.nolanbaker.pgmodernized.inspector.ElectricalInspectorEntity;
+import com.nolanbaker.pgmodernized.client.PushBroomRenderer;
+import com.nolanbaker.pgmodernized.client.ElectricalInspectorRenderer;
 import com.nolanbaker.pgmodernized.client.NoopEntityRenderer;
 import com.nolanbaker.pgmodernized.conduit.ConductorEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
@@ -42,6 +51,34 @@ public class ModEntities {
     public static final EntityEntry<BusLinkEntity> BUS_LINK =
             REGISTRATE.entity("bus_link", BusLinkEntity::new, MobCategory.MISC)
                     .renderer(() -> NoopEntityRenderer::new)
+                    .register();
+
+    /** The electrical inspector: sent after players who wire without a license. */
+    public static final EntityEntry<ElectricalInspectorEntity> ELECTRICAL_INSPECTOR =
+            REGISTRATE.entity("electrical_inspector", ElectricalInspectorEntity::new, MobCategory.MISC)
+                    .properties(b -> b.sized(0.6f, 1.95f).clientTrackingRange(10))
+                    .attributes(ElectricalInspectorEntity::attributes)
+                    .renderer(() -> ElectricalInspectorRenderer::new)
+                    .lang("Electrical Inspector")
+                    .spawnEgg(0xF27A14, 0xF5F5F5)
+                        .model(NonNullBiConsumer.noop())
+                        .lang("Electrical Inspector Spawn Egg")
+                        .build()
+                    .register();
+
+    /** The push broom: a night-time monster of the overworld (spawns via data/neoforge/biome_modifier/push_broom.json). */
+    public static final EntityEntry<PushBroomEntity> PUSH_BROOM =
+            REGISTRATE.entity("push_broom", PushBroomEntity::new, MobCategory.MONSTER)
+                    .properties(b -> b.sized(0.8f, 1.9f).clientTrackingRange(8))
+                    .attributes(PushBroomEntity::attributes)
+                    .renderer(() -> PushBroomRenderer::new)
+                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                            Monster::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE)
+                    .lang("Push Broom")
+                    .spawnEgg(0xAA7D46, 0xDEBE5A)
+                        .model(NonNullBiConsumer.noop())
+                        .lang("Push Broom Spawn Egg")
+                        .build()
                     .register();
 
     public static void register() {}

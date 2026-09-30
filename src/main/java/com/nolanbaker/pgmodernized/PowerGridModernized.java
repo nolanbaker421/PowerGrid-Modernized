@@ -1,6 +1,8 @@
 package com.nolanbaker.pgmodernized;
 
 import com.nolanbaker.pgmodernized.client.SynchroscopeRenderer;
+import com.nolanbaker.pgmodernized.inspector.VillageInjector;
+import com.nolanbaker.pgmodernized.inspector.Inspections;
 import com.nolanbaker.pgmodernized.client.BreakerPanelModels;
 import com.nolanbaker.pgmodernized.client.BreakerPlacementOutline;
 import com.nolanbaker.pgmodernized.client.Cat6Preview;
@@ -74,6 +76,8 @@ public class PowerGridModernized {
             CCBridge.init();
         }
         NeoForge.EVENT_BUS.register(WireGuard.class);
+        NeoForge.EVENT_BUS.register(Inspections.class);
+        NeoForge.EVENT_BUS.register(VillageInjector.class);
         if(FMLEnvironment.dist.isClient()) {
             NeoForge.EVENT_BUS.register(Cat6Preview.class);
             NeoForge.EVENT_BUS.register(ConduitPreview.class);
