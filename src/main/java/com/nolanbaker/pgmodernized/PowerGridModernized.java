@@ -1,6 +1,7 @@
 package com.nolanbaker.pgmodernized;
 
 import com.nolanbaker.pgmodernized.client.SynchroscopeRenderer;
+import net.neoforged.fml.config.ModConfig;
 import com.nolanbaker.pgmodernized.inspector.VillageInjector;
 import com.nolanbaker.pgmodernized.inspector.Inspections;
 import com.nolanbaker.pgmodernized.client.BreakerPanelModels;
@@ -65,6 +66,7 @@ public class PowerGridModernized {
         // Bind the bus before registering anything, as Power Grid does: Registrate parks client hooks
         // such as entity renderers until it knows the bus, and only flushes them on a later registration.
         ((ForgePowerGridRegistrate) REGISTRATE).registerEventListeners(bus);
+        container.registerConfig(ModConfig.Type.COMMON, PgmConfig.SPEC);
         ModValues.register();
         ModBlocks.register();
         ModBlockEntities.register();

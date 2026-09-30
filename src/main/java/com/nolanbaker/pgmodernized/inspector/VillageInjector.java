@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.inspector;
 
+import com.nolanbaker.pgmodernized.PgmConfig;
 import com.mojang.datafixers.util.Pair;
 import com.nolanbaker.pgmodernized.PowerGridModernized;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -21,14 +22,15 @@ import java.util.List;
  */
 public final class VillageInjector {
     public static final String TEMPLATE = PowerGridModernized.MOD_ID + ":village/training_center";
-    /** Against pool weights totalling roughly 70 to 90: about one centre per village or two. */
-    public static final int WEIGHT = 3;
     private static final List<String> VILLAGES = List.of("plains", "desert", "savanna", "snowy", "taiga");
 
     private VillageInjector() {}
 
     @SubscribeEvent
     public static void onServerStarting(ServerAboutToStartEvent event) {
+        int weight = PgmConfig.TRAINING_CENTER_WEIGHT.get();
+        if(weight <= 0)
+            return;
         var access = event.getServer().registryAccess();
         var pools = access.registryOrThrow(Registries.TEMPLATE_POOL);
         var processors = access.registryOrThrow(Registries.PROCESSOR_LIST);
@@ -39,7 +41,7 @@ public final class VillageInjector {
             if(pool == null)
                 continue;
             try {
-                inject(pool, element);
+                inject(pool, element, weight);
             } catch(ReflectiveOperationException | ClassCastException e) {
                 PowerGridModernized.LOGGER.warn("Could not add the training centre to the {} village pool", village, e);
                 return;
@@ -48,7 +50,7 @@ public final class VillageInjector {
     }
 
     @SuppressWarnings("unchecked")
-    private static void inject(StructureTemplatePool pool, StructurePoolElement element) throws ReflectiveOperationException {
+    private static void inject(StructureTemplatePool pool, StructurePoolElement element, int weight) throws ReflectiveOperationException {
         Field rawField = StructureTemplatePool.class.getDeclaredField("rawTemplates");
         Field listField = StructureTemplatePool.class.getDeclaredField("templates");
         rawField.setAccessible(true);
@@ -59,10 +61,10 @@ public final class VillageInjector {
                 return;   // already there: the same registry survived a restart
         }
         var newRaw = new ArrayList<>(raw);
-        newRaw.add(Pair.of(element, WEIGHT));
+        newRaw.add(Pair.of(element, weight));
         rawField.set(pool, newRaw);
         var templates = (ObjectArrayList<StructurePoolElement>) listField.get(pool);
-        for(int i = 0; i < WEIGHT; ++i)
+        for(int i = 0; i < weight; ++i)
             templates.add(element);
     }
 }

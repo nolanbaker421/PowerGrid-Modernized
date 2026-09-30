@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.inspector;
 
+import com.nolanbaker.pgmodernized.PgmConfig;
 import com.nolanbaker.pgmodernized.registry.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -12,16 +13,13 @@ import org.patryk3211.powergrid.utility.Lang;
 
 /** Offcuts: pulling wire or making a splice now and then leaves a bit of copper in your pocket. */
 public final class CopperScrap {
-    /** Chance per pull or splice edit. */
-    public static final float CHANCE = 0.12f;
-
     private CopperScrap() {}
 
     public static void roll(Player player, BlockPos where) {
         if(!(player instanceof ServerPlayer server) || player.isCreative())
             return;
         Inspections.noteWork(server, where);
-        if(player.getRandom().nextFloat() >= CHANCE)
+        if(player.getRandom().nextDouble() >= PgmConfig.SCRAP_CHANCE.get())
             return;
         var scrap = new ItemStack(ModItems.COPPER_SCRAP.get());
         if(!player.getInventory().add(scrap))
