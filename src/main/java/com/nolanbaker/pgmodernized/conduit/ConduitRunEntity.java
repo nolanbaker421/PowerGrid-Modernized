@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import com.nolanbaker.pgmodernized.inspector.CopperScrap;
 import net.minecraft.nbt.CompoundTag;
 import com.nolanbaker.pgmodernized.registry.ModItems;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
@@ -269,6 +270,7 @@ public class ConduitRunEntity extends BlockWireEntity {
             return fail(player, "message.connection_failed");
         if(!player.isCreative())
             PlayerUtilities.removeItems(player, stack, required);
+        CopperScrap.roll(player, e1.getPos());
         player.displayClientMessage(Lang.builder().translate("message.conduit.pulled", slot + 1)
                 .add(Lang.builder().text(" ").add(ConductorColors.name(slot))).style(ChatFormatting.GRAY).component(), true);
         return InteractionResult.SUCCESS;

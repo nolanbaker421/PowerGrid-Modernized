@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import net.minecraft.world.item.Rarity;
 import com.nolanbaker.pgmodernized.conduit.ConduitCover;
 import com.nolanbaker.pgmodernized.conduit.ConduitCoverItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
@@ -28,6 +29,19 @@ public class ModItems {
     public static final ItemEntry<Cat6CableItem> CAT6_CABLE = REGISTRATE.item("cat6_cable", Cat6CableItem::new)
             .model(NonNullBiConsumer.noop())
             .lang("Cat6 Cable")
+            .register();
+
+    /** Proof you sat the course. Only found in the Electrical Training Center of a village; the inspector asks for it. */
+    public static final ItemEntry<Item> ELECTRICAL_LICENSE = REGISTRATE.item("electrical_license", Item::new)
+            .properties(p -> p.stacksTo(1).rarity(Rarity.UNCOMMON))
+            .model(NonNullBiConsumer.noop())
+            .lang("Electrical License")
+            .register();
+
+    /** Offcuts from pulling wire and splicing; village smiths buy it. */
+    public static final ItemEntry<Item> COPPER_SCRAP = REGISTRATE.item("copper_scrap", Item::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Copper Scrap")
             .register();
 
     /** Breakers: pole count (1, 2, 3), then frame. */

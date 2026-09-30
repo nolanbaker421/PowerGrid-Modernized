@@ -235,6 +235,22 @@ cannot branch; wire cutters pick up a whole run.
 Cables re-link themselves once a second, so jacks that unload and reload, or a rebuilt network, recover
 without any manual action. Breaking a jack drops a hanging cable and trims the last segment of a laid run.
 
+## Real life components
+
+- **The electrical inspector.** Wire long enough and a villager in a hard hat and hi-vis turns up,
+  walks to what you were working on, looks it over with a "Hmmmm", and asks for your **Electrical
+  License**. Have the card anywhere in your inventory and he nods and leaves. Have none and he stabs
+  you, unless you right-click him with eight emeralds first. On average he visits once per ten
+  minutes of electrical work, never twice within ten minutes, and never in creative.
+- **Electrical License.** Not craftable. Every village gets a chance at an **Electrical Training
+  Center** (a stone-brick school with a lightning rod on the roof) whose chest holds one, along with
+  wire and books.
+- **Copper scrap.** Pulling wire into conduit or editing a splice has a one-in-eight chance of
+  leaving a piece of copper scrap in your pocket. Village toolsmiths, armorers and weaponsmiths buy
+  eight scrap for an emerald, which is handy when the inspector comes round.
+- **The push broom.** A hostile broom that spawns at night in the overworld, hops after you and
+  sweeps you to death. Drops sticks, and sometimes the copper it swept up.
+
 ## Building
 
 1. Drop a Power Grid NeoForge release jar into `libs/` and point `powergrid_jar` in `gradle.properties` at it.
