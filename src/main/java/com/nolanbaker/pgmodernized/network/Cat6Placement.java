@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.network;
 
+import org.patryk3211.powergrid.compat.sable.SableUtils;
 import com.nolanbaker.pgmodernized.PowerGridModernized;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
@@ -212,6 +213,10 @@ public final class Cat6Placement {
         var targetPoint = to.getExactPosition(level);
         ITerminalPlacement terminal = to instanceof JackEndpoint jack ? jack.terminalPlacement(level) : null;
 
+        if(!SableUtils.sameSubLevel(level, lastPoint, targetPoint)) {
+            message(player, "message.connection_different_bodies", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
         var path = BlockTrace.findPath(level, lastPoint, targetPoint, terminal, continueDir);
         if(path == null || !path.reachedTarget()) {
             message(player, "message.connection_no_path", ChatFormatting.RED);
@@ -280,6 +285,10 @@ public final class Cat6Placement {
         var lastPoint = endPosition(entity1);
         var targetPoint = entity2.position();
         var continueDir = entity1.segments.get(entity1.segments.size() - 1).direction;
+        if(!SableUtils.sameSubLevel(level, lastPoint, targetPoint)) {
+            message(player, "message.connection_different_bodies", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
         var path = BlockTrace.findPath(level, lastPoint, targetPoint, null, continueDir);
         if(path == null || !path.reachedTarget()) {
             message(player, "message.connection_no_path", ChatFormatting.RED);

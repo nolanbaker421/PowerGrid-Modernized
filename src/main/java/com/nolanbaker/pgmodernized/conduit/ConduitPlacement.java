@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import org.patryk3211.powergrid.compat.sable.SableUtils;
 import com.nolanbaker.pgmodernized.PowerGridModernized;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import net.minecraft.ChatFormatting;
@@ -187,6 +188,10 @@ public final class ConduitPlacement {
         var targetPoint = to.getExactPosition(level);
         ITerminalPlacement terminal = to instanceof BlockWireEndpoint hub ? hub.getTerminalPlacement(level) : null;
 
+        if(!SableUtils.sameSubLevel(level, lastPoint, targetPoint)) {
+            message(player, "message.connection_different_bodies", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
         var path = BlockTrace.findPath(level, lastPoint, targetPoint, terminal, continueDir);
         if(path == null || !path.reachedTarget()) {
             message(player, "message.connection_no_path", ChatFormatting.RED);
@@ -258,6 +263,10 @@ public final class ConduitPlacement {
         var lastPoint = endPosition(entity1);
         var targetPoint = entity2.position();
         var continueDir = entity1.segments.get(entity1.segments.size() - 1).direction;
+        if(!SableUtils.sameSubLevel(level, lastPoint, targetPoint)) {
+            message(player, "message.connection_different_bodies", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
         var path = BlockTrace.findPath(level, lastPoint, targetPoint, null, continueDir);
         if(path == null || !path.reachedTarget()) {
             message(player, "message.connection_no_path", ChatFormatting.RED);

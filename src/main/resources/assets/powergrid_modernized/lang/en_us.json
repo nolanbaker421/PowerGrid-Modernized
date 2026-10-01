@@ -86,6 +86,7 @@
   "powergrid.message.conduit.hub_only": "Only conduit fits a hub",
   "powergrid.message.conduit.needs_hub": "Conduit only lands on a conduit box hub",
   "powergrid.message.conduit.hub_used": "This hub already has a conduit",
+  "powergrid.message.connection_different_bodies": "Both ends must be on the same structure or physics body",
   "powergrid.message.conduit.no_tee": "Conduit cannot tee, continue from a free end or use a conduit box",
   "powergrid.breaker_panel.line": "Line",
   "powergrid.breaker_panel.neutral": "Neutral",

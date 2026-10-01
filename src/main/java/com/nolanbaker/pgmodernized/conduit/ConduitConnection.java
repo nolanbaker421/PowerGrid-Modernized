@@ -56,8 +56,14 @@ public final class ConduitConnection {
         return endpoint;
     }
 
+    /**
+     * The dimension only. A click on a physics body reaches us through Power Grid's wire handler
+     * with the main level, but the next click on plain blocks of that body comes with the body's
+     * own level instance, so the two must not be told apart here. Whether both ends sit on the
+     * same body is checked when the run is laid.
+     */
     static String levelKey(Level level) {
-        return level.dimension().location() + "#" + level.getClass().getName();
+        return level.dimension().location().toString();
     }
 
     public static void clear(ItemStack stack) {
