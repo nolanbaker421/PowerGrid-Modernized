@@ -3,7 +3,9 @@
     {
       "processor_type": "minecraft:block_ignore",
       "blocks": [
-        "minecraft:structure_void"
+        {
+          "Name": "minecraft:structure_void"
+        }
       ]
     }
   ]

@@ -131,7 +131,8 @@ def loot():
     # The annex templates pad the space west of the building with structure void, which placement
     # would otherwise write into the world as real blocks over the village centre.
     dump(os.path.join(DATA, "worldgen", "processor_list", "training_center_annex.json"), {
-        "processors": [{"processor_type": "minecraft:block_ignore", "blocks": ["minecraft:structure_void"]}],
+        # block_ignore takes block states, not ids: each entry is a {"Name": ...} object.
+        "processors": [{"processor_type": "minecraft:block_ignore", "blocks": [{"Name": "minecraft:structure_void"}]}],
     })
     dump(os.path.join(DATA, "damage_type", "inspector.json"),
          {"message_id": "%s.inspector" % MOD, "exhaustion": 0.1, "scaling": "when_caused_by_living_non_player"})
