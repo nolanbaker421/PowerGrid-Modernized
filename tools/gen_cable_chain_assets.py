@@ -42,12 +42,23 @@ def textures():
     write_png(os.path.join(TEX, "item", "cable_chain.png"), item)
 
 
+def _wrap(a, b):
+    """A UV span moved into 0..16: elements may sit outside the block, UVs may not."""
+    span = min(16, abs(b - a))
+    start = a % 16
+    if start + span > 16:
+        start = 16 - span
+    return start, start + span
+
+
 def element(x1, y1, z1, x2, y2, z2, texture):
     faces = {}
     for face, (u1, v1, u2, v2) in {
         "down": (x1, z1, x2, z2), "up": (x1, z1, x2, z2), "north": (x1, 16 - y2, x2, 16 - y1),
         "south": (x1, 16 - y2, x2, 16 - y1), "west": (z1, 16 - y2, z2, 16 - y1), "east": (z1, 16 - y2, z2, 16 - y1),
     }.items():
+        u1, u2 = _wrap(u1, u2)
+        v1, v2 = _wrap(v1, v2)
         faces[face] = {"uv": [u1, v1, u2, v2], "texture": texture}
     return {"from": [x1, y1, z1], "to": [x2, y2, z2], "faces": faces}
 

@@ -394,5 +394,6 @@
   "powergrid.gui.rail_feed.title": "Rail feed box",
   "powergrid.gui.rail_collector.title": "Rail collector",
   "powergrid.gui.rail_collector.off_rail": "Shoes off the rail: no contact",
-  "powergrid.gui.rail_collector.on_rail": "On the rail, fed from %1$s, %2$s, %3$s"
+  "powergrid.gui.rail_collector.on_rail": "On the rail, fed from %1$s, %2$s, %3$s",
+  "powergrid.message.cable_chain.anchors_only": "Cable chain only goes between two Cable Chain Anchors"
 }

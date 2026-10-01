@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.util;
 
+import com.nolanbaker.pgmodernized.rail.RailShoeItem;
+import com.nolanbaker.pgmodernized.chain.CableChainItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.device.breaker.BusBarItem;
 import com.nolanbaker.pgmodernized.network.Cat6CableItem;
@@ -16,6 +18,7 @@ public final class WireAcceptance {
     /** True for real conductors; false for the network cable and conduit, which only fit their own ports. */
     public static boolean electrical(ItemStack wireStack) {
         var item = wireStack.getItem();
-        return !(item instanceof Cat6CableItem) && !(item instanceof ConduitItem) && !(item instanceof BusBarItem);
+        return !(item instanceof Cat6CableItem) && !(item instanceof ConduitItem) && !(item instanceof BusBarItem)
+                && !(item instanceof CableChainItem) && !(item instanceof RailShoeItem);
     }
 }

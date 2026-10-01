@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.chain;
 
+import net.minecraft.world.item.ItemStack;
+import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
@@ -40,7 +42,14 @@ public class CableChainAnchorBlock extends Rotation4ElectricBlock implements IBE
     private static final AABB HIDDEN = new AABB(7, 0.5, 7, 9, 1.5, 9);
     public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(5, HUBS.length, new int[] {L1, L2, L3, N});
 
-    private static final VoxelShape SHAPE_DOWN = Shapes.or(box(2, 0, 2, 14, 2, 14), box(14, 0, 7, 16, 2, 9));
+    private static final VoxelShape SHAPE_DOWN = Shapes.or(box(2, 0, 2, 14, 2, 14), box(14, 0, 7, 16, 2, 9),
+            box(2, 2, 11, 4, 4, 13), box(5, 2, 11, 7, 4, 13), box(9, 2, 11, 11, 4, 13), box(12, 2, 11, 14, 4, 13));
+
+    /** The studs take any real conductor, THHN included; the knockout and the jack have their own rules. */
+    @Override
+    public boolean accepts(ItemStack wireStack) {
+        return WireAcceptance.electrical(wireStack);
+    }
 
     public CableChainAnchorBlock(Properties properties) {
         super(properties);

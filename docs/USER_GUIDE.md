@@ -797,3 +797,9 @@ The alternative to the cable chain for long runways, modelled on crane conductor
   restores it. Several collectors can share one run.
 - Rail blocks have no circuit of their own, so a run of any length costs nothing to simulate: the
   collector connects straight to the feed.
+
+A setup diagram for both the rail and the chain is in `docs/rail_and_chain_setup.svg`.
+
+**THHN on terminals.** Since 0.14.1 the THHN gauges count as Power Grid light wires, so they land
+on any terminal that takes ordinary wire: the feed and collector studs, the chain anchors, panels,
+transformers and Power Grid's own blocks. Before that they only went through conduit.

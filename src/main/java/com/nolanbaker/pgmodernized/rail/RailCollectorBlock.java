@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.rail;
 
+import net.minecraft.world.item.ItemStack;
+import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
 import com.nolanbaker.pgmodernized.network.JackTerminals;
@@ -38,7 +40,14 @@ public class RailCollectorBlock extends Rotation4ElectricBlock implements IBE<Ra
     private static final AABB HIDDEN = new AABB(7, 0.5, 7, 9, 1.5, 9);
     public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(6, HUBS.length, new int[] {L1, L2, L3, N});
 
-    private static final VoxelShape SHAPE_DOWN = Shapes.or(box(2, 0, 2, 14, 6, 14), box(6, 2, 0, 10, 5, 2), box(14, 0, 9, 16, 2, 11));
+    private static final VoxelShape SHAPE_DOWN = Shapes.or(box(2, 0, 2, 14, 6, 14), box(6, 2, 0, 10, 5, 2), box(14, 0, 9, 16, 2, 11),
+            box(3, 6, 9, 5, 8, 11), box(6, 6, 9, 8, 8, 11), box(9, 6, 9, 11, 8, 11), box(12, 6, 9, 14, 8, 11));
+
+    /** The studs take any real conductor, THHN included. */
+    @Override
+    public boolean accepts(ItemStack wireStack) {
+        return WireAcceptance.electrical(wireStack);
+    }
 
     public RailCollectorBlock(Properties properties) {
         super(properties);

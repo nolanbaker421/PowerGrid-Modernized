@@ -31,6 +31,10 @@ def textures():
     fill(box, 0, 15, 16, 16, shade(dark, 0.6))
     fill(box, 3, 3, 13, 5, orange)                      # warning band
     write_png(os.path.join(TEX, "block", "rail_box.png"), box)
+    copper = canvas(16, 16, (200, 120, 60, 255))        # the shoe pads on the collector arm
+    fill(copper, 0, 0, 16, 2, (230, 160, 90))
+    fill(copper, 0, 14, 16, 16, (140, 80, 40))
+    write_png(os.path.join(TEX, "block", "rail_shoe.png"), copper)
     shoe = canvas(16, 16)
     fill(shoe, 3, 10, 13, 13, (200, 120, 60))           # copper shoe
     fill(shoe, 3, 10, 13, 11, (230, 160, 90))
@@ -45,7 +49,7 @@ def bars(z1, z2):
 
 def models():
     common = {"bar": "%s:block/rail_bar" % MOD, "bracket": "%s:block/rail_bracket" % MOD, "box": "%s:block/rail_box" % MOD,
-              "stud": "%s:block/panel_terminal" % MOD, "jack": "%s:block/jack_pin" % MOD}
+              "stud": "%s:block/panel_terminal" % MOD, "jack": "%s:block/jack_pin" % MOD, "shoe": "%s:block/rail_shoe" % MOD}
     rail = [element(6, 0, 0, 10, 2, 16, "#bracket"), element(0, 0, 7, 16, 2, 9, "#bracket")] + bars(0, 16)
     dump(os.path.join(ASSETS, "models", "block", "conductor_rail.json"),
          {"parent": "block/block", "textures": dict(common, particle=common["bracket"]), "elements": rail})
@@ -58,7 +62,7 @@ def models():
     collector = [element(2, 0, 2, 14, 6, 14, "#box"), element(14, 0, 3, 16, 2, 7, "#stud"), element(14, 0, 9, 16, 2, 11, "#jack"),
                  element(6, 2, -8, 10, 4, 2, "#bracket")]          # the spring arm, out into the rail block
     for x1, x2 in BAR_X:
-        collector.append(element(x1, 1.5, -10, x2, 4.5, -8, "#stud"))   # a shoe on each bar
+        collector.append(element(x1, 1.5, -10, x2, 4.5, -8, "#shoe"))   # a copper shoe on each bar
     for x1, x2 in ((3, 5), (6, 8), (9, 11), (12, 14)):
         collector.append(element(x1, 6, 9, x2, 8, 11, "#stud"))
     dump(os.path.join(ASSETS, "models", "block", "rail_collector.json"),

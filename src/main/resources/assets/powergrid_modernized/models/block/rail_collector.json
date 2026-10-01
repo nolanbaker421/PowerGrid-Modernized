@@ -6,6 +6,7 @@
     "box": "powergrid_modernized:block/rail_box",
     "stud": "powergrid_modernized:block/panel_terminal",
     "jack": "powergrid_modernized:block/jack_pin",
+    "shoe": "powergrid_modernized:block/rail_shoe",
     "particle": "powergrid_modernized:block/rail_box"
   },
   "elements": [
@@ -228,18 +229,18 @@
         "down": {
           "uv": [
             6,
-            -8,
+            6,
             10,
-            2
+            16
           ],
           "texture": "#bracket"
         },
         "up": {
           "uv": [
             6,
-            -8,
+            6,
             10,
-            2
+            16
           ],
           "texture": "#bracket"
         },
@@ -263,18 +264,18 @@
         },
         "west": {
           "uv": [
-            -8,
+            6,
             12,
-            2,
+            16,
             14
           ],
           "texture": "#bracket"
         },
         "east": {
           "uv": [
-            -8,
+            6,
             12,
-            2,
+            16,
             14
           ],
           "texture": "#bracket"
@@ -296,20 +297,20 @@
         "down": {
           "uv": [
             1,
-            -10,
+            6,
             3,
-            -8
+            8
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "up": {
           "uv": [
             1,
-            -10,
+            6,
             3,
-            -8
+            8
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "north": {
           "uv": [
@@ -318,7 +319,7 @@
             3,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "south": {
           "uv": [
@@ -327,25 +328,25 @@
             3,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "west": {
           "uv": [
-            -10,
+            6,
             11.5,
-            -8,
+            8,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "east": {
           "uv": [
-            -10,
+            6,
             11.5,
-            -8,
+            8,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         }
       }
     },
@@ -364,20 +365,20 @@
         "down": {
           "uv": [
             5,
-            -10,
+            6,
             7,
-            -8
+            8
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "up": {
           "uv": [
             5,
-            -10,
+            6,
             7,
-            -8
+            8
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "north": {
           "uv": [
@@ -386,7 +387,7 @@
             7,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "south": {
           "uv": [
@@ -395,25 +396,25 @@
             7,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "west": {
           "uv": [
-            -10,
+            6,
             11.5,
-            -8,
+            8,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "east": {
           "uv": [
-            -10,
+            6,
             11.5,
-            -8,
+            8,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         }
       }
     },
@@ -432,20 +433,20 @@
         "down": {
           "uv": [
             9,
-            -10,
+            6,
             11,
-            -8
+            8
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "up": {
           "uv": [
             9,
-            -10,
+            6,
             11,
-            -8
+            8
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "north": {
           "uv": [
@@ -454,7 +455,7 @@
             11,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "south": {
           "uv": [
@@ -463,25 +464,25 @@
             11,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "west": {
           "uv": [
-            -10,
+            6,
             11.5,
-            -8,
+            8,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "east": {
           "uv": [
-            -10,
+            6,
             11.5,
-            -8,
+            8,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         }
       }
     },
@@ -500,20 +501,20 @@
         "down": {
           "uv": [
             13,
-            -10,
+            6,
             15,
-            -8
+            8
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "up": {
           "uv": [
             13,
-            -10,
+            6,
             15,
-            -8
+            8
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "north": {
           "uv": [
@@ -522,7 +523,7 @@
             15,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "south": {
           "uv": [
@@ -531,25 +532,25 @@
             15,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "west": {
           "uv": [
-            -10,
+            6,
             11.5,
-            -8,
+            8,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         },
         "east": {
           "uv": [
-            -10,
+            6,
             11.5,
-            -8,
+            8,
             14.5
           ],
-          "texture": "#stud"
+          "texture": "#shoe"
         }
       }
     },

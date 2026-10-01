@@ -30,10 +30,16 @@ public final class WireGuard {
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         var item = event.getItemStack().getItem();
         if(item instanceof CableChainItem) {
-            // Never a wire: on an anchor both of its clicks go to the chain placement, Power Grid's handler never sees them.
+            // Never a wire: on an anchor both of its clicks go to the chain placement; on any other
+            // electrical block it is refused, so Power Grid's handler never strings it as a conductor.
             if(event.getLevel().getBlockEntity(event.getPos()) instanceof CableChainAnchorBlockEntity) {
                 event.setCanceled(true);
                 event.setCancellationResult(CableChainPlacement.click(event.getLevel(), event.getPos(), event.getEntity(), event.getItemStack()));
+            } else if(IElectric.getAt(event.getLevel(), event.getPos()) != null) {
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.FAIL);
+                if(!event.getLevel().isClientSide)
+                    event.getEntity().displayClientMessage(Lang.builder().translate("message.cable_chain.anchors_only").style(ChatFormatting.RED).component(), true);
             }
             return;
         }

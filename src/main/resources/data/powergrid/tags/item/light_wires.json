@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "powergrid_modernized:wire_14awg",
+    "powergrid_modernized:wire_12awg",
+    "powergrid_modernized:wire_10awg",
+    "powergrid_modernized:wire_8awg",
+    "powergrid_modernized:wire_6awg",
+    "powergrid_modernized:wire_4awg",
+    "powergrid_modernized:wire_2awg",
+    "powergrid_modernized:wire_1_0awg",
+    "powergrid_modernized:wire_2_0awg",
+    "powergrid_modernized:wire_4_0awg",
+    "powergrid_modernized:wire_250kcmil",
+    "powergrid_modernized:wire_350kcmil",
+    "powergrid_modernized:wire_500kcmil"
+  ]
+}
