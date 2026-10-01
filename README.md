@@ -245,9 +245,11 @@ without any manual action. Breaking a jack drops a hanging cable and trims the l
   ten minutes, and he is never sent after creative players; but an inspector already about asks
   anyone, creative included, who does electrical work near him. Odds, cooldown, bribe and range are
   in `config/powergrid_modernized-common.toml`.
-- **Electrical License.** Not craftable. Every village gets a chance at an **Electrical Training
-  Center** (a stone-brick school with a lightning rod on the roof) whose chest holds one, along with
-  wire and books.
+- **Electrical License.** Not craftable. Every newly generated village has an **Electrical
+  Training Center** (a stone-brick school with a lightning rod on the roof) a few blocks east of
+  its well or meeting point, and may have more among its houses; the chest holds one license along
+  with wire and books. Villages that existed before the mod was installed have none. To check the
+  building loads: `/place template powergrid_modernized:village/training_center`.
 - **Copper scrap.** Pulling wire into conduit or editing a splice has a one-in-eight chance of
   leaving a piece of copper scrap in your pocket. Village toolsmiths, armorers and weaponsmiths buy
   eight scrap for an emerald, which is handy when the inspector comes round.

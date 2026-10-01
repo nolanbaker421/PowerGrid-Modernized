@@ -636,9 +636,20 @@ center's village weight, the scrap chance and whether push brooms spawn naturall
 
 ### Electrical License
 
-Not craftable and not tradeable. Villages generate an **Electrical Training Center**, a stone-brick
-schoolhouse with yellow trim and a lightning rod on the roof, in the same pool as their houses.
-Its chest always holds one license plus some wire, scrap, books and the odd emerald.
+Not craftable and not tradeable. Every village generated after the mod was installed has an
+**Electrical Training Center**, a stone-brick schoolhouse with yellow trim and a lightning rod on
+the roof, standing a few blocks east of the village's well or meeting point (the mod wraps every
+vanilla village centre so the school comes with it). More can appear among the houses. Its chest
+always holds one license plus some wire, scrap, books and the odd emerald.
+
+Villages that existed before the mod was installed, or before this version, never get one: world
+generation only touches new chunks. To find one, use `/locate structure minecraft:village_plains`
+(or `_desert`, `_savanna`, `_snowy`, `_taiga`) and go to one you have not visited, or generate a
+fresh village where you stand with `/place structure minecraft:village_plains`. To check the
+building itself loads, `/place template powergrid_modernized:village/training_center` places it
+at your feet. The server log line "Electrical Training Center: beside the centre of 5 village
+types" on world load confirms the pools were patched. Both can be turned off in the config:
+`training_center_at_center` and `training_center_weight`.
 
 ### Copper scrap
 

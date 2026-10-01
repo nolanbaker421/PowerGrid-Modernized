@@ -261,25 +261,36 @@ def training_center():
             palette.append(entry)
         return index[key]
 
-    out = nbt.TagList(nbt.TAG_COMPOUND)
-    for x in range(SIZE):
-        for y in range(HEIGHT):
-            for z in range(SIZE):
-                name, props, extra = blocks.get((x, y, z), ("minecraft:air", {}, None))
-                entry = {"pos": nbt.TagList(nbt.TAG_INT, [nbt.Int(x), nbt.Int(y), nbt.Int(z)]), "state": nbt.Int(state(name, props))}
-                if extra:
-                    entry["nbt"] = extra
-                out.append(entry)
-    root = {
-        "size": nbt.TagList(nbt.TAG_INT, [nbt.Int(SIZE), nbt.Int(HEIGHT), nbt.Int(SIZE)]),
-        "entities": nbt.TagList(nbt.TAG_END),
-        "blocks": out,
-        "palette": nbt.TagList(nbt.TAG_COMPOUND, palette),
-        "DataVersion": nbt.Int(3955),
-    }
-    path = os.path.join(DATA, "structure", "village", "training_center.nbt")
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    nbt.save(path, root)
+    def write(name, offset):
+        """The building shifted east by `offset`; everything west of it is structure void, so a village
+        centre placed at the same origin (see VillageInjector) is left untouched."""
+        out = nbt.TagList(nbt.TAG_COMPOUND)
+        for x in range(SIZE + offset):
+            for y in range(HEIGHT):
+                for z in range(SIZE):
+                    if x < offset:
+                        name_, props, extra = "minecraft:structure_void", {}, None
+                    else:
+                        name_, props, extra = blocks.get((x - offset, y, z), ("minecraft:air", {}, None))
+                    entry = {"pos": nbt.TagList(nbt.TAG_INT, [nbt.Int(x), nbt.Int(y), nbt.Int(z)]), "state": nbt.Int(state(name_, props))}
+                    if extra:
+                        entry["nbt"] = extra
+                    out.append(entry)
+        root = {
+            "size": nbt.TagList(nbt.TAG_INT, [nbt.Int(SIZE + offset), nbt.Int(HEIGHT), nbt.Int(SIZE)]),
+            "entities": nbt.TagList(nbt.TAG_END),
+            "blocks": out,
+            "palette": nbt.TagList(nbt.TAG_COMPOUND, list(palette)),
+            "DataVersion": nbt.Int(3955),
+        }
+        path = os.path.join(DATA, "structure", "village", name + ".nbt")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        nbt.save(path, root)
+
+    write("training_center", 0)
+    # Annexes: two blocks clear of the widest centre template of each village type.
+    for village, widest in (("plains", 11), ("desert", 17), ("savanna", 14), ("snowy", 12), ("taiga", 22)):
+        write("training_center_annex_" + village, widest + 2)
 
 
 def main():
