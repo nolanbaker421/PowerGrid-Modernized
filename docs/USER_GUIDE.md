@@ -778,6 +778,12 @@ same for a whole raceway.
 Assemble the body first and string the chain afterwards: Power Grid moves or cuts wires when
 blocks are assembled into a body, and the chain is no exception.
 
+Cat6 laid along a body's blocks, conduit runs on it and the conductors pulled through them ride
+with the body: the mod moves each such entity to where the body shows it and asks Sable to carry it
+from then on. Only the body's position is followed, not its rotation, which suits a trolley on a
+straight runway. Hanging wires and Cat6 strung between two jacks on the same body were already
+handled by Power Grid.
+
 ## 12. Conductor rail
 
 The alternative to the cable chain for long runways, modelled on crane conductor bar systems.

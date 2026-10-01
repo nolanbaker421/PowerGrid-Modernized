@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import com.nolanbaker.pgmodernized.util.SubLevelStick;
 import com.nolanbaker.pgmodernized.inspector.CopperScrap;
 import net.minecraft.nbt.CompoundTag;
 import com.nolanbaker.pgmodernized.registry.ModItems;
@@ -107,6 +108,7 @@ public class ConduitRunEntity extends BlockWireEntity {
     @Override
     public void tick() {
         super.tick();
+        SubLevelStick.stick(this);
         if(!nipple || level().isClientSide || isRemoved() || ++nippleTimer < NIPPLE_CHECK)
             return;
         nippleTimer = 0;

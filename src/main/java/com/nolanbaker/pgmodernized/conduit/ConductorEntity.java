@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import com.nolanbaker.pgmodernized.util.SubLevelStick;
 import com.nolanbaker.pgmodernized.registry.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -103,6 +104,7 @@ public class ConductorEntity extends BlockWireEntity {
     @Override
     public void tick() {
         super.tick();
+        SubLevelStick.stick(this);
         if(level().isClientSide || isRemoved())
             return;
         if(++checkTimer >= CHECK_INTERVAL) {

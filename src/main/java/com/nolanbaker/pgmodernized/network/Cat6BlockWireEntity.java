@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.network;
 
+import com.nolanbaker.pgmodernized.util.SubLevelStick;
 import com.nolanbaker.pgmodernized.registry.ModEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -89,6 +90,7 @@ public class Cat6BlockWireEntity extends BlockWireEntity implements ICat6Cable {
     @Override
     public void tick() {
         super.tick();
+        SubLevelStick.stick(this);
         link.tick();
     }
 
