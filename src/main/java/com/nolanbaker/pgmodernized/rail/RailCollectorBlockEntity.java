@@ -93,10 +93,29 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
         if(level == null || level.isClientSide)
             return;
         deviceHubs().lazyTick();
-        var shoe = SableCompanion.INSTANCE.projectOutOfSubLevel(level, IElectric.getTerminalPos(level, worldPosition, RailCollectorBlock.SHOE));
-        var railPos = BlockPos.containing(shoe);
+        // The arm reaches out along the front, up to MAX_REACH blocks, through air, to the first rail block.
+        var centre = Vec3.atCenterOf(worldPosition);
+        var direction = IElectric.getTerminalPos(level, worldPosition, RailCollectorBlock.SHOE).subtract(centre).normalize();
+        BlockPos railPos = null;
+        int reach = 1;
+        for(int k = 1; k <= RailCollectorBlock.MAX_REACH; ++k) {
+            var sample = BlockPos.containing(SableCompanion.INSTANCE.projectOutOfSubLevel(level, centre.add(direction.scale(k))));
+            if(!level.isLoaded(sample))
+                break;
+            var state = level.getBlockState(sample);
+            if(ConductorRailBlock.isRail(state)) {
+                railPos = sample;
+                reach = k;
+                break;
+            }
+            if(!state.getCollisionShape(level, sample).isEmpty())
+                break;   // something solid in the way
+        }
+        var mine = getBlockState();
+        if(mine.hasProperty(RailCollectorBlock.REACH) && mine.getValue(RailCollectorBlock.REACH) != reach)
+            level.setBlock(worldPosition, mine.setValue(RailCollectorBlock.REACH, reach), 3);
         BlockPos head = null;
-        if(level.isLoaded(railPos) && ConductorRailBlock.isRail(level.getBlockState(railPos))) {
+        if(railPos != null) {
             // The walk is only redone when the shoes are on a different block than last time.
             head = railPos.equals(lastRail) ? feed : ConductorRailBlock.findFeed(level, railPos);
             lastRail = railPos;

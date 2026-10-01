@@ -89,9 +89,10 @@ public class ChainCat6Entity extends Cat6WireEntity {
         return null;
     }
 
+    /** Never hands a cable back; the chain owns it. */
     @Override
-    public void dropWire() {
-        super.dropWire();   // unlinks the network; the base class drops no item for a count of one hidden cable
+    public void kill() {
+        discard();
     }
 
     @Override

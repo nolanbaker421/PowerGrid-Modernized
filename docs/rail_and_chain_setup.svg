@@ -57,8 +57,8 @@
     <text x="335" y="82" fill="#333">shoes sit inside the rail block above</text>
     <!-- gap callout -->
     <path d="M30,94 L30,134" stroke="#c00" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-    <text x="0" y="300" fill="#c00" font-weight="700">The collector must be exactly one block from the rail,</text>
-    <text x="0" y="320" fill="#c00" font-weight="700">with the rail block directly in front of its arm.</text>
+    <text x="0" y="300" fill="#c00" font-weight="700">The collector can be one to three blocks from the rail,</text>
+    <text x="0" y="320" fill="#c00" font-weight="700">rail block straight in front of its arm; the arm extends to it.</text>
     <text x="0" y="350" fill="#555">Place the rail on the beam's underside (click the beam from below): it gets facing UP.</text>
     <text x="0" y="368" fill="#555">Place the collector on the trolley's top: facing UP too, so its arm points up at the rail.</text>
   </g>
@@ -92,7 +92,7 @@
     <text x="170" y="205" fill="#222" font-weight="700">Rail Collector on the trolley's side,</text>
     <text x="170" y="223" fill="#222" font-weight="700">front toward the wall</text>
     <path d="M100,230 L100,180" stroke="#c00" stroke-width="2" fill="none"/>
-    <text x="90" y="300" fill="#c00" font-weight="700">one block gap, rail block straight ahead</text>
+    <text x="90" y="300" fill="#c00" font-weight="700">1 to 3 block gap, rail block straight ahead</text>
     <text x="0" y="400" fill="#555">Here you place the rail on the wall (click the wall), and the collector on the</text>
     <text x="0" y="418" fill="#555">trolley's wall-facing side. Both end up facing the same way.</text>
   </g>
@@ -152,7 +152,7 @@
   <text x="30" y="820" font-size="17" font-weight="700" fill="#222">Rules of thumb</text>
   <text x="30" y="845" fill="#222">• Assemble the trolley into a body first, then place the collector or string the chain.</text>
   <text x="30" y="867" fill="#222">• Rail: one feed per run, anywhere in it. Runs can turn corners as long as the blocks touch. A run without a feed is dead.</text>
-  <text x="30" y="889" fill="#222">• Collector: exactly one block from the rail, arm pointing at it. Goggles on it say "On the rail, fed from x, y, z" when it has contact.</text>
+  <text x="30" y="889" fill="#222">• Collector: one to three blocks from the rail, arm pointing at it; turn it so its stud row runs the same way as the bars. Goggles on it say "On the rail, fed from x, y, z" when it has contact.</text>
   <text x="30" y="911" fill="#222">• Both the feed box and the collector take THHN on their studs, conduit on the knockout, Cat6 on the jack. Empty hand opens the splice editor.</text>
   <text x="30" y="933" fill="#222">• The rail is for long runways; the chain for short travel where you want to see the raceway and pull wire through it.</text>
 </svg>

@@ -1,109 +1,321 @@
 {
   "variants": {
-    "facing=down,rotation=0": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=down,rotation=0,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "y": 270
     },
-    "facing=down,rotation=1": {
-      "model": "powergrid_modernized:block/rail_collector"
+    "facing=down,rotation=1,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1"
     },
-    "facing=down,rotation=2": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=down,rotation=2,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "y": 90
     },
-    "facing=down,rotation=3": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=down,rotation=3,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "y": 180
     },
-    "facing=east,rotation=0": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=east,rotation=0,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 270,
       "y": 90
     },
-    "facing=east,rotation=1": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=east,rotation=1,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1_h",
       "x": 180
     },
-    "facing=east,rotation=2": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=east,rotation=2,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 90,
       "y": 270
     },
-    "facing=east,rotation=3": {
-      "model": "powergrid_modernized:block/rail_collector"
+    "facing=east,rotation=3,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1_h"
     },
-    "facing=north,rotation=0": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=north,rotation=0,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 270
     },
-    "facing=north,rotation=1": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=north,rotation=1,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1_h",
       "x": 180,
       "y": 270
     },
-    "facing=north,rotation=2": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=north,rotation=2,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 90,
       "y": 180
     },
-    "facing=north,rotation=3": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=north,rotation=3,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1_h",
       "y": 270
     },
-    "facing=south,rotation=0": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=south,rotation=0,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 270,
       "y": 180
     },
-    "facing=south,rotation=1": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=south,rotation=1,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1_h",
       "x": 180,
       "y": 90
     },
-    "facing=south,rotation=2": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=south,rotation=2,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 90
     },
-    "facing=south,rotation=3": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=south,rotation=3,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1_h",
       "y": 90
     },
-    "facing=up,rotation=0": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=up,rotation=0,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 180,
       "y": 270
     },
-    "facing=up,rotation=1": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=up,rotation=1,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 180
     },
-    "facing=up,rotation=2": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=up,rotation=2,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 180,
       "y": 90
     },
-    "facing=up,rotation=3": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=up,rotation=3,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 180,
       "y": 180
     },
-    "facing=west,rotation=0": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=west,rotation=0,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 270,
       "y": 270
     },
-    "facing=west,rotation=1": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=west,rotation=1,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1_h",
       "x": 180,
       "y": 180
     },
-    "facing=west,rotation=2": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=west,rotation=2,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1",
       "x": 90,
       "y": 90
     },
-    "facing=west,rotation=3": {
-      "model": "powergrid_modernized:block/rail_collector",
+    "facing=west,rotation=3,reach=1": {
+      "model": "powergrid_modernized:block/rail_collector_r1_h",
+      "y": 180
+    },
+    "facing=down,rotation=0,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "y": 270
+    },
+    "facing=down,rotation=1,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2"
+    },
+    "facing=down,rotation=2,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "y": 90
+    },
+    "facing=down,rotation=3,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "y": 180
+    },
+    "facing=east,rotation=0,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 270,
+      "y": 90
+    },
+    "facing=east,rotation=1,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2_h",
+      "x": 180
+    },
+    "facing=east,rotation=2,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 90,
+      "y": 270
+    },
+    "facing=east,rotation=3,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2_h"
+    },
+    "facing=north,rotation=0,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 270
+    },
+    "facing=north,rotation=1,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2_h",
+      "x": 180,
+      "y": 270
+    },
+    "facing=north,rotation=2,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 90,
+      "y": 180
+    },
+    "facing=north,rotation=3,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2_h",
+      "y": 270
+    },
+    "facing=south,rotation=0,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 270,
+      "y": 180
+    },
+    "facing=south,rotation=1,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2_h",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,rotation=2,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 90
+    },
+    "facing=south,rotation=3,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2_h",
+      "y": 90
+    },
+    "facing=up,rotation=0,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 180,
+      "y": 270
+    },
+    "facing=up,rotation=1,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 180
+    },
+    "facing=up,rotation=2,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 180,
+      "y": 90
+    },
+    "facing=up,rotation=3,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,rotation=0,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 270,
+      "y": 270
+    },
+    "facing=west,rotation=1,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2_h",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,rotation=2,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2",
+      "x": 90,
+      "y": 90
+    },
+    "facing=west,rotation=3,reach=2": {
+      "model": "powergrid_modernized:block/rail_collector_r2_h",
+      "y": 180
+    },
+    "facing=down,rotation=0,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "y": 270
+    },
+    "facing=down,rotation=1,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3"
+    },
+    "facing=down,rotation=2,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "y": 90
+    },
+    "facing=down,rotation=3,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "y": 180
+    },
+    "facing=east,rotation=0,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 270,
+      "y": 90
+    },
+    "facing=east,rotation=1,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3_h",
+      "x": 180
+    },
+    "facing=east,rotation=2,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 90,
+      "y": 270
+    },
+    "facing=east,rotation=3,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3_h"
+    },
+    "facing=north,rotation=0,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 270
+    },
+    "facing=north,rotation=1,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3_h",
+      "x": 180,
+      "y": 270
+    },
+    "facing=north,rotation=2,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 90,
+      "y": 180
+    },
+    "facing=north,rotation=3,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3_h",
+      "y": 270
+    },
+    "facing=south,rotation=0,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 270,
+      "y": 180
+    },
+    "facing=south,rotation=1,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3_h",
+      "x": 180,
+      "y": 90
+    },
+    "facing=south,rotation=2,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 90
+    },
+    "facing=south,rotation=3,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3_h",
+      "y": 90
+    },
+    "facing=up,rotation=0,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 180,
+      "y": 270
+    },
+    "facing=up,rotation=1,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 180
+    },
+    "facing=up,rotation=2,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 180,
+      "y": 90
+    },
+    "facing=up,rotation=3,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,rotation=0,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 270,
+      "y": 270
+    },
+    "facing=west,rotation=1,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3_h",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,rotation=2,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3",
+      "x": 90,
+      "y": 90
+    },
+    "facing=west,rotation=3,reach=3": {
+      "model": "powergrid_modernized:block/rail_collector_r3_h",
       "y": 180
     }
   }

@@ -62,6 +62,12 @@ public class RailCat6Entity extends Cat6WireEntity {
             discard();
     }
 
+    /** Never hands a cable back. */
+    @Override
+    public void kill() {
+        discard();
+    }
+
     @Override
     public boolean isPickable() {
         return false;

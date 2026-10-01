@@ -299,7 +299,7 @@ the trolley, as on a real overhead crane. **Conductor Rail** blocks (four bars o
 mounting face) are laid end to end; a **Rail Feed Box** anywhere in the run makes it live. The feed
 is a pull box whose studs L1, L2, L3 and N are the bars, with a 4" knockout and a Cat6 jack that
 becomes the run's data channel. The **Rail Collector** is the same box on the body with a spring
-arm and shoes out of its front: mount it one block from the rail, shoes toward the bars. Every half
+arm and shoes out of its front: mount it facing the rail, up to three blocks away; the arm reaches out to the rail it finds. Every half
 second it projects its shoes into world space; while they sit in a rail block of a fed run, its
 studs are the bars and its jack is on the data channel, through hidden Power Grid hanging wires that
 follow the body. Leave the rail and the contact drops; come back and it is made again. Any number

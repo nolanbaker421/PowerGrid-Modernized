@@ -70,7 +70,13 @@ public class RailPickupEntity extends HangingWireEntity {
 
     @Override
     public void endpointRemoved(IWireEndpoint endpoint) {
-        kill();
+        discard();
+    }
+
+    /** Never hands a shoe back: a killed Power Grid wire would drop its item, this one just goes. */
+    @Override
+    public void kill() {
+        discard();
     }
 
     // ---- hidden from players ----

@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.rail;
 
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.ItemStack;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
@@ -34,8 +37,9 @@ import org.patryk3211.powergrid.utility.Lang;
 public class RailCollectorBlock extends Rotation4ElectricBlock implements IBE<RailCollectorBlockEntity> {
     public static final int L1 = 0, L2 = 1, L3 = 2, N = 3;
     public static final int JACK = 4;
-    /** Hidden, one block out of the front: the shoes. */
+    /** Hidden, one block out of the front: where the shoes point. The arm reaches up to {@link #MAX_REACH} blocks that way. */
     public static final int SHOE = 5;
+    public static final int MAX_REACH = 3;
     public static final AABB[] HUBS = {new AABB(14, 0, 3, 16, 2, 7)};
     private static final AABB HIDDEN = new AABB(7, 0.5, 7, 9, 1.5, 9);
     public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(6, HUBS.length, new int[] {L1, L2, L3, N});
@@ -49,9 +53,19 @@ public class RailCollectorBlock extends Rotation4ElectricBlock implements IBE<Ra
         return WireAcceptance.electrical(wireStack);
     }
 
+    /** How many blocks out the arm reaches to the rail it found: the model's arm follows. */
+    public static final IntegerProperty REACH = IntegerProperty.create("reach", 1, MAX_REACH);
+
     public RailCollectorBlock(Properties properties) {
         super(properties);
+        registerDefaultState(defaultBlockState().setValue(REACH, 1));
         setTerminalCollection(rotation4DownTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(SHAPE_DOWN, HUBS)));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(REACH);
     }
 
     private static TerminalBoundingBox[] terminals() {

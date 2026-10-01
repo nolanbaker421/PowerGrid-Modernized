@@ -63,6 +63,34 @@ def element(x1, y1, z1, x2, y2, z2, texture):
     return {"from": [x1, y1, z1], "to": [x2, y2, z2], "faces": faces}
 
 
+def horizontal(elements):
+    """The wall-mount model Power Grid's four-rotation blocks expect for rotation 1 and 3 on a wall:
+    the floor model turned so its base stands against the +x face (x' = 16 - y, y' = x), as the
+    regulator's block_h relates to its block_v. Faces are rebuilt so textures stay sane."""
+    out = []
+    for e in elements:
+        x1, y1, z1 = e["from"]
+        x2, y2, z2 = e["to"]
+        texture = next(iter(e["faces"].values()))["texture"]
+        nx1, nx2 = sorted((16 - y1, 16 - y2))
+        ny1, ny2 = sorted((x1, x2))
+        out.append(element(nx1, ny1, z1, nx2, ny2, z2, texture))
+    return out
+
+
+def rotation4_models(name, elements, textures):
+    """Floor model, wall model, and the regulator's blockstate mapping pointed at them, plus the item model."""
+    dump(os.path.join(ASSETS, "models", "block", name + ".json"), {"parent": "block/block", "textures": textures, "elements": elements})
+    dump(os.path.join(ASSETS, "models", "block", name + "_h.json"), {"parent": "block/block", "textures": textures, "elements": horizontal(elements)})
+    state = json.load(open(os.path.join(ASSETS, "blockstates", "vfd.json")))
+    variants = {}
+    for key, variant in state["variants"].items():
+        model = "%s:block/%s" % (MOD, name + ("_h" if variant["model"].endswith("block_h") else ""))
+        variants[key] = dict(variant, model=model)
+    dump(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": variants})
+    dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s" % (MOD, name)})
+
+
 def models():
     elements = [
         element(2, 0, 2, 14, 2, 14, "#plate"),
@@ -73,19 +101,10 @@ def models():
     ]
     for x in (2, 5, 9, 12):
         elements.append(element(x, 2, 11, x + 2, 4, 13, "#stud"))
-    dump(os.path.join(ASSETS, "models", "block", "cable_chain_anchor.json"), {
-        "parent": "block/block",
-        "textures": {"plate": "%s:block/cable_chain_anchor" % MOD, "post": "%s:block/cable_chain_post" % MOD,
-                     "stud": "%s:block/panel_terminal" % MOD, "jack": "%s:block/jack_pin" % MOD,
-                     "particle": "%s:block/cable_chain_anchor" % MOD},
-        "elements": elements,
-    })
-    # Same facing and rotation variants as the regulator, one model for both mountings.
-    state = json.load(open(os.path.join(ASSETS, "blockstates", "vfd.json")))
-    for variant in state["variants"].values():
-        variant["model"] = "%s:block/cable_chain_anchor" % MOD
-    dump(os.path.join(ASSETS, "blockstates", "cable_chain_anchor.json"), state)
-    dump(os.path.join(ASSETS, "models", "item", "cable_chain_anchor.json"), {"parent": "%s:block/cable_chain_anchor" % MOD})
+    rotation4_models("cable_chain_anchor", elements, {
+        "plate": "%s:block/cable_chain_anchor" % MOD, "post": "%s:block/cable_chain_post" % MOD,
+        "stud": "%s:block/panel_terminal" % MOD, "jack": "%s:block/jack_pin" % MOD,
+        "particle": "%s:block/cable_chain_anchor" % MOD})
     dump(os.path.join(ASSETS, "models", "item", "cable_chain.json"),
          {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/cable_chain" % MOD}})
 

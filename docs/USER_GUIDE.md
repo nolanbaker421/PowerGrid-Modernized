@@ -788,8 +788,10 @@ The alternative to the cable chain for long runways, modelled on crane conductor
 - **Rail Feed Box**: put one anywhere in the run (bars run out of both sides). It is a pull box:
   studs L1, L2, L3, N are the four bars, a 4" knockout takes your conduit, and its Cat6 jack is the
   run's data channel. Splice with an empty hand. One feed per run; a run with none is dead.
-- **Rail Collector** (crafted with four Collector Shoes): the same box on the body. Mount it one
-  block away from the rail with its front toward the bars, so the shoes sit inside the rail block.
+- **Rail Collector** (crafted with four Collector Shoes): the same box on the body. Mount it with its
+  front toward the rail, up to three blocks away through air: the arm extends to the rail block it
+  finds and the shoes sit on the bars. Turn it with the wrench until its stud row runs the same way
+  as the bars, so the shoes line up with them.
   While they do, and that run has a feed, the collector's studs are the bars and its jack is on the
   data channel. Goggles say which feed it is on, or "shoes off the rail".
 - Contact is checked every half second and carried by hidden Power Grid hanging wires, so it rides
