@@ -14,8 +14,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Draws a cable chain as an energy chain: a lower run lying from the fixed anchor toward the bend,
@@ -25,8 +23,7 @@ import java.util.List;
  */
 public class CableChainRenderer extends EntityRenderer<CableChainEntity> {
     private static final ResourceLocation TEXTURE = PowerGridModernized.asResource("textures/entity/cable_chain.png");
-    private static final double LINK_PITCH = 0.3, LINK_HALF_LENGTH = 0.16, LINK_HALF_WIDTH = 0.1, LINK_HALF_HEIGHT = 0.06;
-    private static final double MIN_RISE = 0.5;
+    private static final double LINK_HALF_LENGTH = 0.16, LINK_HALF_WIDTH = 0.1, LINK_HALF_HEIGHT = 0.06;
 
     public CableChainRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -48,7 +45,7 @@ public class CableChainRenderer extends EntityRenderer<CableChainEntity> {
         var b = entity.movingEnd();
         if(a == null || b == null)
             return;
-        var path = path(a, b, entity.chainLength());
+        var path = CableChainEntity.path(a, b, entity.chainLength());
         if(path.size() < 2)
             return;
         var origin = entity.position();   // the run stands at the fixed post
@@ -76,43 +73,6 @@ public class CableChainRenderer extends EntityRenderer<CableChainEntity> {
             box(pose, consumer, point.subtract(origin), tangent, flat ? side : up, flat ? up : side, LINK_HALF_LENGTH, LINK_HALF_WIDTH, LINK_HALF_HEIGHT, light);
         }
         poseStack.popPose();
-    }
-
-    /** Sample points along the energy-chain path from the fixed end {@code a} to the moving end {@code b}. */
-    static List<Vec3> path(Vec3 a, Vec3 b, double chainLength) {
-        var horizontal = new Vec3(b.x - a.x, 0, b.z - a.z);
-        double d = horizontal.length();
-        var u = d > 0.01 ? horizontal.scale(1 / d) : new Vec3(1, 0, 0);
-        double rise = b.y - a.y;
-        if(Math.abs(rise) < MIN_RISE)
-            rise = MIN_RISE;
-        double r = Math.abs(rise) / 2;
-        double usable = Math.max(chainLength - Math.PI * r, 0);
-        // Where the bend is: half way between the moving end and the fully-pulled-out position.
-        double bend = Math.max(d, Math.min(usable, (usable + d) / 2));
-        var points = new ArrayList<Vec3>();
-        // Lower run: from the fixed end out to the bend.
-        for(double s = 0; s < bend; s += LINK_PITCH)
-            points.add(a.add(u.scale(s)));
-        var start = a.add(u.scale(bend));
-        var centre = start.add(0, rise / 2, 0);
-        // The half circle, bulging outward past the bend.
-        int arcSteps = Math.max(2, (int) Math.round(Math.PI * r / LINK_PITCH));
-        for(int i = 0; i <= arcSteps; ++i) {
-            double theta = -Math.PI / 2 + Math.PI * i / arcSteps;
-            points.add(centre.add(u.scale(r * Math.cos(theta))).add(0, r * Math.sin(theta) * Math.signum(rise), 0));
-        }
-        // Upper run: back from the bend to the moving end.
-        var top = start.add(0, rise, 0);
-        var toEnd = b.subtract(top);
-        double upper = toEnd.length();
-        if(upper > 0.01) {
-            var v = toEnd.scale(1 / upper);
-            for(double s = LINK_PITCH; s <= upper; s += LINK_PITCH)
-                points.add(top.add(v.scale(s)));
-        }
-        points.add(b);
-        return points;
     }
 
     static void box(PoseStack.Pose pose, VertexConsumer consumer, Vec3 c, Vec3 t, Vec3 n, Vec3 bn,
