@@ -18,6 +18,12 @@ public class ModDataComponents {
                     .persistent(CompoundTag.CODEC)
                     .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
 
+    /** Position of the first anchor chosen while stringing a cable chain. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> CABLE_CHAIN_CONNECTION =
+            REGISTER.registerComponentType("cable_chain_connection", builder -> builder
+                    .persistent(CompoundTag.CODEC)
+                    .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
+
     /** Serialised wire endpoint of the first end chosen while laying a conduit run. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> CONDUIT_CONNECTION =
             REGISTER.registerComponentType("conduit_connection", builder -> builder

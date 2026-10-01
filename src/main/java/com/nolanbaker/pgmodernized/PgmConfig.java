@@ -16,6 +16,7 @@ public final class PgmConfig {
     public static final ModConfigSpec.IntValue TRAINING_CENTER_WEIGHT;
     public static final ModConfigSpec.DoubleValue SCRAP_CHANCE;
     public static final ModConfigSpec.BooleanValue PUSH_BROOM_SPAWNS;
+    public static final ModConfigSpec.IntValue CABLE_CHAIN_MAX_LENGTH;
 
     static {
         var b = new ModConfigSpec.Builder();
@@ -45,6 +46,10 @@ public final class PgmConfig {
         b.comment("The push broom").push("push_broom");
         PUSH_BROOM_SPAWNS = b.comment("Whether push brooms spawn naturally at night. Spawn eggs always work.")
                 .define("natural_spawns", true);
+        b.pop();
+        b.comment("Cable chains").push("cable_chain");
+        CABLE_CHAIN_MAX_LENGTH = b.comment("Longest run, in metres, a cable chain can be strung over (measured as the anchors hang in the world).")
+                .defineInRange("max_length", 32, 4, 128);
         b.pop();
         SPEC = b.build();
     }

@@ -357,5 +357,21 @@
   "powergrid.gui.creative_ac_source.three": "Three-phase: lines a third of a turn apart",
   "powergrid.gui.creative_ac_source.split": "Split-phase: L1 and L2 half a turn apart, L3 on L1",
   "powergrid.gui.creative_ac_source.voltage": "Voltage",
-  "powergrid.gui.creative_ac_source.frequency": "Frequency"
+  "powergrid.gui.creative_ac_source.frequency": "Frequency",
+  "block.powergrid_modernized.cable_chain_anchor": "Cable Chain Anchor",
+  "item.powergrid_modernized.cable_chain": "Cable Chain",
+  "item.powergrid_modernized.cable_chain.tooltip.summary": "Two metres of energy chain per link. Click one anchor, then the other, and it carries four conductors and a Cat6 pair across, even onto a moving Create Aeronautics body. String it with the trolley at the far end of its travel: pull it further than it reaches and it snaps.",
+  "item.powergrid_modernized.cable_chain_anchor.tooltip.summary": "One end of a cable chain: studs L1, L2, L3 and N, and a network jack. Put one on the structure and one on the trolley or body.",
+  "powergrid.cable_chain.l1": "Chain L1",
+  "powergrid.cable_chain.l2": "Chain L2",
+  "powergrid.cable_chain.l3": "Chain L3",
+  "powergrid.cable_chain.n": "Chain N",
+  "powergrid.cable_chain.mount": "Chain Mount",
+  "powergrid.gui.cable_chain.title": "Cable chain anchor",
+  "powergrid.gui.cable_chain.free": "No chain attached",
+  "powergrid.gui.cable_chain.chained": "Chain attached: L1, L2, L3, N and Cat6 carried across",
+  "powergrid.message.cable_chain.anchor_used": "That anchor already has a chain",
+  "powergrid.message.cable_chain.too_long": "Too far: a cable chain reaches at most %1$s m",
+  "powergrid.message.cable_chain.missing_items": "Not enough chain: this run needs %1$s links",
+  "powergrid.message.cable_chain.placed": "Chain strung: it can stretch to %1$s m before it snaps"
 }

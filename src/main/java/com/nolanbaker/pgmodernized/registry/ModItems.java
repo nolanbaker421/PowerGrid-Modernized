@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.chain.CableChainItem;
 import net.minecraft.world.item.Rarity;
 import com.nolanbaker.pgmodernized.conduit.ConduitCover;
 import com.nolanbaker.pgmodernized.conduit.ConduitCoverItem;
@@ -42,6 +43,12 @@ public class ModItems {
     public static final ItemEntry<Item> COPPER_SCRAP = REGISTRATE.item("copper_scrap", Item::new)
             .model(NonNullBiConsumer.noop())
             .lang("Copper Scrap")
+            .register();
+
+    /** The cable chain: a wire item only so the chain entities can carry it; WireGuard routes its clicks. */
+    public static final ItemEntry<CableChainItem> CABLE_CHAIN = REGISTRATE.item("cable_chain", CableChainItem::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Cable Chain")
             .register();
 
     /** Breakers: pole count (1, 2, 3), then frame. */

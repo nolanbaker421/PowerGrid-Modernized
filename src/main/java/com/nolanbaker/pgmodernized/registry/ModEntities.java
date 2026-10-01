@@ -1,5 +1,9 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.client.CableChainRenderer;
+import com.nolanbaker.pgmodernized.chain.ChainCat6Entity;
+import com.nolanbaker.pgmodernized.chain.ChainConductorEntity;
+import com.nolanbaker.pgmodernized.chain.CableChainEntity;
 import com.nolanbaker.pgmodernized.PgmConfig;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -51,6 +55,24 @@ public class ModEntities {
     /** Invisible bus bar between two adjacent switchgear sections. */
     public static final EntityEntry<BusLinkEntity> BUS_LINK =
             REGISTRATE.entity("bus_link", BusLinkEntity::new, MobCategory.MISC)
+                    .renderer(() -> NoopEntityRenderer::new)
+                    .register();
+
+    /** The visible cable chain between two anchors; follows a Sable body like any Power Grid hanging wire. */
+    public static final EntityEntry<CableChainEntity> CABLE_CHAIN =
+            REGISTRATE.entity("cable_chain", CableChainEntity::new, MobCategory.MISC)
+                    .renderer(() -> CableChainRenderer::new)
+                    .register();
+
+    /** One of the four hidden conductors a cable chain carries. */
+    public static final EntityEntry<ChainConductorEntity> CHAIN_CONDUCTOR =
+            REGISTRATE.entity("chain_conductor", ChainConductorEntity::new, MobCategory.MISC)
+                    .renderer(() -> NoopEntityRenderer::new)
+                    .register();
+
+    /** The hidden Cat6 pair a cable chain carries between its anchors' jacks. */
+    public static final EntityEntry<ChainCat6Entity> CHAIN_CAT6 =
+            REGISTRATE.entity("chain_cat6", ChainCat6Entity::new, MobCategory.MISC)
                     .renderer(() -> NoopEntityRenderer::new)
                     .register();
 

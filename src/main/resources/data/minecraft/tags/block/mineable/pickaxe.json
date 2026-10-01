@@ -60,6 +60,7 @@
     {
       "id": "powergrid_modernized:creative_ac_source",
       "required": false
-    }
+    },
+    "powergrid_modernized:cable_chain_anchor"
   ]
 }

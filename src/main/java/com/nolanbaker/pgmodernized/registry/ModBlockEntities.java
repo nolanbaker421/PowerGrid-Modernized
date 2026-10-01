@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.chain.CableChainAnchorBlockEntity;
 import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlockEntity;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlockEntity;
@@ -124,6 +125,11 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<PanelExtensionBlockEntity> PANEL_EXTENSION =
             REGISTRATE.blockEntity("panel_extension", PanelExtensionBlockEntity::new)
                     .validBlock(ModBlocks.PANEL_EXTENSION)
+                    .register();
+
+    public static final BlockEntityEntry<CableChainAnchorBlockEntity> CABLE_CHAIN_ANCHOR =
+            REGISTRATE.blockEntity("cable_chain_anchor", CableChainAnchorBlockEntity::new)
+                    .validBlock(ModBlocks.CABLE_CHAIN_ANCHOR)
                     .register();
 
     public static void register() {}

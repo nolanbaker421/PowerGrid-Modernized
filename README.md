@@ -279,6 +279,17 @@ The AC-only code lives under `com.nolanbaker.pgmodernized.ac` and is reached onl
 - **Creative AC Source**: L1, L2, L3 and a neutral at a chosen line-to-neutral voltage and
   frequency, unlimited current; sneak-click for split-phase.
 
+## Cable chain
+
+Wires onto Create Aeronautics bodies. A **Cable Chain Anchor** has four studs (L1, L2, L3, N) and a
+network jack; put one on the gantry and one on the trolley, then click them in turn with **Cable
+Chain** items. The chain carries all four conductors and a Cat6 pair between the anchors, and
+because it is a Power Grid hanging wire underneath it follows the body as it moves, measured and
+drawn in world space. It is drawn as an energy chain: a lower run, a bend, an upper run. One item
+is two metres; the run is cut two items longer than the distance at placement, so string it with
+the trolley at the far end of its travel. Pull the anchors further apart than the chain reaches
+and it snaps and drops its links. Longest run is a config value (32 m by default).
+
 ## Real life components
 
 - **The electrical inspector.** Wire long enough and a villager in a hard hat and hi-vis turns up,

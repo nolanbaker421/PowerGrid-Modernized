@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.util;
 
+import com.nolanbaker.pgmodernized.chain.CableChainPlacement;
+import com.nolanbaker.pgmodernized.chain.CableChainItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.device.breaker.BusBarItem;
@@ -25,6 +27,12 @@ public final class WireGuard {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         var item = event.getItemStack().getItem();
+        if(item instanceof CableChainItem) {
+            // Never a wire: both of its clicks go to the chain placement, Power Grid's handler never sees them.
+            event.setCanceled(true);
+            event.setCancellationResult(CableChainPlacement.click(event.getLevel(), event.getPos(), event.getEntity(), event.getItemStack()));
+            return;
+        }
         boolean conduit = item instanceof ConduitItem;
         boolean cat6 = item instanceof Cat6CableItem;
         boolean busBar = item instanceof BusBarItem;

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    },
+    "C": {
+      "item": "powergrid:conductive_casing"
+    }
+  },
+  "pattern": [
+    "I I",
+    "PCP",
+    "III"
+  ],
+  "result": {
+    "count": 2,
+    "id": "powergrid_modernized:cable_chain_anchor"
+  }
+}

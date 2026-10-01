@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.chain.CableChainAnchorBlock;
 import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlockEntity;
 import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlock;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlock;
@@ -217,6 +218,18 @@ public class ModBlocks {
             .transform(pickaxeOnly())
             .onRegister(block -> BlockStressValues.IMPACTS.register(block, () -> (double) TapActuatorBlockEntity.STRESS))
             .lang("Tap Changer Drive")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** Either end of a cable chain: four studs and a jack. */
+    public static final BlockEntry<CableChainAnchorBlock> CABLE_CHAIN_ANCHOR = REGISTRATE.block("cable_chain_anchor", CableChainAnchorBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Cable Chain Anchor")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()
