@@ -55,11 +55,22 @@ public class ModBlocks {
                 .build()
             .register();
 
+    /** The digital voltage regulators: the block id "vfd" is kept so old worlds and scripts still load. */
     public static final BlockEntry<VfdBlock> VFD = REGISTRATE.block("vfd", VfdBlock::new)
             .blockstate(NonNullBiConsumer.noop())
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
-            .lang("Variable Frequency Drive")
+            .lang("Digital Voltage Regulator (2 kV)")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    public static final BlockEntry<VfdBlock> VFD_8KV = REGISTRATE.block("vfd_8kv", p -> new VfdBlock(p, 8000f))
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .lang("Digital Voltage Regulator (8 kV)")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

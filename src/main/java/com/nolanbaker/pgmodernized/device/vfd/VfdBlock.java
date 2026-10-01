@@ -37,9 +37,21 @@ public class VfdBlock extends Rotation4ElectricBlock implements IBE<VfdBlockEnti
 
     private static final VoxelShape SHAPE_DOWN = box(2, 0, 2, 14, 7, 14);
 
+    /** Highest output the unit can be set to, volts either way. */
+    private final float maxVoltage;
+
     public VfdBlock(Properties settings) {
+        this(settings, VfdBlockEntity.MAX_VOLTAGE);
+    }
+
+    public VfdBlock(Properties settings, float maxVoltage) {
         super(settings);
+        this.maxVoltage = maxVoltage;
         setTerminalCollection(rotation4DownTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(SHAPE_DOWN, HUBS)));
+    }
+
+    public float maxVoltage() {
+        return maxVoltage;
     }
 
     private static TerminalBoundingBox[] terminals() {

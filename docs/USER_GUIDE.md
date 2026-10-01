@@ -56,7 +56,7 @@ regular build.
 | Conduit 1/2", 3/4", 1" | Empty raceway, laid along surfaces, that wire is pulled through |
 | Conduit Box | Small wall box: ends and splices conduit runs; takes a blank or node cover plate |
 | Conduit Socket | Tiny fitting that turns the end of a conduit into a cord socket |
-| Variable Frequency Drive (VFD) | Computer-controlled voltage/current source |
+| Digital Voltage Regulator (2 kV, 8 kV) | Computer-controlled voltage/current source |
 | Analog I/O Module | Four analog outputs and four analog inputs for computers |
 | CT Cabinet | Four-channel power meter: volts, amps, watts and energy per feeder |
 | Clamp Meter | Reads the current in any wire passing through its jaw |
@@ -414,12 +414,17 @@ in addition to their ordinary terminals, so they can be wired either way. Right-
 with an empty hand to open its splice editor; the points are the device's own terminals. The wrench
 rotates them as usual.
 
-### Variable Frequency Drive
+### Digital Voltage Regulator
 
-A computer-controlled source. Two input terminals (+ / −) take power; two output terminals (+ / −)
-deliver a commanded voltage.
+A computer-controlled DC source, in two sizes: the **2 kV** unit (this is the block that used to be
+called the Variable Frequency Drive; its id, `vfd`, and its peripheral name, `powergrid_vfd`, are
+unchanged so old worlds and scripts keep working) and the **8 kV** unit, crafted from a 2 kV unit
+between copper coils over a transformer core. Two input terminals (+ / −) take power; two output
+terminals (+ / −) deliver a commanded voltage. On the AC build the Three-Phase Drive is the real
+variable frequency drive.
 
-- Output voltage: −2000 V to +2000 V (negative reverses polarity).
+- Output voltage: −2000 V to +2000 V on the 2 kV unit, −8000 V to +8000 V on the 8 kV unit
+  (negative reverses polarity). `getLimits()` reports the unit's ceiling.
 - Goggles show a status line under the output: running, output disabled, no input voltage, input
   wired backwards, setpoint 0 V, input too low for the setpoint, holding the current limit, or
   input sagging. If nothing comes out, the line says why.
@@ -522,7 +527,7 @@ and L2 are half a turn apart and L3 repeats L1.
 The **Cat6 Cable** is a Power Grid wire that carries computer network traffic instead of current.
 It is placed with two clicks like any wire and only connects **network jacks**:
 
-- The VFD, Analog I/O Module, Line Voltmeter, Line Ammeter and every transformer have a jack built in (the cyan
+- The regulators, Analog I/O Module, Line Voltmeter, Line Ammeter and every transformer have a jack built in (the cyan
   terminal). Ordinary wires refuse it and the Cat6 refuses the electrical terminals.
 - The **Network Jack** block is a small wall plate for the computer end. Adjacent ComputerCraft wired
   modems and cables, and OpenComputers cables, join its network.
@@ -557,11 +562,11 @@ Each device is a wired peripheral on the Cat6 network. Its name is `<type>_<x>_<
 coordinates prefixed by `n`, so `peripheral.find("powergrid_vfd")` or
 `peripheral.wrap("powergrid_vfd_12_64_n5")` both work from any computer on the run.
 
-**powergrid_vfd**
+**powergrid_vfd** (both Digital Voltage Regulators)
 
 | Method | Meaning |
 | --- | --- |
-| `setVoltage(volts)` | Output setpoint, −2000 to 2000 |
+| `setVoltage(volts)` | Output setpoint, up to the unit's rating either way |
 | `getVoltage()` | Setpoint |
 | `setCurrentLimit(amps)` | 0 to 3 |
 | `getCurrentLimit()` | |
@@ -569,6 +574,7 @@ coordinates prefixed by `n`, so `peripheral.find("powergrid_vfd")` or
 | `getOutputVoltage()` / `getOutputCurrent()` | Measured output |
 | `getInputVoltage()` / `getInputCurrent()` | Measured input |
 | `getPower()` | Output power in W |
+| `getLimits()` | Maximum voltage and current of this unit |
 | `getStatus()` | Why the output is what it is: `ok`, `disabled`, `no_input`, `reversed`, `setpoint_zero`, `input_low`, `current_limit`, `input_sag` |
 
 **powergrid_transformer** (legs are 1 to the leg count; taps are −4 to 4)
@@ -637,7 +643,6 @@ The same devices are components with the same names (`powergrid_vfd`, `powergrid
 network from an OpenComputers cable next to a jack or switch. `component.doc` on any method prints
 its signature. Methods match the ComputerCraft ones, plus:
 
-- **VFD**: `getLimits()` returns the maximum voltage and current.
 - **Analog I/O**: `getAppliedOutput(channel)` is the voltage actually applied after current
   limiting; `setChangeThreshold(volts)` makes the module push an `analog_change` signal when an input
   moves by more than that (0 disables).
@@ -716,9 +721,20 @@ center's village weight, the scrap chance and whether push brooms spawn naturall
 
 ### Electrical License
 
-Not craftable and not tradeable. Villages generate an **Electrical Training Center**, a stone-brick
-schoolhouse with yellow trim and a lightning rod on the roof, in the same pool as their houses.
-Its chest always holds one license plus some wire, scrap, books and the odd emerald.
+Not craftable and not tradeable. Every village generated after the mod was installed has an
+**Electrical Training Center**, a stone-brick schoolhouse with yellow trim and a lightning rod on
+the roof, standing a few blocks east of the village's well or meeting point (the mod wraps every
+vanilla village centre so the school comes with it). More can appear among the houses. Its chest
+always holds one license plus some wire, scrap, books and the odd emerald.
+
+Villages that existed before the mod was installed, or before this version, never get one: world
+generation only touches new chunks. To find one, use `/locate structure minecraft:village_plains`
+(or `_desert`, `_savanna`, `_snowy`, `_taiga`) and go to one you have not visited, or generate a
+fresh village where you stand with `/place structure minecraft:village_plains`. To check the
+building itself loads, `/place template powergrid_modernized:village/training_center` places it
+at your feet. The server log line "Electrical Training Center: beside the centre of 5 village
+types" on world load confirms the pools were patched. Both can be turned off in the config:
+`training_center_at_center` and `training_center_weight`.
 
 ### Copper scrap
 

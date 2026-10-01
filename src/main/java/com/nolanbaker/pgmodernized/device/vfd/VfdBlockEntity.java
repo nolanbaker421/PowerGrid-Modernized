@@ -50,6 +50,7 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
         return deviceHubs;
     }
 
+    /** The 2 kV unit's ceiling; the block carries the rating of the unit actually placed. */
     public static final float MAX_VOLTAGE = 2000.0f;
     public static final float MAX_CURRENT = 20.0f;
     private static final float MAX_RATIO = 500.0f;
@@ -258,8 +259,13 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
             sendData();
     }
 
+    public float maxVoltage() {
+        return getBlockState().getBlock() instanceof VfdBlock block ? block.maxVoltage() : MAX_VOLTAGE;
+    }
+
     public void setVoltage(float voltage) {
-        voltage = Float.isFinite(voltage) ? Mth.clamp(voltage, -MAX_VOLTAGE, MAX_VOLTAGE) : 0;
+        float max = maxVoltage();
+        voltage = Float.isFinite(voltage) ? Mth.clamp(voltage, -max, max) : 0;
         if(setpoint == voltage)
             return;
         setpoint = voltage;

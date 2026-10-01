@@ -11,7 +11,7 @@ A player-facing guide to everything in the mod, including the computer APIs, is 
 
 | Block | Purpose | CC: Tweaked | OpenComputers |
 | --- | --- | --- | --- |
-| Variable Frequency Drive | Computer-controlled drive output | peripheral | network node |
+| Digital Voltage Regulator (2 kV and 8 kV) | Computer-controlled DC output | peripheral | network node |
 | Analog I/O Module | Analog voltage in/out for computers | peripheral | network node |
 | Clamp Meter | Reads current in any wire passing through its jaw | peripheral | network node |
 | CT Cabinet | Four-channel power and energy meter, conduit-wired | peripheral | network node |
@@ -185,7 +185,7 @@ and big conduit: hang 500 kcmil on a lug, splice it to a conductor in a 4" run i
 Sockets and switches carry two knockouts, one on each edge, so a switch sits in line on a run with the
 neutral passing through; sneak-click a switch, or click a socket with no cord, for their splice editor.
 
-The Variable Frequency Drive, Analog I/O Module, Line Voltmeter and Line Ammeter each carry two
+The Digital Voltage Regulator, Analog I/O Module, Line Voltmeter and Line Ammeter each carry two
 knockouts as well as their ordinary terminals. Land conduit on a knockout, pull wire, then click the
 device body with an empty hand to open its splice editor, where the points are the device's own
 terminals. Ordinary wires on the terminals keep working alongside.
@@ -209,7 +209,7 @@ The **Cat6 Cable** is a Power Grid hanging wire that carries computer network tr
 It renders and sags like any other wire, is placed with two clicks, and is picked up or cut the same way,
 but it only connects **network jacks**:
 
-- The VFD, Analog I/O Module, Line Voltmeter and Line Ammeter have a jack built in (the cyan terminal).
+- The regulators, Analog I/O Module, Line Voltmeter and Line Ammeter have a jack built in (the cyan terminal).
   Ordinary wires refuse that terminal and the Cat6 refuses the electrical ones.
 - The **Network Jack** block is a small wall plate for the computer end. Adjacent ComputerCraft wired
   modems and cables (and OpenComputers cables) join its network, so a computer plugs in through a
@@ -290,9 +290,11 @@ the branch already does.
   ten minutes, and he is never sent after creative players; but an inspector already about asks
   anyone, creative included, who does electrical work near him. Odds, cooldown, bribe and range are
   in `config/powergrid_modernized-common.toml`.
-- **Electrical License.** Not craftable. Every village gets a chance at an **Electrical Training
-  Center** (a stone-brick school with a lightning rod on the roof) whose chest holds one, along with
-  wire and books.
+- **Electrical License.** Not craftable. Every newly generated village has an **Electrical
+  Training Center** (a stone-brick school with a lightning rod on the roof) a few blocks east of
+  its well or meeting point, and may have more among its houses; the chest holds one license along
+  with wire and books. Villages that existed before the mod was installed have none. To check the
+  building loads: `/place template powergrid_modernized:village/training_center`.
 - **Copper scrap.** Pulling wire into conduit or editing a splice has a one-in-eight chance of
   leaving a piece of copper scrap in your pocket. Village toolsmiths, armorers and weaponsmiths buy
   eight scrap for an emerald, which is handy when the inspector comes round.

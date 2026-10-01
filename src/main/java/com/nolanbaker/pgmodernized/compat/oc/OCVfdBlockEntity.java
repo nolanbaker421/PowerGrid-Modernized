@@ -136,6 +136,6 @@ public class OCVfdBlockEntity extends VfdBlockEntity implements Environment {
 
     @Callback(direct = true, doc = "function():number, number -- Maximum output voltage and current.")
     public Object[] getLimits(Context context, Arguments args) {
-        return result((double) MAX_VOLTAGE, (double) MAX_CURRENT);
+        return result((double) maxVoltage(), (double) MAX_CURRENT);
     }
 }

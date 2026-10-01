@@ -12,6 +12,7 @@ public final class PgmConfig {
     public static final ModConfigSpec.IntValue INSPECTOR_WORK_WINDOW_SECONDS;
     public static final ModConfigSpec.IntValue INSPECTOR_BRIBE;
     public static final ModConfigSpec.IntValue INSPECTOR_NOTICE_RANGE;
+    public static final ModConfigSpec.BooleanValue TRAINING_CENTER_AT_CENTER;
     public static final ModConfigSpec.IntValue TRAINING_CENTER_WEIGHT;
     public static final ModConfigSpec.DoubleValue SCRAP_CHANCE;
     public static final ModConfigSpec.BooleanValue PUSH_BROOM_SPAWNS;
@@ -32,7 +33,9 @@ public final class PgmConfig {
                 .defineInRange("notice_range", 16, 1, 64);
         b.pop();
         b.comment("Village generation").push("village");
-        TRAINING_CENTER_WEIGHT = b.comment("Weight of the Electrical Training Center in every village's house pool (vanilla house weights total 70 to 90). 0 leaves it out.")
+        TRAINING_CENTER_AT_CENTER = b.comment("Every newly generated village gets an Electrical Training Center a few blocks east of its well or meeting point.")
+                .define("training_center_at_center", true);
+        TRAINING_CENTER_WEIGHT = b.comment("Weight of extra training centers in every village's house pool (vanilla house weights total 70 to 90). 0 adds none.")
                 .defineInRange("training_center_weight", 3, 0, 100);
         b.pop();
         b.comment("Copper scrap").push("scrap");
