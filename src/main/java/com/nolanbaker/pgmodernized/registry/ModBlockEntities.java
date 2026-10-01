@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import dev.engine_room.flywheel.lib.model.Models;
+import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
@@ -24,6 +26,7 @@ import com.nolanbaker.pgmodernized.device.meter.ClampMeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineVoltmeterBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
+import org.patryk3211.powergrid.utility.SimpleBlockEntityVisualFactory;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerFillerBlockEntity;
@@ -135,6 +138,8 @@ public class ModBlockEntities {
 
     public static final BlockEntityEntry<PinionBlockEntity> PINION =
             REGISTRATE.blockEntity("pinion", (BlockEntityFactory<PinionBlockEntity>) (type, pos, state) -> PinionBlockEntity.FACTORY.create(type, pos, state))
+                    .visual(() -> (SimpleBlockEntityVisualFactory<PinionBlockEntity>) (context, be, partialTick) ->
+                            new SingleAxisRotatingVisual<>(context, be, partialTick, Models.block(be.getBlockState())))
                     .validBlock(ModBlocks.PINION)
                     .renderer(() -> KineticBlockEntityRenderer::new)
                     .register();

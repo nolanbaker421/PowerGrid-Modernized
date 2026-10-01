@@ -49,25 +49,22 @@ def face(uv, tex="#rack"):
     return {"uv": uv, "texture": tex}
 
 
+def element(frm, to):
+    """A box textured with the rack steel on every face, UVs taken from its footprint."""
+    x1, y1, z1 = frm
+    x2, y2, z2 = to
+    return {"from": frm, "to": to, "faces": {
+        "north": face([x1, 16 - y2, x2, 16 - y1]), "south": face([x1, 16 - y2, x2, 16 - y1]),
+        "east": face([z1, 16 - y2, z2, 16 - y1]), "west": face([z1, 16 - y2, z2, 16 - y1]),
+        "up": face([x1, z1, x2, z2]), "down": face([x1, z1, x2, z2]),
+    }}
+
+
 def rack_model():
-    """Bar along x: base plate plus teeth standing up out of it."""
-    elements = [{
-        "from": [0, 0, 4], "to": [16, 3, 12],
-        "faces": {
-            "north": face([0, 13, 16, 16]), "south": face([0, 13, 16, 16]),
-            "east": face([4, 13, 12, 16]), "west": face([4, 13, 12, 16]),
-            "up": face([0, 4, 16, 12]), "down": face([0, 4, 16, 12]),
-        },
-    }]
+    """Bar along x with the teeth pointing up: a tall base so a cog in the block above meshes."""
+    elements = [element([0, 0, 4], [16, 11, 12])]
     for x in range(0, 16, 4):
-        elements.append({
-            "from": [x, 3, 5], "to": [x + 2, 6, 11],
-            "faces": {
-                "north": face([x, 5, x + 2, 8]), "south": face([x, 5, x + 2, 8]),
-                "east": face([5, 5, 11, 8]), "west": face([5, 5, 11, 8]),
-                "up": face([x, 5, x + 2, 11]),
-            },
-        })
+        elements.append(element([x, 11, 5], [x + 2, 16, 11]))
     return {
         "parent": "block/block",
         "textures": {"rack": "powergrid_modernized:block/rack", "particle": "powergrid_modernized:block/rack"},
@@ -75,22 +72,61 @@ def rack_model():
     }
 
 
+def rack_v_model():
+    """Bar along y on a wall behind it (south), teeth pointing north."""
+    elements = [element([4, 0, 5], [12, 16, 16])]
+    for y in range(0, 16, 4):
+        elements.append(element([5, y, 0], [11, y + 2, 5]))
+    return {
+        "parent": "block/block",
+        "textures": {"rack": "powergrid_modernized:block/rack", "particle": "powergrid_modernized:block/rack"},
+        "elements": elements,
+    }
+
+
+def variant(model, x=0, y=0):
+    v = {"model": "powergrid_modernized:block/" + model}
+    if x:
+        v["x"] = x
+    if y:
+        v["y"] = y
+    return v
+
+
 def main():
     write_png(os.path.join(ROOT, "textures", "block", "rack.png"), rack_texture())
     dump(os.path.join(ROOT, "models", "block", "rack.json"), rack_model())
+    dump(os.path.join(ROOT, "models", "block", "rack_v.json"), rack_v_model())
+    # x rotates the teeth-up model: 90 points them north, 180 down, 270 south; y then turns the bar.
     dump(os.path.join(ROOT, "blockstates", "rack.json"), {"variants": {
-        "axis=x": {"model": "powergrid_modernized:block/rack"},
-        "axis=z": {"model": "powergrid_modernized:block/rack", "y": 90},
-        "axis=y": {"model": "powergrid_modernized:block/rack", "x": 90, "y": 90},
+        "facing=up,axis=x": variant("rack"),
+        "facing=up,axis=z": variant("rack", y=90),
+        "facing=down,axis=x": variant("rack", x=180),
+        "facing=down,axis=z": variant("rack", x=180, y=90),
+        "facing=north,axis=x": variant("rack", x=90),
+        "facing=south,axis=x": variant("rack", x=270),
+        "facing=east,axis=z": variant("rack", x=90, y=90),
+        "facing=west,axis=z": variant("rack", x=90, y=270),
+        "facing=north,axis=y": variant("rack_v"),
+        "facing=east,axis=y": variant("rack_v", y=90),
+        "facing=south,axis=y": variant("rack_v", y=180),
+        "facing=west,axis=y": variant("rack_v", y=270),
+        # Impossible pairs (bar along its own facing) still need a model to load cleanly.
+        "facing=up,axis=y": variant("rack"),
+        "facing=down,axis=y": variant("rack", x=180),
+        "facing=north,axis=z": variant("rack", x=90),
+        "facing=south,axis=z": variant("rack", x=270),
+        "facing=east,axis=x": variant("rack", x=90, y=90),
+        "facing=west,axis=x": variant("rack", x=90, y=270),
     }})
     dump(os.path.join(ROOT, "models", "item", "rack.json"), {"parent": "powergrid_modernized:block/rack"})
 
-    # The pinion is drawn with Create's own small cogwheel; the block entity renderer spins it.
+    # The pinion is drawn with Create's own small cogwheel; the visual or block entity renderer spins it.
     dump(os.path.join(ROOT, "models", "block", "pinion.json"), {"parent": "create:block/cogwheel"})
     dump(os.path.join(ROOT, "blockstates", "pinion.json"), {"variants": {
-        "axis=x": {"model": "powergrid_modernized:block/pinion", "x": 90, "y": 90},
-        "axis=y": {"model": "powergrid_modernized:block/pinion"},
-        "axis=z": {"model": "powergrid_modernized:block/pinion", "x": 90, "y": 180},
+        "axis=x": variant("pinion", x=90, y=90),
+        "axis=y": variant("pinion"),
+        "axis=z": variant("pinion", x=90, y=180),
     }})
     dump(os.path.join(ROOT, "models", "item", "pinion.json"), {"parent": "powergrid_modernized:block/pinion"})
     print("rack assets written")

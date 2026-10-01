@@ -820,9 +820,11 @@ transformers and Power Grid's own blocks. Before that they only went through con
 
 How a gantry crane on a Create Aeronautics body moves itself along its runway.
 
-- **Rack**: a toothed bar. Lay it in the world along the runway, end to end, like a rail. On a floor
+- **Rack**: a toothed bar, 12 px of steel with the teeth on top. Lay it in the world along the
+  runway, end to end, like a rail. The teeth point away from the face you place it on. On a floor
   it runs the way you face; against a wall it runs along the wall, or up it when you sneak (a
-  climbing rack for a hoist).
+  climbing rack for a hoist). The pinion goes in the block the teeth point into, so a cog over a
+  floor rack hangs with its rim just into the teeth.
 - **Pinion**: a small cogwheel for the body. It takes rotation like any Create cogwheel, from a
   shaft in line with its axle or a cog beside it. Mount it on the crane so one of its four rim
   sides faces the rack: axle across the runway, the rack in the block its rim looks into. A pinion

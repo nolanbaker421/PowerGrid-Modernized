@@ -19,7 +19,8 @@ import net.minecraft.world.phys.Vec3;
  * <p>
  * Sable takes impulses in the body's own frame: the point in plot coordinates, the impulse as a
  * body-local vector (its arrow and explosion hooks convert world vectors with the inverse pose
- * before applying them), so everything here is worked out in that frame.
+ * before applying them), and its point-velocity helper wants the plot point too, so everything
+ * here is worked out in that frame.
  */
 public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEntitySubLevelActor {
     public SablePinionBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -54,6 +55,8 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
             var rackState = level.getBlockState(BlockPos.containing(cellWorld));
             if(!RackBlock.isRack(rackState))
                 continue;
+            if(dominantDirection(pose.transformNormal(sideDir)) != rackState.getValue(RackBlock.FACING).getOpposite())
+                continue;
             // Rolling direction in the body frame: the rim surface at the contact moves along axis x side,
             // so the body rolls the other way. Its world direction must follow the rack's bar.
             var travelLocal = axisDir.cross(sideDir).scale(-Math.signum(rimSpeed == 0 ? 1 : rimSpeed));
@@ -63,8 +66,7 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
             found = true;
 
             var contactLocal = Vec3.atCenterOf(worldPosition).add(sideDir.scale(radius));
-            var contactWorld = pose.transformPosition(contactLocal);
-            var currentLocal = pose.transformNormalInverse(SableCompanion.INSTANCE.getVelocity(level, subLevel, contactWorld));
+            var currentLocal = pose.transformNormalInverse(SableCompanion.INSTANCE.getVelocity(level, subLevel, contactLocal));
             var along = travelLocal.normalize();
             double want = Math.abs(rimSpeed);
             double have = currentLocal.dot(along);
@@ -89,6 +91,12 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
 
     private static double clamp(double value, double limit) {
         return Math.max(-limit, Math.min(limit, value));
+    }
+
+    private static Direction dominantDirection(Vec3 v) {
+        var axis = dominantAxis(v);
+        double along = axis.choose(v.x, v.y, v.z);
+        return Direction.get(along >= 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE, axis);
     }
 
     private static Direction.Axis dominantAxis(Vec3 v) {

@@ -1,16 +1,78 @@
 {
   "variants": {
-    "axis=x": {
+    "facing=up,axis=x": {
       "model": "powergrid_modernized:block/rack"
     },
-    "axis=z": {
+    "facing=up,axis=z": {
       "model": "powergrid_modernized:block/rack",
       "y": 90
     },
-    "axis=y": {
+    "facing=down,axis=x": {
+      "model": "powergrid_modernized:block/rack",
+      "x": 180
+    },
+    "facing=down,axis=z": {
+      "model": "powergrid_modernized:block/rack",
+      "x": 180,
+      "y": 90
+    },
+    "facing=north,axis=x": {
+      "model": "powergrid_modernized:block/rack",
+      "x": 90
+    },
+    "facing=south,axis=x": {
+      "model": "powergrid_modernized:block/rack",
+      "x": 270
+    },
+    "facing=east,axis=z": {
       "model": "powergrid_modernized:block/rack",
       "x": 90,
       "y": 90
+    },
+    "facing=west,axis=z": {
+      "model": "powergrid_modernized:block/rack",
+      "x": 90,
+      "y": 270
+    },
+    "facing=north,axis=y": {
+      "model": "powergrid_modernized:block/rack_v"
+    },
+    "facing=east,axis=y": {
+      "model": "powergrid_modernized:block/rack_v",
+      "y": 90
+    },
+    "facing=south,axis=y": {
+      "model": "powergrid_modernized:block/rack_v",
+      "y": 180
+    },
+    "facing=west,axis=y": {
+      "model": "powergrid_modernized:block/rack_v",
+      "y": 270
+    },
+    "facing=up,axis=y": {
+      "model": "powergrid_modernized:block/rack"
+    },
+    "facing=down,axis=y": {
+      "model": "powergrid_modernized:block/rack",
+      "x": 180
+    },
+    "facing=north,axis=z": {
+      "model": "powergrid_modernized:block/rack",
+      "x": 90
+    },
+    "facing=south,axis=z": {
+      "model": "powergrid_modernized:block/rack",
+      "x": 270
+    },
+    "facing=east,axis=x": {
+      "model": "powergrid_modernized:block/rack",
+      "x": 90,
+      "y": 90
+    },
+    "facing=west,axis=x": {
+      "model": "powergrid_modernized:block/rack",
+      "x": 90,
+      "y": 270
     }
   }
 }
