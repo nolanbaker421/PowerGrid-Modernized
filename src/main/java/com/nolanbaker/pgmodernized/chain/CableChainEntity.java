@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.chain;
 
+import com.nolanbaker.pgmodernized.PgmConfig;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
@@ -167,12 +168,34 @@ public class CableChainEntity extends ConduitRunEntity {
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
-        if(hand == InteractionHand.MAIN_HAND && player.getItemInHand(hand).getItem() instanceof ConduitItem) {
+        var stack = player.getItemInHand(hand);
+        if(hand == InteractionHand.MAIN_HAND && stack.getItem() instanceof ConduitItem) {
             if(!level().isClientSide)
                 player.displayClientMessage(Lang.builder().translate("message.cable_chain.no_tee").style(ChatFormatting.RED).component(), true);
             return InteractionResult.FAIL;
         }
+        if(hand == InteractionHand.MAIN_HAND && stack.getItem() instanceof CableChainItem)
+            return level().isClientSide ? InteractionResult.SUCCESS : extend(player, stack);
         return super.interact(player, hand);
+    }
+
+    /** More links on an existing chain: one per click, the whole stack when sneaking, up to the configured run. */
+    private InteractionResult extend(Player player, ItemStack stack) {
+        float longest = PgmConfig.CABLE_CHAIN_MAX_LENGTH.get() + CableChainPlacement.SLACK_ITEMS * CableChainItem.METERS_PER_ITEM;
+        int room = (int) Math.floor((longest - chainLength) / CableChainItem.METERS_PER_ITEM);
+        if(room <= 0) {
+            player.displayClientMessage(Lang.builder().translate("message.cable_chain.longest", String.format("%.0f", longest)).style(ChatFormatting.RED).component(), true);
+            return InteractionResult.FAIL;
+        }
+        int added = Math.min(room, player.isShiftKeyDown() ? stack.getCount() : 1);
+        chainLength += added * CableChainItem.METERS_PER_ITEM;
+        incrementWireCount(added);
+        if(!player.isCreative())
+            stack.shrink(added);
+        sendExtraData();
+        level().playSound(null, blockPosition(), SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 0.8f, 1f);
+        player.displayClientMessage(Lang.builder().translate("message.cable_chain.extended", added, String.format("%.0f", travelLimit())).style(ChatFormatting.GRAY).component(), true);
+        return InteractionResult.SUCCESS;
     }
 
     // ---- save and sync ----

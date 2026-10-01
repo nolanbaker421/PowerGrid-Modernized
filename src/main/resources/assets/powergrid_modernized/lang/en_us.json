@@ -375,5 +375,7 @@
   "powergrid.message.cable_chain.placed": "Chain strung: it can stretch to %1$s m before it snaps",
   "powergrid.message.cable_chain.post_only": "The chain post only takes a cable chain; conduit goes on the knockout",
   "powergrid.message.cable_chain.jack_used": "Unplug the anchor's jack first: the chain brings its own Cat6",
-  "powergrid.message.cable_chain.no_tee": "Conduit does not tee into a cable chain; land it on the anchor's knockout"
+  "powergrid.message.cable_chain.no_tee": "Conduit does not tee into a cable chain; land it on the anchor's knockout",
+  "powergrid.message.cable_chain.extended": "Added %1$s link(s): the chain now stretches to %2$s m",
+  "powergrid.message.cable_chain.longest": "The chain is as long as a run may be (%1$s m)"
 }

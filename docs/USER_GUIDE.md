@@ -768,6 +768,9 @@ same for a whole raceway.
   and the four studs are all points in the editor, like the two hubs of a pull box.
 - The run is cut two links longer than the distance when you string it; goggles on an anchor say
   how far it can stretch. Stretch it further and it snaps, dropping the links and the pulled wire.
+- **Too short?** Click the chain with more Cable Chain items: one link per click, the whole stack
+  when sneaking, up to the configured longest run plus the slack. The links come back when the chain
+  is taken down.
 - Wire cutters sneak-click takes the chain down; breaking either anchor does too. Conduit cannot
   tee into the chain.
 - The longest run is `max_length` under `cable_chain` in the config (32 m by default).

@@ -289,7 +289,7 @@ or the studs in each anchor's editor. It always carries a Cat6 pair between the 
 the trolley is a Sable body, the chain re-projects that end into world space every few ticks and
 re-lays itself toward it, so it is drawn and clicked where it hangs; the pulled conductors stay
 connected through it. One item is two metres; the run is cut two items longer than the distance
-at placement, so string it with the trolley at the far end of its travel. Pull further and it
+at placement, so string it with the trolley at the far end of its travel. Click the chain with more links to lengthen it. Pull further than it reaches and it
 snaps, dropping links and pulled wire. Longest run is a config value (32 m by default).
 
 ## Real life components
