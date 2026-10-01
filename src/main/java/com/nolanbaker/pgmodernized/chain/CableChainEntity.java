@@ -1,76 +1,80 @@
 package com.nolanbaker.pgmodernized.chain;
 
+import com.nolanbaker.pgmodernized.conduit.ConduitItem;
+import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
+import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.registry.ModEntities;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import dev.ryanhcode.sable.companion.SableCompanion;
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
+import org.patryk3211.powergrid.utility.Lang;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 /**
- * The visible cable chain between two anchors. A Power Grid hanging wire underneath, which is what
- * makes it follow a Sable body: every tick the base class projects both ends back into world space.
- * It carries no current itself; its four {@link ChainConductorEntity}s and its {@link ChainCat6Entity}
- * do, and they live and die with it. The chain has a fixed length: pull the anchors further apart
- * than it can reach and it snaps, dropping its links.
+ * The cable chain: a 4" conduit run between the chain posts of two anchors that you pull wire
+ * through like any other run. It stands at the fixed anchor; the other anchor may be on a Sable
+ * body, and every few ticks the chain re-projects that end into world space and re-lays its path
+ * toward it, so it can be clicked and is drawn where it hangs. It always carries a hidden Cat6 pair.
+ * Pulled past its length it snaps: links and pulled wire drop, the anchors are free again.
  */
-public class CableChainEntity extends HangingWireEntity {
+public class CableChainEntity extends ConduitRunEntity {
     /** Radius of the bend, metres. */
     public static final double BEND_RADIUS = 0.4;
-    private static final int CHECK_INTERVAL = 5;
+    private static final int REFRESH_INTERVAL = 5;
 
     private float chainLength;
-    private final List<UUID> conductors = new ArrayList<>();
     @Nullable
     private UUID link;
-    private int checkTimer;
+    private int timer;
+    @Nullable
+    private Vec3 fixedEnd, movingEnd;
 
     public CableChainEntity(EntityType<?> type, Level level) {
         super(type, level);
     }
 
-    public static CableChainEntity create(Level level, BlockPos fixed, BlockPos moving, ItemStack chain, float chainLength) {
+    /** Between the chain posts of two anchors, {@code fixed} being the one that stays put. */
+    public static CableChainEntity create(Level level, BlockWireEndpoint fixed, BlockWireEndpoint moving, ItemStack chain, float chainLength) {
+        var start = project(level, IElectric.getTerminalPos(level, fixed.getPos(), fixed.getTerminal()));
+        var end = project(level, IElectric.getTerminalPos(level, moving.getPos(), moving.getTerminal()));
         var entity = new CableChainEntity(ModEntities.CABLE_CHAIN.get(), level);
-        var tag = new CompoundTag();
-        var item = new CompoundTag();
-        item.putString("Id", BuiltInRegistries.ITEM.getKey(chain.getItem()).toString());
-        item.putInt("Count", chain.getCount());
-        tag.put("Item", item);
-        tag.put("Endpoint1", new BlockWireEndpoint(fixed, CableChainAnchorBlock.MOUNT).serialize());
-        tag.put("Endpoint2", new BlockWireEndpoint(moving, CableChainAnchorBlock.MOUNT).serialize());
-        tag.putInt("Color", 0x404040);
-        tag.putFloat("Temperature", ThermalBehaviour.STANDARD_TEMPERATURE);
-        tag.putFloat("PlacedLength", chainLength);
-        tag.putFloat("ChainLength", chainLength);
-        entity.readAdditionalSaveData(tag);
+        entity.chainLength = chainLength;
+        entity.setItem(chain.getItem(), chain.getCount());
+        entity.setColor(0x404040);
+        entity.setPosRaw(start.x, start.y, start.z);
+        entity.layPath(start, end);
+        entity.setEndpoint1(fixed);
+        entity.setEndpoint2(moving);
+        entity.setYRot(0);
         entity.setXRot(0);
         entity.setOldPosAndRot();
         entity.reapplyPosition();
         return entity;
     }
 
-    public void setChildren(List<UUID> conductors, @Nullable UUID link) {
-        this.conductors.clear();
-        this.conductors.addAll(conductors);
+    static Vec3 project(Level level, Vec3 pos) {
+        return SableCompanion.INSTANCE.projectOutOfSubLevel(level, pos);
+    }
+
+    public void setLink(@Nullable UUID link) {
         this.link = link;
     }
 
@@ -83,59 +87,72 @@ public class CableChainEntity extends HangingWireEntity {
         return chainLength - Math.PI * BEND_RADIUS;
     }
 
-    /** The two ends in world space, as the base class last projected them; the first is the fixed end. */
     @Nullable
     public Vec3 fixedEnd() {
-        return terminalPos1;
+        return fixedEnd;
     }
 
     @Nullable
     public Vec3 movingEnd() {
-        return terminalPos2;
-    }
-
-    // ---- no current of its own ----
-
-    @Override
-    public void makeWire() {}
-
-    @Override
-    public float current() {
-        return 0;
+        return movingEnd;
     }
 
     @Override
-    public float measuredCurrent() {
-        return 0;
+    public ConduitSize size() {
+        return ConduitSize.FOUR;
     }
 
-    // ---- the fixed length ----
+    /** A manhattan path from the fixed post toward the moving one: where the chain can be clicked. */
+    private void layPath(Vec3 start, Vec3 end) {
+        fixedEnd = start;
+        movingEnd = end;
+        var path = manhattan(start, end);
+        if(path.isEmpty())
+            path = java.util.List.of(BlockWireEntity.Point.x(1));
+        segments.clear();
+        segments.addAll(path);
+        bakeBoundingBoxes();
+    }
+
+    // ---- following the body ----
 
     @Override
     public void tick() {
         super.tick();
-        if(level().isClientSide || isRemoved())
+        if(isRemoved() || ++timer < REFRESH_INTERVAL)
             return;
-        if(++checkTimer < CHECK_INTERVAL)
+        timer = 0;
+        if(!(getEndpoint1() instanceof BlockWireEndpoint fixed) || !(getEndpoint2() instanceof BlockWireEndpoint moving))
             return;
-        checkTimer = 0;
-        var a = terminalPos1;
-        var b = terminalPos2;
-        if(a == null || b == null)
+        var level = level();
+        if(!level.isLoaded(fixed.getPos()) || !level.isLoaded(moving.getPos()))
             return;
-        if(a.distanceTo(b) > travelLimit() + 0.5) {
-            level().playSound(null, blockPosition(), SoundEvents.CHAIN_BREAK, SoundSource.BLOCKS, 1f, 0.7f);
+        var start = project(level, IElectric.getTerminalPos(level, fixed.getPos(), fixed.getTerminal()));
+        var end = project(level, IElectric.getTerminalPos(level, moving.getPos(), moving.getTerminal()));
+        if(fixedEnd == null || movingEnd == null || start.distanceToSqr(fixedEnd) > 0.01 || end.distanceToSqr(movingEnd) > 0.01)
+            layPath(start, end);
+        if(!level.isClientSide && start.distanceTo(end) > travelLimit() + 0.5) {
+            level.playSound(null, blockPosition(), SoundEvents.CHAIN_BREAK, SoundSource.BLOCKS, 1f, 0.7f);
             kill();
         }
     }
 
     @Override
-    public AABB calculateClientBoundingBox() {
-        var a = terminalPos1;
-        var b = terminalPos2;
-        if(a == null || b == null)
-            return super.calculateClientBoundingBox();
-        return new AABB(a, b).inflate(chainLength / 2 + 1);
+    protected AABB makeBoundingBox() {
+        var box = super.makeBoundingBox();
+        return fixedEnd == null || movingEnd == null ? box : box.minmax(new AABB(fixedEnd, movingEnd).inflate(chainLength / 2 + 1));
+    }
+
+    // ---- the Cat6 pair goes with it; conduit never tees into it ----
+
+    @Override
+    public void kill() {
+        if(!level().isClientSide && link != null && level() instanceof ServerLevel server) {
+            Entity cat6 = server.getEntity(link);
+            if(cat6 != null)
+                cat6.discard();
+        }
+        super.kill();
     }
 
     @Override
@@ -143,31 +160,19 @@ public class CableChainEntity extends HangingWireEntity {
         kill();
     }
 
-    /** The conductors and the link go with the chain; the anchors forget it. */
     @Override
-    public void remove(RemovalReason reason) {
-        if(!level().isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK && reason != RemovalReason.UNLOADED_WITH_PLAYER
-                && level() instanceof ServerLevel server) {
-            for(var id : conductors) {
-                Entity child = server.getEntity(id);
-                if(child != null)
-                    child.discard();
-            }
-            if(link != null) {
-                Entity child = server.getEntity(link);
-                if(child != null)
-                    child.discard();
-            }
-            forgetAt(getEndpoint1());
-            forgetAt(getEndpoint2());
-        }
-        super.remove(reason);
+    public BlockWireEntity flip() {
+        return this;
     }
 
-    private void forgetAt(@Nullable IWireEndpoint endpoint) {
-        if(endpoint instanceof BlockWireEndpoint block && level().isLoaded(block.getPos())
-                && level().getBlockEntity(block.getPos()) instanceof CableChainAnchorBlockEntity anchor && getUUID().equals(anchor.chain()))
-            anchor.setChain(null);
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand) {
+        if(hand == InteractionHand.MAIN_HAND && player.getItemInHand(hand).getItem() instanceof ConduitItem) {
+            if(!level().isClientSide)
+                player.displayClientMessage(Lang.builder().translate("message.cable_chain.no_tee").style(ChatFormatting.RED).component(), true);
+            return InteractionResult.FAIL;
+        }
+        return super.interact(player, hand);
     }
 
     // ---- save and sync ----
@@ -176,10 +181,6 @@ public class CableChainEntity extends HangingWireEntity {
     protected void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putFloat("ChainLength", chainLength);
-        var list = new ListTag();
-        for(var id : conductors)
-            list.add(NbtUtils.createUUID(id));
-        tag.put("Conductors", list);
         if(link != null)
             tag.putUUID("Link", link);
     }
@@ -199,11 +200,7 @@ public class CableChainEntity extends HangingWireEntity {
     private void readChain(CompoundTag tag) {
         if(tag.contains("ChainLength"))
             chainLength = tag.getFloat("ChainLength");
-        if(tag.contains("Conductors")) {
-            conductors.clear();
-            for(Tag id : tag.getList("Conductors", Tag.TAG_INT_ARRAY))
-                conductors.add(NbtUtils.loadUUID(id));
-        }
-        link = tag.hasUUID("Link") ? tag.getUUID("Link") : null;
+        if(tag.hasUUID("Link"))
+            link = tag.getUUID("Link");
     }
 }

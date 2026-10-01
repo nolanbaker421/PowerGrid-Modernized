@@ -51,7 +51,7 @@ public class CableChainRenderer extends EntityRenderer<CableChainEntity> {
         var path = path(a, b, entity.chainLength());
         if(path.size() < 2)
             return;
-        var origin = entity.position();
+        var origin = entity.position();   // the run stands at the fixed post
         var consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
         poseStack.pushPose();
         var pose = poseStack.last();

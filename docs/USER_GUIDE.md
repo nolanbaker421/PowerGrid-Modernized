@@ -751,24 +751,26 @@ in the creative tab.
 
 ## 11. Cable chain
 
-### Cable chain
-
 Create Aeronautics bodies (a gantry trolley, a crane, a vehicle) are Sable sub-levels: their blocks
 live elsewhere and are drawn where the body is. Power Grid's hanging wires already understand that
-and re-project their ends every tick, so a wire to a body follows it. The cable chain builds on
-that to carry a whole feed in one go.
+and re-project their ends every tick, so a plain wire to a body follows it. The cable chain does the
+same for a whole raceway.
 
-- **Cable Chain Anchor**: a bracket with studs L1, L2, L3 and N on its back edge, a chain post on
-  the front and a Cat6 jack on the side. Mount one on the structure and one on the body. Land your
-  feeders on the studs with ordinary wire or a conduit node plate; plug Cat6 into the jacks.
+- **Cable Chain Anchor**: a pull box with a **4" knockout** on one side, the **chain post** on the
+  front, studs **L1, L2, L3, N** on the back edge and a **Cat6 jack** on the side. Mount one on the
+  structure and one on the body. Run conduit to the knockout, or land wire on the studs.
 - **Cable Chain** (crafted from chain and iron plates, four per craft, two metres each): click the
-  structure anchor first, then the body anchor. Each stud of one anchor is now joined to the same
-  stud of the other, the jacks are linked, and the chain is drawn as an energy chain between them.
-- The chain is cut two links longer than the distance when you string it. Goggles on an anchor say
-  whether a chain is attached; the chat line when you string it says how far it can stretch.
-  Stretch it further and it snaps, dropping its links; the anchors are then free again.
-- Pick the chain up by clicking it with an empty hand, like any Power Grid wire. Breaking either
-  anchor drops it too.
+  structure anchor first, then the body anchor. A 4" run now hangs between the posts, and a Cat6
+  pair is laid between the two jacks (both must be free; the chain insists on its own Cat6).
+- **Pull wire** through it exactly as through conduit: click the chain with THHN. Same fill rules
+  as a 4" raceway. Click near the fixed anchor; that part of the chain never moves.
+- **Splice** in each anchor with an empty hand: the chain's conductors, the knockout's conductors
+  and the four studs are all points in the editor, like the two hubs of a pull box.
+- The run is cut two links longer than the distance when you string it; goggles on an anchor say
+  how far it can stretch. Stretch it further and it snaps, dropping the links and the pulled wire.
+- Wire cutters sneak-click takes the chain down; breaking either anchor does too. Conduit cannot
+  tee into the chain.
 - The longest run is `max_length` under `cable_chain` in the config (32 m by default).
 
-The hidden conductors use the chain's own wire rating: 400 A, insulated.
+Assemble the body first and string the chain afterwards: Power Grid moves or cuts wires when
+blocks are assembled into a body, and the chain is no exception.

@@ -281,14 +281,16 @@ The AC-only code lives under `com.nolanbaker.pgmodernized.ac` and is reached onl
 
 ## Cable chain
 
-Wires onto Create Aeronautics bodies. A **Cable Chain Anchor** has four studs (L1, L2, L3, N) and a
-network jack; put one on the gantry and one on the trolley, then click them in turn with **Cable
-Chain** items. The chain carries all four conductors and a Cat6 pair between the anchors, and
-because it is a Power Grid hanging wire underneath it follows the body as it moves, measured and
-drawn in world space. It is drawn as an energy chain: a lower run, a bend, an upper run. One item
-is two metres; the run is cut two items longer than the distance at placement, so string it with
-the trolley at the far end of its travel. Pull the anchors further apart than the chain reaches
-and it snaps and drops its links. Longest run is a config value (32 m by default).
+Wires onto Create Aeronautics bodies. A **Cable Chain Anchor** is a small pull box: a 4" conduit
+knockout, a chain post, four studs (L1, L2, L3, N) and a network jack. Put one on the gantry and
+one on the trolley, then click them in turn with **Cable Chain** items. A 4" raceway now hangs
+between the chain posts: pull wire through it like any conduit run, and splice it to the conduit
+or the studs in each anchor's editor. It always carries a Cat6 pair between the two jacks. Because
+the trolley is a Sable body, the chain re-projects that end into world space every few ticks and
+re-lays itself toward it, so it is drawn and clicked where it hangs; the pulled conductors stay
+connected through it. One item is two metres; the run is cut two items longer than the distance
+at placement, so string it with the trolley at the far end of its travel. Pull further and it
+snaps, dropping links and pulled wire. Longest run is a config value (32 m by default).
 
 ## Real life components
 

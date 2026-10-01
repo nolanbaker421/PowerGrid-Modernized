@@ -58,6 +58,7 @@ def models():
         element(5, 2, 2, 11, 8, 6, "#post"),
         element(4, 4, 6, 12, 6, 7, "#post"),            # the saddle the chain lies on
         element(14, 0, 7, 16, 2, 9, "#jack"),
+        element(0, 0, 6, 2, 2, 10, "#stud"),            # the conduit knockout
     ]
     for x in (2, 5, 9, 12):
         elements.append(element(x, 2, 11, x + 2, 4, 13, "#stud"))

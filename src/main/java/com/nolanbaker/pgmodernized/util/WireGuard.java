@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.util;
 
+import com.nolanbaker.pgmodernized.chain.CableChainAnchorBlockEntity;
 import com.nolanbaker.pgmodernized.chain.CableChainPlacement;
 import com.nolanbaker.pgmodernized.chain.CableChainItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
@@ -28,9 +29,11 @@ public final class WireGuard {
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         var item = event.getItemStack().getItem();
         if(item instanceof CableChainItem) {
-            // Never a wire: both of its clicks go to the chain placement, Power Grid's handler never sees them.
-            event.setCanceled(true);
-            event.setCancellationResult(CableChainPlacement.click(event.getLevel(), event.getPos(), event.getEntity(), event.getItemStack()));
+            // Never a wire: on an anchor both of its clicks go to the chain placement, Power Grid's handler never sees them.
+            if(event.getLevel().getBlockEntity(event.getPos()) instanceof CableChainAnchorBlockEntity) {
+                event.setCanceled(true);
+                event.setCancellationResult(CableChainPlacement.click(event.getLevel(), event.getPos(), event.getEntity(), event.getItemStack()));
+            }
             return;
         }
         boolean conduit = item instanceof ConduitItem;
