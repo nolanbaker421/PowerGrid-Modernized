@@ -35,7 +35,7 @@ public class RailPickupEntity extends HangingWireEntity {
         super(type, level);
     }
 
-    public static RailPickupEntity create(Level level, BlockPos collector, BlockWireEndpoint shoe, BlockWireEndpoint bar) {
+    public static RailPickupEntity create(Level level, BlockPos collector, BlockWireEndpoint shoe, BlockWireEndpoint bar, float length) {
         var entity = new RailPickupEntity(ModEntities.RAIL_PICKUP.get(), level);
         var tag = new CompoundTag();
         var item = new CompoundTag();
@@ -46,7 +46,7 @@ public class RailPickupEntity extends HangingWireEntity {
         tag.put("Endpoint2", bar.serialize());
         tag.putInt("Color", 0xE07020);
         tag.putFloat("Temperature", ThermalBehaviour.STANDARD_TEMPERATURE);
-        tag.putFloat("PlacedLength", 1f);
+        tag.putFloat("PlacedLength", length);
         tag.put("Collector", NbtUtils.writeBlockPos(collector));
         entity.readAdditionalSaveData(tag);
         entity.setXRot(0);
@@ -79,13 +79,25 @@ public class RailPickupEntity extends HangingWireEntity {
         }
     }
 
-    /** Anything else removing a shoe is a bug to chase: say who did it. */
+    /** Anything else removing a shoe is worth knowing about. */
     @Override
     public void remove(RemovalReason reason) {
         if(!released && !level().isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK && reason != RemovalReason.UNLOADED_WITH_PLAYER)
-            PowerGridModernized.LOGGER.warn("Rail pickup {} of collector {} removed ({}) by someone other than the collector", getUUID(), collector, reason, new Throwable());
+            PowerGridModernized.LOGGER.debug("Rail pickup {} of collector {} removed ({}) by someone other than the collector", getUUID(), collector, reason, new Throwable());
         super.remove(reason);
     }
+
+    /**
+     * A hanging wire kills itself when its ends are further apart than the wire it was placed with.
+     * This one is a sliding contact: it is given plenty of length to start with and never snaps.
+     */
+    @Override
+    public void updateCurveParams() {
+        super.updateCurveParams();
+        if(curveParams != null)
+            curveParams.valid = true;
+    }
+
 
     @Override
     public void endpointRemoved(IWireEndpoint endpoint) {

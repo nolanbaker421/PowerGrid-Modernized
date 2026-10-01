@@ -29,7 +29,7 @@ public class RailCat6Entity extends Cat6WireEntity {
         super(type, level);
     }
 
-    public static RailCat6Entity create(Level level, BlockPos collector, JackEndpoint a, JackEndpoint b) {
+    public static RailCat6Entity create(Level level, BlockPos collector, JackEndpoint a, JackEndpoint b, float length) {
         var entity = new RailCat6Entity(ModEntities.RAIL_CAT6.get(), level);
         var tag = new CompoundTag();
         var item = new CompoundTag();
@@ -40,6 +40,7 @@ public class RailCat6Entity extends Cat6WireEntity {
         tag.put("Endpoint2", b.serialize());
         tag.putInt("Color", DEFAULT_COLOR);
         tag.putFloat("Temperature", ThermalBehaviour.STANDARD_TEMPERATURE);
+        tag.putFloat("PlacedLength", length);
         tag.put("Collector", NbtUtils.writeBlockPos(collector));
         entity.readAdditionalSaveData(tag);
         entity.setXRot(0);
@@ -60,6 +61,18 @@ public class RailCat6Entity extends Cat6WireEntity {
             return;
         if(!(level().getBlockEntity(collector) instanceof RailCollectorBlockEntity owner) || !owner.owns(getUUID()))
             discard();
+    }
+
+
+    /**
+     * A hanging wire kills itself when its ends are further apart than the wire it was placed with.
+     * This one is a sliding contact: it is given plenty of length to start with and never snaps.
+     */
+    @Override
+    public void updateCurveParams() {
+        super.updateCurveParams();
+        if(curveParams != null)
+            curveParams.valid = true;
     }
 
     /** Never hands a cable back. */

@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.rail;
 
+import org.patryk3211.powergrid.compat.sable.SableUtils;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.core.Direction;
 import com.nolanbaker.pgmodernized.PowerGridModernized;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
@@ -54,6 +57,10 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
     @Nullable
     private UUID link;
     private long madeAt;
+    /** Where the arm points and how far, for the renderer; null when retracted. */
+    @Nullable
+    private Direction arm;
+    private int reach = 1;
 
     public RailCollectorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -82,6 +89,15 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
         return feed;
     }
 
+    @Nullable
+    public Direction arm() {
+        return arm;
+    }
+
+    public int reach() {
+        return reach;
+    }
+
     /** Whether this collector made the given pickup; the pickups ask every second. */
     public boolean owns(UUID id) {
         return pickups.contains(id) || id.equals(link);
@@ -95,27 +111,42 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
         if(level == null || level.isClientSide)
             return;
         deviceHubs().lazyTick();
-        // The arm reaches out along the front, up to MAX_REACH blocks, through air, to the first rail block.
+        // The arm swings to the first rail block within reach: the front first, then straight away
+        // from the mounting face, then the other four directions.
         var centre = Vec3.atCenterOf(worldPosition);
-        var direction = IElectric.getTerminalPos(level, worldPosition, RailCollectorBlock.SHOE).subtract(centre).normalize();
+        var front = IElectric.getTerminalPos(level, worldPosition, RailCollectorBlock.SHOE).subtract(centre);
+        var tried = new ArrayList<Direction>();
+        tried.add(Direction.getNearest(front.x, front.y, front.z));
+        if(getBlockState().hasProperty(BlockStateProperties.FACING))
+            tried.add(getBlockState().getValue(BlockStateProperties.FACING).getOpposite());
+        for(var other : Direction.values())
+            tried.add(other);
         BlockPos railPos = null;
-        int reach = 1;
-        for(int k = 1; k <= RailCollectorBlock.MAX_REACH; ++k) {
-            var sample = BlockPos.containing(SableCompanion.INSTANCE.projectOutOfSubLevel(level, centre.add(direction.scale(k))));
-            if(!level.isLoaded(sample))
-                break;
-            var state = level.getBlockState(sample);
-            if(ConductorRailBlock.isRail(state)) {
-                railPos = sample;
-                reach = k;
-                break;
+        Direction foundArm = null;
+        int foundReach = 1;
+        search:
+        for(var direction : tried) {
+            for(int k = 1; k <= RailCollectorBlock.MAX_REACH; ++k) {
+                var sample = BlockPos.containing(SableCompanion.INSTANCE.projectOutOfSubLevel(level, centre.add(Vec3.atLowerCornerOf(direction.getNormal()).scale(k))));
+                if(!level.isLoaded(sample))
+                    break;
+                var state = level.getBlockState(sample);
+                if(ConductorRailBlock.isRail(state)) {
+                    railPos = sample;
+                    foundArm = direction;
+                    foundReach = k;
+                    break search;
+                }
+                if(!state.getCollisionShape(level, sample).isEmpty())
+                    break;   // something solid in the way
             }
-            if(!state.getCollisionShape(level, sample).isEmpty())
-                break;   // something solid in the way
         }
-        var mine = getBlockState();
-        if(mine.hasProperty(RailCollectorBlock.REACH) && mine.getValue(RailCollectorBlock.REACH) != reach)
-            level.setBlock(worldPosition, mine.setValue(RailCollectorBlock.REACH, reach), 3);
+        if(foundArm != arm || foundReach != reach) {
+            arm = foundArm;
+            reach = foundReach;
+            setChanged();
+            sendData();
+        }
         BlockPos head = null;
         if(railPos != null) {
             // The walk is only redone when the shoes are on a different block than last time.
@@ -131,7 +162,7 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
             return;
         if(feed != null && Objects.equals(head, feed) && !alive && level.getGameTime() - madeAt < 60)
             return;   // just made: give the entities a moment to turn up in the lookup
-        PowerGridModernized.LOGGER.info("Rail collector at {}: {} (feed {} -> {}, pickups alive {})", worldPosition,
+        PowerGridModernized.LOGGER.debug("Rail collector at {}: {} (feed {} -> {}, pickups alive {})", worldPosition,
                 head == null ? "leaving the rail" : "connecting", feed, head, alive);
         dropPickups();
         feed = head;
@@ -156,16 +187,18 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
         if(!(level instanceof ServerLevel server) || !(level.getBlockEntity(feedPos) instanceof RailFeedBlockEntity feedBe))
             return;
         madeAt = level.getGameTime();
+        // Enough wire for the whole run and then some: the contact slides, it never snaps.
+        double distance = SableUtils.projectedDistance(level, Vec3.atCenterOf(worldPosition), Vec3.atCenterOf(feedPos));
+        float length = (float) (Double.isFinite(distance) ? distance * 2 + 2 * ConductorRailBlock.SEARCH : 4 * ConductorRailBlock.SEARCH);
         for(int terminal = RailCollectorBlock.L1; terminal <= RailCollectorBlock.N; ++terminal) {
-            var wire = RailPickupEntity.create(level, worldPosition, new BlockWireEndpoint(worldPosition, terminal), new BlockWireEndpoint(feedPos, terminal));
+            var wire = RailPickupEntity.create(level, worldPosition, new BlockWireEndpoint(worldPosition, terminal), new BlockWireEndpoint(feedPos, terminal), length);
             if(server.tryAddFreshEntityWithPassengers(wire))
                 pickups.add(wire.getUUID());
         }
-        if(!jack.isPortUsed(0) && !feedBe.networkJack().isPortUsed(0)) {
-            var cat6 = RailCat6Entity.create(level, worldPosition, new JackEndpoint(worldPosition, 0), new JackEndpoint(feedPos, 0));
-            if(server.tryAddFreshEntityWithPassengers(cat6))
-                link = cat6.getUUID();
-        }
+        var cat6 = RailCat6Entity.create(level, worldPosition, new JackEndpoint(worldPosition, LINK_PORT),
+                new JackEndpoint(feedPos, RailFeedBlockEntity.LINK_PORT), length);
+        if(server.tryAddFreshEntityWithPassengers(cat6))
+            link = cat6.getUUID();
         level.playSound(null, worldPosition, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 0.5f, 1.6f);
     }
 
@@ -211,6 +244,20 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
         jack.unload();
     }
 
+
+    /** Port 0 is the player's; port 1 is the internal one the hidden link uses, so the jack stays free. */
+    public static final int LINK_PORT = 1;
+
+    @Override
+    public int portCount() {
+        return 2;
+    }
+
+    @Override
+    public int portAt(Vec3 localHit) {
+        return 0;
+    }
+
     @Override
     public JackSupport networkJack() {
         return jack;
@@ -234,6 +281,9 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
         deviceHubs().write(tag, registries, clientPacket);
         if(feed != null)
             tag.put("Feed", NbtUtils.writeBlockPos(feed));
+        if(arm != null)
+            tag.putInt("Arm", arm.get3DDataValue());
+        tag.putInt("Reach", reach);
         if(!clientPacket) {
             var list = new ListTag();
             for(var id : pickups)
@@ -249,6 +299,8 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
         super.read(tag, registries, clientPacket);
         deviceHubs().read(tag, registries, clientPacket);
         feed = NbtUtils.readBlockPos(tag, "Feed").orElse(null);
+        arm = tag.contains("Arm") ? Direction.from3DDataValue(tag.getInt("Arm")) : null;
+        reach = Math.max(1, tag.getInt("Reach"));
         if(!clientPacket) {
             pickups.clear();
             for(Tag id : tag.getList("Pickups", Tag.TAG_INT_ARRAY))

@@ -33,21 +33,24 @@ public class RailCollectorRenderer implements BlockEntityRenderer<RailCollectorB
         if(level == null)
             return;
         var pos = be.getBlockPos();
-        var state = be.getBlockState();
-        int reach = state.hasProperty(RailCollectorBlock.REACH) ? state.getValue(RailCollectorBlock.REACH) : 1;
+        var armDirection = be.arm();
+        if(armDirection == null)
+            return;   // retracted: only the model's stub shows
+        int reach = be.reach();
         var centre = Vec3.atCenterOf(pos);
-        var out = IElectric.getTerminalPos(level, pos, RailCollectorBlock.SHOE).subtract(centre);
+        var d = Vec3.atLowerCornerOf(armDirection.getNormal());
+        // Shoes spread along the stud row when the arm is square to it, else along any perpendicular.
         var across = IElectric.getTerminalPos(level, pos, RailCollectorBlock.N).subtract(IElectric.getTerminalPos(level, pos, RailCollectorBlock.L1));
-        if(out.lengthSqr() < 1e-6 || across.lengthSqr() < 1e-6)
-            return;
-        var d = out.normalize();
-        var s = across.normalize();
+        var s = across.subtract(d.scale(across.dot(d)));
+        if(s.lengthSqr() < 1e-4)
+            s = Math.abs(d.y) > 0.5 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0);
+        s = s.normalize();
         var u = d.cross(s).normalize();
         var origin = Vec3.atLowerCornerOf(pos);
         int light = LevelRenderer.getLightColor(level, pos);
         var pose = poseStack.last();
-        // The shoes sit where the bars are: in the found block, 3/16 from its far face.
-        double tip = reach + 0.3125;
+        // The shoes sit in the middle of the rail block the arm found.
+        double tip = reach;
         var armStart = centre.add(d.scale(0.375));
         var armEnd = centre.add(d.scale(tip - 0.07));
         var arm = buffer.getBuffer(RenderType.entityCutoutNoCull(ARM));

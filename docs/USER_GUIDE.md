@@ -761,7 +761,7 @@ same for a whole raceway.
   structure and one on the body. Run conduit to the knockout, or land wire on the studs.
 - **Cable Chain** (crafted from chain and iron plates, four per craft, two metres each): click the
   structure anchor first, then the body anchor. A 4" run now hangs between the posts, and a Cat6
-  pair is laid between the two jacks (both must be free; the chain insists on its own Cat6).
+  pair is carried inside it between the two anchors; both jacks stay free for your own cables.
 - **Pull wire** through it exactly as through conduit: click the chain with THHN. Same fill rules
   as a 4" raceway. Click near the fixed anchor; that part of the chain never moves.
 - **Splice** in each anchor with an empty hand: the chain's conductors, the knockout's conductors
@@ -788,12 +788,14 @@ The alternative to the cable chain for long runways, modelled on crane conductor
 - **Rail Feed Box**: put one anywhere in the run (bars run out of both sides). It is a pull box:
   studs L1, L2, L3, N are the four bars, a 4" knockout takes your conduit, and its Cat6 jack is the
   run's data channel. Splice with an empty hand. One feed per run; a run with none is dead.
-- **Rail Collector** (crafted with four Collector Shoes): the same box on the body. Mount it with its
-  front toward the rail, up to three blocks away through air: the arm extends to the rail block it
-  finds and the shoes sit on the bars. Turn it with the wrench until its stud row runs the same way
-  as the bars, so the shoes line up with them.
+- **Rail Collector** (crafted with four Collector Shoes): the same box on the body. Put it within
+  three blocks of the rail in a straight line, in any direction: on top of the trolley under an
+  overhead rail, or beside a wall rail. The arm swings to the first rail block it finds (it tries its
+  front first, then straight away from the face it is mounted on) and the shoes sit in that block.
+  Turn it with the wrench so its stud row runs the same way as the bars and the shoes line up.
   While they do, and that run has a feed, the collector's studs are the bars and its jack is on the
-  data channel. Goggles say which feed it is on, or "shoes off the rail".
+  run's data channel: plug your Cat6 into the collector's jack on the trolley and into the feed's jack
+  on the structure, and the two are one network. Goggles say which feed it is on, or "shoes off the rail".
 - Contact is checked every half second and carried by hidden Power Grid hanging wires, so it rides
   the body between checks. Running off the end of the rail drops the contact; running back on
   restores it. Several collectors can share one run.

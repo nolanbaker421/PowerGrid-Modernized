@@ -32,16 +32,17 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
 
 /**
- * The collector trolley: a pull box on the moving body with a spring arm and shoes out of its
- * front. While the shoes sit in a rail block of a fed run, the box's four studs are the rail's
- * four bars and its jack is on the rail's data channel. The shoe terminal is hidden out in front;
- * it only exists to say where the shoes are.
+ * The collector trolley: a pull box on the moving body with a spring arm and shoes. The arm swings
+ * to the nearest rail block within reach in any of the six directions, trying the front first and
+ * then straight away from the mounting face. While the shoes sit in a rail block of a fed run, the
+ * box's four studs are the rail's four bars and its jack is on the rail's data channel.
  */
 public class RailCollectorBlock extends Rotation4ElectricBlock implements IBE<RailCollectorBlockEntity> {
     public static final int L1 = 0, L2 = 1, L3 = 2, N = 3;
     public static final int JACK = 4;
-    /** Hidden, one block out of the front: where the shoes point. The arm reaches up to {@link #MAX_REACH} blocks that way. */
+    /** Hidden, one block out of the front: the direction the arm tries first. */
     public static final int SHOE = 5;
+    /** The arm reaches this many blocks, in any of the six directions. */
     public static final int MAX_REACH = 3;
     public static final AABB[] HUBS = {new AABB(14, 0, 3, 16, 2, 7)};
     private static final AABB HIDDEN = new AABB(7, 0.5, 7, 9, 1.5, 9);
@@ -56,19 +57,9 @@ public class RailCollectorBlock extends Rotation4ElectricBlock implements IBE<Ra
         return WireAcceptance.electrical(wireStack);
     }
 
-    /** How many blocks out the arm reaches to the rail it found: the model's arm follows. */
-    public static final IntegerProperty REACH = IntegerProperty.create("reach", 1, MAX_REACH);
-
     public RailCollectorBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(REACH, 1));
         setTerminalCollection(rotation4DownTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(SHAPE_DOWN, HUBS)));
-    }
-
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
-        builder.add(REACH);
     }
 
     private static TerminalBoundingBox[] terminals() {

@@ -72,6 +72,20 @@ public class RailFeedBlockEntity extends ElectricBlockEntity implements IDeviceS
         jack.unload();
     }
 
+
+    /** Port 0 is the player's; port 1 is the internal one the hidden link uses, so the jack stays free. */
+    public static final int LINK_PORT = 1;
+
+    @Override
+    public int portCount() {
+        return 2;
+    }
+
+    @Override
+    public int portAt(Vec3 localHit) {
+        return 0;
+    }
+
     @Override
     public JackSupport networkJack() {
         return jack;

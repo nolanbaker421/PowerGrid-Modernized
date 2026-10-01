@@ -63,17 +63,7 @@ def models():
                  element(6, 2, 0, 10, 5, 2, "#bracket")]
     for x1, x2 in ((3, 5), (6, 8), (9, 11), (12, 14)):
         collector.append(element(x1, 6, 9, x2, 8, 11, "#stud"))
-    textures = dict(common, particle=common["box"])
-    dump(os.path.join(ASSETS, "models", "block", "rail_collector.json"), {"parent": "block/block", "textures": textures, "elements": collector})
-    dump(os.path.join(ASSETS, "models", "block", "rail_collector_h.json"), {"parent": "block/block", "textures": textures, "elements": horizontal(collector)})
-    state = json.load(open(os.path.join(ASSETS, "blockstates", "vfd.json")))
-    variants = {}
-    for reach in (1, 2, 3):
-        for key, variant in state["variants"].items():
-            model = "%s:block/rail_collector%s" % (MOD, "_h" if variant["model"].endswith("block_h") else "")
-            variants[key + ",reach=%d" % reach] = dict(variant, model=model)
-    dump(os.path.join(ASSETS, "blockstates", "rail_collector.json"), {"variants": variants})
-    dump(os.path.join(ASSETS, "models", "item", "rail_collector.json"), {"parent": "%s:block/rail_collector" % MOD})
+    rotation4_models("rail_collector", collector, dict(common, particle=common["box"]))
     dump(os.path.join(ASSETS, "models", "item", "rail_shoe.json"),
          {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/rail_shoe" % MOD}})
 

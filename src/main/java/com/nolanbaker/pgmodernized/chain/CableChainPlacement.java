@@ -21,8 +21,8 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
 /**
  * Strings a cable chain: click the anchor that stays put, then the one on the body. The second
  * click measures the distance through Sable sub-levels, takes the chain items, spawns the chain as
- * a 4" run between the two chain posts, and lays the hidden Cat6 pair between the jacks (both
- * jacks must be free: a chain always carries its Cat6). The run is cut {@link #SLACK_ITEMS} items
+ * a 4" run between the two chain posts, and lays the hidden Cat6 pair between the anchors'
+ * internal ports, so the jacks stay free for your own cables. The run is cut {@link #SLACK_ITEMS} items
  * longer than the distance at placement, so string it with the trolley at the far end of its travel.
  */
 public final class CableChainPlacement {
@@ -35,10 +35,6 @@ public final class CableChainPlacement {
             return InteractionResult.PASS;
         if(clicked.chain() != null) {
             message(player, "message.cable_chain.anchor_used", ChatFormatting.RED);
-            return InteractionResult.FAIL;
-        }
-        if(clicked.networkJack().isPortUsed(0)) {
-            message(player, "message.cable_chain.jack_used", ChatFormatting.RED);
             return InteractionResult.FAIL;
         }
         var first = CableChainItem.pending(stack, level);
@@ -58,7 +54,7 @@ public final class CableChainPlacement {
             message(player, "message.connection_failed", ChatFormatting.RED);
             return InteractionResult.FAIL;
         }
-        if(!(level.getBlockEntity(fixedPos) instanceof CableChainAnchorBlockEntity fixed) || fixed.chain() != null || fixed.networkJack().isPortUsed(0)) {
+        if(!(level.getBlockEntity(fixedPos) instanceof CableChainAnchorBlockEntity fixed) || fixed.chain() != null) {
             CableChainItem.clearPending(stack);
             message(player, "message.connection_failed", ChatFormatting.RED);
             return InteractionResult.FAIL;
@@ -90,7 +86,8 @@ public final class CableChainPlacement {
             message(player, "message.connection_failed", ChatFormatting.RED);
             return InteractionResult.FAIL;
         }
-        var cat6 = ChainCat6Entity.create(level, chain.getUUID(), new JackEndpoint(fixedPos, 0), new JackEndpoint(movingPos, 0));
+        var cat6 = ChainCat6Entity.create(level, chain.getUUID(), new JackEndpoint(fixedPos, CableChainAnchorBlockEntity.LINK_PORT),
+                new JackEndpoint(movingPos, CableChainAnchorBlockEntity.LINK_PORT), chainLength + 8);
         if(server.tryAddFreshEntityWithPassengers(cat6))
             chain.setLink(cat6.getUUID());
         if(player != null && !player.isCreative())
