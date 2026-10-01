@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.rack.RackBlock;
+import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
+import com.nolanbaker.pgmodernized.rack.PinionBlock;
 import com.nolanbaker.pgmodernized.rail.RailCollectorBlock;
 import com.nolanbaker.pgmodernized.rail.RailFeedBlock;
 import com.nolanbaker.pgmodernized.rail.ConductorRailBlock;
@@ -221,6 +224,31 @@ public class ModBlocks {
             .transform(pickaxeOnly())
             .onRegister(block -> BlockStressValues.IMPACTS.register(block, () -> (double) TapActuatorBlockEntity.STRESS))
             .lang("Tap Changer Drive")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** The toothed bar a pinion walks along; a plain block in the world. */
+    public static final BlockEntry<RackBlock> RACK = REGISTRATE.block("rack", RackBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Rack")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** A small cogwheel that drives a Create Aeronautics body along a rack. */
+    public static final BlockEntry<PinionBlock> PINION = REGISTRATE.block("pinion", PinionBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .onRegister(block -> BlockStressValues.IMPACTS.register(block, () -> (double) PinionBlockEntity.STRESS))
+            .lang("Pinion")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

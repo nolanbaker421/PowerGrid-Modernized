@@ -399,5 +399,10 @@
   "entity.powergrid_modernized.rail_pickup": "Collector Shoe Contact",
   "entity.powergrid_modernized.rail_cat6": "Rail Data Link",
   "entity.powergrid_modernized.chain_cat6": "Cable Chain Cat6",
-  "entity.powergrid_modernized.cable_chain": "Cable Chain"
+  "entity.powergrid_modernized.cable_chain": "Cable Chain",
+  "block.powergrid_modernized.rack": "Rack",
+  "block.powergrid_modernized.pinion": "Pinion",
+  "powergrid.gui.pinion.rim_speed": "Rim speed: %1$s m/s",
+  "powergrid.gui.pinion.engaged": "On a rack, moving %1$s m/s",
+  "powergrid.gui.pinion.no_rack": "No rack at the rim"
 }

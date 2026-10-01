@@ -1,0 +1,17 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "powergrid_modernized:block/pinion",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "powergrid_modernized:block/pinion"
+    },
+    "axis=z": {
+      "model": "powergrid_modernized:block/pinion",
+      "x": 90,
+      "y": 180
+    }
+  }
+}

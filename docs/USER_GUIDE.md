@@ -815,3 +815,24 @@ A setup diagram for both the rail and the chain is in `docs/rail_and_chain_setup
 **THHN on terminals.** Since 0.14.1 the THHN gauges count as Power Grid light wires, so they land
 on any terminal that takes ordinary wire: the feed and collector studs, the chain anchors, panels,
 transformers and Power Grid's own blocks. Before that they only went through conduit.
+
+## 13. Rack and pinion
+
+How a gantry crane on a Create Aeronautics body moves itself along its runway.
+
+- **Rack**: a toothed bar. Lay it in the world along the runway, end to end, like a rail. On a floor
+  it runs the way you face; against a wall it runs along the wall, or up it when you sneak (a
+  climbing rack for a hoist).
+- **Pinion**: a small cogwheel for the body. It takes rotation like any Create cogwheel, from a
+  shaft in line with its axle or a cog beside it. Mount it on the crane so one of its four rim
+  sides faces the rack: axle across the runway, the rack in the block its rim looks into. A pinion
+  under the crane frame over a floor rack, or beside a wall rack, both work.
+- Turn the shaft and the body walks along the rack at the rim speed (shaft rpm x pitch radius,
+  0.5 m by default: 16 rpm is about 0.8 m/s, 64 rpm about 3.4 m/s). Reverse the shaft to go back.
+  A stopped pinion holds the crane where it is, and the rack keeps it from drifting sideways. If a
+  rotation walks the wrong way for your build, flip `pinion.invert` in the config or add a gearbox.
+- The pinion only pushes where its rim actually faces a rack block. Gaps in the rack are gaps in
+  the drive. Several pinions on one body all push, so a long crane can have one on each leg.
+- Goggles on the pinion show the rim speed and whether it is on a rack. The config also sets how
+  hard it pulls (`gain`) and the most it may accelerate the body (`max_acceleration`).
+- Without Create Aeronautics the pinion is just a cogwheel.

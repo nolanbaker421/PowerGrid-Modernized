@@ -17,6 +17,10 @@ public final class PgmConfig {
     public static final ModConfigSpec.DoubleValue SCRAP_CHANCE;
     public static final ModConfigSpec.BooleanValue PUSH_BROOM_SPAWNS;
     public static final ModConfigSpec.IntValue CABLE_CHAIN_MAX_LENGTH;
+    public static final ModConfigSpec.DoubleValue PINION_PITCH_RADIUS;
+    public static final ModConfigSpec.DoubleValue PINION_GAIN;
+    public static final ModConfigSpec.DoubleValue PINION_MAX_ACCELERATION;
+    public static final ModConfigSpec.BooleanValue PINION_INVERT;
 
     static {
         var b = new ModConfigSpec.Builder();
@@ -50,6 +54,16 @@ public final class PgmConfig {
         b.comment("Cable chains").push("cable_chain");
         CABLE_CHAIN_MAX_LENGTH = b.comment("Longest run, in metres, a cable chain can be strung over (measured as the anchors hang in the world).")
                 .defineInRange("max_length", 32, 4, 128);
+        b.pop();
+        b.comment("Rack and pinion").push("pinion");
+        PINION_PITCH_RADIUS = b.comment("Pitch radius of the pinion in metres: the body moves at the shaft speed times this (0.5 means 64 rpm walks 3.35 m/s).")
+                .defineInRange("pitch_radius", 0.5, 0.05, 4.0);
+        PINION_GAIN = b.comment("How hard the pinion corrects the body's speed each physics step: 1 removes the whole speed error at once, lower is softer.")
+                .defineInRange("gain", 0.5, 0.01, 1.0);
+        PINION_MAX_ACCELERATION = b.comment("Most the pinion can accelerate the body, in metres per second squared, however heavy it is.")
+                .defineInRange("max_acceleration", 6.0, 0.1, 100.0);
+        PINION_INVERT = b.comment("Flip the direction a given shaft rotation walks the body, if it goes the wrong way for you.")
+                .define("invert", false);
         b.pop();
         SPEC = b.build();
     }

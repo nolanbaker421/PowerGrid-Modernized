@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized;
 
+import com.nolanbaker.pgmodernized.rack.SableHooks;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import com.mojang.serialization.MapCodec;
@@ -88,6 +89,7 @@ public class PowerGridModernized {
         if(Platform.isModLoaded("computercraft")) {
             CCBridge.init();
         }
+        SableHooks.install();
         NeoForge.EVENT_BUS.register(WireGuard.class);
         NeoForge.EVENT_BUS.register(Inspections.class);
         NeoForge.EVENT_BUS.register(VillageInjector.class);

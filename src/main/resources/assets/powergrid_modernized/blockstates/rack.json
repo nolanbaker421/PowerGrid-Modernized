@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "powergrid_modernized:block/rack"
+    },
+    "axis=z": {
+      "model": "powergrid_modernized:block/rack",
+      "y": 90
+    },
+    "axis=y": {
+      "model": "powergrid_modernized:block/rack",
+      "x": 90,
+      "y": 90
+    }
+  }
+}
