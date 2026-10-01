@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.client;
 
+import com.nolanbaker.pgmodernized.util.BodySpace;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.nolanbaker.pgmodernized.conduit.ConduitConnection;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
@@ -85,7 +86,7 @@ public final class ConduitPreview {
             return;
         }
 
-        var currentPos = endpoint.getExactPosition(level);
+        var currentPos = BodySpace.local(level, endpoint);
         Direction continueDir = null;
         if(endpoint instanceof BlockWireEntityEndpoint runEnd) {
             var entity = runEnd.getEntity(level);

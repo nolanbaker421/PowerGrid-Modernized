@@ -116,6 +116,7 @@ public class Cat6BlockWireEntity extends BlockWireEntity implements ICat6Cable {
         entity.setOldPosAndRot();
         entity.reapplyPosition();
         discard();
+        SubLevelStick.stick(entity);
         ((ServerLevel) level()).tryAddFreshEntityWithPassengers(entity);
         return entity;
     }

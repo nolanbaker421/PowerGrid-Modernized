@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.network;
 
+import com.nolanbaker.pgmodernized.util.SubLevelStick;
+import com.nolanbaker.pgmodernized.util.BodySpace;
 import org.patryk3211.powergrid.compat.sable.SableUtils;
 import com.nolanbaker.pgmodernized.PowerGridModernized;
 import net.minecraft.ChatFormatting;
@@ -197,7 +199,7 @@ public final class Cat6Placement {
 
         Cat6BlockWireEntity existing = null;
         Direction continueDir = null;
-        var lastPoint = from.getExactPosition(level);
+        var lastPoint = BodySpace.local(level, from);
         if(from instanceof BlockWireEntityEndpoint runEnd) {
             existing = cableOf(level, runEnd, player);
             if(existing == null)
@@ -210,7 +212,7 @@ public final class Cat6Placement {
         } else {
             lastPoint = BlockTrace.alignPosition(lastPoint);
         }
-        var targetPoint = to.getExactPosition(level);
+        var targetPoint = BodySpace.local(level, to);
         ITerminalPlacement terminal = to instanceof JackEndpoint jack ? jack.terminalPlacement(level) : null;
 
         if(!SableUtils.sameSubLevel(level, lastPoint, targetPoint)) {
@@ -238,6 +240,7 @@ public final class Cat6Placement {
             var entity = Cat6BlockWireEntity.create(level, from, stack.copyWithCount(newItems), path.points());
             if(closes)
                 entity.setEndpoint2(to);
+            SubLevelStick.stick(entity);
             if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
                 PowerGridModernized.LOGGER.error("Failed to spawn Cat6 block cable entity");
                 message(player, "message.connection_failed", ChatFormatting.RED);
@@ -282,8 +285,8 @@ public final class Cat6Placement {
             return InteractionResultHolder.fail(null);
         }
 
-        var lastPoint = endPosition(entity1);
-        var targetPoint = entity2.position();
+        var lastPoint = BodySpace.local(entity1, endPosition(entity1));
+        var targetPoint = BodySpace.local(entity2, entity2.position());
         var continueDir = entity1.segments.get(entity1.segments.size() - 1).direction;
         if(!SableUtils.sameSubLevel(level, lastPoint, targetPoint)) {
             message(player, "message.connection_different_bodies", ChatFormatting.RED);

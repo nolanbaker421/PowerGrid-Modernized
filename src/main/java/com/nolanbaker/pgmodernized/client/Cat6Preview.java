@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.client;
 
+import com.nolanbaker.pgmodernized.util.BodySpace;
 import com.nolanbaker.pgmodernized.network.Cat6BlockWireEntity;
 import com.nolanbaker.pgmodernized.network.Cat6CableItem;
 import com.nolanbaker.pgmodernized.network.Cat6Connection;
@@ -87,7 +88,7 @@ public final class Cat6Preview {
             return;
         }
 
-        var currentPos = endpoint.getExactPosition(level);
+        var currentPos = BodySpace.local(level, endpoint);
         Direction continueDir = null;
         if(endpoint instanceof BlockWireEntityEndpoint runEnd) {
             var entity = runEnd.getEntity(level);

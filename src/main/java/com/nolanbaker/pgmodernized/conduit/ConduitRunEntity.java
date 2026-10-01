@@ -268,6 +268,7 @@ public class ConduitRunEntity extends BlockWireEntity {
 
         var entity = ConductorEntity.create(level, this, slot, stack.copyWithCount(required),
                 new BlockWireEndpoint(e1.getPos(), terminalA), new BlockWireEndpoint(e2.getPos(), terminalB), start, path);
+        SubLevelStick.stick(entity);
         if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity))
             return fail(player, "message.connection_failed");
         if(!player.isCreative())
@@ -388,6 +389,7 @@ public class ConduitRunEntity extends BlockWireEntity {
         entity.setOldPosAndRot();
         entity.reapplyPosition();
         discard();
+        SubLevelStick.stick(entity);
         ((ServerLevel) level()).tryAddFreshEntityWithPassengers(entity);
         return entity;
     }

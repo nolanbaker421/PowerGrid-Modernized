@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import com.nolanbaker.pgmodernized.util.SubLevelStick;
+import com.nolanbaker.pgmodernized.util.BodySpace;
 import org.patryk3211.powergrid.compat.sable.SableUtils;
 import com.nolanbaker.pgmodernized.PowerGridModernized;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
@@ -168,7 +170,7 @@ public final class ConduitPlacement {
 
         ConduitRunEntity existing = null;
         Direction continueDir = null;
-        var lastPoint = from.getExactPosition(level);
+        var lastPoint = BodySpace.local(level, from);
         if(from instanceof BlockWireEntityEndpoint runEnd) {
             existing = runOf(level, runEnd, player);
             if(existing == null)
@@ -185,7 +187,7 @@ public final class ConduitPlacement {
         } else {
             lastPoint = BlockTrace.alignPosition(lastPoint);
         }
-        var targetPoint = to.getExactPosition(level);
+        var targetPoint = BodySpace.local(level, to);
         ITerminalPlacement terminal = to instanceof BlockWireEndpoint hub ? hub.getTerminalPlacement(level) : null;
 
         if(!SableUtils.sameSubLevel(level, lastPoint, targetPoint)) {
@@ -213,6 +215,7 @@ public final class ConduitPlacement {
             var entity = ConduitRunEntity.create(level, from, stack.copyWithCount(newItems), path.points());
             if(closes)
                 entity.setEndpoint2(to);
+            SubLevelStick.stick(entity);
             if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
                 PowerGridModernized.LOGGER.error("Failed to spawn conduit run entity");
                 message(player, "message.connection_failed", ChatFormatting.RED);
@@ -260,8 +263,8 @@ public final class ConduitPlacement {
             return InteractionResultHolder.fail(null);
         }
 
-        var lastPoint = endPosition(entity1);
-        var targetPoint = entity2.position();
+        var lastPoint = BodySpace.local(entity1, endPosition(entity1));
+        var targetPoint = BodySpace.local(entity2, entity2.position());
         var continueDir = entity1.segments.get(entity1.segments.size() - 1).direction;
         if(!SableUtils.sameSubLevel(level, lastPoint, targetPoint)) {
             message(player, "message.connection_different_bodies", ChatFormatting.RED);
