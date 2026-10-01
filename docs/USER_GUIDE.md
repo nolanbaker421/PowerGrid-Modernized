@@ -777,3 +777,23 @@ same for a whole raceway.
 
 Assemble the body first and string the chain afterwards: Power Grid moves or cuts wires when
 blocks are assembled into a body, and the chain is no exception.
+
+## 12. Conductor rail
+
+The alternative to the cable chain for long runways, modelled on crane conductor bar systems.
+
+- **Conductor Rail**: four insulated bars on a bracket. Mounts on any face and turns four ways like
+  the devices. Lay blocks end to end (or around corners, touching) along the runway; the run is
+  every rail block that touches another.
+- **Rail Feed Box**: put one anywhere in the run (bars run out of both sides). It is a pull box:
+  studs L1, L2, L3, N are the four bars, a 4" knockout takes your conduit, and its Cat6 jack is the
+  run's data channel. Splice with an empty hand. One feed per run; a run with none is dead.
+- **Rail Collector** (crafted with four Collector Shoes): the same box on the body. Mount it one
+  block away from the rail with its front toward the bars, so the shoes sit inside the rail block.
+  While they do, and that run has a feed, the collector's studs are the bars and its jack is on the
+  data channel. Goggles say which feed it is on, or "shoes off the rail".
+- Contact is checked every half second and carried by hidden Power Grid hanging wires, so it rides
+  the body between checks. Running off the end of the rail drops the contact; running back on
+  restores it. Several collectors can share one run.
+- Rail blocks have no circuit of their own, so a run of any length costs nothing to simulate: the
+  collector connects straight to the feed.

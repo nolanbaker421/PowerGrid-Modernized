@@ -61,6 +61,9 @@
       "id": "powergrid_modernized:creative_ac_source",
       "required": false
     },
-    "powergrid_modernized:cable_chain_anchor"
+    "powergrid_modernized:cable_chain_anchor",
+    "powergrid_modernized:conductor_rail",
+    "powergrid_modernized:rail_feed",
+    "powergrid_modernized:rail_collector"
   ]
 }

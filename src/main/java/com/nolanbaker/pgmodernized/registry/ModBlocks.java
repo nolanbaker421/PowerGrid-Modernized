@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.rail.RailCollectorBlock;
+import com.nolanbaker.pgmodernized.rail.RailFeedBlock;
+import com.nolanbaker.pgmodernized.rail.ConductorRailBlock;
 import com.nolanbaker.pgmodernized.chain.CableChainAnchorBlock;
 import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlockEntity;
 import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlock;
@@ -230,6 +233,42 @@ public class ModBlocks {
             .properties(p -> p.noOcclusion())
             .transform(pickaxeOnly())
             .lang("Cable Chain Anchor")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** Insulated conductor rail: four bars on a bracket, live when a feed box is in the run. */
+    public static final BlockEntry<ConductorRailBlock> CONDUCTOR_RAIL = REGISTRATE.block("conductor_rail", ConductorRailBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Conductor Rail")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** The feed box of a rail run. */
+    public static final BlockEntry<RailFeedBlock> RAIL_FEED = REGISTRATE.block("rail_feed", RailFeedBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Rail Feed Box")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** The collector trolley that rides a rail. */
+    public static final BlockEntry<RailCollectorBlock> RAIL_COLLECTOR = REGISTRATE.block("rail_collector", RailCollectorBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Rail Collector")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

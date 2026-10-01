@@ -377,5 +377,22 @@
   "powergrid.message.cable_chain.jack_used": "Unplug the anchor's jack first: the chain brings its own Cat6",
   "powergrid.message.cable_chain.no_tee": "Conduit does not tee into a cable chain; land it on the anchor's knockout",
   "powergrid.message.cable_chain.extended": "Added %1$s link(s): the chain now stretches to %2$s m",
-  "powergrid.message.cable_chain.longest": "The chain is as long as a run may be (%1$s m)"
+  "powergrid.message.cable_chain.longest": "The chain is as long as a run may be (%1$s m)",
+  "block.powergrid_modernized.conductor_rail": "Conductor Rail",
+  "block.powergrid_modernized.rail_feed": "Rail Feed Box",
+  "block.powergrid_modernized.rail_collector": "Rail Collector",
+  "item.powergrid_modernized.rail_shoe": "Collector Shoe",
+  "item.powergrid_modernized.conductor_rail.tooltip.summary": "Four insulated bars on a bracket. Lay them end to end along the runway; the run is live once a Rail Feed Box is part of it.",
+  "item.powergrid_modernized.rail_feed.tooltip.summary": "Feeds a rail run: a pull box whose studs L1, L2, L3 and N are the four bars, with a 4\" knockout and a Cat6 jack that is the run's data channel. Bars run out of both sides, so it goes anywhere in the run.",
+  "item.powergrid_modernized.rail_collector.tooltip.summary": "Rides a rail on a Create Aeronautics body. Mount it one block from the rail, shoes toward the bars: while they touch a fed run its studs are the bars and its jack is on the run's data channel. Splice with an empty hand.",
+  "item.powergrid_modernized.rail_shoe.tooltip.summary": "Spring-loaded copper shoe for the Rail Collector.",
+  "powergrid.rail.l1": "Rail L1",
+  "powergrid.rail.l2": "Rail L2",
+  "powergrid.rail.l3": "Rail L3",
+  "powergrid.rail.n": "Rail N",
+  "powergrid.rail.shoe": "Collector Shoes",
+  "powergrid.gui.rail_feed.title": "Rail feed box",
+  "powergrid.gui.rail_collector.title": "Rail collector",
+  "powergrid.gui.rail_collector.off_rail": "Shoes off the rail: no contact",
+  "powergrid.gui.rail_collector.on_rail": "On the rail, fed from %1$s, %2$s, %3$s"
 }

@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.rail.RailCat6Entity;
+import com.nolanbaker.pgmodernized.rail.RailPickupEntity;
 import com.nolanbaker.pgmodernized.client.CableChainRenderer;
 import com.nolanbaker.pgmodernized.chain.ChainCat6Entity;
 import com.nolanbaker.pgmodernized.chain.CableChainEntity;
@@ -66,6 +68,18 @@ public class ModEntities {
     /** The hidden Cat6 pair a cable chain carries between its anchors' jacks. */
     public static final EntityEntry<ChainCat6Entity> CHAIN_CAT6 =
             REGISTRATE.entity("chain_cat6", ChainCat6Entity::new, MobCategory.MISC)
+                    .renderer(() -> NoopEntityRenderer::new)
+                    .register();
+
+    /** A collector shoe on a rail bar: hidden hanging wire from collector stud to feed stud. */
+    public static final EntityEntry<RailPickupEntity> RAIL_PICKUP =
+            REGISTRATE.entity("rail_pickup", RailPickupEntity::new, MobCategory.MISC)
+                    .renderer(() -> NoopEntityRenderer::new)
+                    .register();
+
+    /** The rail's data channel for one collector: hidden Cat6 from collector jack to feed jack. */
+    public static final EntityEntry<RailCat6Entity> RAIL_CAT6 =
+            REGISTRATE.entity("rail_cat6", RailCat6Entity::new, MobCategory.MISC)
                     .renderer(() -> NoopEntityRenderer::new)
                     .register();
 

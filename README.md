@@ -292,6 +292,19 @@ connected through it. One item is two metres; the run is cut two items longer th
 at placement, so string it with the trolley at the far end of its travel. Click the chain with more links to lengthen it. Pull further than it reaches and it
 snaps, dropping links and pulled wire. Longest run is a config value (32 m by default).
 
+## Conductor rail
+
+The other way onto a moving body: an insulated conductor rail along the runway and a collector on
+the trolley, as on a real overhead crane. **Conductor Rail** blocks (four bars on a bracket, any
+mounting face) are laid end to end; a **Rail Feed Box** anywhere in the run makes it live. The feed
+is a pull box whose studs L1, L2, L3 and N are the bars, with a 4" knockout and a Cat6 jack that
+becomes the run's data channel. The **Rail Collector** is the same box on the body with a spring
+arm and shoes out of its front: mount it one block from the rail, shoes toward the bars. Every half
+second it projects its shoes into world space; while they sit in a rail block of a fed run, its
+studs are the bars and its jack is on the data channel, through hidden Power Grid hanging wires that
+follow the body. Leave the rail and the contact drops; come back and it is made again. Any number
+of collectors can ride one run.
+
 ## Real life components
 
 - **The electrical inspector.** Wire long enough and a villager in a hard hat and hi-vis turns up,

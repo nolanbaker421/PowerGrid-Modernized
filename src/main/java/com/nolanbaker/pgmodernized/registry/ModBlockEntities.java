@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.rail.RailCollectorBlockEntity;
+import com.nolanbaker.pgmodernized.rail.RailFeedBlockEntity;
 import com.nolanbaker.pgmodernized.chain.CableChainAnchorBlockEntity;
 import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlockEntity;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlockEntity;
@@ -130,6 +132,16 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<CableChainAnchorBlockEntity> CABLE_CHAIN_ANCHOR =
             REGISTRATE.blockEntity("cable_chain_anchor", CableChainAnchorBlockEntity::new)
                     .validBlock(ModBlocks.CABLE_CHAIN_ANCHOR)
+                    .register();
+
+    public static final BlockEntityEntry<RailFeedBlockEntity> RAIL_FEED =
+            REGISTRATE.blockEntity("rail_feed", RailFeedBlockEntity::new)
+                    .validBlock(ModBlocks.RAIL_FEED)
+                    .register();
+
+    public static final BlockEntityEntry<RailCollectorBlockEntity> RAIL_COLLECTOR =
+            REGISTRATE.blockEntity("rail_collector", RailCollectorBlockEntity::new)
+                    .validBlock(ModBlocks.RAIL_COLLECTOR)
                     .register();
 
     public static void register() {}

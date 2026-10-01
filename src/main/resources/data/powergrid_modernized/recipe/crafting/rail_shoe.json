@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:plates/copper"
+    },
+    "I": {
+      "tag": "c:nuggets/iron"
+    }
+  },
+  "pattern": [
+    "C",
+    "I"
+  ],
+  "result": {
+    "count": 4,
+    "id": "powergrid_modernized:rail_shoe"
+  }
+}

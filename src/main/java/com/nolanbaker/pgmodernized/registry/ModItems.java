@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.rail.RailShoeItem;
 import com.nolanbaker.pgmodernized.chain.CableChainItem;
 import net.minecraft.world.item.Rarity;
 import com.nolanbaker.pgmodernized.conduit.ConduitCover;
@@ -49,6 +50,12 @@ public class ModItems {
     public static final ItemEntry<CableChainItem> CABLE_CHAIN = REGISTRATE.item("cable_chain", CableChainItem::new)
             .model(NonNullBiConsumer.noop())
             .lang("Cable Chain")
+            .register();
+
+    /** Collector shoe: a crafting part, and the hidden wire type of the rail pickups (wire_types/rail_shoe.json). */
+    public static final ItemEntry<RailShoeItem> RAIL_SHOE = REGISTRATE.item("rail_shoe", RailShoeItem::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Collector Shoe")
             .register();
 
     /** Breakers: pole count (1, 2, 3), then frame. */

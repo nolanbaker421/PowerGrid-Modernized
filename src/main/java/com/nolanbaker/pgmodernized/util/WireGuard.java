@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.util;
 
+import com.nolanbaker.pgmodernized.rail.RailShoeItem;
 import com.nolanbaker.pgmodernized.chain.CableChainAnchorBlockEntity;
 import com.nolanbaker.pgmodernized.chain.CableChainPlacement;
 import com.nolanbaker.pgmodernized.chain.CableChainItem;
@@ -38,7 +39,7 @@ public final class WireGuard {
         }
         boolean conduit = item instanceof ConduitItem;
         boolean cat6 = item instanceof Cat6CableItem;
-        boolean busBar = item instanceof BusBarItem;
+        boolean busBar = item instanceof BusBarItem || item instanceof RailShoeItem;
         if(!conduit && !cat6 && !busBar)
             return;
         var level = event.getLevel();

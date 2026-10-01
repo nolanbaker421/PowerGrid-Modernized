@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": {
+      "item": "powergrid_modernized:rail_shoe"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    },
+    "K": {
+      "item": "powergrid:conductive_casing"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    }
+  },
+  "pattern": [
+    "SSS",
+    "PKP",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:rail_collector"
+  }
+}

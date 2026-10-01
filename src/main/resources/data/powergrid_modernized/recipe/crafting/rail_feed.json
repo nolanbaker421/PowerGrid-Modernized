@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:plates/copper"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    },
+    "K": {
+      "item": "powergrid:conductive_casing"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "PKP",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:rail_feed"
+  }
+}
