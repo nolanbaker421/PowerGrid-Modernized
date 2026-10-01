@@ -36,7 +36,7 @@ public class ModBlockEntities {
 
     public static final BlockEntityEntry<VfdBlockEntity> VFD =
             REGISTRATE.blockEntity("vfd", ComputerBlockEntityFactories.vfd())
-                    .validBlock(ModBlocks.VFD)
+                    .validBlocks(ModBlocks.VFD, ModBlocks.VFD_8KV)
                     .register();
 
     public static final BlockEntityEntry<ClampMeterBlockEntity> CLAMP_METER =

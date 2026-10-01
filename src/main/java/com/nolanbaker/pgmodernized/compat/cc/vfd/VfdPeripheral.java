@@ -43,6 +43,12 @@ public class VfdPeripheral implements IPeripheral {
         return drive.isEnabled();
     }
 
+    /** Maximum output voltage and current of this unit (2000 or 8000 V, 20 A). */
+    @LuaFunction
+    public Object[] getLimits() {
+        return new Object[] {(double) drive.maxVoltage(), (double) VfdBlockEntity.MAX_CURRENT};
+    }
+
     /** Why the output is what it is: "ok", "disabled", "no_input", "reversed", "setpoint_zero", "input_low", "current_limit" or "input_sag". */
     @LuaFunction
     public String getStatus() {

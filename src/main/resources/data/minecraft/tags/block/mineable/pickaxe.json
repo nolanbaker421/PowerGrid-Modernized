@@ -43,6 +43,7 @@
     "powergrid_modernized:pull_box",
     "powergrid_modernized:panel_extension",
     "powergrid_modernized:terminal_cabinet",
-    "powergrid_modernized:tap_actuator"
+    "powergrid_modernized:tap_actuator",
+    "powergrid_modernized:vfd_8kv"
   ]
 }
