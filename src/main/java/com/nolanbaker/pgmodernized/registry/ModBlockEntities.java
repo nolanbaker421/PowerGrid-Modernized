@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.client.RailCollectorRenderer;
 import com.nolanbaker.pgmodernized.rail.RailCollectorBlockEntity;
 import com.nolanbaker.pgmodernized.rail.RailFeedBlockEntity;
 import com.nolanbaker.pgmodernized.chain.CableChainAnchorBlockEntity;
@@ -142,6 +143,7 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<RailCollectorBlockEntity> RAIL_COLLECTOR =
             REGISTRATE.blockEntity("rail_collector", RailCollectorBlockEntity::new)
                     .validBlock(ModBlocks.RAIL_COLLECTOR)
+                    .renderer(() -> RailCollectorRenderer::new)
                     .register();
 
     public static void register() {}

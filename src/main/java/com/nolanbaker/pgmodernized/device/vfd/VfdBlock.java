@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.device.vfd;
 
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.level.BlockGetter;
+import com.nolanbaker.pgmodernized.util.Rotation4Shapes;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
 import net.minecraft.core.BlockPos;
@@ -70,6 +73,12 @@ public class VfdBlock extends Rotation4ElectricBlock implements IBE<VfdBlockEnti
 
     private static net.minecraft.network.chat.Component name(String key, ChatFormatting style) {
         return Lang.builder().translate(key).style(style).component();
+    }
+
+    /** Outline built the way the terminals are turned, not the way Power Grid's shape helper turns it. */
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Rotation4Shapes.of(state, new AABB(2, 0, 2, 14, 7, 14), new AABB(14, 0, 7, 16, 2, 9), HUBS[0], HUBS[1]);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.rail;
 
+import com.nolanbaker.pgmodernized.PowerGridModernized;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
@@ -52,6 +53,7 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
     private final List<UUID> pickups = new ArrayList<>();
     @Nullable
     private UUID link;
+    private long madeAt;
 
     public RailCollectorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -124,8 +126,13 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
         }
         if(head != null && !level.isLoaded(head))
             head = feed;
-        if(Objects.equals(head, feed) && (feed == null || pickupsAlive()))
+        boolean alive = pickupsAlive();
+        if(Objects.equals(head, feed) && (feed == null || alive))
             return;
+        if(feed != null && Objects.equals(head, feed) && !alive && level.getGameTime() - madeAt < 60)
+            return;   // just made: give the entities a moment to turn up in the lookup
+        PowerGridModernized.LOGGER.info("Rail collector at {}: {} (feed {} -> {}, pickups alive {})", worldPosition,
+                head == null ? "leaving the rail" : "connecting", feed, head, alive);
         dropPickups();
         feed = head;
         if(feed != null)
@@ -148,6 +155,7 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
     private void makePickups(BlockPos feedPos) {
         if(!(level instanceof ServerLevel server) || !(level.getBlockEntity(feedPos) instanceof RailFeedBlockEntity feedBe))
             return;
+        madeAt = level.getGameTime();
         for(int terminal = RailCollectorBlock.L1; terminal <= RailCollectorBlock.N; ++terminal) {
             var wire = RailPickupEntity.create(level, worldPosition, new BlockWireEndpoint(worldPosition, terminal), new BlockWireEndpoint(feedPos, terminal));
             if(server.tryAddFreshEntityWithPassengers(wire))
@@ -165,7 +173,9 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
         if(level instanceof ServerLevel server) {
             for(var id : pickups) {
                 Entity entity = server.getEntity(id);
-                if(entity != null)
+                if(entity instanceof RailPickupEntity pickup)
+                    pickup.release();
+                else if(entity != null)
                     entity.discard();
             }
             if(link != null) {
@@ -188,10 +198,11 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
 
     @Override
     public void remove() {
-        super.remove();
-        jack.remove();
+        // The pickups go first, before the circuit behind them is torn down.
         if(level != null && !level.isClientSide)
             dropPickups();
+        super.remove();
+        jack.remove();
     }
 
     @Override

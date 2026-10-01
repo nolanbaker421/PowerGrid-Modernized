@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.rail;
 
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.level.BlockGetter;
+import com.nolanbaker.pgmodernized.util.Rotation4Shapes;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.Block;
@@ -81,6 +84,12 @@ public class RailCollectorBlock extends Rotation4ElectricBlock implements IBE<Ra
 
     private static Component name(String key, ChatFormatting style) {
         return Lang.builder().translate(key).style(style).component();
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Rotation4Shapes.of(state, new AABB(2, 0, 2, 14, 6, 14), new AABB(6, 2, 0, 10, 5, 2), new AABB(14, 0, 9, 16, 2, 11),
+                new AABB(3, 6, 9, 5, 8, 11), new AABB(6, 6, 9, 8, 8, 11), new AABB(9, 6, 9, 11, 8, 11), new AABB(12, 6, 9, 14, 8, 11), HUBS[0]);
     }
 
     @Override

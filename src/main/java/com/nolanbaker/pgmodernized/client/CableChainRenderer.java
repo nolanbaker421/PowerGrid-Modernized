@@ -115,7 +115,7 @@ public class CableChainRenderer extends EntityRenderer<CableChainEntity> {
         return points;
     }
 
-    private static void box(PoseStack.Pose pose, VertexConsumer consumer, Vec3 c, Vec3 t, Vec3 n, Vec3 bn,
+    static void box(PoseStack.Pose pose, VertexConsumer consumer, Vec3 c, Vec3 t, Vec3 n, Vec3 bn,
                             double hl, double hw, double hh, int light) {
         var tl = t.scale(hl);
         var nw = n.scale(hw);

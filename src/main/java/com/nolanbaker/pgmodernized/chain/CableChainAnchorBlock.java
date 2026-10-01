@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.chain;
 
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.level.BlockGetter;
+import com.nolanbaker.pgmodernized.util.Rotation4Shapes;
 import net.minecraft.world.item.ItemStack;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
@@ -72,6 +75,14 @@ public class CableChainAnchorBlock extends Rotation4ElectricBlock implements IBE
 
     public static int chainHubTerminal() {
         return LAYOUT.hubTerminal(CHAIN_HUB);
+    }
+
+    /** Built from the floor-frame boxes with the terminal transform, so the outline matches the model. */
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Rotation4Shapes.of(state, new AABB(2, 0, 2, 14, 2, 14), new AABB(14, 0, 7, 16, 2, 9),
+                new AABB(2, 2, 11, 4, 4, 13), new AABB(5, 2, 11, 7, 4, 13), new AABB(9, 2, 11, 11, 4, 13), new AABB(12, 2, 11, 14, 4, 13),
+                HUBS[0], HUBS[1]);
     }
 
     @Override

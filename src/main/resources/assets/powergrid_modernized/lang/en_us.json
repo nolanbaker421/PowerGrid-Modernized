@@ -395,5 +395,9 @@
   "powergrid.gui.rail_collector.title": "Rail collector",
   "powergrid.gui.rail_collector.off_rail": "Shoes off the rail: no contact",
   "powergrid.gui.rail_collector.on_rail": "On the rail, fed from %1$s, %2$s, %3$s",
-  "powergrid.message.cable_chain.anchors_only": "Cable chain only goes between two Cable Chain Anchors"
+  "powergrid.message.cable_chain.anchors_only": "Cable chain only goes between two Cable Chain Anchors",
+  "entity.powergrid_modernized.rail_pickup": "Collector Shoe Contact",
+  "entity.powergrid_modernized.rail_cat6": "Rail Data Link",
+  "entity.powergrid_modernized.chain_cat6": "Cable Chain Cat6",
+  "entity.powergrid_modernized.cable_chain": "Cable Chain"
 }

@@ -57,27 +57,23 @@ def models():
     for x1, x2 in ((3, 5), (6, 8), (9, 11), (12, 14)):
         feed.append(element(x1, 6, 3, x2, 8, 5, "#stud"))
     rotation4_models("rail_feed", feed, dict(common, particle=common["box"]))
-    # The collector's arm reaches 1, 2 or 3 blocks out (blockstate "reach"); the shoes sit on the
-    # bars of the rail block it found, at the bars' height for a rail mounted on the far face.
+    # The arm and shoes are drawn by RailCollectorRenderer out to whatever block the collector found;
+    # the model only has the box, its studs, the jack, the knockout and a stub of the arm.
+    collector = [element(2, 0, 2, 14, 6, 14, "#box"), element(14, 0, 3, 16, 2, 7, "#stud"), element(14, 0, 9, 16, 2, 11, "#jack"),
+                 element(6, 2, 0, 10, 5, 2, "#bracket")]
+    for x1, x2 in ((3, 5), (6, 8), (9, 11), (12, 14)):
+        collector.append(element(x1, 6, 9, x2, 8, 11, "#stud"))
     textures = dict(common, particle=common["box"])
+    dump(os.path.join(ASSETS, "models", "block", "rail_collector.json"), {"parent": "block/block", "textures": textures, "elements": collector})
+    dump(os.path.join(ASSETS, "models", "block", "rail_collector_h.json"), {"parent": "block/block", "textures": textures, "elements": horizontal(collector)})
     state = json.load(open(os.path.join(ASSETS, "blockstates", "vfd.json")))
     variants = {}
     for reach in (1, 2, 3):
-        far = -16 * reach            # the near face of the block `reach` blocks out
-        collector = [element(2, 0, 2, 14, 6, 14, "#box"), element(14, 0, 3, 16, 2, 7, "#stud"), element(14, 0, 9, 16, 2, 11, "#jack"),
-                     element(6, 2, far + 8, 10, 4, 2, "#bracket")]          # the spring arm
-        for x1, x2 in BAR_X:
-            collector.append(element(x1, 1.5, far + 6, x2, 4.5, far + 8, "#shoe"))   # a copper shoe on each bar
-        for x1, x2 in ((3, 5), (6, 8), (9, 11), (12, 14)):
-            collector.append(element(x1, 6, 9, x2, 8, 11, "#stud"))
-        name = "rail_collector_r%d" % reach
-        dump(os.path.join(ASSETS, "models", "block", name + ".json"), {"parent": "block/block", "textures": textures, "elements": collector})
-        dump(os.path.join(ASSETS, "models", "block", name + "_h.json"), {"parent": "block/block", "textures": textures, "elements": horizontal(collector)})
         for key, variant in state["variants"].items():
-            model = "%s:block/%s" % (MOD, name + ("_h" if variant["model"].endswith("block_h") else ""))
+            model = "%s:block/rail_collector%s" % (MOD, "_h" if variant["model"].endswith("block_h") else "")
             variants[key + ",reach=%d" % reach] = dict(variant, model=model)
     dump(os.path.join(ASSETS, "blockstates", "rail_collector.json"), {"variants": variants})
-    dump(os.path.join(ASSETS, "models", "item", "rail_collector.json"), {"parent": "%s:block/rail_collector_r1" % MOD})
+    dump(os.path.join(ASSETS, "models", "item", "rail_collector.json"), {"parent": "%s:block/rail_collector" % MOD})
     dump(os.path.join(ASSETS, "models", "item", "rail_shoe.json"),
          {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/rail_shoe" % MOD}})
 

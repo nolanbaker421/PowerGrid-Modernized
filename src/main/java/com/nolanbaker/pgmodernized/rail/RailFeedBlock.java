@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.rail;
 
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.level.BlockGetter;
+import com.nolanbaker.pgmodernized.util.Rotation4Shapes;
 import net.minecraft.world.item.ItemStack;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
@@ -63,6 +66,12 @@ public class RailFeedBlock extends Rotation4ElectricBlock implements IBE<RailFee
 
     private static Component name(String key, ChatFormatting style) {
         return Lang.builder().translate(key).style(style).component();
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Rotation4Shapes.of(state, new AABB(2, 0, 2, 14, 6, 14), new AABB(0, 0, 0, 16, 5, 16), new AABB(14, 0, 9, 16, 2, 11),
+                new AABB(3, 6, 3, 5, 8, 5), new AABB(6, 6, 3, 8, 8, 5), new AABB(9, 6, 3, 11, 8, 5), new AABB(12, 6, 3, 14, 8, 5), HUBS[0]);
     }
 
     @Override

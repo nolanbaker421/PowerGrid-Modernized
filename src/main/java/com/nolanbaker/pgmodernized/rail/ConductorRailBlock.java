@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.rail;
 
+import net.minecraft.world.phys.AABB;
+import com.nolanbaker.pgmodernized.util.Rotation4Shapes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -48,14 +50,7 @@ public class ConductorRailBlock extends Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return switch(state.getValue(FACING)) {
-            case UP -> box(0, 10, 0, 16, 16, 16);
-            case NORTH -> box(0, 0, 0, 16, 16, 6);
-            case SOUTH -> box(0, 0, 10, 16, 16, 16);
-            case WEST -> box(0, 0, 0, 6, 16, 16);
-            case EAST -> box(10, 0, 0, 16, 16, 16);
-            default -> box(0, 0, 0, 16, 6, 16);
-        };
+        return Rotation4Shapes.of(state, new AABB(0, 0, 0, 16, 5, 16));
     }
 
     public static boolean isRail(BlockState state) {

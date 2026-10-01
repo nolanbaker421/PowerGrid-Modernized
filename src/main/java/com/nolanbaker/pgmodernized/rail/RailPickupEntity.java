@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.rail;
 
+import com.nolanbaker.pgmodernized.PowerGridModernized;
 import com.nolanbaker.pgmodernized.registry.ModEntities;
 import com.nolanbaker.pgmodernized.registry.ModItems;
 import net.minecraft.core.BlockPos;
@@ -54,6 +55,14 @@ public class RailPickupEntity extends HangingWireEntity {
         return entity;
     }
 
+    private boolean released;
+
+    /** The collector lets go of this shoe on purpose. */
+    public void release() {
+        released = true;
+        discard();
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -64,8 +73,18 @@ public class RailPickupEntity extends HangingWireEntity {
         checkTimer = 0;
         if(!level().isLoaded(collector))
             return;
-        if(!(level().getBlockEntity(collector) instanceof RailCollectorBlockEntity owner) || !owner.owns(getUUID()))
+        if(!(level().getBlockEntity(collector) instanceof RailCollectorBlockEntity owner) || !owner.owns(getUUID())) {
+            released = true;
             discard();
+        }
+    }
+
+    /** Anything else removing a shoe is a bug to chase: say who did it. */
+    @Override
+    public void remove(RemovalReason reason) {
+        if(!released && !level().isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK && reason != RemovalReason.UNLOADED_WITH_PLAYER)
+            PowerGridModernized.LOGGER.warn("Rail pickup {} of collector {} removed ({}) by someone other than the collector", getUUID(), collector, reason, new Throwable());
+        super.remove(reason);
     }
 
     @Override
