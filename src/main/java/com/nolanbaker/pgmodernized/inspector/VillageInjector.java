@@ -43,12 +43,15 @@ public final class VillageInjector {
         var pools = access.registryOrThrow(Registries.TEMPLATE_POOL);
         var processors = access.registryOrThrow(Registries.PROCESSOR_LIST);
         var empty = processors.getHolderOrThrow(ResourceKey.create(Registries.PROCESSOR_LIST, ResourceLocation.withDefaultNamespace("empty")));
+        // Placement writes structure void as a real block (it is only dropped when a template is saved
+        // from the world), so the annex's filler west of the building must be stripped by a processor.
+        var annex = processors.getHolderOrThrow(ResourceKey.create(Registries.PROCESSOR_LIST, PowerGridModernized.asResource("training_center_annex")));
         int centres = 0, houses = 0;
         int weight = PgmConfig.TRAINING_CENTER_WEIGHT.get();
         boolean atCentre = PgmConfig.TRAINING_CENTER_AT_CENTER.get();
         for(var village : VILLAGES) {
             try {
-                if(atCentre && wrapCentres(pools.get(ResourceLocation.withDefaultNamespace("village/" + village + "/town_centers")), village, empty))
+                if(atCentre && wrapCentres(pools.get(ResourceLocation.withDefaultNamespace("village/" + village + "/town_centers")), village, annex))
                     ++centres;
                 if(weight > 0 && addHouse(pools.get(ResourceLocation.withDefaultNamespace("village/" + village + "/houses")), empty, weight))
                     ++houses;
@@ -61,7 +64,7 @@ public final class VillageInjector {
     }
 
     /** Every centre element becomes [centre, annex], same weight and projection, so each village gets exactly one. */
-    private static boolean wrapCentres(StructureTemplatePool pool, String village, Holder<StructureProcessorList> empty) throws ReflectiveOperationException {
+    private static boolean wrapCentres(StructureTemplatePool pool, String village, Holder<StructureProcessorList> noVoid) throws ReflectiveOperationException {
         if(pool == null)
             return false;
         var raw = rawTemplates(pool);
@@ -69,7 +72,7 @@ public final class VillageInjector {
             if(pair.getFirst() instanceof ListPoolElement)
                 return true;   // already wrapped: the same registry survived a restart
         }
-        var annex = StructurePoolElement.single(ANNEX + village, empty).apply(StructureTemplatePool.Projection.RIGID);
+        var annex = StructurePoolElement.single(ANNEX + village, noVoid).apply(StructureTemplatePool.Projection.RIGID);
         var wrapped = new ArrayList<Pair<StructurePoolElement, Integer>>();
         for(var pair : raw) {
             var centre = pair.getFirst();
