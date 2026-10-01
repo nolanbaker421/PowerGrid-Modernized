@@ -22,6 +22,9 @@ public class OCBridge {
         expose(event, ModBlockEntities.CT_CABINET.get());
         expose(event, ModBlockEntities.TRANSFORMER.get());
         ForkHooks.get().registerOC(event);
+        expose(event, ModBlockEntities.RAIL_FEED.get());
+        expose(event, ModBlockEntities.RAIL_COLLECTOR.get());
+        expose(event, ModBlockEntities.CABLE_CHAIN_ANCHOR.get());
         expose(event, ModBlockEntities.NETWORK_JACK.get());
         expose(event, ModBlockEntities.NETWORK_SWITCH.get());
     }
@@ -43,6 +46,9 @@ public class OCBridge {
         ComputerBlockEntityFactories.CT_CABINET = OCCtCabinetBlockEntity::new;
         ComputerBlockEntityFactories.TRANSFORMER = OCTransformerBlockEntity::new;
         ForkHooks.get().swapOCFactories();
+        ComputerBlockEntityFactories.RAIL_FEED = OCRailFeedBlockEntity::new;
+        ComputerBlockEntityFactories.RAIL_COLLECTOR = OCRailCollectorBlockEntity::new;
+        ComputerBlockEntityFactories.CABLE_CHAIN_ANCHOR = OCCableChainAnchorBlockEntity::new;
         ComputerBlockEntityFactories.NETWORK_JACK = OCNetworkJackBlockEntity::new;
         ComputerBlockEntityFactories.NETWORK_SWITCH = OCNetworkSwitchBlockEntity::new;
         // Cat6 cables link the OC nodes of the jacks they join.

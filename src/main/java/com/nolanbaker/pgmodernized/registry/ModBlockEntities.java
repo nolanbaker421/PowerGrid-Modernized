@@ -131,17 +131,17 @@ public class ModBlockEntities {
                     .register();
 
     public static final BlockEntityEntry<CableChainAnchorBlockEntity> CABLE_CHAIN_ANCHOR =
-            REGISTRATE.blockEntity("cable_chain_anchor", CableChainAnchorBlockEntity::new)
+            REGISTRATE.blockEntity("cable_chain_anchor", ComputerBlockEntityFactories.cableChainAnchor())
                     .validBlock(ModBlocks.CABLE_CHAIN_ANCHOR)
                     .register();
 
     public static final BlockEntityEntry<RailFeedBlockEntity> RAIL_FEED =
-            REGISTRATE.blockEntity("rail_feed", RailFeedBlockEntity::new)
+            REGISTRATE.blockEntity("rail_feed", ComputerBlockEntityFactories.railFeed())
                     .validBlock(ModBlocks.RAIL_FEED)
                     .register();
 
     public static final BlockEntityEntry<RailCollectorBlockEntity> RAIL_COLLECTOR =
-            REGISTRATE.blockEntity("rail_collector", RailCollectorBlockEntity::new)
+            REGISTRATE.blockEntity("rail_collector", ComputerBlockEntityFactories.railCollector())
                     .validBlock(ModBlocks.RAIL_COLLECTOR)
                     .renderer(() -> RailCollectorRenderer::new)
                     .register();

@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.device.computer;
 
+import com.nolanbaker.pgmodernized.chain.CableChainAnchorBlockEntity;
+import com.nolanbaker.pgmodernized.rail.RailCollectorBlockEntity;
+import com.nolanbaker.pgmodernized.rail.RailFeedBlockEntity;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.nolanbaker.pgmodernized.device.analogio.AnalogIOBlockEntity;
@@ -26,6 +29,9 @@ public final class ComputerBlockEntityFactories {
     public static BlockEntityFactory<NetworkSwitchBlockEntity> NETWORK_SWITCH = NetworkSwitchBlockEntity::new;
     public static BlockEntityFactory<CtCabinetBlockEntity> CT_CABINET = CtCabinetBlockEntity::new;
     public static BlockEntityFactory<TransformerBlockEntity> TRANSFORMER = TransformerBlockEntity::new;
+    public static BlockEntityFactory<RailFeedBlockEntity> RAIL_FEED = RailFeedBlockEntity::new;
+    public static BlockEntityFactory<RailCollectorBlockEntity> RAIL_COLLECTOR = RailCollectorBlockEntity::new;
+    public static BlockEntityFactory<CableChainAnchorBlockEntity> CABLE_CHAIN_ANCHOR = CableChainAnchorBlockEntity::new;
 
     public static BlockEntityFactory<NetworkSwitchBlockEntity> networkSwitch() {
         return (type, pos, state) -> NETWORK_SWITCH.create(type, pos, state);
@@ -45,6 +51,18 @@ public final class ComputerBlockEntityFactories {
 
     public static BlockEntityFactory<TransformerBlockEntity> transformer() {
         return (type, pos, state) -> TRANSFORMER.create(type, pos, state);
+    }
+
+    public static BlockEntityFactory<RailFeedBlockEntity> railFeed() {
+        return (type, pos, state) -> RAIL_FEED.create(type, pos, state);
+    }
+
+    public static BlockEntityFactory<RailCollectorBlockEntity> railCollector() {
+        return (type, pos, state) -> RAIL_COLLECTOR.create(type, pos, state);
+    }
+
+    public static BlockEntityFactory<CableChainAnchorBlockEntity> cableChainAnchor() {
+        return (type, pos, state) -> CABLE_CHAIN_ANCHOR.create(type, pos, state);
     }
 
     private ComputerBlockEntityFactories() {}

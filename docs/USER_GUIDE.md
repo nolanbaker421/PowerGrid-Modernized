@@ -801,7 +801,9 @@ The alternative to the cable chain for long runways, modelled on crane conductor
   Turn it with the wrench so its stud row runs the same way as the bars and the shoes line up.
   While they do, and that run has a feed, the collector's studs are the bars and its jack is on the
   run's data channel: plug your Cat6 into the collector's jack on the trolley and into the feed's jack
-  on the structure, and the two are one network. Goggles say which feed it is on, or "shoes off the rail".
+  on the structure, and the two are one network.
+  Both boxes are OpenComputers nodes too, so an OC cable next to them joins; ComputerCraft computers
+  reach them through a Network Jack block and a wired modem, as with every other device jack. Goggles say which feed it is on, or "shoes off the rail".
 - Contact is checked every half second and carried by hidden Power Grid hanging wires, so it rides
   the body between checks. Running off the end of the rail drops the contact; running back on
   restores it. Several collectors can share one run.
