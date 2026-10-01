@@ -1,13 +1,9 @@
 package com.nolanbaker.pgmodernized.compat.cc;
 
+import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
 import com.nolanbaker.pgmodernized.compat.cc.transformer.TransformerPeripheral;
-import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlockEntity;
-import com.nolanbaker.pgmodernized.compat.cc.sync.SynchroscopePeripheral;
 import com.nolanbaker.pgmodernized.compat.cc.ctcabinet.CtCabinetPeripheral;
-import com.nolanbaker.pgmodernized.compat.cc.drive.ThreePhaseDrivePeripheral;
-import com.nolanbaker.pgmodernized.compat.cc.motor.ThreePhaseMotorPeripheral;
-import com.nolanbaker.pgmodernized.device.drive.ThreePhaseDriveBlockEntity;
 import com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlockEntity;
 import com.nolanbaker.pgmodernized.compat.cc.analogio.AnalogIOPeripheral;
 import com.nolanbaker.pgmodernized.compat.cc.meter.ClampMeterPeripheral;
@@ -52,12 +48,7 @@ public class CCBridge {
                 (be, direction) -> new CtCabinetPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.TRANSFORMER.get(),
                 (be, direction) -> new TransformerPeripheral(be));
-        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.THREE_PHASE_MOTOR.get(),
-                (be, direction) -> new ThreePhaseMotorPeripheral(be));
-        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.THREE_PHASE_DRIVE.get(),
-                (be, direction) -> new ThreePhaseDrivePeripheral(be));
-        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.SYNCHROSCOPE.get(),
-                (be, direction) -> new SynchroscopePeripheral(be));
+        ForkHooks.get().registerCC(event);
 
         // The standalone jack behaves like a piece of CC cable towards its neighbours.
         // Device jacks deliberately do not: a modem next to a device already sees it as a local peripheral.
@@ -83,10 +74,8 @@ public class CCBridge {
             return new CtCabinetPeripheral(cabinet);
         if(be instanceof TransformerBlockEntity transformer)
             return new TransformerPeripheral(transformer);
-        if(be instanceof ThreePhaseDriveBlockEntity drive)
-            return new ThreePhaseDrivePeripheral(drive);
-        if(be instanceof SynchroscopeBlockEntity scope)
-            return new SynchroscopePeripheral(scope);
+        if(ForkHooks.get().ccPeripheral(be) instanceof IPeripheral peripheral)
+            return peripheral;
         return null;
     }
 }

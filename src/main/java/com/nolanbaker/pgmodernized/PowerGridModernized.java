@@ -1,6 +1,10 @@
 package com.nolanbaker.pgmodernized;
 
-import com.nolanbaker.pgmodernized.client.SynchroscopeRenderer;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.neoforged.neoforge.common.conditions.ICondition;
+import com.mojang.serialization.MapCodec;
+import com.nolanbaker.pgmodernized.fork.AcForkCondition;
+import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import net.neoforged.fml.config.ModConfig;
 import com.nolanbaker.pgmodernized.inspector.VillageInjector;
 import com.nolanbaker.pgmodernized.inspector.Inspections;
@@ -51,6 +55,12 @@ public class PowerGridModernized {
 
     public static final ResourceKey<CreativeModeTab> MAIN_TAB = ResourceKey.create(Registries.CREATIVE_MODE_TAB, asResource("main"));
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
+    /** Data condition that keeps the AC-only recipes and loot off stock Power Grid. */
+    private static final DeferredRegister<MapCodec<? extends ICondition>> CONDITIONS = DeferredRegister.create(NeoForgeRegistries.Keys.CONDITION_CODECS, MOD_ID);
+
+    static {
+        CONDITIONS.register("ac_fork", () -> AcForkCondition.CODEC);
+    }
 
     /** Power Grid's registrate flavour so our items get the same electrical tooltips as its own blocks. */
     public static final AbstractPowerGridRegistrate REGISTRATE = ForgePowerGridRegistrate.create(MOD_ID)
@@ -60,8 +70,7 @@ public class PowerGridModernized {
                             .andThen(TooltipModifier.mapNull(ElectricProperties.create(item))));
 
     public PowerGridModernized(IEventBus bus, ModContainer container) {
-        LOGGER.info("PowerGrid: Modernized loading (AC build)");
-        requireAcPowerGrid();
+        LOGGER.info("PowerGrid: Modernized loading {}", ForkHooks.get().present() ? "with the powergrid-ac fork" : "on stock Power Grid");
 
         // Bind the bus before registering anything, as Power Grid does: Registrate parks client hooks
         // such as entity renderers until it knows the bus, and only flushes them on a later registration.
@@ -72,6 +81,8 @@ public class PowerGridModernized {
         ModBlockEntities.register();
         ModItems.register();
         ModEntities.register();
+        ForkHooks.get().registerContent();
+        CONDITIONS.register(bus);
         ModDataComponents.REGISTER.register(bus);
 
         if(Platform.isModLoaded("computercraft")) {
@@ -85,7 +96,7 @@ public class PowerGridModernized {
             NeoForge.EVENT_BUS.register(ConduitPreview.class);
             NeoForge.EVENT_BUS.register(BreakerPlacementOutline.class);
             bus.register(BreakerPanelModels.class);
-            bus.register(SynchroscopeRenderer.Models.class);
+            ForkHooks.get().registerClient(bus);
         }
 
         TABS.register("main", () -> CreativeModeTab.builder()
@@ -117,21 +128,6 @@ public class PowerGridModernized {
         }
         if(Platform.isModLoaded("opencomputers")) {
             OCBridge.registerCapabilities(event);
-        }
-    }
-
-    /**
-     * The AC build reads RMS accessors and the wattmeter element that only the powergrid-ac fork
-     * has. On the stock mod those calls would fail one by one in the world; fail once, up front,
-     * with a message that says which jar to fetch.
-     */
-    private static void requireAcPowerGrid() {
-        try {
-            Class.forName("org.patryk3211.powergrid.electricity.sim.special.WattmeterWire", false, PowerGridModernized.class.getClassLoader());
-        } catch(ClassNotFoundException e) {
-            throw new IllegalStateException("This is the AC build of PowerGrid: Modernized. It needs the powergrid-ac fork of "
-                    + "Create: Power Grid (v0.6.1-ac.7 or newer, https://github.com/DaRealML/powergrid-ac/releases). "
-                    + "With the regular Power Grid mod, use the main build of PowerGrid: Modernized instead.", e);
         }
     }
 

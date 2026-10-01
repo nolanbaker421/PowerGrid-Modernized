@@ -1,4 +1,4 @@
-package com.nolanbaker.pgmodernized.device.source;
+package com.nolanbaker.pgmodernized.ac.source;
 
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;

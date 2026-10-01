@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.meter;
 
+import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.ChatFormatting;
@@ -69,7 +70,7 @@ public class ClampMeterBlockEntity extends ElectricBlockEntity implements IHaveG
         double instantaneous = 0, rms = 0;
         for(var wire : wires) {
             instantaneous += AcReadings.finite(wire.current());
-            rms += AcReadings.finite(wire.heatingCurrent());
+            rms += AcReadings.finite(ForkHooks.get().heatingCurrent(wire));
         }
         current = (float) smoother.update(instantaneous, rms);
     }

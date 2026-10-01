@@ -1,4 +1,4 @@
-package com.nolanbaker.pgmodernized.device.drive;
+package com.nolanbaker.pgmodernized.ac.drive;
 
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;

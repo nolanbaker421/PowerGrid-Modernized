@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.ctcabinet;
 
+import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceReadings;
@@ -18,7 +19,6 @@ import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.special.WattmeterWire;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
     private DeviceSpliceHost deviceHubs;
     private final JackSupport jack = new JackSupport(this, false);
     // No initialisers: buildCircuit runs from the superclass constructor, before field initialisers.
-    private WattmeterWire[] shunts;
+    private ElectricWire[] shunts;
     private ElectricWire[] senses;
     private AcReadings.Filter[] readings;
     private final float[] volts = new float[CHANNELS];
@@ -74,7 +74,7 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
     public void buildCircuit(CircuitBuilder builder) {
         deviceHubs().buildCircuit(builder);
         if(shunts == null) {
-            shunts = new WattmeterWire[CHANNELS];
+            shunts = new ElectricWire[CHANNELS];
             senses = new ElectricWire[CHANNELS];
             readings = new AcReadings.Filter[CHANNELS];
             for(int n = 0; n < CHANNELS; ++n)
@@ -83,11 +83,11 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         var reference = builder.terminalNode(TERMINAL_REFERENCE);
         for(int n = 0; n < CHANNELS; ++n) {
             var in = builder.terminalNode(inTerminal(n));
-            // The sense branch is built first because the shunt holds a reference to it: the
-            // wattmeter accumulates its own current times the sense voltage as the solver steps.
+            // The sense branch is built first because the fork's wattmeter shunt holds a reference
+            // to it: it accumulates its own current times the sense voltage as the solver steps.
+            // On stock Power Grid the shunt is a plain wire and power is volts times amps.
             senses[n] = builder.connect(SENSE, in, reference);
-            shunts[n] = new WattmeterWire(SHUNT, senses[n], in, builder.terminalNode(outTerminal(n)));
-            builder.add(shunts[n]);
+            shunts[n] = ForkHooks.get().shunt(builder, SHUNT, senses[n], in, builder.terminalNode(outTerminal(n)));
         }
     }
 
@@ -112,7 +112,7 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
             if(shunt == null || sense == null || !shunt.isConverged())
                 continue;
             var reading = readings[n];
-            reading.sample(sense, shunt, shunt.drainRealPower());
+            reading.sample(sense, shunt, ForkHooks.get().drainRealPower(shunt));
             amps[n] = (float) reading.signedRmsCurrent();
             volts[n] = (float) reading.signedRmsVoltage();
             watts[n] = (float) reading.realPower();

@@ -45,9 +45,21 @@
     "powergrid_modernized:terminal_cabinet",
     "powergrid_modernized:tap_actuator",
     "powergrid_modernized:vfd_8kv",
-    "powergrid_modernized:three_phase_motor",
-    "powergrid_modernized:three_phase_drive",
-    "powergrid_modernized:synchroscope",
-    "powergrid_modernized:creative_ac_source"
+    {
+      "id": "powergrid_modernized:three_phase_motor",
+      "required": false
+    },
+    {
+      "id": "powergrid_modernized:three_phase_drive",
+      "required": false
+    },
+    {
+      "id": "powergrid_modernized:synchroscope",
+      "required": false
+    },
+    {
+      "id": "powergrid_modernized:creative_ac_source",
+      "required": false
+    }
   ]
 }

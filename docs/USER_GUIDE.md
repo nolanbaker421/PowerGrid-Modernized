@@ -20,11 +20,11 @@ You need, on Minecraft 1.21.1 with NeoForge:
 Optional, picked up automatically if present: **CC: Tweaked** (peripherals) and **OpenComputers**
 (components). Nothing in the addon changes Power Grid itself; it is a plain addon jar.
 
-**The AC fork.** DaRealML's powergrid-ac is a replacement for the Power Grid jar, not an addon:
-swap the jar and use this mod's `-ac-` build with it. Everything already built keeps working, DC
-circuits included; the fork only adds alternating sources and the maths for them. The three-phase
-motor and drive, the synchroscope and the creative AC source exist only in the `-ac-` build, and
-the three-phase transformers only make sense there.
+**The AC fork.** DaRealML's powergrid-ac is a replacement for the Power Grid jar, not an addon.
+This mod is one jar for both: with stock Power Grid every meter reads instantaneous values; with
+the fork installed the mod notices at startup, meters read RMS and real power, and the three-phase
+motor and drive, the synchroscope and the creative AC source appear in the creative tab. Swapping
+Power Grid jars on an existing world keeps everything except those four blocks.
 
 Everything is in its own creative tab, "PowerGrid: Modernized". All blocks are mined with a pickaxe.
 

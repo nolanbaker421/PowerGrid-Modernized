@@ -1,9 +1,9 @@
-package com.nolanbaker.pgmodernized.client;
+package com.nolanbaker.pgmodernized.ac.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlock;
-import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlockEntity;
+import com.nolanbaker.pgmodernized.ac.sync.SynchroscopeBlock;
+import com.nolanbaker.pgmodernized.ac.sync.SynchroscopeBlockEntity;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;

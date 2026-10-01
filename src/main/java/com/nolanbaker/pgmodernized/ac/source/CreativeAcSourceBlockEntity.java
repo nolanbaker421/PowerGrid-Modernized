@@ -1,4 +1,4 @@
-package com.nolanbaker.pgmodernized.device.source;
+package com.nolanbaker.pgmodernized.ac.source;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -18,7 +18,7 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
-import static com.nolanbaker.pgmodernized.device.source.CreativeAcSourceBlock.*;
+import static com.nolanbaker.pgmodernized.ac.source.CreativeAcSourceBlock.*;
 
 /**
  * Three ideal alternating sources from each line to the neutral, a milliohm each, retuned every

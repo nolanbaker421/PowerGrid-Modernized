@@ -1,10 +1,10 @@
-package com.nolanbaker.pgmodernized.device.drive;
+package com.nolanbaker.pgmodernized.ac.drive;
 
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
 import com.nolanbaker.pgmodernized.network.JackTerminals;
-import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
+import com.nolanbaker.pgmodernized.ac.AcContent;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
@@ -92,6 +92,6 @@ public class ThreePhaseDriveBlock extends Rotation4ElectricBlock implements IBE<
 
     @Override
     public BlockEntityType<? extends ThreePhaseDriveBlockEntity> getBlockEntityType() {
-        return ModBlockEntities.THREE_PHASE_DRIVE.get();
+        return AcContent.THREE_PHASE_DRIVE_BE.get();
     }
 }

@@ -127,6 +127,12 @@ tasks.processResources {
     }
 }
 
+// Stock-compatibility check (CI runs it): everything outside the ac package must compile against
+// the stock Power Grid jar, since the one jar loads with or without the powergrid-ac fork.
+if(project.hasProperty("stockCompat")) {
+    sourceSets.main.java.exclude("**/pgmodernized/ac/**")
+}
+
 tasks.jar {
     from("LICENSE") { rename { "${it}_${project.archives_base_name}" } }
 }

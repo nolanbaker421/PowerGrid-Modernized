@@ -20,5 +20,10 @@
   "result": {
     "count": 1,
     "id": "powergrid_modernized:three_phase_drive"
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "powergrid_modernized:ac_fork"
+    }
+  ]
 }

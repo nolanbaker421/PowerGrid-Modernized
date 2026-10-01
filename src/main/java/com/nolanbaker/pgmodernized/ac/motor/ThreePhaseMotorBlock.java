@@ -1,7 +1,7 @@
-package com.nolanbaker.pgmodernized.device.motor;
+package com.nolanbaker.pgmodernized.ac.motor;
 
 import com.nolanbaker.pgmodernized.conduit.ConductorColors;
-import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
+import com.nolanbaker.pgmodernized.ac.AcContent;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
@@ -129,6 +129,6 @@ public class ThreePhaseMotorBlock extends ElectricKineticBlock implements IBE<Th
 
     @Override
     public BlockEntityType<? extends ThreePhaseMotorBlockEntity> getBlockEntityType() {
-        return ModBlockEntities.THREE_PHASE_MOTOR.get();
+        return AcContent.THREE_PHASE_MOTOR_BE.get();
     }
 }

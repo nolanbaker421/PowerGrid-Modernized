@@ -17,5 +17,10 @@
       "rolls": 1.0
     }
   ],
-  "random_sequence": "powergrid_modernized:blocks/three_phase_motor"
+  "random_sequence": "powergrid_modernized:blocks/three_phase_motor",
+  "neoforge:conditions": [
+    {
+      "type": "powergrid_modernized:ac_fork"
+    }
+  ]
 }

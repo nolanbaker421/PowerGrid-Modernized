@@ -13,7 +13,8 @@ Adds the Variable Frequency Drive, Analog I/O Module, Clamp Meter, Line Voltmete
 Cat6 network cabling, US-style breaker panels (single, split-phase and three-phase) with plug-on breakers,
 split-phase and three-phase transformers,
 with ComputerCraft peripherals and OpenComputers network nodes.
-AC build: needs the powergrid-ac fork of Power Grid (v0.6.1-ac.7 or newer); meters read RMS and real power.
+Runs on stock Power Grid and on the powergrid-ac fork alike; with the fork, meters read RMS and real power and the
+three-phase motor and drive, synchroscope and creative AC source appear.
 '''
 
 [[dependencies.powergrid_modernized]]

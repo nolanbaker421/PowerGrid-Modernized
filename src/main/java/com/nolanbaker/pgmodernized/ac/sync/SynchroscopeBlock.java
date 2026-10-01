@@ -1,6 +1,6 @@
-package com.nolanbaker.pgmodernized.device.sync;
+package com.nolanbaker.pgmodernized.ac.sync;
 
-import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
+import com.nolanbaker.pgmodernized.ac.AcContent;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.Direction;
@@ -105,6 +105,6 @@ public class SynchroscopeBlock extends HorizontalElectricBlock implements IBE<Sy
 
     @Override
     public BlockEntityType<? extends SynchroscopeBlockEntity> getBlockEntityType() {
-        return ModBlockEntities.SYNCHROSCOPE.get();
+        return AcContent.SYNCHROSCOPE_BE.get();
     }
 }

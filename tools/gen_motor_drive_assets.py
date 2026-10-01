@@ -263,6 +263,8 @@ def main():
     synchroscope()
     creative_source()
     recipes()
+    import ac_conditions
+    ac_conditions.main()
     print("motor and drive assets written")
 
 

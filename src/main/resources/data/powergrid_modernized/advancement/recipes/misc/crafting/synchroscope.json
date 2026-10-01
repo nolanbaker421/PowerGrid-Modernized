@@ -28,5 +28,10 @@
     "recipes": [
       "powergrid_modernized:crafting/synchroscope"
     ]
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "powergrid_modernized:ac_fork"
+    }
+  ]
 }

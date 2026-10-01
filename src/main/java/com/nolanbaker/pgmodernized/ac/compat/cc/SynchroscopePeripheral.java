@@ -1,6 +1,6 @@
-package com.nolanbaker.pgmodernized.compat.cc.sync;
+package com.nolanbaker.pgmodernized.ac.compat.cc;
 
-import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlockEntity;
+import com.nolanbaker.pgmodernized.ac.sync.SynchroscopeBlockEntity;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import org.jetbrains.annotations.NotNull;

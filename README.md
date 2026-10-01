@@ -235,43 +235,42 @@ cannot branch; wire cutters pick up a whole run.
 Cables re-link themselves once a second, so jacks that unload and reload, or a rebuilt network, recover
 without any manual action. Breaking a jack drops a hanging cable and trims the last segment of a laid run.
 
-## AC build (branch `ac`)
+## AC support (one jar)
 
-The `main` branch targets the stock Power Grid release, which simulates direct current only. The
-`ac` branch builds against [powergrid-ac](https://github.com/DaRealML/powergrid-ac), an
-experimental fork that adds alternating current: alternators with pole pairs, three-phase machines,
-reactive components and sub-tick solving. Its author calls it a demo written by an AI assistant and
-has not verified it in a running game, so expect rough edges.
-
-What the branch changes:
+There is one jar. It runs on the stock Power Grid release, which simulates direct current only, and
+on [powergrid-ac](https://github.com/DaRealML/powergrid-ac), an experimental fork that replaces the
+Power Grid jar and adds alternating current: alternators with pole pairs, three-phase machines,
+reactive components and sub-tick solving. The mod detects the fork at startup (the log line says
+which it found) and, with it:
 
 - Every meter reads the RMS of the last tick instead of one instantaneous sample: breaker trip
-  curves, the line ammeter and voltmeter, the clamp meter, the analog inputs and the VFD readouts.
+  curves, the line ammeter and voltmeter, the clamp meter, the analog inputs and the regulator
+  readouts.
 - The CT cabinet meters real power with the fork's wattmeter element and reports a power factor per
   channel: `getPowerFactor(channel)` on the peripheral and the component, `powerFactor` in
   `getReadings()`.
-- The VFD holds its output RMS voltage at the setpoint, so on an alternating feed it behaves as a
-  variable transformer.
+- The Digital Voltage Regulator holds its output RMS voltage at the setpoint, so on an alternating
+  feed it behaves as a variable transformer.
 - The split-phase and three-phase transformers carry the phases (a delta-star bank shifts 30°), and
   their goggle readings are RMS.
-- **Three-Phase Motor** and **Three-Phase Drive** (AC build only). The motor is a Create generator
-  with U, V, W terminals: its speed is the synchronous speed for its pole-pair setting (value box on
-  the terminal box) at the supply frequency, less a little slip under load, in the direction the
-  phase sequence dictates. The drive takes three-phase (or DC) in on L1, L2, L3 and puts out three
-  phases at the frequency on its value box or a computer command (`powergrid_three_phase_drive`),
-  holding the rated volts per hertz, ramping at a set rate, reversible; the real power it delivers
-  is drawn from its input.
-- On a direct-current network every reading is the same number the main build reports.
+- **Three-Phase Motor** and **Three-Phase Drive** appear. The motor is a Create generator with U, V,
+  W terminals: its speed is the synchronous speed for its pole-pair setting (value box on the
+  terminal box) at the supply frequency, less a little slip under load, in the direction the phase
+  sequence dictates. The drive takes three-phase (or DC) in on L1, L2, L3 and puts out three phases
+  at the frequency on its value box or a computer command (`powergrid_three_phase_drive`), holding
+  the rated volts per hertz, ramping at a set rate, reversible; the real power it delivers is drawn
+  from its input.
+- On a direct-current network every reading is the same number stock Power Grid gives.
 
-Installing: in `mods/`, replace `powergrid-mc1.21.1-0.6.2.jar` with
-`powergrid-mc1.21.1-0.6.1-ac.7.jar` from the fork's releases, and use
-the AC build's jar, `powergrid-modernized-ac-mc1.21.1-<version>.jar` (the plain
-`powergrid-modernized-mc1.21.1-<version>.jar` is the stock build and asks for Power Grid 0.6.2). The AC build
-refuses to load on stock Power Grid.
-The main build does load on the fork, but its meters would sample the waveform once per tick.
+Without the fork the four AC blocks are not registered (their recipes and loot are skipped) and
+every meter reads the instantaneous value, exactly as before. Swapping between the two Power Grid
+jars on an existing world keeps everything but the AC blocks.
 
-Building: drop the fork jar in `libs/` and point `powergrid_jar` in `gradle.properties` at it, as
-the branch already does.
+Building: the mod compiles against the fork jar (`powergrid_jar` in `gradle.properties`, a superset
+of stock on every class the mod uses); everything outside the `ac` package also compiles against
+stock, which CI checks with `./gradlew compileJava -PstockCompat=true -Ppowergrid_jar=<stock jar>`.
+The AC-only code lives under `com.nolanbaker.pgmodernized.ac` and is reached only through
+`fork/ForkHooks`, which loads it reflectively when the fork is present.
 
 - **Synchroscope**: a wall meter with Bus and Incoming potential inputs (each a line and its
   neutral). The needle shows the angle the incoming leads the bus and turns at the slip; the face

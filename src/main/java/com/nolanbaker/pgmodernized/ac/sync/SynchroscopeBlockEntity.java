@@ -1,6 +1,6 @@
-package com.nolanbaker.pgmodernized.device.sync;
+package com.nolanbaker.pgmodernized.ac.sync;
 
-import com.nolanbaker.pgmodernized.device.motor.PhaseSenseWire;
+import com.nolanbaker.pgmodernized.ac.motor.PhaseSenseWire;
 import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.ChatFormatting;
@@ -17,7 +17,7 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
-import static com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlock.*;
+import static com.nolanbaker.pgmodernized.ac.sync.SynchroscopeBlock.*;
 
 /**
  * Two high-resistance sense branches time the zero crossings of the bus and the incoming voltage

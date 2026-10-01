@@ -1,6 +1,6 @@
-package com.nolanbaker.pgmodernized.compat.oc;
+package com.nolanbaker.pgmodernized.ac.compat.oc;
 
-import com.nolanbaker.pgmodernized.device.drive.ThreePhaseDriveBlockEntity;
+import com.nolanbaker.pgmodernized.ac.drive.ThreePhaseDriveBlockEntity;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
 import li.cil.oc.api.machine.Context;
@@ -13,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
+import com.nolanbaker.pgmodernized.compat.oc.OCNodeSupport;
 import static com.nolanbaker.pgmodernized.compat.oc.OCNodeSupport.result;
 
 /** Three-phase drive that plugs straight into OpenComputers cables as component "powergrid_three_phase_drive". */

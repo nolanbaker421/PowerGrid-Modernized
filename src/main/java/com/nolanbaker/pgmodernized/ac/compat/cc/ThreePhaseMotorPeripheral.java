@@ -1,6 +1,6 @@
-package com.nolanbaker.pgmodernized.compat.cc.motor;
+package com.nolanbaker.pgmodernized.ac.compat.cc;
 
-import com.nolanbaker.pgmodernized.device.motor.ThreePhaseMotorBlockEntity;
+import com.nolanbaker.pgmodernized.ac.motor.ThreePhaseMotorBlockEntity;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import org.jetbrains.annotations.NotNull;

@@ -1,4 +1,4 @@
-package com.nolanbaker.pgmodernized.device.drive;
+package com.nolanbaker.pgmodernized.ac.drive;
 
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
@@ -28,7 +28,7 @@ import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
-import static com.nolanbaker.pgmodernized.device.drive.ThreePhaseDriveBlock.*;
+import static com.nolanbaker.pgmodernized.ac.drive.ThreePhaseDriveBlock.*;
 
 /**
  * A rectifier and inverter in one block. The output is three alternating sources 120° apart at the

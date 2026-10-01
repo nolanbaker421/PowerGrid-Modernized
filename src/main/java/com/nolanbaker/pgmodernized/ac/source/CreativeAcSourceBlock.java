@@ -1,7 +1,7 @@
-package com.nolanbaker.pgmodernized.device.source;
+package com.nolanbaker.pgmodernized.ac.source;
 
 import com.nolanbaker.pgmodernized.conduit.ConductorColors;
-import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
+import com.nolanbaker.pgmodernized.ac.AcContent;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
@@ -92,6 +92,6 @@ public class CreativeAcSourceBlock extends HorizontalElectricBlock implements IB
 
     @Override
     public BlockEntityType<? extends CreativeAcSourceBlockEntity> getBlockEntityType() {
-        return ModBlockEntities.CREATIVE_AC_SOURCE.get();
+        return AcContent.CREATIVE_AC_SOURCE_BE.get();
     }
 }

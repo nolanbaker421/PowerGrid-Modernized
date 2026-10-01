@@ -1,9 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
 import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlockEntity;
-import com.nolanbaker.pgmodernized.client.SynchroscopeRenderer;
-import com.nolanbaker.pgmodernized.device.source.CreativeAcSourceBlockEntity;
-import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlockEntity;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlockEntity;
@@ -19,8 +16,6 @@ import com.nolanbaker.pgmodernized.device.computer.ComputerBlockEntityFactories;
 import com.nolanbaker.pgmodernized.device.meter.ClampMeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineVoltmeterBlockEntity;
-import com.nolanbaker.pgmodernized.device.drive.ThreePhaseDriveBlockEntity;
-import com.nolanbaker.pgmodernized.device.motor.ThreePhaseMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
@@ -126,32 +121,9 @@ public class ModBlockEntities {
                     .validBlock(ModBlocks.TRANSFORMER_FILLER)
                     .register();
 
-    public static final BlockEntityEntry<ThreePhaseMotorBlockEntity> THREE_PHASE_MOTOR =
-            REGISTRATE.blockEntity("three_phase_motor", ComputerBlockEntityFactories.threePhaseMotor())
-                    .visual(() -> HalfShaftVisual::new)
-                    .validBlock(ModBlocks.THREE_PHASE_MOTOR)
-                    .renderer(() -> ElectricMotorRenderer::new)
-                    .register();
-
-    public static final BlockEntityEntry<ThreePhaseDriveBlockEntity> THREE_PHASE_DRIVE =
-            REGISTRATE.blockEntity("three_phase_drive", ComputerBlockEntityFactories.threePhaseDrive())
-                    .validBlock(ModBlocks.THREE_PHASE_DRIVE)
-                    .register();
-
     public static final BlockEntityEntry<PanelExtensionBlockEntity> PANEL_EXTENSION =
             REGISTRATE.blockEntity("panel_extension", PanelExtensionBlockEntity::new)
                     .validBlock(ModBlocks.PANEL_EXTENSION)
-                    .register();
-
-    public static final BlockEntityEntry<SynchroscopeBlockEntity> SYNCHROSCOPE =
-            REGISTRATE.blockEntity("synchroscope", ComputerBlockEntityFactories.synchroscope())
-                    .validBlock(ModBlocks.SYNCHROSCOPE)
-                    .renderer(() -> SynchroscopeRenderer::new)
-                    .register();
-
-    public static final BlockEntityEntry<CreativeAcSourceBlockEntity> CREATIVE_AC_SOURCE =
-            REGISTRATE.blockEntity("creative_ac_source", CreativeAcSourceBlockEntity::new)
-                    .validBlock(ModBlocks.CREATIVE_AC_SOURCE)
                     .register();
 
     public static void register() {}

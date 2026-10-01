@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.compat.oc;
 
+import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import li.cil.oc.api.Driver;
 import li.cil.oc.api.network.Environment;
 import li.cil.oc.common.capabilities.Capabilities;
@@ -20,14 +21,12 @@ public class OCBridge {
         expose(event, ModBlockEntities.LINE_AMMETER.get());
         expose(event, ModBlockEntities.CT_CABINET.get());
         expose(event, ModBlockEntities.TRANSFORMER.get());
-        expose(event, ModBlockEntities.THREE_PHASE_MOTOR.get());
-        expose(event, ModBlockEntities.THREE_PHASE_DRIVE.get());
-        expose(event, ModBlockEntities.SYNCHROSCOPE.get());
+        ForkHooks.get().registerOC(event);
         expose(event, ModBlockEntities.NETWORK_JACK.get());
         expose(event, ModBlockEntities.NETWORK_SWITCH.get());
     }
 
-    private static <T extends BlockEntity> void expose(RegisterCapabilitiesEvent event, BlockEntityType<T> type) {
+    public static <T extends BlockEntity> void expose(RegisterCapabilitiesEvent event, BlockEntityType<T> type) {
         event.registerBlockEntity(Capabilities.EnvironmentCapability(), type,
                 (be, side) -> be instanceof Environment env ? env : null);
     }
@@ -43,9 +42,7 @@ public class OCBridge {
         ComputerBlockEntityFactories.LINE_AMMETER = OCLineAmmeterBlockEntity::new;
         ComputerBlockEntityFactories.CT_CABINET = OCCtCabinetBlockEntity::new;
         ComputerBlockEntityFactories.TRANSFORMER = OCTransformerBlockEntity::new;
-        ComputerBlockEntityFactories.THREE_PHASE_MOTOR = OCThreePhaseMotorBlockEntity::new;
-        ComputerBlockEntityFactories.THREE_PHASE_DRIVE = OCThreePhaseDriveBlockEntity::new;
-        ComputerBlockEntityFactories.SYNCHROSCOPE = OCSynchroscopeBlockEntity::new;
+        ForkHooks.get().swapOCFactories();
         ComputerBlockEntityFactories.NETWORK_JACK = OCNetworkJackBlockEntity::new;
         ComputerBlockEntityFactories.NETWORK_SWITCH = OCNetworkSwitchBlockEntity::new;
         // Cat6 cables link the OC nodes of the jacks they join.

@@ -21,29 +21,37 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # The Power Grid jar the addon compiles against is not in the repository (libs/ is ignored).
-      # Set the repository variable POWERGRID_JAR_URL (main, stock Power Grid) and POWERGRID_AC_JAR_URL
-      # (ac branch, the DaRealML/powergrid-ac release) to direct download links of those jars.
-      - name: Fetch the Power Grid jar
+      # The mod compiles against the powergrid-ac fork (a superset of stock Power Grid on every class
+      # the mod uses) and runs on either. Neither jar is in the repository (libs/ is ignored). Set the
+      # repository variables POWERGRID_AC_JAR_URL (the fork release the build targets) and
+      # POWERGRID_JAR_URL (the stock release) to direct download links.
+      - name: Fetch the Power Grid jars
         env:
-          JAR_URL: ${{ github.ref_name == 'ac' && vars.POWERGRID_AC_JAR_URL || vars.POWERGRID_JAR_URL }}
+          AC_URL: ${{ vars.POWERGRID_AC_JAR_URL }}
+          STOCK_URL: ${{ vars.POWERGRID_JAR_URL }}
         run: |
           jar=$(grep '^powergrid_jar=' gradle.properties | cut -d= -f2)
-          if [ -z "$JAR_URL" ]; then
-            echo "::error::Set the repository variable POWERGRID_JAR_URL (or POWERGRID_AC_JAR_URL for the ac branch) to a download link for $jar"
+          if [ -z "$AC_URL" ] || [ -z "$STOCK_URL" ]; then
+            echo "::error::Set the repository variables POWERGRID_AC_JAR_URL (for $jar) and POWERGRID_JAR_URL (stock Power Grid)"
             exit 1
           fi
           mkdir -p "$(dirname "$jar")"
-          curl -fL "$JAR_URL" -o "$jar"
+          curl -fL "$AC_URL" -o "$jar"
+          curl -fL "$STOCK_URL" -o libs/powergrid-stock.jar
 
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Build with Gradle
+      - name: Build with Gradle (against the fork)
         run: ./gradlew build
+
+      # Everything outside the ac package must also compile against stock Power Grid: this is what
+      # keeps the one jar loadable without the fork.
+      - name: Check stock Power Grid compatibility
+        run: ./gradlew compileJava -PstockCompat=true -Ppowergrid_jar=libs/powergrid-stock.jar --rerun-tasks
 
       - name: Upload the mod jar
         uses: actions/upload-artifact@v4
         with:
-          name: powergrid-modernized-${{ github.ref_name }}
+          name: powergrid-modernized
           path: build/libs/*.jar

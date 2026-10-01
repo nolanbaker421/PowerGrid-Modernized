@@ -1,6 +1,6 @@
 package com.nolanbaker.pgmodernized;
 
-import com.nolanbaker.pgmodernized.device.motor.PhaseSenseWire;
+import com.nolanbaker.pgmodernized.ac.motor.PhaseSenseWire;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;

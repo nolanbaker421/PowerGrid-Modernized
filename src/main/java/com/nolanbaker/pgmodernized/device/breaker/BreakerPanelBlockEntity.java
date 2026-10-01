@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.breaker;
 
+import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import net.minecraft.world.phys.AABB;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
@@ -332,7 +333,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
      * fraction of a cycle at Create's frequencies.
      */
     protected float readCurrent(SwitchedWire wire) {
-        float current = (float) wire.lastRmsCurrent();
+        float current = (float) ForkHooks.get().lastRmsCurrent(wire);
         return Float.isFinite(current) ? current : 0;
     }
 

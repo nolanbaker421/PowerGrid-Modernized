@@ -28,5 +28,10 @@
     "recipes": [
       "powergrid_modernized:crafting/three_phase_motor"
     ]
-  }
+  },
+  "neoforge:conditions": [
+    {
+      "type": "powergrid_modernized:ac_fork"
+    }
+  ]
 }

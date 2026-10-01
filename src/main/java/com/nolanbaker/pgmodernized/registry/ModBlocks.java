@@ -2,8 +2,6 @@ package com.nolanbaker.pgmodernized.registry;
 
 import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlockEntity;
 import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlock;
-import com.nolanbaker.pgmodernized.device.source.CreativeAcSourceBlock;
-import com.nolanbaker.pgmodernized.device.sync.SynchroscopeBlock;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlock;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlock;
@@ -17,11 +15,7 @@ import com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlock;
 import com.nolanbaker.pgmodernized.device.meter.ClampMeterBlock;
 import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlock;
 import com.nolanbaker.pgmodernized.device.meter.LineVoltmeterBlock;
-import com.nolanbaker.pgmodernized.device.drive.ThreePhaseDriveBlock;
-import com.nolanbaker.pgmodernized.device.motor.ThreePhaseMotorBlock;
-import com.nolanbaker.pgmodernized.device.motor.ThreePhaseMotorBlockEntity;
 import com.simibubi.create.api.stress.BlockStressValues;
-import net.minecraft.world.level.block.Blocks;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlock;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerFillerBlock;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerSpec;
@@ -214,56 +208,6 @@ public class ModBlocks {
         }
         TRANSFORMERS = Collections.unmodifiableMap(map);
     }
-
-    /** Three-phase induction motor: a Create generator whose speed follows the supply frequency. */
-    public static final BlockEntry<ThreePhaseMotorBlock> THREE_PHASE_MOTOR = REGISTRATE.block("three_phase_motor", ThreePhaseMotorBlock::new)
-            .blockstate(NonNullBiConsumer.noop())
-            .initialProperties(() -> Blocks.IRON_BLOCK)
-            .properties(p -> p.noOcclusion())
-            .transform(pickaxeOnly())
-            .onRegister(block -> BlockStressValues.CAPACITIES.register(block, () -> ThreePhaseMotorBlockEntity.STRESS_CAPACITY))
-            .onRegister(BlockStressValues.setGeneratorSpeed(256, true))
-            .lang("Three-Phase Motor")
-            .item()
-                .model(NonNullBiConsumer.noop())
-                .build()
-            .register();
-
-    /** Three-phase variable frequency drive. */
-    public static final BlockEntry<ThreePhaseDriveBlock> THREE_PHASE_DRIVE = REGISTRATE.block("three_phase_drive", ThreePhaseDriveBlock::new)
-            .blockstate(NonNullBiConsumer.noop())
-            .initialProperties(SharedProperties::softMetal)
-            .properties(p -> p.noOcclusion())
-            .transform(pickaxeOnly())
-            .lang("Three-Phase Drive")
-            .item()
-                .model(NonNullBiConsumer.noop())
-                .build()
-            .register();
-
-    /** Synchroscope: phase angle and slip of an incoming machine against the bus. */
-    public static final BlockEntry<SynchroscopeBlock> SYNCHROSCOPE = REGISTRATE.block("synchroscope", SynchroscopeBlock::new)
-            .blockstate(NonNullBiConsumer.noop())
-            .initialProperties(SharedProperties::softMetal)
-            .properties(p -> p.noOcclusion())
-            .transform(pickaxeOnly())
-            .lang("Synchroscope")
-            .item()
-                .model(NonNullBiConsumer.noop())
-                .build()
-            .register();
-
-    /** Creative-only alternating source at a set voltage and frequency. */
-    public static final BlockEntry<CreativeAcSourceBlock> CREATIVE_AC_SOURCE = REGISTRATE.block("creative_ac_source", CreativeAcSourceBlock::new)
-            .blockstate(NonNullBiConsumer.noop())
-            .initialProperties(SharedProperties::softMetal)
-            .properties(p -> p.noOcclusion())
-            .transform(pickaxeOnly())
-            .lang("Creative AC Source")
-            .item()
-                .model(NonNullBiConsumer.noop())
-                .build()
-            .register();
 
     /** The tap changer drive: bolts onto a transformer, one turn of its shaft per tap step. */
     public static final BlockEntry<TapActuatorBlock> TAP_ACTUATOR = REGISTRATE.block("tap_actuator", TapActuatorBlock::new)

@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.util;
 
+import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 
 /**
@@ -46,11 +47,15 @@ public final class AcReadings {
          * @param realPower   mean real power over the tick from a wattmeter, or NaN when not metered
          */
         public void sample(AbstractElectricWire voltageWire, AbstractElectricWire currentWire, double realPower) {
-            double rmsV = finite(voltageWire.rmsVoltage());
-            double rmsVI = finite(voltageWire.rmsCurrent());
-            double meanVI = finite(voltageWire.meanCurrent());
-            double rmsI = finite(currentWire.rmsCurrent());
-            double meanI = finite(currentWire.meanCurrent());
+            var fork = ForkHooks.get();
+            double rmsV = finite(fork.rmsVoltage(voltageWire));
+            double rmsVI = finite(fork.rmsCurrent(voltageWire));
+            double meanVI = finite(fork.meanCurrent(voltageWire));
+            double rmsI = finite(fork.rmsCurrent(currentWire));
+            double meanI = finite(fork.meanCurrent(currentWire));
+            // Stock Power Grid has no wattmeter element: real power is volts times amps of the tick.
+            if(Double.isNaN(realPower) && !fork.present())
+                realPower = finite(voltageWire.potentialDifference()) * meanI;
             // A steady current has a mean equal to its RMS (exactly so when the network is not
             // sub-stepping); take it as is. Only an alternating one is smoothed. One tick is a
             // fraction of a cycle at Create's frequencies, and a slice near the crest also has a

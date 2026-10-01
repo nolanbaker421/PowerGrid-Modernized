@@ -1,4 +1,4 @@
-package com.nolanbaker.pgmodernized.device.motor;
+package com.nolanbaker.pgmodernized.ac.motor;
 
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;

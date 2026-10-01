@@ -1,6 +1,6 @@
-package com.nolanbaker.pgmodernized.compat.cc.drive;
+package com.nolanbaker.pgmodernized.ac.compat.cc;
 
-import com.nolanbaker.pgmodernized.device.drive.ThreePhaseDriveBlockEntity;
+import com.nolanbaker.pgmodernized.ac.drive.ThreePhaseDriveBlockEntity;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import org.jetbrains.annotations.NotNull;

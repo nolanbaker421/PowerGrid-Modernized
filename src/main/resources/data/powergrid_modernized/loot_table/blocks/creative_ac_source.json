@@ -17,5 +17,10 @@
       "rolls": 1.0
     }
   ],
-  "random_sequence": "powergrid_modernized:blocks/creative_ac_source"
+  "random_sequence": "powergrid_modernized:blocks/creative_ac_source",
+  "neoforge:conditions": [
+    {
+      "type": "powergrid_modernized:ac_fork"
+    }
+  ]
 }

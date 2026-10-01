@@ -1,4 +1,4 @@
-package com.nolanbaker.pgmodernized.device.motor;
+package com.nolanbaker.pgmodernized.ac.motor;
 
 import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.simibubi.create.api.stress.BlockStressValues;
