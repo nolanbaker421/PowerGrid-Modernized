@@ -31,6 +31,9 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         resistance("analog_io_module", "output", 1, "input", 1e6);
         resistance("vfd", "output", 0.5);
         thermal("vfd", 300, 4.0);
+        // The 8 kV regulator: a bigger box with more iron in it, same output stage.
+        resistance("vfd_8kv", "output", 0.5);
+        thermal("vfd_8kv", 900, 6.0);
         resistance("line_voltmeter", "input", 1e8);
         resistance("line_ammeter", "shunt", 0.005);
         thermal("line_ammeter", 60, 2.0);
