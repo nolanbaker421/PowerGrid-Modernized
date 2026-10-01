@@ -111,7 +111,4 @@ public class BusLinkEntity extends BlockWireEntity {
         return this;
     }
 
-    /** Nothing to pick up: the bus bar belongs to the sections. */
-    @Override
-    public void dropWire() {}
 }

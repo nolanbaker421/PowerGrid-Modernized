@@ -137,8 +137,6 @@ public class RailPickupEntity extends HangingWireEntity {
         return null;
     }
 
-    @Override
-    public void dropWire() {}
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
