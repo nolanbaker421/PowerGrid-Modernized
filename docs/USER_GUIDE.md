@@ -846,10 +846,10 @@ How a gantry crane on a Create Aeronautics body moves itself along its runway.
   guides. Create: Linear Bearing's bearing, casing and moving blocks are made frictionless for
   Sable by this mod, so a trolley riding on them slides freely.
 - By default the pinion is `lock`ed to the rack: the body moves at exactly the rim speed however
-  heavy it is, and a stopped pinion holds it in place. If guides rub and the body still runs short
-  of the rim speed, the pinion builds up extra push against that, up to `max_acceleration` times
-  `force`: raise `force` for a crawling carriage. Turn `lock` off in the config for a softer drive
-  governed by `gain`, `max_acceleration` and `force` alone.
+  heavy it is, and a stopped pinion holds it in place. If guides rub and the body keeps running
+  short of the rim speed, the pinion leans in by up to half the rim speed to make it up. Locked,
+  `gain`, `max_acceleration` and `force` are not used. Turn `lock` off for a softer drive governed
+  by those three.
 - Goggles on the pinion show the rim speed and whether it is on a rack, and if not, why: no rack
   in any of the four cells the rim faces, a rack whose teeth do not point at the cog, a rack that
   runs along the axle instead of across it, or no physics steps at all (the pinion is not on an

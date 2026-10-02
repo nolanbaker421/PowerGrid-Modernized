@@ -28,7 +28,7 @@ import org.joml.Vector3d;
  * here is worked out in that frame.
  */
 public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEntitySubLevelActor {
-    /** Extra push built up while the body keeps falling short of the rim speed: friction and drag between steps. */
+    /** Extra speed, in m/s, leaned in while the body keeps falling short of the rim speed between steps. */
     private double bias;
     private int lastSign;
 
@@ -96,18 +96,17 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
                 have = velocity.dot(alongWorld);
                 double error = want - have;
                 double drift = velocity.dot(axisWorld);
-                var change = alongWorld.scale(error).add(axisWorld.scale(-drift));
-                body.addLinearAndAngularVelocity(new Vector3d(change.x, change.y, change.z), new Vector3d());
+                // Whatever the guides take back between steps shows up as a steady shortfall at the
+                // start of the next one. Lean into it, in speed units so it owes nothing to the mass
+                // estimate, and never by more than half the rim speed.
                 int sign = (int) Math.signum(rimSpeed);
                 if(sign != lastSign || want == 0)
                     bias = 0;
                 lastSign = sign;
-                double cap = mass * PgmConfig.PINION_MAX_ACCELERATION.get() * PgmConfig.PINION_FORCE.get() * dt;
                 if(want > 0)
-                    bias = clamp(bias + error * mass * 0.3, cap);
-                var com = massData.getCenterOfMass();
-                var comLocal = new Vec3(com.x(), com.y(), com.z());
-                body.applyImpulseAtPoint(comLocal, along.scale(bias));
+                    bias = clamp(bias + error * 0.3, 0.5 * want);
+                var change = alongWorld.scale(error + bias).add(axisWorld.scale(-drift));
+                body.addLinearAndAngularVelocity(new Vector3d(change.x, change.y, change.z), new Vector3d());
             } else {
                 var currentLocal = pose.transformNormalInverse(SableCompanion.INSTANCE.getVelocity(level, subLevel, contactLocal));
                 have = currentLocal.dot(along);

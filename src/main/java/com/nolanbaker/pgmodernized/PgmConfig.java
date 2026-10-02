@@ -61,7 +61,8 @@ public final class PgmConfig {
         PINION_PITCH_RADIUS = b.comment("Pitch radius of the pinion in metres: the body moves at the shaft speed times this (0.5 means 64 rpm walks 3.35 m/s).")
                 .defineInRange("pitch_radius", 0.5, 0.05, 4.0);
         PINION_LOCK = b.comment("Hold the body exactly at the rim speed, like teeth in a rack: a stopped pinion locks the body on the rack and a",
-                        "turning one drags it along however heavy it is. Off, the pinion pushes softly within gain, max_acceleration and force.")
+                        "turning one drags it along however heavy it is; gain, max_acceleration and force are not used.",
+                        "Off, the pinion pushes softly within gain, max_acceleration and force.")
                 .define("lock", true);
         PINION_GAIN = b.comment("How hard the pinion corrects the body's speed each physics step: 1 removes the whole speed error at once, lower is softer.")
                 .defineInRange("gain", 0.5, 0.01, 1.0);
