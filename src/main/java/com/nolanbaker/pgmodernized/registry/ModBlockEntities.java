@@ -1,13 +1,9 @@
 package com.nolanbaker.pgmodernized.registry;
 
-import dev.engine_room.flywheel.lib.model.Models;
-import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
-import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
-import net.minecraft.core.Direction;
-import com.nolanbaker.pgmodernized.rack.PinionBlock;
 import com.nolanbaker.pgmodernized.client.RailCollectorRenderer;
+import com.nolanbaker.pgmodernized.client.PinionRenderer;
 import com.nolanbaker.pgmodernized.rail.RailCollectorBlockEntity;
 import com.nolanbaker.pgmodernized.rail.RailFeedBlockEntity;
 import com.nolanbaker.pgmodernized.chain.CableChainAnchorBlockEntity;
@@ -28,7 +24,6 @@ import com.nolanbaker.pgmodernized.device.meter.ClampMeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineVoltmeterBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
-import org.patryk3211.powergrid.utility.SimpleBlockEntityVisualFactory;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerFillerBlockEntity;
@@ -140,10 +135,8 @@ public class ModBlockEntities {
 
     public static final BlockEntityEntry<PinionBlockEntity> PINION =
             REGISTRATE.blockEntity("pinion", (BlockEntityFactory<PinionBlockEntity>) (type, pos, state) -> PinionBlockEntity.FACTORY.create(type, pos, state))
-                    .visual(() -> (SimpleBlockEntityVisualFactory<PinionBlockEntity>) (context, be, partialTick) ->
-                            new SingleAxisRotatingVisual<>(context, be, partialTick, Models.block(be.getBlockState().setValue(PinionBlock.AXIS, Direction.Axis.Y))))
                     .validBlock(ModBlocks.PINION)
-                    .renderer(() -> KineticBlockEntityRenderer::new)
+                    .renderer(() -> PinionRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<CableChainAnchorBlockEntity> CABLE_CHAIN_ANCHOR =
