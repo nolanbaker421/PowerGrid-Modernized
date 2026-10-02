@@ -6,7 +6,13 @@ import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import org.patryk3211.powergrid.utility.Lang;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -28,6 +34,19 @@ public class PinionBlock extends RotatedPillarKineticBlock implements ICogWheel,
 
     public PinionBlock(Properties properties) {
         super(properties);
+    }
+
+    /** Sneak-click with an empty hand flips which way this pinion walks, for mirrored mounts. */
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if(!player.isShiftKeyDown())
+            return InteractionResult.PASS;
+        if(!level.isClientSide && level.getBlockEntity(pos) instanceof PinionBlockEntity pinion) {
+            pinion.toggleInverted();
+            player.displayClientMessage(Lang.builder().translate(pinion.inverted() ? "message.pinion.reversed" : "message.pinion.normal")
+                    .style(ChatFormatting.GRAY).component(), true);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     /** Drawn only by the visual or the block entity renderer, never as a static block as well. */

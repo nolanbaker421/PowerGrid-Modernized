@@ -3,7 +3,6 @@ package com.nolanbaker.pgmodernized.rack;
 import com.nolanbaker.pgmodernized.PgmConfig;
 import dev.ryanhcode.sable.api.block.BlockEntitySubLevelActor;
 import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
-import dev.ryanhcode.sable.api.physics.mass.MassData;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import net.minecraft.core.BlockPos;
@@ -11,7 +10,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3d;
 
 /**
  * The pinion on a Sable body. Every physics step it looks past each of its four rim sides for a
@@ -45,7 +43,7 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
         double mass = massData.getMass();
         double radius = pitchRadius();
         var axisDir = Vec3.atLowerCornerOf(Direction.get(Direction.AxisDirection.POSITIVE, axis).getNormal());
-        double rimSpeed = getSpeed() * Math.PI * 2 / 60 * radius * (PgmConfig.PINION_INVERT.get() ? -1 : 1);
+        double rimSpeed = getSpeed() * Math.PI * 2 / 60 * radius * (PgmConfig.PINION_INVERT.get() != inverted ? -1 : 1);
 
         boolean found = false;
         for(var side : Direction.values()) {
@@ -68,41 +66,36 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
             found = true;
 
             var contactLocal = Vec3.atCenterOf(worldPosition).add(sideDir.scale(radius));
-            var currentLocal = pose.transformNormalInverse(SableCompanion.INSTANCE.getVelocity(level, subLevel, contactLocal));
             var along = travelLocal.normalize();
             double want = Math.abs(rimSpeed);
-            double have = currentLocal.dot(along);
-            double error = want - have;
-            double drift = currentLocal.dot(axisDir);
-            double push, hold;
+            double have;
             if(PgmConfig.PINION_LOCK.get()) {
-                // Teeth in a rack: the contact moves at the rim speed and nowhere else. Correct the whole
-                // velocity error at once, scaled by what the body weighs along that line at that point.
-                push = error * effectiveMass(massData, contactLocal, along);
-                hold = -drift * effectiveMass(massData, contactLocal, axisDir);
+                // Teeth in a rack: the body moves at the rim speed and nowhere else. Push through the
+                // centre of mass so the drive never rocks the body into its guides, and take the whole
+                // speed error out at once, however heavy the body is.
+                var com = massData.getCenterOfMass();
+                var comLocal = new Vec3(com.x(), com.y(), com.z());
+                var velocity = pose.transformNormalInverse(SableCompanion.INSTANCE.getVelocity(level, subLevel, comLocal));
+                have = velocity.dot(along);
+                body.applyImpulseAtPoint(comLocal, along.scale((want - have) * mass));
+                // The flanges: take out any drift along the shaft axis.
+                body.applyImpulseAtPoint(comLocal, axisDir.scale(-velocity.dot(axisDir) * mass));
             } else {
+                var currentLocal = pose.transformNormalInverse(SableCompanion.INSTANCE.getVelocity(level, subLevel, contactLocal));
+                have = currentLocal.dot(along);
+                double drift = currentLocal.dot(axisDir);
                 double force = PgmConfig.PINION_FORCE.get();
                 double gain = PgmConfig.PINION_GAIN.get() * force;
                 double cap = mass * PgmConfig.PINION_MAX_ACCELERATION.get() * force * dt;
-                push = clamp(error * mass * gain, cap);
-                hold = clamp(-drift * mass * gain * 0.5, cap);
+                body.applyImpulseAtPoint(contactLocal, along.scale(clamp((want - have) * mass * gain, cap)));
+                body.applyImpulseAtPoint(contactLocal, axisDir.scale(clamp(-drift * mass * gain * 0.5, cap)));
             }
-            body.applyImpulseAtPoint(contactLocal, along.scale(push));
-            // The flanges: take out any drift along the shaft axis at the contact.
-            body.applyImpulseAtPoint(contactLocal, axisDir.scale(hold));
-
             travel = (float) have;
             break;
         }
         engaged = found;
         if(!found)
             travel = 0;
-    }
-
-    /** The mass the body presents to an impulse along {@code direction} at {@code point}, both in body coordinates. */
-    private static double effectiveMass(MassData massData, Vec3 point, Vec3 direction) {
-        double inverse = massData.getInverseNormalMass(new Vector3d(point.x, point.y, point.z), new Vector3d(direction.x, direction.y, direction.z));
-        return inverse > 1e-9 ? 1 / inverse : massData.getMass();
     }
 
     private static double clamp(double value, double limit) {

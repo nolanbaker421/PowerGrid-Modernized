@@ -832,9 +832,16 @@ How a gantry crane on a Create Aeronautics body moves itself along its runway.
 - Turn the shaft and the body walks along the rack at the rim speed (shaft rpm x pitch radius,
   0.5 m by default: 16 rpm is about 0.8 m/s, 64 rpm about 3.4 m/s). Reverse the shaft to go back.
   A stopped pinion holds the crane where it is, and the rack keeps it from drifting sideways. If a
-  rotation walks the wrong way for your build, flip `pinion.invert` in the config or add a gearbox.
+  rotation walks the wrong way, sneak-click the pinion with an empty hand to reverse that one
+  pinion (the goggles say when it is reversed); `pinion.invert` in the config flips them all.
+- Two pinions on one body must walk the same way. Mirrored mounts, one each side of a crane,
+  often turn opposite ways and cancel each other out: the crane just twitches. Check the goggles
+  on each (a negative "moving" speed on one of them is the giveaway) and reverse that one.
 - The pinion only pushes where its rim actually faces a rack block. Gaps in the rack are gaps in
   the drive. Several pinions on one body all push, so a long crane can have one on each leg.
+- The push goes through the body's centre of mass, so it never rocks a hanging trolley into its
+  guides. Create: Linear Bearing's bearing, casing and moving blocks are made frictionless for
+  Sable by this mod, so a trolley riding on them slides freely.
 - By default the pinion is `lock`ed to the rack: the body moves at exactly the rim speed however
   heavy it is, and a stopped pinion holds it in place. Turn `lock` off in the config for a softer
   drive governed by `gain`, `max_acceleration` and the `force` multiplier.

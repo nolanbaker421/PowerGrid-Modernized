@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "linearbearing:linear_bearing",
+      "required": false
+    },
+    {
+      "id": "linearbearing:linear_casing",
+      "required": false
+    },
+    {
+      "id": "linearbearing:mechanical_linear_moving",
+      "required": false
+    }
+  ]
+}

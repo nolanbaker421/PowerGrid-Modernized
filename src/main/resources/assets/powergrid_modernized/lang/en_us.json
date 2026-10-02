@@ -404,5 +404,8 @@
   "block.powergrid_modernized.pinion": "Pinion",
   "powergrid.gui.pinion.rim_speed": "Rim speed: %1$s m/s",
   "powergrid.gui.pinion.engaged": "On a rack, moving %1$s m/s",
-  "powergrid.gui.pinion.no_rack": "No rack at the rim"
+  "powergrid.gui.pinion.no_rack": "No rack at the rim",
+  "powergrid.gui.pinion.reversed": "Direction reversed (sneak-click to flip)",
+  "powergrid.message.pinion.reversed": "Pinion reversed",
+  "powergrid.message.pinion.normal": "Pinion direction normal"
 }

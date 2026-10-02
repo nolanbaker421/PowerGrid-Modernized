@@ -27,6 +27,7 @@ public class PinionBlockEntity extends KineticBlockEntity {
 
     /** Whether a rack faced the rim during the last physics step, and the body speed along it. */
     protected boolean engaged;
+    protected boolean inverted;
     protected float travel;
     private boolean lastEngaged;
     private float lastTravel;
@@ -34,6 +35,17 @@ public class PinionBlockEntity extends KineticBlockEntity {
 
     public PinionBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    /** Which way this pinion walks for a given shaft direction; flipped with a sneak-click. */
+    public boolean inverted() {
+        return inverted;
+    }
+
+    public void toggleInverted() {
+        inverted = !inverted;
+        setChanged();
+        sendData();
     }
 
     /** Pitch radius in metres: the rim speed is the shaft speed times this. */
@@ -72,6 +84,7 @@ public class PinionBlockEntity extends KineticBlockEntity {
         super.write(tag, registries, clientPacket);
         tag.putBoolean("Engaged", engaged);
         tag.putFloat("Travel", travel);
+        tag.putBoolean("Inverted", inverted);
     }
 
     @Override
@@ -79,6 +92,7 @@ public class PinionBlockEntity extends KineticBlockEntity {
         super.read(tag, registries, clientPacket);
         engaged = tag.getBoolean("Engaged");
         travel = tag.getFloat("Travel");
+        inverted = tag.getBoolean("Inverted");
     }
 
     @Override
@@ -90,6 +104,8 @@ public class PinionBlockEntity extends KineticBlockEntity {
             Lang.builder().translate("gui.pinion.engaged", String.format("%.2f", travel)).style(ChatFormatting.GREEN).forGoggles(tooltip);
         else
             Lang.builder().translate("gui.pinion.no_rack").style(ChatFormatting.DARK_GRAY).forGoggles(tooltip);
+        if(inverted)
+            Lang.builder().translate("gui.pinion.reversed").style(ChatFormatting.GOLD).forGoggles(tooltip);
         return true;
     }
 }
