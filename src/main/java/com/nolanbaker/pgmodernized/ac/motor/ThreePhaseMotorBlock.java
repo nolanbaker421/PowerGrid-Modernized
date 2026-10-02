@@ -1,5 +1,14 @@
 package com.nolanbaker.pgmodernized.ac.motor;
 
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
+import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import com.nolanbaker.pgmodernized.ac.AcContent;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
@@ -35,6 +44,10 @@ import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 public class ThreePhaseMotorBlock extends ElectricKineticBlock implements IBE<ThreePhaseMotorBlockEntity> {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final int U = 0, V = 1, W = 2;
+    /** Conduit knockouts, one on each side of the terminal box (north orientation). */
+    public static final AABB[] HUBS = {new AABB(1.5, 6.5, 12, 2.5, 9.5, 14), new AABB(13.5, 6.5, 12, 14.5, 9.5, 14)};
+    private static final AABB HIDDEN = new AABB(7, 3.5, 12, 9, 4.5, 14);
+    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(3, HUBS.length, new int[] {U, V, W});
 
     public static final VoxelShape NORTH_SHAPE = Shapes.or(
             box(3, 3, 0.5, 13, 13, 13.5),
@@ -54,7 +67,8 @@ public class ThreePhaseMotorBlock extends ElectricKineticBlock implements IBE<Th
 
     public ThreePhaseMotorBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE, UP_SHAPE));
+        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, DeviceHubs.withHubs(NORTH_TERMINALS, HIDDEN, HUBS),
+                DeviceHubs.withHubs(NORTH_SHAPE, HUBS), UP_SHAPE));
     }
 
     private static TerminalBoundingBox terminal(String key, int phase, double x1, double y1, double z1, double x2, double y2, double z2) {
@@ -71,6 +85,21 @@ public class ThreePhaseMotorBlock extends ElectricKineticBlock implements IBE<Th
     @Override
     public boolean accepts(ItemStack wireStack) {
         return WireAcceptance.electrical(wireStack);
+    }
+
+    @Override
+    public InteractionResult onWire(BlockState state, UseOnContext context) {
+        return DeviceHubs.onWire(this, LAYOUT, state, context, super::onWire);
+    }
+
+    /** Empty hand on the motor opens the splice editor for the knockouts; the pole-pair box is Create's. */
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(hand != InteractionHand.MAIN_HAND || player.isShiftKeyDown() || !player.getMainHandItem().isEmpty())
+            return InteractionResult.PASS;
+        if(level.isClientSide)
+            ClientHooks.openSplices(pos);
+        return InteractionResult.SUCCESS;
     }
 
     public Direction getPreferredFacing(BlockPlaceContext context) {

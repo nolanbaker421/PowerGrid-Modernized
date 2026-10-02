@@ -850,3 +850,7 @@ How a gantry crane on a Create Aeronautics body moves itself along its runway.
   drive governed by `gain`, `max_acceleration` and the `force` multiplier.
 - Goggles on the pinion show the rim speed and whether it is on a rack.
 - Without Create Aeronautics the pinion is just a cogwheel.
+
+**Three-Phase Motor knockouts (0.15.8).** The motor has a conduit knockout on each side of its
+terminal box, like the drive. Run conduit into one, splice U, V and W with an empty hand on the
+motor, and the goggles list what is spliced.

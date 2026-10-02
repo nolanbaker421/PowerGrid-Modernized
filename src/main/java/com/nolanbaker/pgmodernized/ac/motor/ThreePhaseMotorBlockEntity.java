@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.ac.motor;
 
+import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
+import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
@@ -37,7 +39,7 @@ import java.util.List;
  * the sequence dictates. Under-excited (too few volts per hertz) it stalls. With one phase missing,
  * or on direct current, there is no sequence and it does not turn.
  */
-public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
+public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity, IDeviceSpliceHost {
     public static final double STRESS_CAPACITY = 64;
     /** Full excitation: 120 V per phase at 10 Hz. Below a fifth of this the motor stalls. */
     public static final float RATED_VOLTS_PER_HZ = 12f;
@@ -50,6 +52,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
     @Nullable
     protected ThermalBehaviour thermalBehaviour;
     private AlternatorPolePairsBehaviour polePairs;
+    private DeviceSpliceHost deviceHubs;
 
     // No initialisers: buildCircuit runs from the superclass constructor.
     private LRSeriesWire[] windings;
@@ -68,6 +71,13 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
     public ThreePhaseMotorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         setLazyTickRate(5);
+    }
+
+    @Override
+    public DeviceSpliceHost deviceHubs() {
+        if(deviceHubs == null)
+            deviceHubs = new DeviceSpliceHost(this, ThreePhaseMotorBlock.LAYOUT);
+        return deviceHubs;
     }
 
     @Override
@@ -113,7 +123,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        builder.setTerminalCount(3);
+        deviceHubs().buildCircuit(builder);
         var star = builder.addInternalNode();
         float R = resistance("winding");
         float L = R * timeConstant();
@@ -186,6 +196,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         super.lazyTick();
         if(level == null || (level.isClientSide && !isVirtual()))
             return;
+        deviceHubs().lazyTick();
         int newSpeed = speedSamples == 0 ? 0 : Math.round(speedSum / speedSamples);
         speedSum = 0;
         speedSamples = 0;
@@ -254,6 +265,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
+        deviceHubs().read(tag, registries, clientPacket);
         generatedSpeed = tag.getFloat("GeneratedSpeed");
         if(clientPacket) {
             frequency = tag.getFloat("Frequency");
@@ -267,6 +279,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
+        deviceHubs().write(tag, registries, clientPacket);
         tag.putFloat("GeneratedSpeed", generatedSpeed);
         if(clientPacket) {
             tag.putFloat("Frequency", frequency);
@@ -293,6 +306,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         Lang.builder().text(String.format("%.1f ", phaseVolts)).add(Unit.VOLTAGE.get()).text(String.format("  %.2f ", phaseAmps)).add(Unit.CURRENT.get())
                 .style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.three_phase_motor.sync", polePairs(), Math.round(synchronousSpeed())).style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
+        deviceHubs().addGoggleLines(tooltip);
         return true;
     }
 

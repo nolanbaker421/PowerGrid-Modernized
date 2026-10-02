@@ -11,7 +11,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.utility.Lang;
@@ -23,14 +24,14 @@ import java.util.List;
 public final class SpliceSupport {
     public static final float SPLICE_RESISTANCE = 0.0005f;
 
-    private final ElectricBlockEntity be;
+    private final SmartBlockEntity be;
     private final ISpliceHost host;
     private final List<int[]> splices = new ArrayList<>();
     /** Prune calls skipped after loading: a run's entities arrive after the block that holds them. */
     private static final int PRUNE_GRACE = 6;
     private int pruneCalls;
 
-    public <T extends ElectricBlockEntity & ISpliceHost> SpliceSupport(T be) {
+    public <T extends SmartBlockEntity & ISpliceHost> SpliceSupport(T be) {
         this.be = be;
         this.host = be;
     }
@@ -108,7 +109,7 @@ public final class SpliceSupport {
     }
 
     private void changed() {
-        var behaviour = be.getElectricBehaviour();
+        var behaviour = be.getBehaviour(ElectricBehaviour.TYPE);
         if(behaviour != null)
             behaviour.rebuildCircuit(false);
         be.setChanged();
@@ -137,7 +138,7 @@ public final class SpliceSupport {
         if(changed) {
             splices.clear();
             splices.addAll(fresh);
-            var behaviour = be.getElectricBehaviour();
+            var behaviour = be.getBehaviour(ElectricBehaviour.TYPE);
             if(behaviour != null)
                 behaviour.rebuildCircuit(false);
         }
@@ -183,12 +184,12 @@ public final class SpliceSupport {
 
     /** The conduit run whose end sits on the given hub terminal of the block entity, or null. Works on both sides. */
     @Nullable
-    public static ConduitRunEntity runAt(ElectricBlockEntity be, int hubTerminal) {
+    public static ConduitRunEntity runAt(SmartBlockEntity be, int hubTerminal) {
         Level level = be.getLevel();
         if(level == null)
             return null;
         BlockPos pos = be.getBlockPos();
-        var behaviour = be.getElectricBehaviour();
+        var behaviour = be.getBehaviour(ElectricBehaviour.TYPE);
         if(behaviour != null) {
             // A run on a delegate cell (a transformer filler, a panel extension) is keyed by that cell's position.
             for(var entry : behaviour.getConnections().entrySet()) {

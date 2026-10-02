@@ -5,7 +5,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
@@ -19,12 +19,12 @@ import java.util.List;
  * terminals, named and coloured as the block declares them.
  */
 public final class DeviceSpliceHost {
-    private final ElectricBlockEntity be;
+    private final SmartBlockEntity be;
     private final DeviceHubs.Layout layout;
     private final SpliceSupport splices;
     private List<SplicePoint> points;
 
-    public <T extends ElectricBlockEntity & ISpliceHost> DeviceSpliceHost(T be, DeviceHubs.Layout layout) {
+    public <T extends SmartBlockEntity & ISpliceHost> DeviceSpliceHost(T be, DeviceHubs.Layout layout) {
         this.be = be;
         this.layout = layout;
         this.splices = new SpliceSupport(be);

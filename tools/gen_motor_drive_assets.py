@@ -74,6 +74,8 @@ def motor():
         element(3.5, 13.5, 14, 5.5, 14.5, 16, "#terminal"),
         element(7, 13.5, 14, 9, 14.5, 16, "#terminal"),
         element(10.5, 13.5, 14, 12.5, 14.5, 16, "#terminal"),
+        element(1.5, 6.5, 12, 2.5, 9.5, 14, "#box"),      # conduit knockouts
+        element(13.5, 6.5, 12, 14.5, 9.5, 14, "#box"),
     ]
     tex = {
         "body": "%s:block/%s_body" % (MOD, MOTOR),
