@@ -14,6 +14,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3d;
 
 /**
  * The pinion on a Sable body. Every physics step it looks past each of its four rim sides for a
@@ -84,16 +85,19 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
             double want = Math.abs(rimSpeed);
             double have;
             if(PgmConfig.PINION_LOCK.get()) {
-                // Teeth in a rack: the body moves at the rim speed and nowhere else. Push through the
-                // centre of mass so the drive never rocks the body into its guides, and take the whole
-                // speed error out at once, however heavy the body is.
-                var com = massData.getCenterOfMass();
-                var comLocal = new Vec3(com.x(), com.y(), com.z());
-                var velocity = pose.transformNormalInverse(SableCompanion.INSTANCE.getVelocity(level, subLevel, comLocal));
-                have = velocity.dot(along);
+                // Teeth in a rack: the body moves at the rim speed and nowhere else. Set the body's own
+                // velocity straight to that, which owes nothing to how heavy Sable thinks the body is,
+                // then push through the centre of mass against whatever the guides take back between
+                // steps, so the drive never rocks the body into them.
+                var alongWorld = pose.transformNormal(along).normalize();
+                var axisWorld = pose.transformNormal(axisDir).normalize();
+                var linear = body.getLinearVelocity(new Vector3d());
+                var velocity = new Vec3(linear.x, linear.y, linear.z);
+                have = velocity.dot(alongWorld);
                 double error = want - have;
-                // Setting the speed once a step is not enough when the guides rub: whatever is lost
-                // between steps shows up as a steady shortfall, so build up a push against it.
+                double drift = velocity.dot(axisWorld);
+                var change = alongWorld.scale(error).add(axisWorld.scale(-drift));
+                body.addLinearAndAngularVelocity(new Vector3d(change.x, change.y, change.z), new Vector3d());
                 int sign = (int) Math.signum(rimSpeed);
                 if(sign != lastSign || want == 0)
                     bias = 0;
@@ -101,9 +105,9 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
                 double cap = mass * PgmConfig.PINION_MAX_ACCELERATION.get() * PgmConfig.PINION_FORCE.get() * dt;
                 if(want > 0)
                     bias = clamp(bias + error * mass * 0.3, cap);
-                body.applyImpulseAtPoint(comLocal, along.scale(error * mass + bias));
-                // The flanges: take out any drift along the shaft axis.
-                body.applyImpulseAtPoint(comLocal, axisDir.scale(-velocity.dot(axisDir) * mass));
+                var com = massData.getCenterOfMass();
+                var comLocal = new Vec3(com.x(), com.y(), com.z());
+                body.applyImpulseAtPoint(comLocal, along.scale(bias));
             } else {
                 var currentLocal = pose.transformNormalInverse(SableCompanion.INSTANCE.getVelocity(level, subLevel, contactLocal));
                 have = currentLocal.dot(along);
