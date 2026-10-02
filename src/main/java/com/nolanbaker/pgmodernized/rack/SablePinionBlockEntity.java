@@ -3,6 +3,7 @@ package com.nolanbaker.pgmodernized.rack;
 import com.nolanbaker.pgmodernized.PgmConfig;
 import dev.ryanhcode.sable.api.block.BlockEntitySubLevelActor;
 import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
+import dev.ryanhcode.sable.api.physics.mass.MassData;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import net.minecraft.core.BlockPos;
@@ -10,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3d;
 
 /**
  * The pinion on a Sable body. Every physics step it looks past each of its four rim sides for a
@@ -71,15 +73,22 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
             double want = Math.abs(rimSpeed);
             double have = currentLocal.dot(along);
             double error = want - have;
-            double force = PgmConfig.PINION_FORCE.get();
-            double gain = PgmConfig.PINION_GAIN.get() * force;
-            double cap = mass * PgmConfig.PINION_MAX_ACCELERATION.get() * force * dt;
-            double push = clamp(error * mass * gain, cap);
-            body.applyImpulseAtPoint(contactLocal, along.scale(push));
-
-            // The flanges: take out any drift along the shaft axis at the contact.
             double drift = currentLocal.dot(axisDir);
-            double hold = clamp(-drift * mass * gain * 0.5, cap);
+            double push, hold;
+            if(PgmConfig.PINION_LOCK.get()) {
+                // Teeth in a rack: the contact moves at the rim speed and nowhere else. Correct the whole
+                // velocity error at once, scaled by what the body weighs along that line at that point.
+                push = error * effectiveMass(massData, contactLocal, along);
+                hold = -drift * effectiveMass(massData, contactLocal, axisDir);
+            } else {
+                double force = PgmConfig.PINION_FORCE.get();
+                double gain = PgmConfig.PINION_GAIN.get() * force;
+                double cap = mass * PgmConfig.PINION_MAX_ACCELERATION.get() * force * dt;
+                push = clamp(error * mass * gain, cap);
+                hold = clamp(-drift * mass * gain * 0.5, cap);
+            }
+            body.applyImpulseAtPoint(contactLocal, along.scale(push));
+            // The flanges: take out any drift along the shaft axis at the contact.
             body.applyImpulseAtPoint(contactLocal, axisDir.scale(hold));
 
             travel = (float) have;
@@ -88,6 +97,12 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
         engaged = found;
         if(!found)
             travel = 0;
+    }
+
+    /** The mass the body presents to an impulse along {@code direction} at {@code point}, both in body coordinates. */
+    private static double effectiveMass(MassData massData, Vec3 point, Vec3 direction) {
+        double inverse = massData.getInverseNormalMass(new Vector3d(point.x, point.y, point.z), new Vector3d(direction.x, direction.y, direction.z));
+        return inverse > 1e-9 ? 1 / inverse : massData.getMass();
     }
 
     private static double clamp(double value, double limit) {

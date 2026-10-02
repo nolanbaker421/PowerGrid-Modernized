@@ -835,7 +835,8 @@ How a gantry crane on a Create Aeronautics body moves itself along its runway.
   rotation walks the wrong way for your build, flip `pinion.invert` in the config or add a gearbox.
 - The pinion only pushes where its rim actually faces a rack block. Gaps in the rack are gaps in
   the drive. Several pinions on one body all push, so a long crane can have one on each leg.
-- Goggles on the pinion show the rim speed and whether it is on a rack. The config also sets how
-  hard it pulls (`gain`), the most it may accelerate the body (`max_acceleration`) and a plain
-  multiplier on all of it (`force`): raise `force` when a heavy carriage crawls.
+- By default the pinion is `lock`ed to the rack: the body moves at exactly the rim speed however
+  heavy it is, and a stopped pinion holds it in place. Turn `lock` off in the config for a softer
+  drive governed by `gain`, `max_acceleration` and the `force` multiplier.
+- Goggles on the pinion show the rim speed and whether it is on a rack.
 - Without Create Aeronautics the pinion is just a cogwheel.
