@@ -798,6 +798,9 @@ The alternative to the cable chain for long runways, modelled on crane conductor
   three blocks of the rail in a straight line, in any direction: on top of the trolley under an
   overhead rail, or beside a wall rail. The arm swings to the first rail block it finds (it tries its
   front first, then straight away from the face it is mounted on) and the shoes sit in that block.
+  The rail may be in the world or on another body: a trolley riding a crane bridge that is itself
+  a body finds the rail on that bridge. It never connects to a rail on its own body. The run
+  still needs a Rail Feed Box touching it, or the goggles say "off rail".
   Turn it with the wrench so its stud row runs the same way as the bars and the shoes line up.
   While they do, and that run has a feed, the collector's studs are the bars and its jack is on the
   run's data channel: plug your Cat6 into the collector's jack on the trolley and into the feed's jack

@@ -12,6 +12,8 @@ import com.nolanbaker.pgmodernized.network.JackEndpoint;
 import com.nolanbaker.pgmodernized.network.JackSupport;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import dev.ryanhcode.sable.companion.SableCompanion;
+import net.minecraft.world.phys.AABB;
+import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -127,17 +129,18 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
         search:
         for(var direction : tried) {
             for(int k = 1; k <= RailCollectorBlock.MAX_REACH; ++k) {
-                var sample = BlockPos.containing(SableCompanion.INSTANCE.projectOutOfSubLevel(level, centre.add(Vec3.atLowerCornerOf(direction.getNormal()).scale(k))));
+                var point = SableCompanion.INSTANCE.projectOutOfSubLevel(level, centre.add(Vec3.atLowerCornerOf(direction.getNormal()).scale(k)));
+                var sample = BlockPos.containing(point);
                 if(!level.isLoaded(sample))
                     break;
-                var state = level.getBlockState(sample);
-                if(ConductorRailBlock.isRail(state)) {
-                    railPos = sample;
+                var rail = railAt(point);
+                if(rail != null) {
+                    railPos = rail;
                     foundArm = direction;
                     foundReach = k;
                     break search;
                 }
-                if(!state.getCollisionShape(level, sample).isEmpty())
+                if(!level.getBlockState(sample).getCollisionShape(level, sample).isEmpty())
                     break;   // something solid in the way
             }
         }
@@ -170,6 +173,28 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
             makePickups(feed);
         setChanged();
         sendData();
+    }
+
+    /**
+     * The rail block at a world point: a block of the world, or a block of another body that is
+     * there (a trolley riding a bridge that is itself a body, with the rail on the bridge). Our own
+     * body is skipped. The position returned is where the block really is, so for a rail on a body
+     * it is that body's own coordinates, which is what the feed walk and the pickups work in.
+     */
+    @Nullable
+    private BlockPos railAt(Vec3 point) {
+        var worldPos = BlockPos.containing(point);
+        if(ConductorRailBlock.isRail(level.getBlockState(worldPos)))
+            return worldPos;
+        var mine = SableCompanion.INSTANCE.getContaining(level, worldPosition);
+        for(var other : SableCompanion.INSTANCE.getAllIntersecting(level, new BoundingBox3d(new AABB(worldPos)))) {
+            if(mine != null && other.getUniqueId().equals(mine.getUniqueId()))
+                continue;
+            var plot = BlockPos.containing(other.logicalPose().transformPositionInverse(point));
+            if(level.isLoaded(plot) && ConductorRailBlock.isRail(level.getBlockState(plot)))
+                return plot;
+        }
+        return null;
     }
 
     private boolean pickupsAlive() {
