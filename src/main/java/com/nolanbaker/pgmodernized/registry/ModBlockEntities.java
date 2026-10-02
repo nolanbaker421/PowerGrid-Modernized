@@ -5,6 +5,8 @@ import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
+import net.minecraft.core.Direction;
+import com.nolanbaker.pgmodernized.rack.PinionBlock;
 import com.nolanbaker.pgmodernized.client.RailCollectorRenderer;
 import com.nolanbaker.pgmodernized.rail.RailCollectorBlockEntity;
 import com.nolanbaker.pgmodernized.rail.RailFeedBlockEntity;
@@ -139,7 +141,7 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<PinionBlockEntity> PINION =
             REGISTRATE.blockEntity("pinion", (BlockEntityFactory<PinionBlockEntity>) (type, pos, state) -> PinionBlockEntity.FACTORY.create(type, pos, state))
                     .visual(() -> (SimpleBlockEntityVisualFactory<PinionBlockEntity>) (context, be, partialTick) ->
-                            new SingleAxisRotatingVisual<>(context, be, partialTick, Models.block(be.getBlockState())))
+                            new SingleAxisRotatingVisual<>(context, be, partialTick, Models.block(be.getBlockState().setValue(PinionBlock.AXIS, Direction.Axis.Y))))
                     .validBlock(ModBlocks.PINION)
                     .renderer(() -> KineticBlockEntityRenderer::new)
                     .register();
