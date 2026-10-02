@@ -407,5 +407,8 @@
   "powergrid.gui.pinion.no_rack": "No rack at the rim",
   "powergrid.gui.pinion.reversed": "Direction reversed (sneak-click to flip)",
   "powergrid.message.pinion.reversed": "Pinion reversed",
-  "powergrid.message.pinion.normal": "Pinion direction normal"
+  "powergrid.message.pinion.normal": "Pinion direction normal",
+  "powergrid.gui.pinion.rack_facing": "Rack found, but its teeth do not point at the cog",
+  "powergrid.gui.pinion.rack_axis": "Rack found, but it runs along the axle instead of across it",
+  "powergrid.gui.pinion.no_body": "No physics steps: not on an assembled body"
 }

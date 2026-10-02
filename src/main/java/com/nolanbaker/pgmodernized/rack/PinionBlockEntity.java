@@ -26,10 +26,16 @@ public class PinionBlockEntity extends KineticBlockEntity {
     public static BlockEntityFactory<PinionBlockEntity> FACTORY = PinionBlockEntity::new;
 
     /** Whether a rack faced the rim during the last physics step, and the body speed along it. */
+    /** Why the rim is not driving, for the goggles. */
+    public static final int REASON_NO_RACK = 0, REASON_FACING = 1, REASON_AXIS = 2, REASON_NO_BODY = 3;
     protected boolean engaged;
+    protected int reason = REASON_NO_RACK;
+    /** Game time of the last physics step Sable gave us; none for a while means we are not on a body. */
+    protected long lastPhysics = Long.MIN_VALUE;
     protected boolean inverted;
     protected float travel;
     private boolean lastEngaged;
+    private int lastReason = -1;
     private float lastTravel;
     private int syncTimer;
 
@@ -63,11 +69,17 @@ public class PinionBlockEntity extends KineticBlockEntity {
         super.tick();
         if(level == null || level.isClientSide)
             return;
+        if(lastPhysics != Long.MIN_VALUE && level.getGameTime() - lastPhysics > 40) {
+            engaged = false;
+            reason = REASON_NO_BODY;
+            travel = 0;
+        }
         if(++syncTimer < 10)
             return;
         syncTimer = 0;
-        if(engaged != lastEngaged || Math.abs(travel - lastTravel) > 0.01f) {
+        if(engaged != lastEngaged || reason != lastReason || Math.abs(travel - lastTravel) > 0.01f) {
             lastEngaged = engaged;
+            lastReason = reason;
             lastTravel = travel;
             sendData();
         }
@@ -85,6 +97,7 @@ public class PinionBlockEntity extends KineticBlockEntity {
         tag.putBoolean("Engaged", engaged);
         tag.putFloat("Travel", travel);
         tag.putBoolean("Inverted", inverted);
+        tag.putInt("Reason", reason);
     }
 
     @Override
@@ -93,6 +106,7 @@ public class PinionBlockEntity extends KineticBlockEntity {
         engaged = tag.getBoolean("Engaged");
         travel = tag.getFloat("Travel");
         inverted = tag.getBoolean("Inverted");
+        reason = tag.getInt("Reason");
     }
 
     @Override
@@ -102,8 +116,15 @@ public class PinionBlockEntity extends KineticBlockEntity {
         line.style(ChatFormatting.GRAY).forGoggles(tooltip);
         if(engaged)
             Lang.builder().translate("gui.pinion.engaged", String.format("%.2f", travel)).style(ChatFormatting.GREEN).forGoggles(tooltip);
-        else
-            Lang.builder().translate("gui.pinion.no_rack").style(ChatFormatting.DARK_GRAY).forGoggles(tooltip);
+        else {
+            String why = switch(reason) {
+                case REASON_FACING -> "gui.pinion.rack_facing";
+                case REASON_AXIS -> "gui.pinion.rack_axis";
+                case REASON_NO_BODY -> "gui.pinion.no_body";
+                default -> "gui.pinion.no_rack";
+            };
+            Lang.builder().translate(why).style(reason == REASON_NO_RACK ? ChatFormatting.DARK_GRAY : ChatFormatting.RED).forGoggles(tooltip);
+        }
         if(inverted)
             Lang.builder().translate("gui.pinion.reversed").style(ChatFormatting.GOLD).forGoggles(tooltip);
         return true;

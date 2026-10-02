@@ -67,7 +67,8 @@ public final class PgmConfig {
                 .defineInRange("gain", 0.5, 0.01, 1.0);
         PINION_MAX_ACCELERATION = b.comment("Most the pinion can accelerate the body, in metres per second squared, however heavy it is.")
                 .defineInRange("max_acceleration", 12.0, 0.1, 1000.0);
-        PINION_FORCE = b.comment("Multiplier on everything the pinion pushes with. Raise it when a heavy carriage crawls, lower it when a light one lurches.")
+        PINION_FORCE = b.comment("Multiplier on the pinion's push. Locked, it scales how much extra push may build up against friction and drag;",
+                        "unlocked, it scales the whole push. Raise it when a carriage crawls below the rim speed, lower it if it lurches.")
                 .defineInRange("force", 1.0, 0.01, 100.0);
         PINION_INVERT = b.comment("Flip the direction a given shaft rotation walks the body, if it goes the wrong way for you.")
                 .define("invert", false);

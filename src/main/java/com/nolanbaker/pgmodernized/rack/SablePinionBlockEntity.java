@@ -4,6 +4,10 @@ import com.nolanbaker.pgmodernized.PgmConfig;
 import dev.ryanhcode.sable.api.block.BlockEntitySubLevelActor;
 import dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle;
 import dev.ryanhcode.sable.companion.SableCompanion;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.server.level.ServerLevel;
+import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,6 +27,10 @@ import net.minecraft.world.phys.Vec3;
  * here is worked out in that frame.
  */
 public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEntitySubLevelActor {
+    /** Extra push built up while the body keeps falling short of the rim speed: friction and drag between steps. */
+    private double bias;
+    private int lastSign;
+
     public SablePinionBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -45,24 +53,30 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
         var axisDir = Vec3.atLowerCornerOf(Direction.get(Direction.AxisDirection.POSITIVE, axis).getNormal());
         double rimSpeed = getSpeed() * Math.PI * 2 / 60 * radius * (PgmConfig.PINION_INVERT.get() != inverted ? -1 : 1);
 
+        lastPhysics = level.getGameTime();
         boolean found = false;
+        int why = REASON_NO_RACK;
         for(var side : Direction.values()) {
             if(side.getAxis() == axis)
                 continue;
             var sideDir = Vec3.atLowerCornerOf(side.getNormal());
-            // The rack has to be a world block in the cell the rim faces.
+            // The rack is a block of the world, or of another body, in the cell the rim faces.
             var cellWorld = pose.transformPosition(Vec3.atCenterOf(worldPosition.relative(side)));
-            var rackState = level.getBlockState(BlockPos.containing(cellWorld));
-            if(!RackBlock.isRack(rackState))
+            var rackState = rackAt(level, subLevel, cellWorld);
+            if(rackState == null)
                 continue;
-            if(dominantDirection(pose.transformNormal(sideDir)) != rackState.getValue(RackBlock.FACING).getOpposite())
+            if(dominantDirection(pose.transformNormal(sideDir)) != rackState.getValue(RackBlock.FACING).getOpposite()) {
+                why = Math.max(why, REASON_FACING);
                 continue;
+            }
             // Rolling direction in the body frame: the rim surface at the contact moves along axis x side,
             // so the body rolls the other way. Its world direction must follow the rack's bar.
             var travelLocal = axisDir.cross(sideDir).scale(-Math.signum(rimSpeed == 0 ? 1 : rimSpeed));
             var travelWorld = pose.transformNormal(travelLocal);
-            if(dominantAxis(travelWorld) != rackState.getValue(RackBlock.AXIS))
+            if(dominantAxis(travelWorld) != rackState.getValue(RackBlock.AXIS)) {
+                why = Math.max(why, REASON_AXIS);
                 continue;
+            }
             found = true;
 
             var contactLocal = Vec3.atCenterOf(worldPosition).add(sideDir.scale(radius));
@@ -77,7 +91,17 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
                 var comLocal = new Vec3(com.x(), com.y(), com.z());
                 var velocity = pose.transformNormalInverse(SableCompanion.INSTANCE.getVelocity(level, subLevel, comLocal));
                 have = velocity.dot(along);
-                body.applyImpulseAtPoint(comLocal, along.scale((want - have) * mass));
+                double error = want - have;
+                // Setting the speed once a step is not enough when the guides rub: whatever is lost
+                // between steps shows up as a steady shortfall, so build up a push against it.
+                int sign = (int) Math.signum(rimSpeed);
+                if(sign != lastSign || want == 0)
+                    bias = 0;
+                lastSign = sign;
+                double cap = mass * PgmConfig.PINION_MAX_ACCELERATION.get() * PgmConfig.PINION_FORCE.get() * dt;
+                if(want > 0)
+                    bias = clamp(bias + error * mass * 0.3, cap);
+                body.applyImpulseAtPoint(comLocal, along.scale(error * mass + bias));
                 // The flanges: take out any drift along the shaft axis.
                 body.applyImpulseAtPoint(comLocal, axisDir.scale(-velocity.dot(axisDir) * mass));
             } else {
@@ -94,8 +118,30 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
             break;
         }
         engaged = found;
-        if(!found)
+        reason = why;
+        if(!found) {
             travel = 0;
+            bias = 0;
+        }
+    }
+
+    /** The rack block at a world point: in the world, or on another body that is there; never our own body. */
+    @Nullable
+    private static BlockState rackAt(ServerLevel level, ServerSubLevel mine, Vec3 point) {
+        var worldState = level.getBlockState(BlockPos.containing(point));
+        if(RackBlock.isRack(worldState))
+            return worldState;
+        for(var other : SableCompanion.INSTANCE.getAllIntersecting(level, new BoundingBox3d(new AABB(BlockPos.containing(point))))) {
+            if(other.getUniqueId().equals(mine.getUniqueId()))
+                continue;
+            var plot = BlockPos.containing(other.logicalPose().transformPositionInverse(point));
+            if(!level.isLoaded(plot))
+                continue;
+            var state = level.getBlockState(plot);
+            if(RackBlock.isRack(state))
+                return state;
+        }
+        return null;
     }
 
     private static double clamp(double value, double limit) {
