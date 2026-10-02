@@ -60,17 +60,18 @@ public final class PgmConfig {
         b.comment("Rack and pinion").push("pinion");
         PINION_PITCH_RADIUS = b.comment("Pitch radius of the pinion in metres: the body moves at the shaft speed times this (0.5 means 64 rpm walks 3.35 m/s).")
                 .defineInRange("pitch_radius", 0.5, 0.05, 4.0);
-        PINION_LOCK = b.comment("Hold the body exactly at the rim speed, like teeth in a rack: a stopped pinion locks the body on the rack and a",
-                        "turning one drags it along however heavy it is; gain, max_acceleration and force are not used.",
-                        "Off, the pinion pushes softly within gain, max_acceleration and force.")
+        PINION_LOCK = b.comment("Hold the body exactly at the rim speed, like teeth in a rack: a stopped pinion locks the body on the rack, a",
+                        "turning one drags it along however heavy it is, and the body is kept from turning. Solid blocks still stop it.",
+                        "gain and max_acceleration are not used while locked. Off, the pinion pushes softly within gain, max_acceleration and force.")
                 .define("lock", true);
         PINION_GAIN = b.comment("How hard the pinion corrects the body's speed each physics step: 1 removes the whole speed error at once, lower is softer.")
                 .defineInRange("gain", 0.5, 0.01, 1.0);
         PINION_MAX_ACCELERATION = b.comment("Most the pinion can accelerate the body, in metres per second squared, however heavy it is.")
                 .defineInRange("max_acceleration", 12.0, 0.1, 1000.0);
-        PINION_FORCE = b.comment("Multiplier on the pinion's push. Locked, it scales how much extra push may build up against friction and drag;",
-                        "unlocked, it scales the whole push. Raise it when a carriage crawls below the rim speed, lower it if it lurches.")
-                .defineInRange("force", 1.0, 0.01, 100.0);
+        PINION_FORCE = b.comment("Locked: how far past the rim speed the pinion may lean in, as a multiple of the rim speed, while the guides keep",
+                        "dragging the body short of it (2 means up to three times the rim speed). Unlocked: multiplier on the whole push.",
+                        "Raise it when a carriage sticks or crawls, lower it if it lurches when the sticking lets go.")
+                .defineInRange("force", 2.0, 0.01, 100.0);
         PINION_INVERT = b.comment("Flip the direction a given shaft rotation walks the body, if it goes the wrong way for you.")
                 .define("invert", false);
         b.pop();

@@ -98,15 +98,18 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
                 double drift = velocity.dot(axisWorld);
                 // Whatever the guides take back between steps shows up as a steady shortfall at the
                 // start of the next one. Lean into it, in speed units so it owes nothing to the mass
-                // estimate, and never by more than half the rim speed.
+                // estimate, by up to "force" times the rim speed.
                 int sign = (int) Math.signum(rimSpeed);
                 if(sign != lastSign || want == 0)
                     bias = 0;
                 lastSign = sign;
                 if(want > 0)
-                    bias = clamp(bias + error * 0.3, 0.5 * want);
+                    bias = clamp(bias + error * 0.5, want * PgmConfig.PINION_FORCE.get());
                 var change = alongWorld.scale(error + bias).add(axisWorld.scale(-drift));
-                body.addLinearAndAngularVelocity(new Vector3d(change.x, change.y, change.z), new Vector3d());
+                // A rack and pinion never lets the body turn: take all rotation out each step, so a
+                // hanging trolley cannot tilt and wedge itself in its guides.
+                var angular = body.getAngularVelocity(new Vector3d());
+                body.addLinearAndAngularVelocity(new Vector3d(change.x, change.y, change.z), angular.negate());
             } else {
                 var currentLocal = pose.transformNormalInverse(SableCompanion.INSTANCE.getVelocity(level, subLevel, contactLocal));
                 have = currentLocal.dot(along);
