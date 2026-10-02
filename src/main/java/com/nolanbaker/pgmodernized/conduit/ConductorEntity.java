@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import com.nolanbaker.pgmodernized.util.BodyRider;
+import com.nolanbaker.pgmodernized.util.BodyRide;
 import com.nolanbaker.pgmodernized.util.SubLevelStick;
 import com.nolanbaker.pgmodernized.registry.ModEntities;
 import net.minecraft.core.BlockPos;
@@ -35,7 +37,9 @@ import java.util.UUID;
  * Its colour is its slot's by default, but can be set to any of the twelve from the splice editor,
  * so a neutral can be white whatever its slot.
  */
-public class ConductorEntity extends BlockWireEntity {
+public class ConductorEntity extends BlockWireEntity implements BodyRider {
+    private final BodyRide ride = new BodyRide();
+
     private static final int CHECK_INTERVAL = 20;
     /** Ticks after loading before the run is looked for: entities of a chunk arrive after its blocks. */
     private static final int LOAD_GRACE = 100;
@@ -104,7 +108,7 @@ public class ConductorEntity extends BlockWireEntity {
     @Override
     public void tick() {
         super.tick();
-        SubLevelStick.stick(this);
+        ride.tick(this);
         if(level().isClientSide || isRemoved())
             return;
         if(++checkTimer >= CHECK_INTERVAL) {
@@ -179,6 +183,7 @@ public class ConductorEntity extends BlockWireEntity {
     @Override
     protected void addAdditionalSaveData(CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
+        ride.save(nbt);
         nbt.putUUID("Run", runId);
         nbt.put("RunPos", NbtUtils.writeBlockPos(runPos));
         nbt.putInt("Slot", slot);
@@ -188,11 +193,23 @@ public class ConductorEntity extends BlockWireEntity {
     @Override
     protected void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
+        ride.load(nbt);
         if(nbt.hasUUID("Run"))
             runId = nbt.getUUID("Run");
         runPos = NbtUtils.readBlockPos(nbt, "RunPos").orElse(blockPosition());
         slot = nbt.getInt("Slot");
         entityData.set(COLOR_INDEX, nbt.contains("ChosenColor") ? nbt.getInt("ChosenColor") : -1);
         checkTimer = -LOAD_GRACE;
+    }
+
+    @Override
+    public BodyRide ride() {
+        return ride;
+    }
+
+    @Override
+    public void onEntityDataPacket(CompoundTag tag) {
+        super.onEntityDataPacket(tag);
+        ride.load(tag);
     }
 }

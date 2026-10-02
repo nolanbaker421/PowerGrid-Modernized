@@ -71,8 +71,9 @@ public class SablePinionBlockEntity extends PinionBlockEntity implements BlockEn
             double want = Math.abs(rimSpeed);
             double have = currentLocal.dot(along);
             double error = want - have;
-            double gain = PgmConfig.PINION_GAIN.get();
-            double cap = mass * PgmConfig.PINION_MAX_ACCELERATION.get() * dt;
+            double force = PgmConfig.PINION_FORCE.get();
+            double gain = PgmConfig.PINION_GAIN.get() * force;
+            double cap = mass * PgmConfig.PINION_MAX_ACCELERATION.get() * force * dt;
             double push = clamp(error * mass * gain, cap);
             body.applyImpulseAtPoint(contactLocal, along.scale(push));
 

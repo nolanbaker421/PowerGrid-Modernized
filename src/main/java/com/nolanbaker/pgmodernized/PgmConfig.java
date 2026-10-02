@@ -21,6 +21,7 @@ public final class PgmConfig {
     public static final ModConfigSpec.DoubleValue PINION_GAIN;
     public static final ModConfigSpec.DoubleValue PINION_MAX_ACCELERATION;
     public static final ModConfigSpec.BooleanValue PINION_INVERT;
+    public static final ModConfigSpec.DoubleValue PINION_FORCE;
 
     static {
         var b = new ModConfigSpec.Builder();
@@ -61,7 +62,9 @@ public final class PgmConfig {
         PINION_GAIN = b.comment("How hard the pinion corrects the body's speed each physics step: 1 removes the whole speed error at once, lower is softer.")
                 .defineInRange("gain", 0.5, 0.01, 1.0);
         PINION_MAX_ACCELERATION = b.comment("Most the pinion can accelerate the body, in metres per second squared, however heavy it is.")
-                .defineInRange("max_acceleration", 6.0, 0.1, 100.0);
+                .defineInRange("max_acceleration", 12.0, 0.1, 1000.0);
+        PINION_FORCE = b.comment("Multiplier on everything the pinion pushes with. Raise it when a heavy carriage crawls, lower it when a light one lurches.")
+                .defineInRange("force", 1.0, 0.01, 100.0);
         PINION_INVERT = b.comment("Flip the direction a given shaft rotation walks the body, if it goes the wrong way for you.")
                 .define("invert", false);
         b.pop();

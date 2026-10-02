@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.network;
 
+import net.minecraft.nbt.CompoundTag;
+import com.nolanbaker.pgmodernized.util.BodyRider;
+import com.nolanbaker.pgmodernized.util.BodyRide;
 import com.nolanbaker.pgmodernized.util.SubLevelStick;
 import com.nolanbaker.pgmodernized.registry.ModEntities;
 import net.minecraft.ChatFormatting;
@@ -29,7 +32,9 @@ import java.util.List;
  * wire, so those interactions are handled here instead: a Cat6 run has no junctions and is picked up
  * whole when cut.
  */
-public class Cat6BlockWireEntity extends BlockWireEntity implements ICat6Cable {
+public class Cat6BlockWireEntity extends BlockWireEntity implements ICat6Cable, BodyRider {
+    private final BodyRide ride = new BodyRide();
+
     private final Cat6LinkState link = new Cat6LinkState(this);
 
     public Cat6BlockWireEntity(EntityType<?> type, Level world) {
@@ -90,7 +95,7 @@ public class Cat6BlockWireEntity extends BlockWireEntity implements ICat6Cable {
     @Override
     public void tick() {
         super.tick();
-        SubLevelStick.stick(this);
+        ride.tick(this);
         link.tick();
     }
 
@@ -168,5 +173,28 @@ public class Cat6BlockWireEntity extends BlockWireEntity implements ICat6Cable {
             endpointRemoved(endpoint2);
         else if(ICat6Cable.endOn(endpoint1, jackPos, -1))
             endpointRemoved(endpoint1);
+    }
+
+    @Override
+    public BodyRide ride() {
+        return ride;
+    }
+
+    @Override
+    protected void addAdditionalSaveData(CompoundTag nbt) {
+        super.addAdditionalSaveData(nbt);
+        ride.save(nbt);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(CompoundTag nbt) {
+        super.readAdditionalSaveData(nbt);
+        ride.load(nbt);
+    }
+
+    @Override
+    public void onEntityDataPacket(CompoundTag tag) {
+        super.onEntityDataPacket(tag);
+        ride.load(tag);
     }
 }

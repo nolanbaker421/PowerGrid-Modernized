@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import com.nolanbaker.pgmodernized.util.BodyRider;
+import com.nolanbaker.pgmodernized.util.BodyRide;
 import com.nolanbaker.pgmodernized.util.SubLevelStick;
 import com.nolanbaker.pgmodernized.inspector.CopperScrap;
 import net.minecraft.nbt.CompoundTag;
@@ -42,7 +44,9 @@ import java.util.List;
  * inherited; it carries no current itself. Once both ends sit on hubs, right-clicking it with a
  * wire item pulls one {@link ConductorEntity} of that wire through it, up to the size's capacity.
  */
-public class ConduitRunEntity extends BlockWireEntity {
+public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
+    private final BodyRide ride = new BodyRide();
+
     private static final int NIPPLE_CHECK = 20;
     /** Galvanized steel; Power Grid's colourable wires would otherwise start out black. */
     public static final int DEFAULT_COLOR = 0xB8BCC0;
@@ -108,7 +112,7 @@ public class ConduitRunEntity extends BlockWireEntity {
     @Override
     public void tick() {
         super.tick();
-        SubLevelStick.stick(this);
+        ride.tick(this);
         if(!nipple || level().isClientSide || isRemoved() || ++nippleTimer < NIPPLE_CHECK)
             return;
         nippleTimer = 0;
@@ -129,12 +133,14 @@ public class ConduitRunEntity extends BlockWireEntity {
     @Override
     protected void addAdditionalSaveData(CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
+        ride.save(nbt);
         nbt.putBoolean("Nipple", nipple);
     }
 
     @Override
     protected void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
+        ride.load(nbt);
         nipple = nbt.getBoolean("Nipple");
         if(getColor() == 0)
             setColor(DEFAULT_COLOR); // laid before runs had a colour
@@ -426,5 +432,16 @@ public class ConduitRunEntity extends BlockWireEntity {
         if(stack.isEmpty() || stack.getItem() instanceof MultimeterItem)
             return client ? InteractionResult.SUCCESS : inspect(player);
         return super.interact(player, hand);
+    }
+
+    @Override
+    public BodyRide ride() {
+        return ride;
+    }
+
+    @Override
+    public void onEntityDataPacket(CompoundTag tag) {
+        super.onEntityDataPacket(tag);
+        ride.load(tag);
     }
 }
