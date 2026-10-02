@@ -28,9 +28,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * at the rim speed. Without Create Aeronautics (Sable) it is just a cogwheel.
  */
 public class PinionBlock extends RotatedPillarKineticBlock implements ICogWheel, IBE<PinionBlockEntity> {
-    private static final VoxelShape Y_SHAPE = Shapes.or(box(0, 6, 0, 16, 10, 16), box(6, 0, 6, 10, 16, 10));
-    private static final VoxelShape X_SHAPE = Shapes.or(box(6, 0, 0, 10, 16, 16), box(0, 6, 6, 16, 10, 10));
-    private static final VoxelShape Z_SHAPE = Shapes.or(box(0, 0, 6, 16, 16, 10), box(6, 6, 0, 10, 10, 16));
+    /** The disc stops a pixel short of the block faces so it never rubs on the rack it rolls along. */
+    private static final VoxelShape Y_SHAPE = Shapes.or(box(1, 6, 1, 15, 10, 15), box(6, 0, 6, 10, 16, 10));
+    private static final VoxelShape X_SHAPE = Shapes.or(box(6, 1, 1, 10, 15, 15), box(0, 6, 6, 16, 10, 10));
+    private static final VoxelShape Z_SHAPE = Shapes.or(box(1, 1, 6, 15, 15, 10), box(6, 6, 0, 10, 10, 16));
 
     public PinionBlock(Properties properties) {
         super(properties);
