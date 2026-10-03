@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.ac.source;
 
+import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
+import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
+import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
@@ -36,7 +39,7 @@ import static com.nolanbaker.pgmodernized.ac.source.FeInverterBlock.*;
  * cannot cover a tick the lines go dead (a brownout) and stay dead until it has refilled enough
  * to run for a second, so a starved inverter does not flicker at twenty hertz.
  */
-public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
+public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, IDeviceSpliceHost {
     public static final float SOURCE_R = 0.001f;
     public static final float SENSE = 1_000_000f;
     private static final double THIRD_TURN = 2 * Math.PI / 3;
@@ -66,6 +69,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
 
     private final Buffer energy = new Buffer();
     private AcSourceBehaviour voltageBox, frequencyBox;
+    private DeviceSpliceHost deviceHubs;
     private boolean lineToLine;
 
     // No initialisers: buildCircuit runs from the superclass constructor.
@@ -89,8 +93,8 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        voltageBox = new AcSourceBehaviour(this, true, FeInverterBlock.TOP, () -> lineToLine);
-        frequencyBox = new AcSourceBehaviour(this, false, FeInverterBlock.TOP, () -> false);
+        voltageBox = new AcSourceBehaviour(this, true, new AcSourceBehaviour.FrontBox(true, FeInverterBlock.DOOR), () -> lineToLine);
+        frequencyBox = new AcSourceBehaviour(this, false, new AcSourceBehaviour.FrontBox(false, FeInverterBlock.DOOR), () -> false);
         voltageBox.withCallback(i -> setChanged());
         frequencyBox.withCallback(i -> setChanged());
         behaviours.add(voltageBox);
@@ -107,11 +111,23 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         return energy;
     }
 
+    @Override
+    public DeviceSpliceHost deviceHubs() {
+        if(deviceHubs == null)
+            deviceHubs = new DeviceSpliceHost(this, FeInverterBlock.LAYOUT);
+        return deviceHubs;
+    }
+
+    @Override
+    public ConduitSize maxConduit() {
+        return ConduitSize.FOUR;
+    }
+
     // ---- circuit ----
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        builder.setTerminalCount(4);
+        deviceHubs().buildCircuit(builder);
         sources = new ACVoltageSourceCoupling[3];
         meters = new WattmeterWire[3];
         senses = new ElectricWire[3];
@@ -175,6 +191,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         super.lazyTick();
         if(level == null || level.isClientSide)
             return;
+        deviceHubs().lazyTick();
         if(Math.abs(watts - syncedWatts) > Math.max(5, syncedWatts * 0.05) || Math.abs(energy.getEnergyStored() - syncedStored) > energy.getMaxEnergyStored() / 100
                 || brownout != syncedBrownout)
             sendData();
@@ -265,6 +282,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
+        deviceHubs().write(tag, registries, clientPacket);
         tag.putInt("Energy", energy.getEnergyStored());
         tag.putBoolean("LineToLine", lineToLine);
         tag.putBoolean("Brownout", brownout);
@@ -280,6 +298,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
+        deviceHubs().read(tag, registries, clientPacket);
         energy.set(tag.getInt("Energy"));
         lineToLine = tag.getBoolean("LineToLine");
         brownout = tag.getBoolean("Brownout");
@@ -300,6 +319,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         if(brownout)
             Lang.builder().translate("gui.fe_inverter.brownout", String.format("%,d", energy.getEnergyStored()), String.format("%,d", reserve()))
                     .style(ChatFormatting.RED).forGoggles(tooltip, 1);
+        deviceHubs().addGoggleLines(tooltip);
         return true;
     }
 }

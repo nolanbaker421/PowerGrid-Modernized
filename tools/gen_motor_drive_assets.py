@@ -250,35 +250,19 @@ def creative_source():
 
 
 def fe_inverter():
-    """A dry-type transformer cabinet, louvred front, with four lugs and two value boxes on the lid and an FE port band low on the back."""
-    tex = os.path.join(ASSETS, "textures", "block")
-    dark = (0x1c, 0x24, 0x30)
-    band = canvas(16, 16, (0x5a, 0x5e, 0x66, 255))
-    fill(band, 0, 0, 16, 1, (0x80, 0x84, 0x8c))
-    fill(band, 2, 10, 14, 14, dark)
-    fill(band, 3, 11, 13, 13, (0xd0, 0x40, 0x40))
-    write_png(os.path.join(tex, INVERTER + "_side.png"), band)
-    top = canvas(16, 16, (0x5a, 0x5e, 0x66, 255))
-    fill(top, 0, 0, 16, 1, (0x80, 0x84, 0x8c))
-    fill(top, 3, 6, 13, 10, (0x10, 0x20, 0x30))
-    fill(top, 4, 7, 12, 9, (0x50, 0xa0, 0xe0))
-    write_png(os.path.join(tex, INVERTER + "_top.png"), top)
-    top_px = 12
-    lugs = [(11.5, top_px, 2.5, 13.5, top_px + 2, 4.5), (7, top_px, 2.5, 9, top_px + 2, 4.5), (2.5, top_px, 2.5, 4.5, top_px + 2, 4.5),
-            (7, top_px, 11.5, 9, top_px + 2, 13.5)]
-    cabinet = element(2, 0, 2, 14, top_px, 14, "#side")
+    """The CT cabinet's enclosure: door north, four lugs low on the door, two knockouts top and two bottom, value boxes on the door."""
+    cabinet = element(2, 1, 10, 14, 15, 16, "#side", cull_south=True)
     cabinet["faces"]["north"]["texture"] = "#front"
-    cabinet["faces"]["south"]["texture"] = "#band"
-    cabinet["faces"]["up"]["texture"] = "#top"
-    elements = [cabinet, element(3, 1, 1.75, 13, 7, 2, "#fin"), element(4, 8, 1.75, 12, 9, 2, "#cap")]
-    for lug in lugs:
-        elements.append(element(*lug, "#terminal"))
+    elements = [cabinet]
+    for x1, x2 in ((11.5, 13.5), (8.5, 10.5), (5.5, 7.5), (2.5, 4.5)):
+        elements.append(element(x1, 2, 9, x2, 4, 10, "#terminal"))
+    for x1, x2 in ((4, 6), (10, 12)):
+        elements.append(element(x1, 15, 12.5, x2, 16, 14.5, "#terminal"))
+        elements.append(element(x1, 0, 12.5, x2, 1, 14.5, "#terminal"))
     dump(os.path.join(ASSETS, "models", "block", INVERTER + ".json"), {
         "parent": "block/block",
-        "textures": {"front": "%s:block/transformer_dry_front" % MOD, "side": "%s:block/transformer_dry_side" % MOD,
-                     "fin": "%s:block/transformer_fin" % MOD, "cap": "%s:block/transformer_cap" % MOD,
-                     "band": "%s:block/%s_side" % (MOD, INVERTER), "top": "%s:block/%s_top" % (MOD, INVERTER),
-                     "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/transformer_dry_side" % MOD},
+        "textures": {"front": "%s:block/ct_cabinet_front" % MOD, "side": "%s:block/ct_cabinet_side" % MOD,
+                     "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/ct_cabinet_side" % MOD},
         "elements": elements,
     })
     dump(os.path.join(ASSETS, "models", "item", INVERTER + ".json"), {"parent": "%s:block/%s" % (MOD, INVERTER)})

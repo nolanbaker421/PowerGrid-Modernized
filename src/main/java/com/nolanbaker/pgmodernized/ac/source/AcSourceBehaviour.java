@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.ac.source;
 
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import java.util.function.BooleanSupplier;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.google.common.collect.ImmutableList;
@@ -38,7 +39,12 @@ public class AcSourceBehaviour extends ScrollValueBehaviour {
 
     /** @param top the lid height in 16ths the boxes sit on; @param lineToLine whether the voltage figure is line-to-line. */
     public AcSourceBehaviour(SmartBlockEntity be, boolean voltage, double top, BooleanSupplier lineToLine) {
-        super(Lang.builder().translate(voltage ? "gui.creative_ac_source.voltage" : "gui.creative_ac_source.frequency").component(), be, new TopBox(voltage, top));
+        this(be, voltage, new TopBox(voltage, top), lineToLine);
+    }
+
+    /** @param box where the box sits on the block. */
+    public AcSourceBehaviour(SmartBlockEntity be, boolean voltage, CenteredSideValueBoxTransform box, BooleanSupplier lineToLine) {
+        super(Lang.builder().translate(voltage ? "gui.creative_ac_source.voltage" : "gui.creative_ac_source.frequency").component(), be, box);
         this.voltage = voltage;
         this.lineToLine = lineToLine;
         if(voltage) {
@@ -96,6 +102,28 @@ public class AcSourceBehaviour extends ScrollValueBehaviour {
         }
         return new ValueSettingsBoard(label, MAX_HZ, 10, ImmutableList.of(label),
                 new ValueSettingsFormatter(settings -> Component.literal(settings.value() + " Hz")));
+    }
+
+    /** On the door of a wall cabinet whose door is {@code door} 16ths in from the block edge: voltage on the viewer's left, frequency on the right. */
+    public static class FrontBox extends CenteredSideValueBoxTransform {
+        private final boolean voltage;
+        private final double door;
+
+        public FrontBox(boolean voltage, double door) {
+            super((state, dir) -> state.hasProperty(BlockStateProperties.HORIZONTAL_FACING) && dir == state.getValue(BlockStateProperties.HORIZONTAL_FACING));
+            this.voltage = voltage;
+            this.door = door;
+        }
+
+        @Override
+        protected Vec3 getSouthLocation() {
+            return new Vec3((voltage ? 11.5 : 4.5) / 16.0, 10.5 / 16.0, door / 16.0);
+        }
+
+        @Override
+        public float getScale() {
+            return 0.4f;
+        }
     }
 
     /** On the top face: voltage on the viewer's left, frequency on the right. */
