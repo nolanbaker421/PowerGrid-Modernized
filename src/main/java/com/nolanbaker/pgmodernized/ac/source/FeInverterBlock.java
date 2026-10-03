@@ -1,5 +1,11 @@
 package com.nolanbaker.pgmodernized.ac.source;
 
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
 import com.nolanbaker.pgmodernized.ac.AcContent;
 import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
@@ -8,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -24,7 +31,8 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
  */
 public class FeInverterBlock extends HorizontalElectricBlock implements IBE<FeInverterBlockEntity> {
     public static final int L1 = 0, L2 = 1, L3 = 2, N = 3;
-    public static final double TOP = CreativeAcSourceBlock.TOP;
+    /** A dry-type cabinet, taller than the creative box, with the lugs on its lid. */
+    public static final double TOP = 12;
     private static final AABB BODY = new AABB(2, 0, 2, 14, TOP, 14);
     private static final AABB[] LUGS = {
             new AABB(11.5, TOP, 2.5, 13.5, TOP + 2, 4.5),   // L1, viewer's left front
@@ -66,6 +74,16 @@ public class FeInverterBlock extends HorizontalElectricBlock implements IBE<FeIn
     @Override
     public boolean accepts(ItemStack wireStack) {
         return WireAcceptance.electrical(wireStack);
+    }
+
+    /** Sneak with an empty hand: the voltage figure is line-to-neutral or line-to-line. */
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(hand != InteractionHand.MAIN_HAND || !player.isShiftKeyDown() || !player.getMainHandItem().isEmpty())
+            return InteractionResult.PASS;
+        if(!level.isClientSide)
+            withBlockEntityDo(level, pos, be -> be.toggleLineToLine(player));
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override

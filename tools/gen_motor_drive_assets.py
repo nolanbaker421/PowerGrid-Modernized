@@ -250,30 +250,35 @@ def creative_source():
 
 
 def fe_inverter():
-    """A slate-blue cabinet with an energy port band low on the sides, four lugs and two value boxes on top."""
+    """A dry-type transformer cabinet, louvred front, with four lugs and two value boxes on the lid and an FE port band low on the back."""
     tex = os.path.join(ASSETS, "textures", "block")
-    blue, dark = (0x3c, 0x5a, 0x88), (0x1c, 0x24, 0x30)
-    side = canvas(16, 16, blue + (255,))
-    fill(side, 0, 0, 16, 1, shade(blue, 1.2))
-    fill(side, 0, 15, 16, 16, shade(blue, 0.6))
-    fill(side, 2, 10, 14, 14, dark)                 # the FE port band
-    fill(side, 3, 11, 13, 13, (0xd0, 0x40, 0x40))
-    fill(side, 4, 4, 12, 7, shade(blue, 0.8))       # a nameplate
-    write_png(os.path.join(tex, INVERTER + "_side.png"), side)
-    top = canvas(16, 16, dark + (255,))
-    fill(top, 0, 0, 16, 1, shade(dark, 1.6))
+    dark = (0x1c, 0x24, 0x30)
+    band = canvas(16, 16, (0x5a, 0x5e, 0x66, 255))
+    fill(band, 0, 0, 16, 1, (0x80, 0x84, 0x8c))
+    fill(band, 2, 10, 14, 14, dark)
+    fill(band, 3, 11, 13, 13, (0xd0, 0x40, 0x40))
+    write_png(os.path.join(tex, INVERTER + "_side.png"), band)
+    top = canvas(16, 16, (0x5a, 0x5e, 0x66, 255))
+    fill(top, 0, 0, 16, 1, (0x80, 0x84, 0x8c))
     fill(top, 3, 6, 13, 10, (0x10, 0x20, 0x30))
     fill(top, 4, 7, 12, 9, (0x50, 0xa0, 0xe0))
     write_png(os.path.join(tex, INVERTER + "_top.png"), top)
-    lugs = [(11.5, 10, 2.5, 13.5, 12, 4.5), (7, 10, 2.5, 9, 12, 4.5), (2.5, 10, 2.5, 4.5, 12, 4.5), (7, 10, 11.5, 9, 12, 13.5)]
-    elements = [element(2, 0, 2, 14, 10, 14, "#side")]
-    elements[0]["faces"]["up"]["texture"] = "#top"
+    top_px = 12
+    lugs = [(11.5, top_px, 2.5, 13.5, top_px + 2, 4.5), (7, top_px, 2.5, 9, top_px + 2, 4.5), (2.5, top_px, 2.5, 4.5, top_px + 2, 4.5),
+            (7, top_px, 11.5, 9, top_px + 2, 13.5)]
+    cabinet = element(2, 0, 2, 14, top_px, 14, "#side")
+    cabinet["faces"]["north"]["texture"] = "#front"
+    cabinet["faces"]["south"]["texture"] = "#band"
+    cabinet["faces"]["up"]["texture"] = "#top"
+    elements = [cabinet, element(3, 1, 1.75, 13, 7, 2, "#fin"), element(4, 8, 1.75, 12, 9, 2, "#cap")]
     for lug in lugs:
         elements.append(element(*lug, "#terminal"))
     dump(os.path.join(ASSETS, "models", "block", INVERTER + ".json"), {
         "parent": "block/block",
-        "textures": {"side": "%s:block/%s_side" % (MOD, INVERTER), "top": "%s:block/%s_top" % (MOD, INVERTER),
-                     "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/%s_side" % (MOD, INVERTER)},
+        "textures": {"front": "%s:block/transformer_dry_front" % MOD, "side": "%s:block/transformer_dry_side" % MOD,
+                     "fin": "%s:block/transformer_fin" % MOD, "cap": "%s:block/transformer_cap" % MOD,
+                     "band": "%s:block/%s_side" % (MOD, INVERTER), "top": "%s:block/%s_top" % (MOD, INVERTER),
+                     "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/transformer_dry_side" % MOD},
         "elements": elements,
     })
     dump(os.path.join(ASSETS, "models", "item", INVERTER + ".json"), {"parent": "%s:block/%s" % (MOD, INVERTER)})

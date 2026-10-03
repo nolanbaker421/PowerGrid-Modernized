@@ -33,6 +33,7 @@ public class CreativeAcSourceBlockEntity extends ElectricBlockEntity implements 
     // No initialisers: buildCircuit runs from the superclass constructor.
     private ACVoltageSourceCoupling[] sources;
     private boolean splitPhase;
+    private boolean lineToLine;
     private boolean appliedSplit;
 
     public CreativeAcSourceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -41,8 +42,8 @@ public class CreativeAcSourceBlockEntity extends ElectricBlockEntity implements 
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        voltageBox = new AcSourceBehaviour(this, true);
-        frequencyBox = new AcSourceBehaviour(this, false);
+        voltageBox = new AcSourceBehaviour(this, true, CreativeAcSourceBlock.TOP, () -> lineToLine);
+        frequencyBox = new AcSourceBehaviour(this, false, CreativeAcSourceBlock.TOP, () -> false);
         voltageBox.withCallback(i -> setChanged());
         frequencyBox.withCallback(i -> setChanged());
         behaviours.add(voltageBox);
@@ -75,8 +76,21 @@ public class CreativeAcSourceBlockEntity extends ElectricBlockEntity implements 
         return false;
     }
 
+    /** The figure on the box: line-to-neutral, or line-to-line when so set. */
     public float volts() {
         return voltageBox == null ? 0 : AcSourceBehaviour.voltsOf(voltageBox.getValue());
+    }
+
+    public boolean isLineToLine() {
+        return lineToLine;
+    }
+
+    /** What each line actually gets to the neutral: a third of a turn apart gives L-L / sqrt 3, half a turn gives L-L / 2. */
+    public float lineToNeutralVolts() {
+        float v = volts();
+        if(!lineToLine)
+            return v;
+        return (float) (splitPhase ? v / 2 : v / Math.sqrt(3));
     }
 
     public float hertz() {
@@ -96,19 +110,25 @@ public class CreativeAcSourceBlockEntity extends ElectricBlockEntity implements 
                 sources[k].setPhaseOffset(phaseOffset(k));
             appliedSplit = splitPhase;
         }
-        float volts = volts(), hz = hertz();
+        float volts = lineToNeutralVolts(), hz = hertz();
         for(var source : sources) {
             source.setFrequency(hz);
             source.setRmsVoltage(volts);
         }
     }
 
-    /** Server side. */
+    /** Server side: three-phase L-N, three-phase L-L, split-phase L-N, split-phase L-L, round again. */
     public void toggleSplitPhase(Player player) {
-        splitPhase = !splitPhase;
+        if(!lineToLine) {
+            lineToLine = true;
+        } else {
+            lineToLine = false;
+            splitPhase = !splitPhase;
+        }
         if(level != null)
             level.playSound(null, worldPosition, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.4f, splitPhase ? 0.6f : 0.7f);
         player.displayClientMessage(Lang.builder().translate(splitPhase ? "gui.creative_ac_source.split" : "gui.creative_ac_source.three")
+                .text(", ").add(Lang.builder().translate(lineToLine ? "gui.ac_source.ll" : "gui.ac_source.ln"))
                 .style(ChatFormatting.GRAY).component(), true);
         setChanged();
         sendData();
@@ -118,19 +138,21 @@ public class CreativeAcSourceBlockEntity extends ElectricBlockEntity implements 
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         tag.putBoolean("Split", splitPhase);
+        tag.putBoolean("LineToLine", lineToLine);
     }
 
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         splitPhase = tag.getBoolean("Split");
+        lineToLine = tag.getBoolean("LineToLine");
     }
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate("gui.creative_ac_source.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
-        Lang.builder().translate("gui.creative_ac_source.setting", String.format("%.0f", volts()), String.format("%.0f", hertz()))
-                .style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.ac_source.setting", String.format("%.0f", volts()), lineToLine ? "L-L" : "L-N",
+                String.format("%.0f", lineToNeutralVolts()), String.format("%.0f", hertz())).style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         Lang.builder().translate(splitPhase ? "gui.creative_ac_source.split" : "gui.creative_ac_source.three").style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         return true;
     }

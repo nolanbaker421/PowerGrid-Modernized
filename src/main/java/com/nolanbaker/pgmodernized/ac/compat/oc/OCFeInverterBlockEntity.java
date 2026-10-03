@@ -81,6 +81,22 @@ public class OCFeInverterBlockEntity extends FeInverterBlockEntity implements En
         return result((double) hertz());
     }
 
+    @Callback(doc = "function(lineToLine:boolean) -- Whether the voltage figure is line-to-line (true) or line-to-neutral (false).")
+    public Object[] setLineToLine(Context context, Arguments args) {
+        setLineToLine(args.checkBoolean(0));
+        return result(isLineToLine());
+    }
+
+    @Callback(direct = true, doc = "function():boolean -- Whether the voltage figure is line-to-line.")
+    public Object[] isLineToLine(Context context, Arguments args) {
+        return result(isLineToLine());
+    }
+
+    @Callback(direct = true, doc = "function():number -- Line-to-neutral voltage each line actually gets (V).")
+    public Object[] getLineToNeutralVoltage(Context context, Arguments args) {
+        return result((double) lineToNeutralVolts());
+    }
+
     @Callback(direct = true, doc = "function():number -- Real power being delivered on the lines (W).")
     public Object[] getPower(Context context, Arguments args) {
         return result((double) watts());

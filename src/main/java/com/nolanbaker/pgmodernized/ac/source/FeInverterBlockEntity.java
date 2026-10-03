@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.ac.source;
 
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
 import com.nolanbaker.pgmodernized.PgmConfig;
 import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
@@ -63,6 +66,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
 
     private final Buffer energy = new Buffer();
     private AcSourceBehaviour voltageBox, frequencyBox;
+    private boolean lineToLine;
 
     // No initialisers: buildCircuit runs from the superclass constructor.
     private ACVoltageSourceCoupling[] sources;
@@ -85,8 +89,8 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        voltageBox = new AcSourceBehaviour(this, true);
-        frequencyBox = new AcSourceBehaviour(this, false);
+        voltageBox = new AcSourceBehaviour(this, true, FeInverterBlock.TOP, () -> lineToLine);
+        frequencyBox = new AcSourceBehaviour(this, false, FeInverterBlock.TOP, () -> false);
         voltageBox.withCallback(i -> setChanged());
         frequencyBox.withCallback(i -> setChanged());
         behaviours.add(voltageBox);
@@ -158,7 +162,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
             lastFe = fe;
         }
 
-        float volts = brownout ? 0 : volts();
+        float volts = brownout ? 0 : lineToNeutralVolts();
         float hz = hertz();
         for(var source : sources) {
             source.setFrequency(hz);
@@ -184,6 +188,30 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
 
     public float hertz() {
         return frequencyBox == null ? 0 : frequencyBox.getValue();
+    }
+
+    public boolean isLineToLine() {
+        return lineToLine;
+    }
+
+    /** What each line gets to the neutral: the figure, or the figure over sqrt 3 when it is line-to-line. */
+    public float lineToNeutralVolts() {
+        return (float) (lineToLine ? volts() / Math.sqrt(3) : volts());
+    }
+
+    /** Server side. */
+    public void setLineToLine(boolean value) {
+        lineToLine = value;
+        setChanged();
+        sendData();
+    }
+
+    /** Server side. */
+    public void toggleLineToLine(Player player) {
+        setLineToLine(!lineToLine);
+        if(level != null)
+            level.playSound(null, worldPosition, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.4f, lineToLine ? 0.6f : 0.7f);
+        player.displayClientMessage(Lang.builder().translate(lineToLine ? "gui.ac_source.ll" : "gui.ac_source.ln").style(ChatFormatting.GRAY).component(), true);
     }
 
     /** Snaps to the nearest nameplate voltage. Server side. */
@@ -231,6 +259,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         tag.putInt("Energy", energy.getEnergyStored());
+        tag.putBoolean("LineToLine", lineToLine);
         tag.putBoolean("Brownout", brownout);
         tag.putInt("LastFe", lastFe);
         tag.putFloat("Watts", watts);
@@ -245,6 +274,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         energy.set(tag.getInt("Energy"));
+        lineToLine = tag.getBoolean("LineToLine");
         brownout = tag.getBoolean("Brownout");
         lastFe = tag.getInt("LastFe");
         watts = tag.getFloat("Watts");
@@ -255,8 +285,8 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate("gui.fe_inverter.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
-        Lang.builder().translate("gui.fe_inverter.setting", String.format("%.0f", volts()), String.format("%.0f", hertz()))
-                .style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.ac_source.setting", String.format("%.0f", volts()), lineToLine ? "L-L" : "L-N",
+                String.format("%.0f", lineToNeutralVolts()), String.format("%.0f", hertz())).style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.fe_inverter.power", String.format("%.0f", watts)).style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.fe_inverter.buffer", String.format("%,d", energy.getEnergyStored()), String.format("%,d", energy.getMaxEnergyStored()))
                 .style(ChatFormatting.WHITE).forGoggles(tooltip, 1);

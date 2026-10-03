@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.ac.source;
 
+import java.util.function.BooleanSupplier;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
@@ -29,14 +30,21 @@ public class AcSourceBehaviour extends ScrollValueBehaviour {
     public static final int MAX_HZ = 120;
 
     private final boolean voltage;
+    private final BooleanSupplier lineToLine;
 
     public AcSourceBehaviour(SmartBlockEntity be, boolean voltage) {
-        super(Lang.builder().translate(voltage ? "gui.creative_ac_source.voltage" : "gui.creative_ac_source.frequency").component(), be, new TopBox(voltage));
+        this(be, voltage, CreativeAcSourceBlock.TOP, () -> false);
+    }
+
+    /** @param top the lid height in 16ths the boxes sit on; @param lineToLine whether the voltage figure is line-to-line. */
+    public AcSourceBehaviour(SmartBlockEntity be, boolean voltage, double top, BooleanSupplier lineToLine) {
+        super(Lang.builder().translate(voltage ? "gui.creative_ac_source.voltage" : "gui.creative_ac_source.frequency").component(), be, new TopBox(voltage, top));
         this.voltage = voltage;
+        this.lineToLine = lineToLine;
         if(voltage) {
             between(0, VOLTS.length - 1);
             setValue(0);
-            withFormatter(i -> voltsOf(i) + " V");
+            withFormatter(i -> voltsOf(i) + (lineToLine.getAsBoolean() ? " V L-L" : " V L-N"));
         } else {
             between(1, MAX_HZ);
             setValue(10);
@@ -84,7 +92,7 @@ public class AcSourceBehaviour extends ScrollValueBehaviour {
     public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
         if(voltage) {
             return new ValueSettingsBoard(label, VOLTS.length - 1, 1, ImmutableList.of(label),
-                    new ValueSettingsFormatter(settings -> Component.literal(voltsOf(settings.value()) + " V")));
+                    new ValueSettingsFormatter(settings -> Component.literal(voltsOf(settings.value()) + (lineToLine.getAsBoolean() ? " V L-L" : " V L-N"))));
         }
         return new ValueSettingsBoard(label, MAX_HZ, 10, ImmutableList.of(label),
                 new ValueSettingsFormatter(settings -> Component.literal(settings.value() + " Hz")));
@@ -93,15 +101,21 @@ public class AcSourceBehaviour extends ScrollValueBehaviour {
     /** On the top face: voltage on the viewer's left, frequency on the right. */
     public static class TopBox extends CenteredSideValueBoxTransform {
         private final boolean voltage;
+        private final double top;
 
         public TopBox(boolean voltage) {
+            this(voltage, CreativeAcSourceBlock.TOP);
+        }
+
+        public TopBox(boolean voltage, double top) {
             super((state, dir) -> dir == Direction.UP);
             this.voltage = voltage;
+            this.top = top;
         }
 
         @Override
         protected Vec3 getSouthLocation() {
-            return new Vec3((voltage ? 11.5 : 4.5) / 16.0, 8 / 16.0, (CreativeAcSourceBlock.TOP + 0.25) / 16.0);
+            return new Vec3((voltage ? 11.5 : 4.5) / 16.0, 8 / 16.0, (top + 0.25) / 16.0);
         }
 
         @Override

@@ -37,6 +37,23 @@ public class FeInverterPeripheral implements IPeripheral {
         return inverter.hertz();
     }
 
+    /** Whether the voltage figure is line-to-line (true) or line-to-neutral (false). */
+    @LuaFunction(mainThread = true)
+    public boolean setLineToLine(boolean lineToLine) {
+        inverter.setLineToLine(lineToLine);
+        return inverter.isLineToLine();
+    }
+
+    @LuaFunction
+    public boolean isLineToLine() {
+        return inverter.isLineToLine();
+    }
+
+    @LuaFunction
+    public double getLineToNeutralVoltage() {
+        return inverter.lineToNeutralVolts();
+    }
+
     @LuaFunction
     public double getPower() {
         return inverter.watts();
