@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.ac.motor;
 
+import com.nolanbaker.pgmodernized.PgmConfig;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.util.AcReadings;
@@ -67,6 +68,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
     private float frequency, phaseVolts, phaseAmps;
     private int sequence;
     private float syncedAmps, syncedFrequency;
+    private float notifiedCapacity = -1;
 
     public ThreePhaseMotorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -97,6 +99,27 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
             behaviours.add(thermalBehaviour);
             awards.add(ModdedAdvancements.BLOW_UP);
         }
+    }
+
+    /**
+     * The stress this motor can carry, per rpm: what its full-load electrical draw buys at the
+     * configured watts per stress unit, less the motor's losses. This is what keeps the books
+     * straight: a Create New Age generator turns stress back into FE at a fixed rate, and an FE
+     * inverter charges FE for every joule, so stress that costs no watts would be free energy.
+     */
+    public float energyCapacity() {
+        float rpm = Math.max(1, Math.abs(generatedSpeed));
+        float r = resistance("winding");
+        double fullLoadWatts = r > 0 ? 3.0 * phaseVolts * phaseVolts / r : 0;
+        double stress = fullLoadWatts * PgmConfig.MOTOR_EFFICIENCY.get() / PgmConfig.WATTS_PER_SU.get();
+        return (float) Math.min(PgmConfig.MOTOR_MAX_CAPACITY.get(), stress / rpm);
+    }
+
+    @Override
+    public float calculateAddedStressCapacity() {
+        float capacity = energyCapacity();
+        lastCapacityProvided = capacity;
+        return capacity;
     }
 
     public float torque() {
@@ -210,6 +233,12 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
                 if(awards != null)
                     awards.awardPlayer(ModdedAdvancements.ELECTRIC_MOTOR);
             }
+        }
+        // The supply voltage sets how much stress the motor may carry; tell the network when that moves.
+        float capacity = energyCapacity();
+        if(generatedSpeed != 0 && Math.abs(capacity - notifiedCapacity) > Math.max(0.5f, notifiedCapacity * 0.1f)) {
+            notifiedCapacity = capacity;
+            notifyStressCapacityChange(capacity);
         }
         if(Math.abs(phaseAmps - syncedAmps) > Math.max(0.05f, syncedAmps * 0.05f) || Math.abs(frequency - syncedFrequency) > 0.1f)
             sendData();

@@ -24,6 +24,9 @@ public final class PgmConfig {
     public static final ModConfigSpec.DoubleValue PINION_FORCE;
     public static final ModConfigSpec.BooleanValue PINION_LOCK;
     public static final ModConfigSpec.IntValue INVERTER_BUFFER;
+    public static final ModConfigSpec.DoubleValue WATTS_PER_SU;
+    public static final ModConfigSpec.DoubleValue MOTOR_EFFICIENCY;
+    public static final ModConfigSpec.DoubleValue MOTOR_MAX_CAPACITY;
     public static final ModConfigSpec.DoubleValue RANGEFINDER_MAX_RANGE;
     public static final ModConfigSpec.DoubleValue RANGEFINDER_DEFAULT_RANGE;
     public static final ModConfigSpec.IntValue RANGEFINDER_INTERVAL;
@@ -81,6 +84,17 @@ public final class PgmConfig {
                 .defineInRange("force", 2.0, 0.01, 100.0);
         PINION_INVERT = b.comment("Flip the direction a given shaft rotation walks the body, if it goes the wrong way for you.")
                 .define("invert", false);
+        b.pop();
+        b.comment("Energy accounting between Create stress, Forge Energy and Power Grid watts").push("energy");
+        WATTS_PER_SU = b.comment("Watts one Create stress unit is worth. The three-phase motor hands out stress it has bought at this rate.",
+                        "0.586 matches Create: New Age's generator (0.029296875 FE per stress unit per tick) at 1 FE per joule, so a loop",
+                        "inverter -> motor -> New Age generator -> inverter can only lose energy. Keep fe_per_joule x this in step with",
+                        "whatever turns stress into FE in your pack.")
+                .defineInRange("watts_per_su", 0.5859375, 0.0001, 1000.0);
+        MOTOR_EFFICIENCY = b.comment("Fraction of the electrical power the three-phase motor turns into stress; the rest is loss.")
+                .defineInRange("motor_efficiency", 0.9, 0.05, 1.0);
+        MOTOR_MAX_CAPACITY = b.comment("Most stress per rpm a three-phase motor can carry, however much it is fed (1024 is four creative motors at 256 rpm).")
+                .defineInRange("motor_max_capacity", 1024.0, 1.0, 1_000_000.0);
         b.pop();
         b.comment("FE inverter").push("inverter");
         INVERTER_BUFFER = b.comment("FE the inverter stores. It must cover one tick of its load, and a brownout ends once it holds a second's worth again.")

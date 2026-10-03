@@ -880,6 +880,11 @@ Forge Energy from any mod's cables in, three-phase AC out.
   it as `powergrid_inverter`: setVoltage, getVoltage, setFrequency, getFrequency, getPower,
   getStored, getCapacity, isBrownedOut.
 - Config section `inverter`: buffer, max_input, fe_per_joule, efficiency.
+- **No free energy.** The Three-Phase Motor now carries only as much Create stress as its
+  electrical draw buys: full-load watts times its efficiency (90 %) over `energy.watts_per_su`
+  (0.586 W per SU, which is Create: New Age's generator rate at 1 FE per joule). More voltage,
+  more stress, more FE. So inverter, motor, New Age generator and back loses about 15 % per
+  lap. If your pack turns stress into FE at another rate, set `watts_per_su` to match it.
 
 ## 15. Laser Rangefinder
 
