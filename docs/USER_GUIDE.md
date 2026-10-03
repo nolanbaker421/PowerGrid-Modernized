@@ -901,3 +901,19 @@ the car's height.
 - **Comparator** behind it: 15 with the target at the barrel, falling to 0 at the range limit, so
   setRange also scales the redstone.
 - Config section `rangefinder`: max_range (512), default_range (128), interval (2 ticks).
+
+## 16. Cam-Lock Boxes
+
+For portable generator sets: a box with five cam-lock receptacles, L1, L2, L3, N and G, that
+take ordinary wire (THHN included; no special cam cables), and two 4" conduit knockouts, one on
+each side. Mounts on any face and turns four ways like the other devices.
+
+- Each pole passes straight through: whatever hangs on a receptacle is on the same pole as the
+  conductor you splice to it from a knockout. Open the splice editor with an empty hand.
+- Two ratings: **100 A** and **400 A**. Each pole goes through a contact rated for the box, so pulling
+  a quarter more than the rating through the lines heats the box like any overloaded Power Grid
+  device; keep going and it burns. The goggles show the current on each pole and warn in red.
+- A generator set on wheels (a Create Aeronautics body) with a box on it plugs into the building's
+  box with five hanging cables, cam to cam. The cables stretch with the body like any hanging wire.
+- Recipes: the 100 A box is copper ingots in an iron plate frame; the 400 A box is a 100 A box
+  between copper blocks in an iron plate frame.

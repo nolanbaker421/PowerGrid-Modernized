@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.camlock.CamLockBoxBlockEntity;
 import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlockEntity;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
@@ -132,6 +133,11 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<PanelExtensionBlockEntity> PANEL_EXTENSION =
             REGISTRATE.blockEntity("panel_extension", PanelExtensionBlockEntity::new)
                     .validBlock(ModBlocks.PANEL_EXTENSION)
+                    .register();
+
+    public static final BlockEntityEntry<CamLockBoxBlockEntity> CAM_LOCK_BOX =
+            REGISTRATE.blockEntity("cam_lock_box", CamLockBoxBlockEntity::new)
+                    .validBlocks(ModBlocks.CAM_LOCK_BOX_100, ModBlocks.CAM_LOCK_BOX_400)
                     .register();
 
     public static final BlockEntityEntry<RangefinderBlockEntity> RANGEFINDER =

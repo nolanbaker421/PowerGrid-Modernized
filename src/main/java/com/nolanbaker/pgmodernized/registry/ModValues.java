@@ -47,6 +47,11 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         resistance("three_phase_motor", "winding", 8.0);
         resistance("three_phase_drive", "output", 0.05);
         thermal("three_phase_drive", 600, 5.0);
+        // Cam-lock boxes: one contact per pole. Dissipation is sized so about 125 % of the rating on three poles overheats them.
+        resistance("cam_lock_box_100", "contact", 0.002);
+        thermal("cam_lock_box_100", 95, 3.0);
+        resistance("cam_lock_box_400", "contact", 0.0005);
+        thermal("cam_lock_box_400", 375, 8.0);
         // FE inverter: the series resistance its power is metered through, and a drive-sized thermal body.
         resistance("fe_inverter", "output", 0.05);
         thermal("fe_inverter", 600, 5.0);

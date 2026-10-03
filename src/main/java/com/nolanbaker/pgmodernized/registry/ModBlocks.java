@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.camlock.CamLockBoxBlock;
 import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlock;
 import com.nolanbaker.pgmodernized.rack.RackBlock;
 import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
@@ -286,6 +287,28 @@ public class ModBlocks {
             .properties(p -> p.noOcclusion())
             .transform(pickaxeOnly())
             .lang("Conductor Rail")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** Cam-lock connector boxes: five receptacles for ordinary wire and two knockouts, at two ratings. */
+    public static final BlockEntry<CamLockBoxBlock> CAM_LOCK_BOX_100 = REGISTRATE.block("cam_lock_box_100", p -> new CamLockBoxBlock(p, 100))
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Cam-Lock Box (100 A)")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<CamLockBoxBlock> CAM_LOCK_BOX_400 = REGISTRATE.block("cam_lock_box_400", p -> new CamLockBoxBlock(p, 400))
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Cam-Lock Box (400 A)")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

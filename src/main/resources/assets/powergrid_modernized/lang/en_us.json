@@ -427,5 +427,14 @@
   "powergrid.gui.rangefinder.distance": "%1$s blocks to",
   "powergrid.gui.rangefinder.block": "a block",
   "powergrid.gui.rangefinder.body": "a physics body",
-  "powergrid.gui.rangefinder.entity": "an entity"
+  "powergrid.gui.rangefinder.entity": "an entity",
+  "block.powergrid_modernized.cam_lock_box_100": "Cam-Lock Box (100 A)",
+  "block.powergrid_modernized.cam_lock_box_400": "Cam-Lock Box (400 A)",
+  "powergrid.cam_lock.l1": "L1",
+  "powergrid.cam_lock.l2": "L2",
+  "powergrid.cam_lock.l3": "L3",
+  "powergrid.cam_lock.n": "Neutral",
+  "powergrid.cam_lock.g": "Ground",
+  "powergrid.gui.cam_lock.title": "Cam-lock box, %1$s A",
+  "powergrid.gui.cam_lock.overload": "Over %1$s A on a pole: the contacts are heating"
 }

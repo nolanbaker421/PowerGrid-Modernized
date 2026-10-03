@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "K": {
+      "tag": "c:storage_blocks/copper"
+    },
+    "X": {
+      "item": "powergrid_modernized:cam_lock_box_100"
+    }
+  },
+  "pattern": [
+    "III",
+    "KXK",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:cam_lock_box_400"
+  }
+}

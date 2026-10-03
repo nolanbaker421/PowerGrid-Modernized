@@ -69,6 +69,8 @@
       "id": "powergrid_modernized:fe_inverter",
       "required": false
     },
-    "powergrid_modernized:rangefinder"
+    "powergrid_modernized:rangefinder",
+    "powergrid_modernized:cam_lock_box_100",
+    "powergrid_modernized:cam_lock_box_400"
   ]
 }
