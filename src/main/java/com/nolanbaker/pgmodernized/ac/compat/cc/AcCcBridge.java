@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.ac.compat.cc;
 
+import com.nolanbaker.pgmodernized.ac.source.FeInverterBlockEntity;
 import com.nolanbaker.pgmodernized.ac.AcContent;
 import com.nolanbaker.pgmodernized.ac.drive.ThreePhaseDriveBlockEntity;
 import com.nolanbaker.pgmodernized.ac.sync.SynchroscopeBlockEntity;
@@ -20,6 +21,8 @@ public final class AcCcBridge {
                 (be, direction) -> new ThreePhaseDrivePeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), AcContent.SYNCHROSCOPE_BE.get(),
                 (be, direction) -> new SynchroscopePeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), AcContent.FE_INVERTER_BE.get(),
+                (be, direction) -> new FeInverterPeripheral(be));
     }
 
     /** The peripheral a Cat6-reachable AC device presents, or null for anything else. */
@@ -29,6 +32,8 @@ public final class AcCcBridge {
             return new ThreePhaseDrivePeripheral(drive);
         if(be instanceof SynchroscopeBlockEntity scope)
             return new SynchroscopePeripheral(scope);
+        if(be instanceof FeInverterBlockEntity inverter)
+            return new FeInverterPeripheral(inverter);
         return null;
     }
 }

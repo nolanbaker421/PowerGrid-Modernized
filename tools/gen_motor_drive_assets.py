@@ -155,6 +155,7 @@ def drive():
 
 SCOPE = "synchroscope"
 SOURCE = "creative_ac_source"
+INVERTER = "fe_inverter"
 
 
 def synchroscope():
@@ -248,6 +249,43 @@ def creative_source():
     loot_table(SOURCE)
 
 
+def fe_inverter():
+    """A slate-blue cabinet with an energy port band low on the sides, four lugs and two value boxes on top."""
+    tex = os.path.join(ASSETS, "textures", "block")
+    blue, dark = (0x3c, 0x5a, 0x88), (0x1c, 0x24, 0x30)
+    side = canvas(16, 16, blue + (255,))
+    fill(side, 0, 0, 16, 1, shade(blue, 1.2))
+    fill(side, 0, 15, 16, 16, shade(blue, 0.6))
+    fill(side, 2, 10, 14, 14, dark)                 # the FE port band
+    fill(side, 3, 11, 13, 13, (0xd0, 0x40, 0x40))
+    fill(side, 4, 4, 12, 7, shade(blue, 0.8))       # a nameplate
+    write_png(os.path.join(tex, INVERTER + "_side.png"), side)
+    top = canvas(16, 16, dark + (255,))
+    fill(top, 0, 0, 16, 1, shade(dark, 1.6))
+    fill(top, 3, 6, 13, 10, (0x10, 0x20, 0x30))
+    fill(top, 4, 7, 12, 9, (0x50, 0xa0, 0xe0))
+    write_png(os.path.join(tex, INVERTER + "_top.png"), top)
+    lugs = [(11.5, 10, 2.5, 13.5, 12, 4.5), (7, 10, 2.5, 9, 12, 4.5), (2.5, 10, 2.5, 4.5, 12, 4.5), (7, 10, 11.5, 9, 12, 13.5)]
+    elements = [element(2, 0, 2, 14, 10, 14, "#side")]
+    elements[0]["faces"]["up"]["texture"] = "#top"
+    for lug in lugs:
+        elements.append(element(*lug, "#terminal"))
+    dump(os.path.join(ASSETS, "models", "block", INVERTER + ".json"), {
+        "parent": "block/block",
+        "textures": {"side": "%s:block/%s_side" % (MOD, INVERTER), "top": "%s:block/%s_top" % (MOD, INVERTER),
+                     "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/%s_side" % (MOD, INVERTER)},
+        "elements": elements,
+    })
+    dump(os.path.join(ASSETS, "models", "item", INVERTER + ".json"), {"parent": "%s:block/%s" % (MOD, INVERTER)})
+    variants = {}
+    for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
+        v = {"model": "%s:block/%s" % (MOD, INVERTER)}
+        v.update(rot)
+        variants["facing=%s" % facing] = v
+    dump(os.path.join(ASSETS, "blockstates", INVERTER + ".json"), {"variants": variants})
+    loot_table(INVERTER)
+
+
 def recipes():
     coil = {"item": "powergrid:copper_coil"}
     iron = {"tag": "c:plates/iron"}
@@ -256,6 +294,8 @@ def recipes():
            {"items": "%s:vfd" % MOD})
     recipe(SCOPE, ["III", "RCR", "III"], {"I": iron, "R": {"item": "minecraft:comparator"}, "C": {"item": "minecraft:compass"}}, 1,
            {"items": "minecraft:comparator"})
+    recipe(INVERTER, ["ICI", "CRC", "ICI"], {"I": iron, "C": coil, "R": {"item": "minecraft:redstone_block"}}, 1,
+           {"items": "powergrid:copper_coil"})
 
 
 def main():
@@ -264,6 +304,7 @@ def main():
     drive()
     synchroscope()
     creative_source()
+    fe_inverter()
     recipes()
     import ac_conditions
     ac_conditions.main()

@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "powergrid_modernized:fe_inverter"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "powergrid_modernized:blocks/fe_inverter",
+  "neoforge:conditions": [
+    {
+      "type": "powergrid_modernized:ac_fork"
+    }
+  ]
+}

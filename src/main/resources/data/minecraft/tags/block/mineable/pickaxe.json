@@ -64,6 +64,10 @@
     "powergrid_modernized:cable_chain_anchor",
     "powergrid_modernized:conductor_rail",
     "powergrid_modernized:rail_feed",
-    "powergrid_modernized:rail_collector"
+    "powergrid_modernized:rail_collector",
+    {
+      "id": "powergrid_modernized:fe_inverter",
+      "required": false
+    }
   ]
 }

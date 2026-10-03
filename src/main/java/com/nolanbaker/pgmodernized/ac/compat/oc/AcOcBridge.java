@@ -12,6 +12,7 @@ public final class AcOcBridge {
         OCBridge.expose(event, AcContent.THREE_PHASE_MOTOR_BE.get());
         OCBridge.expose(event, AcContent.THREE_PHASE_DRIVE_BE.get());
         OCBridge.expose(event, AcContent.SYNCHROSCOPE_BE.get());
+        OCBridge.expose(event, AcContent.FE_INVERTER_BE.get());
     }
 
     /** Before any block entity exists: the AC devices become OC network nodes. */
@@ -19,5 +20,6 @@ public final class AcOcBridge {
         AcContent.MOTOR_FACTORY = OCThreePhaseMotorBlockEntity::new;
         AcContent.DRIVE_FACTORY = OCThreePhaseDriveBlockEntity::new;
         AcContent.SYNCHROSCOPE_FACTORY = OCSynchroscopeBlockEntity::new;
+        AcContent.INVERTER_FACTORY = OCFeInverterBlockEntity::new;
     }
 }

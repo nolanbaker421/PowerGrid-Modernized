@@ -47,6 +47,9 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         resistance("three_phase_motor", "winding", 8.0);
         resistance("three_phase_drive", "output", 0.05);
         thermal("three_phase_drive", 600, 5.0);
+        // FE inverter: the series resistance its power is metered through, and a drive-sized thermal body.
+        resistance("fe_inverter", "output", 0.05);
+        thermal("fe_inverter", 600, 5.0);
         // Transformers: winding resistance in series with each secondary leg.
         for(var spec : TransformerSpec.values()) {
             resistance(spec.id(), "winding", 0.02);

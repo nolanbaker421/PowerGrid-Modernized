@@ -410,5 +410,15 @@
   "powergrid.message.pinion.normal": "Pinion direction normal",
   "powergrid.gui.pinion.rack_facing": "Rack found, but its teeth do not point at the cog",
   "powergrid.gui.pinion.rack_axis": "Rack found, but it runs along the axle instead of across it",
-  "powergrid.gui.pinion.no_body": "No physics steps: not on an assembled body"
+  "powergrid.gui.pinion.no_body": "No physics steps: not on an assembled body",
+  "block.powergrid_modernized.fe_inverter": "FE Inverter",
+  "powergrid.fe_inverter.l1": "L1",
+  "powergrid.fe_inverter.l2": "L2",
+  "powergrid.fe_inverter.l3": "L3",
+  "powergrid.fe_inverter.n": "Neutral",
+  "powergrid.gui.fe_inverter.title": "FE inverter",
+  "powergrid.gui.fe_inverter.setting": "%1$s V line-to-neutral at %2$s Hz",
+  "powergrid.gui.fe_inverter.power": "Delivering %1$s W",
+  "powergrid.gui.fe_inverter.buffer": "Buffer %1$s / %2$s FE",
+  "powergrid.gui.fe_inverter.brownout": "Brownout: buffer ran dry, lines dead until it refills"
 }

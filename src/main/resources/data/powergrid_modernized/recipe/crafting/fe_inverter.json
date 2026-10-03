@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "C": {
+      "item": "powergrid:copper_coil"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "CRC",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:fe_inverter"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "powergrid_modernized:ac_fork"
+    }
+  ]
+}

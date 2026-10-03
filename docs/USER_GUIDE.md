@@ -860,3 +860,21 @@ How a gantry crane on a Create Aeronautics body moves itself along its runway.
 **Three-Phase Motor knockouts (0.15.8).** The motor has a conduit knockout on each side of its
 terminal box, like the drive. Run conduit into one, splice U, V and W with an empty hand on the
 motor, and the goggles list what is spliced.
+
+## 14. FE Inverter (AC fork)
+
+Forge Energy from any mod's cables in, three-phase AC out.
+
+- Feed it FE on any side: Mekanism, EnderIO, Create New Age, anything that pushes Forge Energy.
+  It holds a buffer (1,000,000 FE by default) and accepts up to 100,000 FE a tick.
+- On top: L1, L2, L3 and a neutral, like the creative source, and two value boxes. The left one
+  steps through the nameplate line-to-neutral voltages (120, 208, 240, 277, 480, 600, 1 kV, 3.5 kV,
+  8 kV, 10 kV, 35 kV, 100 kV), the right one sets the frequency in hertz.
+- It pays for what it delivers: the real power on the lines costs FE every tick at the configured
+  FE per joule (1 by default: 1 kW is 50 FE a tick) over the efficiency (95 %). An empty buffer is a
+  brownout: the lines go dead and stay dead until the buffer holds a second's worth again, so a
+  starved inverter does not flicker.
+- Goggles show the setting, the power being delivered, the buffer and any brownout. Computers see
+  it as `powergrid_inverter`: setVoltage, getVoltage, setFrequency, getFrequency, getPower,
+  getStored, getCapacity, isBrownedOut.
+- Config section `inverter`: buffer, max_input, fe_per_joule, efficiency.

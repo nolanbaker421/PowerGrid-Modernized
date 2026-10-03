@@ -125,6 +125,7 @@ public class PowerGridModernized {
 
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        ForkHooks.get().registerCapabilities(event);
         if(Platform.isModLoaded("computercraft")) {
             CCBridge.registerCapabilities(event);
         }

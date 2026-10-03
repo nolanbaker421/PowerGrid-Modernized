@@ -76,6 +76,9 @@ public interface ForkHooks {
 
     void registerClient(IEventBus modBus);
 
+    /** Capabilities of fork-only blocks that need no computer mod (the inverter's energy side). */
+    default void registerCapabilities(RegisterCapabilitiesEvent event) {}
+
     void registerCC(RegisterCapabilitiesEvent event);
 
     /** A ComputerCraft peripheral for an AC device, or null. Typed as Object so this interface never names CC classes. */

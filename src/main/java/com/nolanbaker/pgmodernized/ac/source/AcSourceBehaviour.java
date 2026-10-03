@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.ac.source;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
@@ -29,7 +30,7 @@ public class AcSourceBehaviour extends ScrollValueBehaviour {
 
     private final boolean voltage;
 
-    public AcSourceBehaviour(CreativeAcSourceBlockEntity be, boolean voltage) {
+    public AcSourceBehaviour(SmartBlockEntity be, boolean voltage) {
         super(Lang.builder().translate(voltage ? "gui.creative_ac_source.voltage" : "gui.creative_ac_source.frequency").component(), be, new TopBox(voltage));
         this.voltage = voltage;
         if(voltage) {

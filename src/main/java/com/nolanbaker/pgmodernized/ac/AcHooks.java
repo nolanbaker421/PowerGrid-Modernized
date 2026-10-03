@@ -71,6 +71,11 @@ public final class AcHooks implements ForkHooks {
     }
 
     @Override
+    public void registerCapabilities(RegisterCapabilitiesEvent event) {
+        AcContent.registerCapabilities(event);
+    }
+
+    @Override
     public void registerCC(RegisterCapabilitiesEvent event) {
         AcCcBridge.registerCapabilities(event);
     }

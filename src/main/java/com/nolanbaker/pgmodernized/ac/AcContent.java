@@ -1,5 +1,9 @@
 package com.nolanbaker.pgmodernized.ac;
 
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import com.nolanbaker.pgmodernized.ac.source.FeInverterBlockEntity;
+import com.nolanbaker.pgmodernized.ac.source.FeInverterBlock;
 import com.nolanbaker.pgmodernized.ac.client.SynchroscopeRenderer;
 import com.nolanbaker.pgmodernized.ac.drive.ThreePhaseDriveBlock;
 import com.nolanbaker.pgmodernized.ac.drive.ThreePhaseDriveBlockEntity;
@@ -34,16 +38,19 @@ public final class AcContent {
     public static BlockEntityFactory<ThreePhaseMotorBlockEntity> MOTOR_FACTORY = ThreePhaseMotorBlockEntity::new;
     public static BlockEntityFactory<ThreePhaseDriveBlockEntity> DRIVE_FACTORY = ThreePhaseDriveBlockEntity::new;
     public static BlockEntityFactory<SynchroscopeBlockEntity> SYNCHROSCOPE_FACTORY = SynchroscopeBlockEntity::new;
+    public static BlockEntityFactory<FeInverterBlockEntity> INVERTER_FACTORY = FeInverterBlockEntity::new;
 
     public static BlockEntry<ThreePhaseMotorBlock> THREE_PHASE_MOTOR;
     public static BlockEntry<ThreePhaseDriveBlock> THREE_PHASE_DRIVE;
     public static BlockEntry<SynchroscopeBlock> SYNCHROSCOPE;
     public static BlockEntry<CreativeAcSourceBlock> CREATIVE_AC_SOURCE;
+    public static BlockEntry<FeInverterBlock> FE_INVERTER;
 
     public static BlockEntityEntry<ThreePhaseMotorBlockEntity> THREE_PHASE_MOTOR_BE;
     public static BlockEntityEntry<ThreePhaseDriveBlockEntity> THREE_PHASE_DRIVE_BE;
     public static BlockEntityEntry<SynchroscopeBlockEntity> SYNCHROSCOPE_BE;
     public static BlockEntityEntry<CreativeAcSourceBlockEntity> CREATIVE_AC_SOURCE_BE;
+    public static BlockEntityEntry<FeInverterBlockEntity> FE_INVERTER_BE;
 
     private AcContent() {}
 
@@ -116,6 +123,27 @@ public final class AcContent {
         CREATIVE_AC_SOURCE_BE = REGISTRATE.blockEntity("creative_ac_source", CreativeAcSourceBlockEntity::new)
                 .validBlock(CREATIVE_AC_SOURCE)
                 .register();
+
+        /* Forge Energy in, three-phase out at a set voltage and frequency. */
+        FE_INVERTER = REGISTRATE.block("fe_inverter", FeInverterBlock::new)
+                .blockstate(NonNullBiConsumer.noop())
+                .initialProperties(SharedProperties::softMetal)
+                .properties(p -> p.noOcclusion())
+                .transform(pickaxeOnly())
+                .lang("FE Inverter")
+                .item()
+                    .model(NonNullBiConsumer.noop())
+                    .build()
+                .register();
+
+        FE_INVERTER_BE = REGISTRATE.blockEntity("fe_inverter", (BlockEntityFactory<FeInverterBlockEntity>) (type, pos, state) -> INVERTER_FACTORY.create(type, pos, state))
+                .validBlock(FE_INVERTER)
+                .register();
+    }
+
+    /** The inverter takes Forge Energy on every side. */
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, FE_INVERTER_BE.get(), (be, side) -> be.energy());
     }
 
     public static void registerClient(IEventBus modBus) {

@@ -23,6 +23,10 @@ public final class PgmConfig {
     public static final ModConfigSpec.BooleanValue PINION_INVERT;
     public static final ModConfigSpec.DoubleValue PINION_FORCE;
     public static final ModConfigSpec.BooleanValue PINION_LOCK;
+    public static final ModConfigSpec.IntValue INVERTER_BUFFER;
+    public static final ModConfigSpec.IntValue INVERTER_MAX_INPUT;
+    public static final ModConfigSpec.DoubleValue INVERTER_FE_PER_JOULE;
+    public static final ModConfigSpec.DoubleValue INVERTER_EFFICIENCY;
 
     static {
         var b = new ModConfigSpec.Builder();
@@ -74,6 +78,16 @@ public final class PgmConfig {
                 .defineInRange("force", 2.0, 0.01, 100.0);
         PINION_INVERT = b.comment("Flip the direction a given shaft rotation walks the body, if it goes the wrong way for you.")
                 .define("invert", false);
+        b.pop();
+        b.comment("FE inverter").push("inverter");
+        INVERTER_BUFFER = b.comment("FE the inverter stores. It must cover one tick of its load, and a brownout ends once it holds a second's worth again.")
+                .defineInRange("buffer", 1_000_000, 1_000, 1_000_000_000);
+        INVERTER_MAX_INPUT = b.comment("Most FE it accepts per tick from cables.")
+                .defineInRange("max_input", 100_000, 1, 1_000_000_000);
+        INVERTER_FE_PER_JOULE = b.comment("FE taken per joule delivered on the lines (1 means 1 FE per joule, so 1 kW costs 50 FE a tick).")
+                .defineInRange("fe_per_joule", 1.0, 0.001, 1000.0);
+        INVERTER_EFFICIENCY = b.comment("Fraction of the FE that becomes AC power; the rest is loss.")
+                .defineInRange("efficiency", 0.95, 0.05, 1.0);
         b.pop();
         SPEC = b.build();
     }
