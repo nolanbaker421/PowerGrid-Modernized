@@ -874,8 +874,9 @@ Forge Energy from any mod's cables in, three-phase AC out.
   to the neutral. The goggles show both figures.
 - It pays for what it delivers: the real power on the lines costs FE every tick at the configured
   FE per joule (1 by default: 1 kW is 50 FE a tick) over the efficiency (95 %). An empty buffer is a
-  brownout: the lines go dead and stay dead until the buffer holds a second's worth again, so a
-  starved inverter does not flicker.
+  brownout: the lines go dead and stay dead until the buffer holds a second of the steady draw
+  again (at least 2 % of the buffer, never more than 10 %), so a starved inverter does not
+  flicker. The goggles show how far the refill has got.
 - Goggles show the setting, the power being delivered, the buffer and any brownout. Computers see
   it as `powergrid_inverter`: setVoltage, getVoltage, setFrequency, getFrequency, getPower,
   getStored, getCapacity, isBrownedOut.

@@ -151,15 +151,15 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         double joulesPerTick = watts / 20.0 / Math.max(0.05, PgmConfig.INVERTER_EFFICIENCY.get());
         int fe = (int) Math.ceil(joulesPerTick * PgmConfig.INVERTER_FE_PER_JOULE.get());
         if(brownout) {
-            int reserve = Math.max(lastFe * 20, energy.getMaxEnergyStored() / 20);
-            if(energy.getEnergyStored() >= reserve)
+            if(energy.getEnergyStored() >= reserve())
                 brownout = false;
         } else if(energy.getEnergyStored() < fe) {
             brownout = true;
         }
         if(!brownout && fe > 0) {
             energy.drain(fe);
-            lastFe = fe;
+            // Remember the steady draw, not a switch-on spike: ease towards this tick's figure.
+            lastFe = lastFe <= 0 ? fe : (int) Math.round(lastFe * 0.9 + fe * 0.1);
         }
 
         float volts = brownout ? 0 : lineToNeutralVolts();
@@ -241,6 +241,13 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         return watts;
     }
 
+    /** What the buffer must hold before a brownout ends: a second of the steady draw, never more than a tenth of the buffer. */
+    public int reserve() {
+        long capacity = energy.getMaxEnergyStored();
+        long want = Math.max((long) lastFe * 20, capacity / 50);
+        return (int) Math.min(capacity / 10, want);
+    }
+
     public int stored() {
         return energy.getEnergyStored();
     }
@@ -291,7 +298,8 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         Lang.builder().translate("gui.fe_inverter.buffer", String.format("%,d", energy.getEnergyStored()), String.format("%,d", energy.getMaxEnergyStored()))
                 .style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         if(brownout)
-            Lang.builder().translate("gui.fe_inverter.brownout").style(ChatFormatting.RED).forGoggles(tooltip, 1);
+            Lang.builder().translate("gui.fe_inverter.brownout", String.format("%,d", energy.getEnergyStored()), String.format("%,d", reserve()))
+                    .style(ChatFormatting.RED).forGoggles(tooltip, 1);
         return true;
     }
 }

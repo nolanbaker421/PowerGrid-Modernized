@@ -420,7 +420,7 @@
   "powergrid.gui.fe_inverter.setting": "%1$s V line-to-neutral at %2$s Hz",
   "powergrid.gui.fe_inverter.power": "Delivering %1$s W",
   "powergrid.gui.fe_inverter.buffer": "Buffer %1$s / %2$s FE",
-  "powergrid.gui.fe_inverter.brownout": "Brownout: buffer ran dry, lines dead until it refills",
+  "powergrid.gui.fe_inverter.brownout": "Brownout: lines dead until the buffer holds %2$s FE (has %1$s)",
   "block.powergrid_modernized.rangefinder": "Laser Rangefinder",
   "powergrid.gui.rangefinder.title": "Laser rangefinder",
   "powergrid.gui.rangefinder.none": "No target within %1$s blocks",
