@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=up": {
+      "model": "powergrid_modernized:block/rangefinder"
+    },
+    "facing=down": {
+      "model": "powergrid_modernized:block/rangefinder",
+      "x": 180
+    },
+    "facing=north": {
+      "model": "powergrid_modernized:block/rangefinder",
+      "x": 90
+    },
+    "facing=east": {
+      "model": "powergrid_modernized:block/rangefinder",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south": {
+      "model": "powergrid_modernized:block/rangefinder",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid_modernized:block/rangefinder",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

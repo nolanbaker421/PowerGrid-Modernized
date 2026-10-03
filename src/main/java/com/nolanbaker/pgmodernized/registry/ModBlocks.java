@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlock;
 import com.nolanbaker.pgmodernized.rack.RackBlock;
 import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
 import com.nolanbaker.pgmodernized.rack.PinionBlock;
@@ -102,6 +103,18 @@ public class ModBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .lang("Line Ammeter")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** Laser rangefinder: distance to the first block, body or entity along its facing, on the network and a comparator. */
+    public static final BlockEntry<RangefinderBlock> RANGEFINDER = REGISTRATE.block("rangefinder", RangefinderBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Laser Rangefinder")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

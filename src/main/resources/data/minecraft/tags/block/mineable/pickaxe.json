@@ -68,6 +68,7 @@
     {
       "id": "powergrid_modernized:fe_inverter",
       "required": false
-    }
+    },
+    "powergrid_modernized:rangefinder"
   ]
 }

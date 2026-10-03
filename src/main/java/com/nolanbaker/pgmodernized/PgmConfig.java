@@ -24,6 +24,9 @@ public final class PgmConfig {
     public static final ModConfigSpec.DoubleValue PINION_FORCE;
     public static final ModConfigSpec.BooleanValue PINION_LOCK;
     public static final ModConfigSpec.IntValue INVERTER_BUFFER;
+    public static final ModConfigSpec.DoubleValue RANGEFINDER_MAX_RANGE;
+    public static final ModConfigSpec.DoubleValue RANGEFINDER_DEFAULT_RANGE;
+    public static final ModConfigSpec.IntValue RANGEFINDER_INTERVAL;
     public static final ModConfigSpec.IntValue INVERTER_MAX_INPUT;
     public static final ModConfigSpec.DoubleValue INVERTER_FE_PER_JOULE;
     public static final ModConfigSpec.DoubleValue INVERTER_EFFICIENCY;
@@ -88,6 +91,14 @@ public final class PgmConfig {
                 .defineInRange("fe_per_joule", 1.0, 0.001, 1000.0);
         INVERTER_EFFICIENCY = b.comment("Fraction of the FE that becomes AC power; the rest is loss.")
                 .defineInRange("efficiency", 0.95, 0.05, 1.0);
+        b.pop();
+        b.comment("Laser rangefinder").push("rangefinder");
+        RANGEFINDER_MAX_RANGE = b.comment("Farthest any rangefinder can be set to look, in blocks.")
+                .defineInRange("max_range", 512.0, 1.0, 4096.0);
+        RANGEFINDER_DEFAULT_RANGE = b.comment("Range of a rangefinder that has not been given its own, in blocks. Also the comparator's zero point.")
+                .defineInRange("default_range", 128.0, 1.0, 4096.0);
+        RANGEFINDER_INTERVAL = b.comment("Ticks between measurements. 1 is every tick; a moving crane reads smoothly at 2.")
+                .defineInRange("interval", 2, 1, 100);
         b.pop();
         SPEC = b.build();
     }

@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.compat.oc;
 
+import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlockEntity;
 import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import li.cil.oc.api.Driver;
 import li.cil.oc.api.network.Environment;
@@ -22,6 +23,7 @@ public class OCBridge {
         expose(event, ModBlockEntities.CT_CABINET.get());
         expose(event, ModBlockEntities.TRANSFORMER.get());
         ForkHooks.get().registerOC(event);
+        expose(event, ModBlockEntities.RANGEFINDER.get());
         expose(event, ModBlockEntities.RAIL_FEED.get());
         expose(event, ModBlockEntities.RAIL_COLLECTOR.get());
         expose(event, ModBlockEntities.CABLE_CHAIN_ANCHOR.get());
@@ -46,6 +48,7 @@ public class OCBridge {
         ComputerBlockEntityFactories.CT_CABINET = OCCtCabinetBlockEntity::new;
         ComputerBlockEntityFactories.TRANSFORMER = OCTransformerBlockEntity::new;
         ForkHooks.get().swapOCFactories();
+        RangefinderBlockEntity.FACTORY = OCRangefinderBlockEntity::new;
         ComputerBlockEntityFactories.RAIL_FEED = OCRailFeedBlockEntity::new;
         ComputerBlockEntityFactories.RAIL_COLLECTOR = OCRailCollectorBlockEntity::new;
         ComputerBlockEntityFactories.CABLE_CHAIN_ANCHOR = OCCableChainAnchorBlockEntity::new;

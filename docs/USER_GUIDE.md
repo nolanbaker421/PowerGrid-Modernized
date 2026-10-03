@@ -878,3 +878,26 @@ Forge Energy from any mod's cables in, three-phase AC out.
   it as `powergrid_inverter`: setVoltage, getVoltage, setFrequency, getFrequency, getPower,
   getStored, getCapacity, isBrownedOut.
 - Config section `inverter`: buffer, max_input, fe_per_joule, efficiency.
+
+## 15. Laser Rangefinder
+
+A plate with a barrel that points away from the face you mount it on, and a Cat6 jack on the
+plate. Every couple of ticks it fires a ray along the barrel and keeps the distance to the first
+thing it meets:
+
+- a block of the world,
+- a block of a physics body (a crane, an elevator car, a ship),
+- an entity: a Create contraption, a vehicle, a mob. Items and wires are ignored.
+
+Mounted on a body it measures from wherever the body holds it, so one on the trolley looking down
+the runway reads the distance to the end stop, and one at the bottom of a shaft looking up reads
+the car's height.
+
+- **Goggles** show the distance and what it hit, or "no target within N blocks".
+- **Computers**, over the jack's Cat6 or an adjacent OC cable, see `powergrid_rangefinder`:
+  getDistance (blocks, -1 for nothing), getTarget (none, block, body, entity), getRange, setRange.
+  OpenComputers can also setChangeThreshold(blocks) to get a `distance_change` signal whenever the
+  reading moves by that much, so a crane program can wait on it instead of polling.
+- **Comparator** behind it: 15 with the target at the barrel, falling to 0 at the range limit, so
+  setRange also scales the redstone.
+- Config section `rangefinder`: max_range (512), default_range (128), interval (2 ticks).

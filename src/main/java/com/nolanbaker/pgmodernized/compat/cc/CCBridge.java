@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.compat.cc;
 
+import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlockEntity;
 import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
 import com.nolanbaker.pgmodernized.compat.cc.transformer.TransformerPeripheral;
@@ -42,6 +43,8 @@ public class CCBridge {
                 (be, direction) -> new ClampMeterPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.LINE_VOLTMETER.get(),
                 (be, direction) -> new LineVoltmeterPeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.RANGEFINDER.get(),
+                (be, direction) -> new RangefinderPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.LINE_AMMETER.get(),
                 (be, direction) -> new LineAmmeterPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.CT_CABINET.get(),
@@ -68,6 +71,8 @@ public class CCBridge {
             return new ClampMeterPeripheral(meter);
         if(be instanceof LineVoltmeterBlockEntity meter)
             return new LineVoltmeterPeripheral(meter);
+        if(be instanceof RangefinderBlockEntity rangefinder)
+            return new RangefinderPeripheral(rangefinder);
         if(be instanceof LineAmmeterBlockEntity meter)
             return new LineAmmeterPeripheral(meter);
         if(be instanceof CtCabinetBlockEntity cabinet)
