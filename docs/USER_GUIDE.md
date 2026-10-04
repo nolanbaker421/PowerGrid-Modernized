@@ -985,8 +985,9 @@ Power Grid's Device Connector for three-phase: AC in, Forge Energy out, never th
 A pedestal with a console and a wheel, and a Cat6 jack on the back of the console. It is a
 keyboard for a computer that does not need a screen: right-click it with an empty hand and every
 key you press goes to the computers on that jack's network, by name, while your view stays your
-own and the mouse still looks around. You stand still at it. Escape lets go, and so does opening
-any screen, walking more than five blocks away, logging out or dying. Only one player can hold a
+own and the mouse still looks around. You stand still at it. The ~ key (grave, left of 1) lets
+go, and so does opening any screen (Escape included), walking more than five blocks away,
+logging out or dying. Only one player can hold a
 helm; the goggles say who.
 
 - **Keys** are named as the controls screen names them: `w`, `a`, `space`, `left.shift`,

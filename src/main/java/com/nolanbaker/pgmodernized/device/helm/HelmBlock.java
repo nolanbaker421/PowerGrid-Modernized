@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * A helm: a pedestal with a console and a wheel, and a Cat6 jack on the back. Right-click it and
  * your keyboard goes to the computers on that network, key by key, while your view stays your own;
- * Escape, walking away or opening any screen gives it back. The block itself is dumb: it only
+ * the ~ key, walking away or opening any screen gives it back. The block itself is dumb: it only
  * carries the jack and knows who is at it. Faces the way you stood when you placed it, wheel
  * towards you.
  */

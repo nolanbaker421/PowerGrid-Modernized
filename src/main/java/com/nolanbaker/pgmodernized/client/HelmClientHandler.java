@@ -19,11 +19,13 @@ import org.lwjgl.glfw.GLFW;
  * While the player is at a helm, every key and mouse button goes to the helm instead of the game:
  * each press and release is sent by name, the vanilla binding it would have triggered is put back
  * to sleep before the game acts on it, and movement input is zeroed so the player stands still.
- * The view is untouched; the mouse still looks around. Escape, any screen opening, logging out or
- * the server letting go all end it.
+ * The view is untouched; the mouse still looks around. The grave key (~), any screen opening,
+ * logging out or the server letting go all end it.
  */
 public final class HelmClientHandler {
     private static final String KEYBOARD = "key.keyboard.";
+    /** The key that lets go of the helm: grave accent, the ~ key. */
+    public static final int LET_GO_KEY = GLFW.GLFW_KEY_GRAVE_ACCENT;
     @Nullable
     private static BlockPos active;
 
@@ -74,7 +76,7 @@ public final class HelmClientHandler {
         if(active == null)
             return;
         int action = event.getAction();
-        if(event.getKey() == GLFW.GLFW_KEY_ESCAPE) {
+        if(event.getKey() == LET_GO_KEY) {
             if(action == GLFW.GLFW_PRESS)
                 letGo();
             return;
