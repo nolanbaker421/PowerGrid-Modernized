@@ -951,3 +951,22 @@ knockouts, two value boxes).
   box until you turn that box, or press "Use boxes".
 - It never overheats; a load bank is built to burn its power off. Everything upstream still can.
 - Recipe: copper coils and an encased fan in an iron plate frame.
+
+## 18. RF Connector (AC fork)
+
+Power Grid's Device Connector for three-phase: AC in, Forge Energy out, never the other way.
+
+- The load bank's wall cabinet: four lugs low on the door for hanging wire, two conduit knockouts
+  on top and two underneath, spliced with an empty hand on the door. Wire L1, L2, L3 and the
+  neutral; it is three loads in star.
+- It hands Forge Energy to every block touching it that takes FE: machines, cables, batteries,
+  from any mod. Put a Mekanism machine against it and it runs. Nothing can push FE into it, and it
+  takes nothing back, so a loop through an FE Inverter only loses what both lose.
+- It draws only what is being taken. The FE missing from its buffer, at Power Grid's FE per watt,
+  is what it asks the lines for each tick; with nothing drawing, its loads are as good as open. At
+  1 FE per watt per tick a machine taking 1,000 FE a tick costs about 1.05 kW. The loads never go
+  below 0.1 ohm per phase, so a sagging line is not shorted.
+- Goggles show the FE being supplied, the power drawn with the voltage and current per phase, and
+  the buffer. Config section `rf_connector`: buffer (100,000 FE), max_output (100,000 FE a tick,
+  which also caps the draw), efficiency (95 %).
+- Recipe: a Power Grid Device Connector between two copper coils in an iron plate frame.

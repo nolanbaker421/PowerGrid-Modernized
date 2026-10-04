@@ -8,8 +8,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from gen_breaker_panel_assets import DATA, MOD, ROOT
 
-AC_BLOCKS = ["three_phase_motor", "three_phase_drive", "synchroscope", "creative_ac_source", "fe_inverter", "load_bank"]
-AC_RECIPES = ["three_phase_motor", "three_phase_drive", "synchroscope", "fe_inverter", "load_bank"]
+AC_BLOCKS = ["three_phase_motor", "three_phase_drive", "synchroscope", "creative_ac_source", "fe_inverter", "load_bank", "rf_connector"]
+AC_RECIPES = ["three_phase_motor", "three_phase_drive", "synchroscope", "fe_inverter", "load_bank", "rf_connector"]
 CONDITION = [{"type": "%s:ac_fork" % MOD}]
 
 

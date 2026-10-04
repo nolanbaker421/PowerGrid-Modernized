@@ -55,6 +55,8 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         // FE inverter: the series resistance its power is metered through, and a drive-sized thermal body.
         resistance("fe_inverter", "output", 0.05);
         thermal("fe_inverter", 600, 5.0);
+        // RF connector: the least resistance its loads go down to per phase, so a sagging line cannot be shorted.
+        resistance("rf_connector", "load", 0.1);
         // Transformers: winding resistance in series with each secondary leg.
         for(var spec : TransformerSpec.values()) {
             resistance(spec.id(), "winding", 0.02);

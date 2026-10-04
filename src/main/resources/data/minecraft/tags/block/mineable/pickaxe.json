@@ -75,6 +75,10 @@
     {
       "id": "powergrid_modernized:load_bank",
       "required": false
+    },
+    {
+      "id": "powergrid_modernized:rf_connector",
+      "required": false
     }
   ]
 }

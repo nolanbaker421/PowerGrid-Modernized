@@ -321,6 +321,27 @@ def load_bank():
     cabinet_model(LOAD_BANK, "%s:block/%s_front" % (MOD, LOAD_BANK), "%s:block/%s_side" % (MOD, LOAD_BANK), [])
 
 
+RF = "rf_connector"
+
+
+def rf_connector():
+    """Power Grid's Device Connector for three-phase: the load bank's cabinet with an orange band and a port on the door."""
+    tex = os.path.join(ASSETS, "textures", "block")
+    grey = (0x4c, 0x4e, 0x54)
+    side = canvas(16, 16, grey + (255,))
+    fill(side, 0, 0, 16, 1, shade(grey, 1.3))
+    fill(side, 0, 15, 16, 16, shade(grey, 0.6))
+    write_png(os.path.join(tex, RF + "_side.png"), side)
+    front = canvas(16, 16, grey + (255,))
+    fill(front, 0, 0, 16, 1, shade(grey, 1.3))
+    fill(front, 0, 15, 16, 16, shade(grey, 0.6))
+    fill(front, 2, 4, 14, 7, (0xe0, 0x80, 0x20))            # orange band
+    fill(front, 6, 9, 10, 13, (0x18, 0x18, 0x1c))            # the port
+    fill(front, 7, 10, 9, 12, (0xd0, 0x30, 0x30))            # live
+    write_png(os.path.join(tex, RF + "_front.png"), front)
+    cabinet_model(RF, "%s:block/%s_front" % (MOD, RF), "%s:block/%s_side" % (MOD, RF), [])
+
+
 def recipes():
     coil = {"item": "powergrid:copper_coil"}
     iron = {"tag": "c:plates/iron"}
@@ -333,6 +354,8 @@ def recipes():
            {"items": "powergrid:copper_coil"})
     recipe(LOAD_BANK, ["III", "CFC", "III"], {"I": iron, "C": coil, "F": {"item": "create:encased_fan"}}, 1,
            {"items": "powergrid:copper_coil"})
+    recipe(RF, ["III", "CDC", "III"], {"I": iron, "C": coil, "D": {"item": "powergrid:device_connector"}}, 1,
+           {"items": "powergrid:device_connector"})
 
 
 def main():
@@ -343,6 +366,7 @@ def main():
     creative_source()
     fe_inverter()
     load_bank()
+    rf_connector()
     recipes()
     import ac_conditions
     ac_conditions.main()

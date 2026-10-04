@@ -35,6 +35,9 @@ public final class PgmConfig {
     public static final ModConfigSpec.IntValue INVERTER_MAX_INPUT;
     public static final ModConfigSpec.DoubleValue INVERTER_FE_PER_WATT;
     public static final ModConfigSpec.DoubleValue INVERTER_EFFICIENCY;
+    public static final ModConfigSpec.IntValue RF_BUFFER;
+    public static final ModConfigSpec.IntValue RF_MAX_OUTPUT;
+    public static final ModConfigSpec.DoubleValue RF_EFFICIENCY;
 
     static {
         var b = new ModConfigSpec.Builder();
@@ -110,6 +113,14 @@ public final class PgmConfig {
                         "Set it only to price this inverter apart from Power Grid's.")
                 .defineInRange("fe_per_watt", 0.0, 0.0, 1_000_000.0);
         INVERTER_EFFICIENCY = b.comment("Fraction of the FE that becomes AC power; the rest is loss.")
+                .defineInRange("efficiency", 0.95, 0.05, 1.0);
+        b.pop();
+        b.comment("RF connector: three-phase in, Forge Energy out").push("rf_connector");
+        RF_BUFFER = b.comment("FE the connector holds. What is missing from it, at the FE per watt, is the power it asks the lines for.")
+                .defineInRange("buffer", 100_000, 1_000, 1_000_000_000);
+        RF_MAX_OUTPUT = b.comment("Most FE it hands out per tick, over all its sides together. Also caps what it will draw.")
+                .defineInRange("max_output", 100_000, 1, 1_000_000_000);
+        RF_EFFICIENCY = b.comment("Fraction of the power drawn that becomes FE; the rest is loss.")
                 .defineInRange("efficiency", 0.95, 0.05, 1.0);
         b.pop();
         b.comment("Laser rangefinder").push("rangefinder");

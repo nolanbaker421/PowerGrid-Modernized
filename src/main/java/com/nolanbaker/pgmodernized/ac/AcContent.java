@@ -2,6 +2,8 @@ package com.nolanbaker.pgmodernized.ac;
 
 import com.nolanbaker.pgmodernized.ac.source.LoadBankBlockEntity;
 import com.nolanbaker.pgmodernized.ac.source.LoadBankBlock;
+import com.nolanbaker.pgmodernized.ac.source.RfConnectorBlock;
+import com.nolanbaker.pgmodernized.ac.source.RfConnectorBlockEntity;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import com.nolanbaker.pgmodernized.ac.source.FeInverterBlockEntity;
@@ -48,6 +50,7 @@ public final class AcContent {
     public static BlockEntry<CreativeAcSourceBlock> CREATIVE_AC_SOURCE;
     public static BlockEntry<FeInverterBlock> FE_INVERTER;
     public static BlockEntry<LoadBankBlock> LOAD_BANK;
+    public static BlockEntry<RfConnectorBlock> RF_CONNECTOR;
 
     public static BlockEntityEntry<ThreePhaseMotorBlockEntity> THREE_PHASE_MOTOR_BE;
     public static BlockEntityEntry<ThreePhaseDriveBlockEntity> THREE_PHASE_DRIVE_BE;
@@ -55,6 +58,7 @@ public final class AcContent {
     public static BlockEntityEntry<CreativeAcSourceBlockEntity> CREATIVE_AC_SOURCE_BE;
     public static BlockEntityEntry<FeInverterBlockEntity> FE_INVERTER_BE;
     public static BlockEntityEntry<LoadBankBlockEntity> LOAD_BANK_BE;
+    public static BlockEntityEntry<RfConnectorBlockEntity> RF_CONNECTOR_BE;
 
     private AcContent() {}
 
@@ -159,11 +163,28 @@ public final class AcContent {
         LOAD_BANK_BE = REGISTRATE.blockEntity("load_bank", LoadBankBlockEntity::new)
                 .validBlock(LOAD_BANK)
                 .register();
+
+        /* Three-phase in, Forge Energy out of every side, never the other way. */
+        RF_CONNECTOR = REGISTRATE.block("rf_connector", RfConnectorBlock::new)
+                .blockstate(NonNullBiConsumer.noop())
+                .initialProperties(SharedProperties::softMetal)
+                .properties(p -> p.noOcclusion())
+                .transform(pickaxeOnly())
+                .lang("RF Connector")
+                .item()
+                    .model(NonNullBiConsumer.noop())
+                    .build()
+                .register();
+
+        RF_CONNECTOR_BE = REGISTRATE.blockEntity("rf_connector", RfConnectorBlockEntity::new)
+                .validBlock(RF_CONNECTOR)
+                .register();
     }
 
-    /** The inverter takes Forge Energy on every side. */
+    /** The inverter takes Forge Energy on every side; the RF connector gives it on every side. */
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, FE_INVERTER_BE.get(), (be, side) -> be.energy());
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, RF_CONNECTOR_BE.get(), (be, side) -> be.energy());
     }
 
     public static void registerClient(IEventBus modBus) {

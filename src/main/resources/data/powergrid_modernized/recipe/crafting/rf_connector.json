@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "C": {
+      "item": "powergrid:copper_coil"
+    },
+    "D": {
+      "item": "powergrid:device_connector"
+    }
+  },
+  "pattern": [
+    "III",
+    "CDC",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:rf_connector"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "powergrid_modernized:ac_fork"
+    }
+  ]
+}
