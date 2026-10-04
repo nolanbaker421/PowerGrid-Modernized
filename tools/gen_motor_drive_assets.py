@@ -249,30 +249,57 @@ def creative_source():
     loot_table(SOURCE)
 
 
-def fe_inverter():
-    """The CT cabinet's enclosure: door north, four lugs low on the door, two knockouts top and two bottom, value boxes on the door."""
+LOAD_BANK = "load_bank"
+
+
+def cabinet_model(name, front, side, extras):
+    """The CT cabinet's enclosure: door north, four lugs low on the door, two knockouts top and two bottom."""
     cabinet = element(2, 1, 10, 14, 15, 16, "#side", cull_south=True)
     cabinet["faces"]["north"]["texture"] = "#front"
-    elements = [cabinet]
+    elements = [cabinet] + extras
     for x1, x2 in ((11.5, 13.5), (8.5, 10.5), (5.5, 7.5), (2.5, 4.5)):
         elements.append(element(x1, 2, 9, x2, 4, 10, "#terminal"))
     for x1, x2 in ((4, 6), (10, 12)):
         elements.append(element(x1, 15, 12.5, x2, 16, 14.5, "#terminal"))
         elements.append(element(x1, 0, 12.5, x2, 1, 14.5, "#terminal"))
-    dump(os.path.join(ASSETS, "models", "block", INVERTER + ".json"), {
+    dump(os.path.join(ASSETS, "models", "block", name + ".json"), {
         "parent": "block/block",
-        "textures": {"front": "%s:block/ct_cabinet_front" % MOD, "side": "%s:block/ct_cabinet_side" % MOD,
-                     "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/ct_cabinet_side" % MOD},
+        "textures": {"front": front, "side": side, "fin": "%s:block/transformer_fin" % MOD, "cap": "%s:block/transformer_cap" % MOD,
+                     "terminal": "%s:block/panel_terminal" % MOD, "particle": side},
         "elements": elements,
     })
-    dump(os.path.join(ASSETS, "models", "item", INVERTER + ".json"), {"parent": "%s:block/%s" % (MOD, INVERTER)})
+    dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s" % (MOD, name)})
     variants = {}
     for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
-        v = {"model": "%s:block/%s" % (MOD, INVERTER)}
+        v = {"model": "%s:block/%s" % (MOD, name)}
         v.update(rot)
         variants["facing=%s" % facing] = v
-    dump(os.path.join(ASSETS, "blockstates", INVERTER + ".json"), {"variants": variants})
-    loot_table(INVERTER)
+    dump(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": variants})
+    loot_table(name)
+
+
+def fe_inverter():
+    """The cabinet in the dry-type transformer's dress: louvred front, a cooling fin strip above the boxes and a cap strip below."""
+    extras = [element(3, 12.5, 9.75, 13, 14, 10, "#fin"), element(4, 5, 9.75, 12, 6, 10, "#cap")]
+    cabinet_model(INVERTER, "%s:block/transformer_dry_front" % MOD, "%s:block/transformer_dry_side" % MOD, extras)
+
+
+def load_bank():
+    """The same cabinet with a vented door, dark grey: it is a heater in a box."""
+    tex = os.path.join(ASSETS, "textures", "block")
+    grey = (0x44, 0x46, 0x4c)
+    side = canvas(16, 16, grey + (255,))
+    fill(side, 0, 0, 16, 1, shade(grey, 1.3))
+    fill(side, 0, 15, 16, 16, shade(grey, 0.6))
+    write_png(os.path.join(tex, LOAD_BANK + "_side.png"), side)
+    front = canvas(16, 16, grey + (255,))
+    fill(front, 0, 0, 16, 1, shade(grey, 1.3))
+    fill(front, 0, 15, 16, 16, shade(grey, 0.6))
+    for y in range(3, 13, 2):
+        fill(front, 3, y, 13, y + 1, (0x18, 0x18, 0x1c))      # vent slots
+    fill(front, 5, 13, 11, 14, (0xd0, 0x40, 0x40))            # warning stripe
+    write_png(os.path.join(tex, LOAD_BANK + "_front.png"), front)
+    cabinet_model(LOAD_BANK, "%s:block/%s_front" % (MOD, LOAD_BANK), "%s:block/%s_side" % (MOD, LOAD_BANK), [])
 
 
 def recipes():
@@ -285,6 +312,8 @@ def recipes():
            {"items": "minecraft:comparator"})
     recipe(INVERTER, ["ICI", "CRC", "ICI"], {"I": iron, "C": coil, "R": {"item": "minecraft:redstone_block"}}, 1,
            {"items": "powergrid:copper_coil"})
+    recipe(LOAD_BANK, ["III", "CFC", "III"], {"I": iron, "C": coil, "F": {"item": "create:encased_fan"}}, 1,
+           {"items": "powergrid:copper_coil"})
 
 
 def main():
@@ -294,6 +323,7 @@ def main():
     synchroscope()
     creative_source()
     fe_inverter()
+    load_bank()
     recipes()
     import ac_conditions
     ac_conditions.main()

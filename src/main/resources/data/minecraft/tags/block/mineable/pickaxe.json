@@ -71,6 +71,10 @@
     },
     "powergrid_modernized:rangefinder",
     "powergrid_modernized:cam_lock_box_100",
-    "powergrid_modernized:cam_lock_box_400"
+    "powergrid_modernized:cam_lock_box_400",
+    {
+      "id": "powergrid_modernized:load_bank",
+      "required": false
+    }
   ]
 }

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powergrid_modernized:block/load_bank"
+    },
+    "facing=east": {
+      "model": "powergrid_modernized:block/load_bank",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "powergrid_modernized:block/load_bank",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid_modernized:block/load_bank",
+      "y": 270
+    }
+  }
+}

@@ -928,3 +928,16 @@ each side. Mounts on any face and turns four ways like the other devices.
   box with five hanging cables, cam to cam. The cables stretch with the body like any hanging wire.
 - Recipes: the 100 A box is copper ingots in an iron plate frame; the 400 A box is a 100 A box
   between copper blocks in an iron plate frame.
+
+## 17. Load Bank (AC fork)
+
+A dummy three-phase load for testing generators, inverters and wiring: three resistors in star
+from L1, L2, L3 to the neutral, in the same wall cabinet as the inverter (four lugs low on the
+door, four conduit knockouts, two value boxes).
+
+- Left box: the load, 0.5 kW to 5 MW, for all three phases together. Right box: the line-to-neutral
+  voltage that load is rated at. Together they fix the resistance of each phase, which the goggles
+  show along with what the bank really draws at the voltage it is given. Feed a 10 kW at 277 V
+  bank with 120 V and it draws about 1.9 kW, like any resistor.
+- It never overheats; a load bank is built to burn its power off. Everything upstream still can.
+- Recipe: copper coils and an encased fan in an iron plate frame.

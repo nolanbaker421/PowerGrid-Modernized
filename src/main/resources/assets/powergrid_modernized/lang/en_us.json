@@ -439,5 +439,15 @@
   "powergrid.gui.cam_lock.overload": "Over %1$s A on a pole: the contacts are heating",
   "powergrid.gui.ac_source.setting": "%1$s V %2$s (%3$s V to neutral) at %4$s Hz",
   "powergrid.gui.ac_source.ln": "Voltage figure is line-to-neutral",
-  "powergrid.gui.ac_source.ll": "Voltage figure is line-to-line"
+  "powergrid.gui.ac_source.ll": "Voltage figure is line-to-line",
+  "block.powergrid_modernized.load_bank": "Load Bank",
+  "powergrid.load_bank.l1": "L1",
+  "powergrid.load_bank.l2": "L2",
+  "powergrid.load_bank.l3": "L3",
+  "powergrid.load_bank.n": "Neutral",
+  "powergrid.gui.load_bank.title": "Load bank",
+  "powergrid.gui.load_bank.load": "Load",
+  "powergrid.gui.load_bank.rated": "Rated voltage",
+  "powergrid.gui.load_bank.setting": "Set %1$s kW at %2$s V L-N: %3$s Ω per phase",
+  "powergrid.gui.load_bank.drawing": "Drawing %1$s kW at %2$s V, %3$s A per phase"
 }

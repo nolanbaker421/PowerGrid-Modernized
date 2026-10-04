@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.ac;
 
+import com.nolanbaker.pgmodernized.ac.source.LoadBankBlockEntity;
+import com.nolanbaker.pgmodernized.ac.source.LoadBankBlock;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import com.nolanbaker.pgmodernized.ac.source.FeInverterBlockEntity;
@@ -45,12 +47,14 @@ public final class AcContent {
     public static BlockEntry<SynchroscopeBlock> SYNCHROSCOPE;
     public static BlockEntry<CreativeAcSourceBlock> CREATIVE_AC_SOURCE;
     public static BlockEntry<FeInverterBlock> FE_INVERTER;
+    public static BlockEntry<LoadBankBlock> LOAD_BANK;
 
     public static BlockEntityEntry<ThreePhaseMotorBlockEntity> THREE_PHASE_MOTOR_BE;
     public static BlockEntityEntry<ThreePhaseDriveBlockEntity> THREE_PHASE_DRIVE_BE;
     public static BlockEntityEntry<SynchroscopeBlockEntity> SYNCHROSCOPE_BE;
     public static BlockEntityEntry<CreativeAcSourceBlockEntity> CREATIVE_AC_SOURCE_BE;
     public static BlockEntityEntry<FeInverterBlockEntity> FE_INVERTER_BE;
+    public static BlockEntityEntry<LoadBankBlockEntity> LOAD_BANK_BE;
 
     private AcContent() {}
 
@@ -138,6 +142,22 @@ public final class AcContent {
 
         FE_INVERTER_BE = REGISTRATE.blockEntity("fe_inverter", (BlockEntityFactory<FeInverterBlockEntity>) (type, pos, state) -> INVERTER_FACTORY.create(type, pos, state))
                 .validBlock(FE_INVERTER)
+                .register();
+
+        /* A resistive load bank for testing: a set load at a set rated voltage. */
+        LOAD_BANK = REGISTRATE.block("load_bank", LoadBankBlock::new)
+                .blockstate(NonNullBiConsumer.noop())
+                .initialProperties(SharedProperties::softMetal)
+                .properties(p -> p.noOcclusion())
+                .transform(pickaxeOnly())
+                .lang("Load Bank")
+                .item()
+                    .model(NonNullBiConsumer.noop())
+                    .build()
+                .register();
+
+        LOAD_BANK_BE = REGISTRATE.blockEntity("load_bank", LoadBankBlockEntity::new)
+                .validBlock(LOAD_BANK)
                 .register();
     }
 
