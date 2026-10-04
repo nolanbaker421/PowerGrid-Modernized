@@ -4,7 +4,7 @@
   "key": {
     "N": { "item": "minecraft:iron_nugget" },
     "P": { "item": "powergrid:pins" },
-    "W": { "tag": "c:copper_wires" }
+    "W": { "tag": "c:wires/copper" }
   },
   "pattern": [
     "N N",

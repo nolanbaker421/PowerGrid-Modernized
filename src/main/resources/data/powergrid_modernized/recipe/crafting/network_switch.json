@@ -4,7 +4,7 @@
   "key": {
     "I": { "item": "minecraft:iron_ingot" },
     "J": { "item": "powergrid_modernized:network_jack" },
-    "W": { "tag": "c:copper_wires" }
+    "W": { "tag": "c:wires/copper" }
   },
   "pattern": [
     "III",
