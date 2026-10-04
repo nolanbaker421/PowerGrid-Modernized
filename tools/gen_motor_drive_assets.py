@@ -279,9 +279,28 @@ def cabinet_model(name, front, side, extras):
 
 
 def fe_inverter():
-    """The cabinet in the dry-type transformer's dress: louvred front, a cooling fin strip above the boxes and a cap strip below."""
-    extras = [element(3, 12.5, 9.75, 13, 14, 10, "#fin"), element(4, 5, 9.75, 12, 6, 10, "#cap")]
-    cabinet_model(INVERTER, "%s:block/transformer_dry_front" % MOD, "%s:block/transformer_dry_side" % MOD, extras)
+    """The dry-type transformer's two-block cabinet: louvred front, fin and cap, four lugs low on the front, four knockouts underneath."""
+    body = element(2, 0, 4, 14, 30, 16, "#side", cull_south=True)
+    body["faces"]["north"]["texture"] = "#front"
+    elements = [body, element(3, 20, 3.75, 13, 27, 4, "#fin"), element(4, 17, 3.75, 12, 18, 4, "#cap")]
+    for x in (12.5, 9.5, 6.5, 3.5):
+        elements.append(element(x - 1, 0, 9, x + 1, 1, 11, "#terminal"))
+        elements.append(element(x - 1, 3, 3, x + 1, 5, 4, "#terminal"))
+    dump(os.path.join(ASSETS, "models", "block", INVERTER + ".json"), {
+        "parent": "block/block",
+        "textures": {"front": "%s:block/transformer_dry_front" % MOD, "side": "%s:block/transformer_dry_side" % MOD,
+                     "fin": "%s:block/transformer_fin" % MOD, "cap": "%s:block/transformer_cap" % MOD,
+                     "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/transformer_dry_side" % MOD},
+        "elements": elements,
+    })
+    dump(os.path.join(ASSETS, "models", "item", INVERTER + ".json"), {"parent": "%s:block/%s" % (MOD, INVERTER)})
+    variants = {}
+    for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
+        v = {"model": "%s:block/%s" % (MOD, INVERTER)}
+        v.update(rot)
+        variants["facing=%s" % facing] = v
+    dump(os.path.join(ASSETS, "blockstates", INVERTER + ".json"), {"variants": variants})
+    loot_table(INVERTER)
 
 
 def load_bank():

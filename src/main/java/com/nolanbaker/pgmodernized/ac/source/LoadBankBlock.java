@@ -33,6 +33,8 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
  */
 public class LoadBankBlock extends HorizontalElectricBlock implements IBE<LoadBankBlockEntity> {
     public static final int L1 = 0, L2 = 1, L3 = 2, N = 3;
+    /** The door, in 16ths from the block's south edge in the south frame, where the value boxes sit. */
+    public static final double DOOR = 6;
     private static final AABB BODY = new AABB(2, 1, 10, 14, 15, 16);
     private static final AABB[] LUGS = {
             new AABB(11.5, 2, 9, 13.5, 4, 10), new AABB(8.5, 2, 9, 10.5, 4, 10),
@@ -85,13 +87,17 @@ public class LoadBankBlock extends HorizontalElectricBlock implements IBE<LoadBa
         return DeviceHubs.onWire(this, LAYOUT, state, context, super::onWire);
     }
 
-    /** Empty hand opens the splice editor for the knockouts. */
+    /** Empty hand opens the splice editor for the knockouts; sneaking opens the screen to type an exact setting. */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(hand != InteractionHand.MAIN_HAND || player.isShiftKeyDown() || !player.getMainHandItem().isEmpty())
+        if(hand != InteractionHand.MAIN_HAND || !player.getMainHandItem().isEmpty())
             return InteractionResult.PASS;
-        if(level.isClientSide)
-            ClientHooks.openSplices(pos);
+        if(level.isClientSide) {
+            if(player.isShiftKeyDown())
+                ClientHooks.openLoadBank(pos);
+            else
+                ClientHooks.openSplices(pos);
+        }
         return InteractionResult.SUCCESS;
     }
 

@@ -449,5 +449,12 @@
   "powergrid.gui.load_bank.load": "Load",
   "powergrid.gui.load_bank.rated": "Rated voltage",
   "powergrid.gui.load_bank.setting": "Set %1$s kW at %2$s V L-N: %3$s Ω per phase",
-  "powergrid.gui.load_bank.drawing": "Drawing %1$s kW at %2$s V, %3$s A per phase"
+  "powergrid.gui.load_bank.drawing": "Drawing %1$s kW at %2$s V, %3$s A per phase",
+  "powergrid.gui.load_bank.type_title": "Load bank setting",
+  "powergrid.gui.load_bank.load_kw": "Load, kW",
+  "powergrid.gui.load_bank.rated_v": "Rated V L-N",
+  "powergrid.gui.load_bank.apply": "Apply",
+  "powergrid.gui.load_bank.clear": "Use boxes",
+  "powergrid.gui.load_bank.typed": "Typed setting (sneak-click to change, boxes clear it)",
+  "powergrid.gui.fe_inverter.draw": "Taking %1$s FE/t (%2$s FE/s)"
 }

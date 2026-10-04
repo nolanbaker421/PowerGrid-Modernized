@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.transformer;
 
+import com.nolanbaker.pgmodernized.util.IFillerBase;
 import com.nolanbaker.pgmodernized.util.IElectricDelegate;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.core.BlockPos;
@@ -37,16 +38,18 @@ public class TransformerFillerBlockEntity extends BlockEntity implements IElectr
         return basePos();
     }
 
+    /** The base block, which is both an electrical block and a filler base. */
     @Nullable
-    private TransformerBlock base() {
+    private IElectric base() {
         if(level == null)
             return null;
-        return level.getBlockState(basePos()).getBlock() instanceof TransformerBlock block ? block : null;
+        var block = level.getBlockState(basePos()).getBlock();
+        return block instanceof IFillerBase && block instanceof IElectric electric ? electric : null;
     }
 
     @Nullable
-    private TransformerBlockEntity baseEntity() {
-        return level != null && level.getBlockEntity(basePos()) instanceof TransformerBlockEntity be ? be : null;
+    private IHaveGoggleInformation baseEntity() {
+        return level != null && level.getBlockEntity(basePos()) instanceof IHaveGoggleInformation be ? be : null;
     }
 
     @Override

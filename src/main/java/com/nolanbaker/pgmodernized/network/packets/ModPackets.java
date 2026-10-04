@@ -8,5 +8,6 @@ public final class ModPackets {
     public static void register(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1");
         registrar.playToServer(SplicePayload.TYPE, SplicePayload.STREAM_CODEC, SplicePayload::handle);
+        registrar.playToServer(LoadBankPayload.TYPE, LoadBankPayload.STREAM_CODEC, LoadBankPayload::handle);
     }
 }

@@ -867,13 +867,14 @@ Forge Energy from any mod's cables in, three-phase AC out.
 
 - Feed it FE on any side: Mekanism, EnderIO, Create New Age, anything that pushes Forge Energy.
   It holds a buffer (1,000,000 FE by default) and accepts up to 100,000 FE a tick.
-- A wall cabinet like the CT cabinet. L1, L2, L3 and a neutral are four lugs low on the door,
-  and the same four points are reached through four conduit knockouts, two on top and two
-  underneath: run conduit in and splice with an empty hand on the door. Two value boxes on the
-  door: the left steps through the nameplate voltages (120, 208, 240, 277, 480, 600, 1 kV, 3.5 kV,
-  8 kV, 10 kV, 35 kV, 100 kV), the right sets the frequency in hertz. Sneak-click with an empty
-  hand to say whether the figure is line-to-neutral or line-to-line: pick 480 V L-L and each line
-  gets 277 V to the neutral. The goggles show both figures.
+- The dry-type transformer's cabinet, one block wide and two tall: it needs the block above it
+  free and takes that cell with it. L1, L2, L3 and a neutral are four lugs low on the front, and
+  the same four points are reached through four conduit knockouts underneath: run conduit up
+  into them and splice with an empty hand on the front. Two value boxes on the front: the left
+  steps through the nameplate voltages (120, 208, 240, 277, 480, 600, 1 kV, 3.5 kV, 8 kV, 10 kV,
+  35 kV, 100 kV), the right sets the frequency in hertz. Sneak-click with an empty hand to say
+  whether the figure is line-to-neutral or line-to-line: pick 480 V L-L and each line gets 277 V
+  to the neutral. The goggles show both figures, the power delivered and the FE it takes per tick.
 - It pays for what it delivers: the real power on the lines costs FE every tick at the configured
   FE per joule (10 by default: a watt is 10 FE a second, 1 kW is 500 FE a tick) over the efficiency
   (95 %). An empty buffer is a
@@ -939,5 +940,8 @@ door, four conduit knockouts, two value boxes).
   voltage that load is rated at. Together they fix the resistance of each phase, which the goggles
   show along with what the bank really draws at the voltage it is given. Feed a 10 kW at 277 V
   bank with 120 V and it draws about 1.9 kW, like any resistor.
+- For an exact figure, sneak-click the door with an empty hand: a small screen takes the load in
+  kilowatts and the rated voltage as typed numbers (Enter applies). A typed figure overrides its
+  box until you turn that box, or press "Use boxes".
 - It never overheats; a load bank is built to burn its power off. Everything upstream still can.
 - Recipe: copper coils and an encased fan in an iron plate frame.

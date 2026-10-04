@@ -26,7 +26,7 @@ public class LoadBankBehaviour extends ScrollValueBehaviour {
     private final boolean load;
 
     public LoadBankBehaviour(SmartBlockEntity be, boolean load) {
-        super(Lang.builder().translate(load ? "gui.load_bank.load" : "gui.load_bank.rated").component(), be, new AcSourceBehaviour.FrontBox(load, FeInverterBlock.DOOR));
+        super(Lang.builder().translate(load ? "gui.load_bank.load" : "gui.load_bank.rated").component(), be, new AcSourceBehaviour.FrontBox(load, LoadBankBlock.DOOR));
         this.load = load;
         if(load) {
             between(0, KILOWATTS.length - 1);

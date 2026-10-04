@@ -1,5 +1,9 @@
 package com.nolanbaker.pgmodernized.device.transformer;
 
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.core.Vec3i;
+import java.util.List;
+import com.nolanbaker.pgmodernized.util.IFillerBase;
 import java.util.Arrays;
 import com.nolanbaker.pgmodernized.network.JackTerminals;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
@@ -40,7 +44,7 @@ import org.patryk3211.powergrid.utility.Lang;
  * and the wiring; the unit's other cells are {@link TransformerFillerBlock}s placed with it and
  * taken with it. Taps on the two value boxes on the front move each winding ten percent either way.
  */
-public class TransformerBlock extends HorizontalElectricBlock implements IBE<TransformerBlockEntity> {
+public class TransformerBlock extends HorizontalElectricBlock implements IBE<TransformerBlockEntity>, IFillerBase {
     /** A pole can hung on the pole behind it rather than standing on the ground. */
     public static final BooleanProperty HUNG = BooleanProperty.create("hung");
 
@@ -106,6 +110,20 @@ public class TransformerBlock extends HorizontalElectricBlock implements IBE<Tra
     }
 
     // ---- placement with fillers ----
+
+    @Override
+    public List<Vec3i> fillerCells(BlockState baseState) {
+        var facing = facing(baseState);
+        return TransformerGeometry.cells(spec.size(), spec.kind(), hung(baseState)).stream()
+                .map(cell -> TransformerGeometry.rotateCell(cell, facing)).toList();
+    }
+
+    @Override
+    public VoxelShape fillerShape(BlockState baseState, Vec3i worldOffset) {
+        var facing = facing(baseState);
+        var cell = TransformerGeometry.unrotateCell(worldOffset, facing);
+        return TransformerGeometry.rotate(TransformerGeometry.cellShape(spec.size(), spec.kind(), hung(baseState), cell), facing);
+    }
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {

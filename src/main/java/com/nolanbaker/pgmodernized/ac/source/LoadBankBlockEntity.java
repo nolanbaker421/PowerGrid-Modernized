@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.ac.source;
 
+import com.nolanbaker.pgmodernized.network.packets.LoadBankPayload;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
@@ -27,9 +28,11 @@ import static com.nolanbaker.pgmodernized.ac.source.LoadBankBlock.*;
  * draws what a resistor does, and the goggles show what it really draws. It never overheats: a
  * load bank is built to burn its power off.
  */
-public class LoadBankBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, IDeviceSpliceHost {
+public class LoadBankBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, IDeviceSpliceHost, LoadBankPayload.ILoadBankSettings {
     private LoadBankBehaviour loadBox, voltsBox;
     private DeviceSpliceHost deviceHubs;
+    /** Typed settings; zero means the value box rules. */
+    private double exactWatts, exactVolts;
 
     // No initialisers: buildCircuit runs from the superclass constructor.
     private ElectricWire[] resistors;
@@ -48,8 +51,14 @@ public class LoadBankBlockEntity extends ElectricBlockEntity implements IHaveGog
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         loadBox = new LoadBankBehaviour(this, true);
         voltsBox = new LoadBankBehaviour(this, false);
-        loadBox.withCallback(i -> setChanged());
-        voltsBox.withCallback(i -> setChanged());
+        loadBox.withCallback(i -> {
+            exactWatts = 0;
+            setChanged();
+        });
+        voltsBox.withCallback(i -> {
+            exactVolts = 0;
+            setChanged();
+        });
         behaviours.add(loadBox);
         behaviours.add(voltsBox);
         super.addBehaviours(behaviours);
@@ -67,13 +76,35 @@ public class LoadBankBlockEntity extends ElectricBlockEntity implements IHaveGog
         return ConduitSize.FOUR;
     }
 
-    /** Load setting, in watts for the three phases together. */
+    /** Load setting, in watts for the three phases together: the typed figure, else the box. */
     public double ratedWatts() {
+        if(exactWatts > 0)
+            return exactWatts;
         return loadBox == null ? 0 : LoadBankBehaviour.kilowattsOf(loadBox.getValue()) * 1000;
     }
 
     public float ratedVolts() {
+        if(exactVolts > 0)
+            return (float) exactVolts;
         return voltsBox == null ? 0 : AcSourceBehaviour.voltsOf(voltsBox.getValue());
+    }
+
+    @Override
+    public void setExact(double watts, double volts) {
+        exactWatts = Math.max(0, Math.min(watts, 1e9));
+        exactVolts = Math.max(0, Math.min(volts, 1e6));
+        setChanged();
+        sendData();
+    }
+
+    @Override
+    public double exactWatts() {
+        return exactWatts;
+    }
+
+    @Override
+    public double exactVolts() {
+        return exactVolts;
     }
 
     /** Resistance of each phase for the setting: a third of the load at the rated line-to-neutral voltage. */
@@ -151,6 +182,8 @@ public class LoadBankBlockEntity extends ElectricBlockEntity implements IHaveGog
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         deviceHubs().write(tag, registries, clientPacket);
+        tag.putDouble("ExactWatts", exactWatts);
+        tag.putDouble("ExactVolts", exactVolts);
         if(clientPacket) {
             tag.putFloat("Volts", volts);
             tag.putFloat("Amps", amps);
@@ -163,6 +196,8 @@ public class LoadBankBlockEntity extends ElectricBlockEntity implements IHaveGog
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         deviceHubs().read(tag, registries, clientPacket);
+        exactWatts = tag.getDouble("ExactWatts");
+        exactVolts = tag.getDouble("ExactVolts");
         if(clientPacket) {
             volts = tag.getFloat("Volts");
             amps = tag.getFloat("Amps");
@@ -173,8 +208,10 @@ public class LoadBankBlockEntity extends ElectricBlockEntity implements IHaveGog
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate("gui.load_bank.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
-        Lang.builder().translate("gui.load_bank.setting", String.format("%.1f", ratedWatts() / 1000), String.format("%.0f", ratedVolts()),
-                String.format("%.2f", phaseResistance())).style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.load_bank.setting", String.format("%.2f", ratedWatts() / 1000), String.format("%.0f", ratedVolts()),
+                String.format("%.3f", phaseResistance())).style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
+        if(exactWatts > 0 || exactVolts > 0)
+            Lang.builder().translate("gui.load_bank.typed").style(ChatFormatting.GOLD).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.load_bank.drawing", String.format("%.1f", watts / 1000), String.format("%.0f", volts), String.format("%.1f", amps))
                 .style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         deviceHubs().addGoggleLines(tooltip);

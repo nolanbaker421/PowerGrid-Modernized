@@ -11,4 +11,9 @@ public final class ClientHooks {
     public static void openSplices(BlockPos pos) {
         Minecraft.getInstance().setScreen(new SpliceScreen(pos));
     }
+
+    /** Opens the typed-setting screen of a load bank. */
+    public static void openLoadBank(BlockPos pos) {
+        Minecraft.getInstance().setScreen(new LoadBankScreen(pos));
+    }
 }

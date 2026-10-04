@@ -107,17 +107,22 @@ public class AcSourceBehaviour extends ScrollValueBehaviour {
     /** On the door of a wall cabinet whose door is {@code door} 16ths in from the block edge: voltage on the viewer's left, frequency on the right. */
     public static class FrontBox extends CenteredSideValueBoxTransform {
         private final boolean voltage;
-        private final double door;
+        private final double door, boxY;
 
         public FrontBox(boolean voltage, double door) {
+            this(voltage, door, 10.5);
+        }
+
+        public FrontBox(boolean voltage, double door, double boxY) {
             super((state, dir) -> state.hasProperty(BlockStateProperties.HORIZONTAL_FACING) && dir == state.getValue(BlockStateProperties.HORIZONTAL_FACING));
             this.voltage = voltage;
             this.door = door;
+            this.boxY = boxY;
         }
 
         @Override
         protected Vec3 getSouthLocation() {
-            return new Vec3((voltage ? 11.5 : 4.5) / 16.0, 10.5 / 16.0, door / 16.0);
+            return new Vec3((voltage ? 11.5 : 4.5) / 16.0, boxY / 16.0, door / 16.0);
         }
 
         @Override

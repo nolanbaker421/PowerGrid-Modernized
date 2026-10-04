@@ -81,6 +81,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
     private float watts;
     private boolean brownout;
     private int lastFe;
+    private int feDraw;
     private int syncTimer;
     private float syncedWatts;
     private int syncedStored;
@@ -93,8 +94,8 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        voltageBox = new AcSourceBehaviour(this, true, new AcSourceBehaviour.FrontBox(true, FeInverterBlock.DOOR), () -> lineToLine);
-        frequencyBox = new AcSourceBehaviour(this, false, new AcSourceBehaviour.FrontBox(false, FeInverterBlock.DOOR), () -> false);
+        voltageBox = new AcSourceBehaviour(this, true, new AcSourceBehaviour.FrontBox(true, FeInverterBlock.DOOR, FeInverterBlock.BOX_Y), () -> lineToLine);
+        frequencyBox = new AcSourceBehaviour(this, false, new AcSourceBehaviour.FrontBox(false, FeInverterBlock.DOOR, FeInverterBlock.BOX_Y), () -> false);
         voltageBox.withCallback(i -> setChanged());
         frequencyBox.withCallback(i -> setChanged());
         behaviours.add(voltageBox);
@@ -172,6 +173,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         } else if(energy.getEnergyStored() < fe) {
             brownout = true;
         }
+        feDraw = brownout ? 0 : fe;
         if(!brownout && fe > 0) {
             energy.drain(fe);
             // Remember the steady draw, not a switch-on spike: ease towards this tick's figure.
@@ -288,6 +290,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         tag.putBoolean("Brownout", brownout);
         tag.putInt("LastFe", lastFe);
         tag.putFloat("Watts", watts);
+        tag.putInt("FeDraw", feDraw);
         if(clientPacket) {
             syncedWatts = watts;
             syncedStored = energy.getEnergyStored();
@@ -304,6 +307,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         brownout = tag.getBoolean("Brownout");
         lastFe = tag.getInt("LastFe");
         watts = tag.getFloat("Watts");
+        feDraw = tag.getInt("FeDraw");
     }
 
     // ---- goggles ----
@@ -314,6 +318,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         Lang.builder().translate("gui.ac_source.setting", String.format("%.0f", volts()), lineToLine ? "L-L" : "L-N",
                 String.format("%.0f", lineToNeutralVolts()), String.format("%.0f", hertz())).style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.fe_inverter.power", String.format("%.0f", watts)).style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.fe_inverter.draw", String.format("%,d", feDraw), String.format("%,d", feDraw * 20)).style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.fe_inverter.buffer", String.format("%,d", energy.getEnergyStored()), String.format("%,d", energy.getMaxEnergyStored()))
                 .style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         if(brownout)

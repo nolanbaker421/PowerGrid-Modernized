@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.transformer;
 
+import com.nolanbaker.pgmodernized.util.IFillerBase;
 import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -56,8 +57,9 @@ public class TransformerFillerBlock extends Block implements EntityBlock {
     }
 
     @Nullable
-    private static TransformerBlock base(BlockGetter level, BlockPos pos, BlockState state) {
-        return level.getBlockState(basePos(pos, state)).getBlock() instanceof TransformerBlock block ? block : null;
+    private static Block base(BlockGetter level, BlockPos pos, BlockState state) {
+        var block = level.getBlockState(basePos(pos, state)).getBlock();
+        return block instanceof IFillerBase ? block : null;
     }
 
     @Override
@@ -74,18 +76,16 @@ public class TransformerFillerBlock extends Block implements EntityBlock {
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         var basePos = basePos(pos, state);
         var baseState = level.getBlockState(basePos);
-        if(!(baseState.getBlock() instanceof TransformerBlock base))
+        if(!(baseState.getBlock() instanceof IFillerBase base))
             return box(2, 0, 2, 14, 12, 14);
-        var facing = TransformerBlock.facing(baseState);
-        var cell = TransformerGeometry.unrotateCell(pos.subtract(basePos), facing);
-        return TransformerGeometry.rotate(TransformerGeometry.cellShape(base.spec().size(), base.spec().kind(), TransformerBlock.hung(baseState), cell), facing);
+        return base.fillerShape(baseState, pos.subtract(basePos));
     }
 
     /** Breaking the filler breaks the base, which drops the unit. */
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         var basePos = basePos(pos, state);
-        if(level.getBlockState(basePos).getBlock() instanceof TransformerBlock && !level.isClientSide)
+        if(level.getBlockState(basePos).getBlock() instanceof IFillerBase && !level.isClientSide)
             level.destroyBlock(basePos, !player.isCreative());
         return super.playerWillDestroy(level, pos, state, player);
     }
@@ -93,7 +93,7 @@ public class TransformerFillerBlock extends Block implements EntityBlock {
     /** Without its base the filler is nothing. */
     @Override
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        if(neighborPos.equals(basePos(pos, state)) && !(neighborState.getBlock() instanceof TransformerBlock))
+        if(neighborPos.equals(basePos(pos, state)) && !(neighborState.getBlock() instanceof IFillerBase))
             return Blocks.AIR.defaultBlockState();
         return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
     }
