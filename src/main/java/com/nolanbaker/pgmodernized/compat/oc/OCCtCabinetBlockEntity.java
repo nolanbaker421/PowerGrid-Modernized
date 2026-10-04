@@ -108,6 +108,16 @@ public class OCCtCabinetBlockEntity extends CtCabinetBlockEntity implements Envi
         return result((double) powerFactor(channel(args)));
     }
 
+    @Callback(direct = true, doc = "function(channel:number):number -- Frequency (Hz) of the channel's voltage; 0 on direct current.")
+    public Object[] getFrequency(Context context, Arguments args) {
+        return result((double) frequency(channel(args)));
+    }
+
+    @Callback(direct = true, doc = "function(channel:number):number -- Degrees the channel's voltage leads channel 1's, -180 to 180.")
+    public Object[] getPhaseAngle(Context context, Arguments args) {
+        return result((double) phaseAngle(channel(args)));
+    }
+
     @Callback(direct = true, doc = "function(channel:number):number -- Energy (Wh) accumulated on the channel.")
     public Object[] getEnergy(Context context, Arguments args) {
         return result(energyWh(channel(args)));
@@ -123,7 +133,7 @@ public class OCCtCabinetBlockEntity extends CtCabinetBlockEntity implements Envi
         return result(totalEnergyWh());
     }
 
-    @Callback(direct = true, doc = "function():table -- Every channel: {voltage, current, power, powerFactor, energy}, indexed from 1.")
+    @Callback(direct = true, doc = "function():table -- Every channel: {voltage, current, power, powerFactor, energy, frequency, phaseAngle}, indexed from 1.")
     public Object[] getReadings(Context context, Arguments args) {
         var table = new LinkedHashMap<Integer, Map<String, Double>>();
         for(int n = 0; n < channels(); ++n) {
@@ -133,6 +143,8 @@ public class OCCtCabinetBlockEntity extends CtCabinetBlockEntity implements Envi
             channel.put("power", (double) power(n));
             channel.put("powerFactor", (double) powerFactor(n));
             channel.put("energy", energyWh(n));
+            channel.put("frequency", (double) frequency(n));
+            channel.put("phaseAngle", (double) phaseAngle(n));
             table.put(n + 1, channel);
         }
         return result(table);

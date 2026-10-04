@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.ac;
 
+import com.nolanbaker.pgmodernized.ac.motor.PhaseSenseWire;
 import com.nolanbaker.pgmodernized.ac.compat.cc.AcCcBridge;
 import com.nolanbaker.pgmodernized.ac.compat.oc.AcOcBridge;
 import com.nolanbaker.pgmodernized.fork.ForkHooks;
@@ -53,6 +54,23 @@ public final class AcHooks implements ForkHooks {
         var shunt = new WattmeterWire(resistance, sense, in, out);
         builder.add(shunt);
         return shunt;
+    }
+
+    @Override
+    public ElectricWire phaseSense(IElectricEntity.CircuitBuilder builder, double resistance, IElectricNode a, IElectricNode b) {
+        var wire = new PhaseSenseWire(resistance, a, b);
+        builder.add(wire);
+        return wire;
+    }
+
+    @Override
+    public double frequency(ElectricWire sense) {
+        return sense instanceof PhaseSenseWire phase ? phase.frequency() : Double.NaN;
+    }
+
+    @Override
+    public double phaseFraction(ElectricWire sense) {
+        return sense instanceof PhaseSenseWire phase ? phase.phaseFraction() : -1;
     }
 
     @Override

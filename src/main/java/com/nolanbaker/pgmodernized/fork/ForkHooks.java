@@ -70,6 +70,21 @@ public interface ForkHooks {
     /** Mean real power the shunt accumulated since last asked, or NaN when the shunt cannot meter it. */
     double drainRealPower(ElectricWire shunt);
 
+    /** A voltage sense branch that also tracks frequency and phase on the fork; a plain wire on stock. */
+    default ElectricWire phaseSense(IElectricEntity.CircuitBuilder builder, double resistance, IElectricNode a, IElectricNode b) {
+        return builder.connect((float) resistance, a, b);
+    }
+
+    /** Frequency (Hz) seen by a {@link #phaseSense} wire, or NaN when it cannot tell. */
+    default double frequency(ElectricWire sense) {
+        return Double.NaN;
+    }
+
+    /** Where in its cycle a {@link #phaseSense} wire is, 0..1 from the last rise, or -1 when it cannot tell. */
+    default double phaseFraction(ElectricWire sense) {
+        return -1;
+    }
+
     // ---- content that exists only with the fork ----
 
     void registerContent();

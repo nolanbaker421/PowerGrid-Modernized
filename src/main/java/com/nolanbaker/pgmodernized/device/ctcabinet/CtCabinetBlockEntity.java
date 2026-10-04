@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.ctcabinet;
 
+import net.minecraft.util.Mth;
 import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
@@ -50,6 +51,8 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
     private final float[] amps = new float[CHANNELS];
     private final float[] watts = new float[CHANNELS];
     private final float[] powerFactors = new float[CHANNELS];
+    private final float[] hertz = new float[CHANNELS];
+    private final float[] angles = new float[CHANNELS];
     /** Joules, per channel. */
     private final double[] energy = new double[CHANNELS];
     private final float[] syncedWatts = new float[CHANNELS];
@@ -86,7 +89,7 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
             // The sense branch is built first because the fork's wattmeter shunt holds a reference
             // to it: it accumulates its own current times the sense voltage as the solver steps.
             // On stock Power Grid the shunt is a plain wire and power is volts times amps.
-            senses[n] = builder.connect(SENSE, in, reference);
+            senses[n] = ForkHooks.get().phaseSense(builder, SENSE, in, reference);
             shunts[n] = ForkHooks.get().shunt(builder, SHUNT, senses[n], in, builder.terminalNode(outTerminal(n)));
         }
     }
@@ -118,7 +121,25 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
             watts[n] = (float) reading.realPower();
             powerFactors[n] = (float) reading.powerFactor();
             energy[n] += reading.realPower() * TICK_SECONDS;
+            double hz = ForkHooks.get().frequency(sense);
+            hertz[n] = Double.isFinite(hz) ? (float) hz : 0;
         }
+        // Phase of each channel's voltage against channel 1's: how far apart the lines are.
+        double reference = senses[0] == null ? -1 : ForkHooks.get().phaseFraction(senses[0]);
+        for(int n = 0; n < CHANNELS; ++n) {
+            double phase = senses[n] == null ? -1 : ForkHooks.get().phaseFraction(senses[n]);
+            angles[n] = reference >= 0 && phase >= 0 ? (float) Mth.wrapDegrees((phase - reference) * 360) : 0;
+        }
+    }
+
+    /** Frequency (Hz) on the channel's voltage, 0 when it is not alternating or not metered by the fork. */
+    public float frequency(int channel) {
+        return hertz[channel];
+    }
+
+    /** Degrees the channel's voltage leads channel 1's, -180..180; 0 for channel 1 itself or without the fork. */
+    public float phaseAngle(int channel) {
+        return angles[channel];
     }
 
     @Override

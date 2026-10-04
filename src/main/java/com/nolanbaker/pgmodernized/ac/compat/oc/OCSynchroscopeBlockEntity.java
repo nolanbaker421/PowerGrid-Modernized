@@ -19,6 +19,8 @@ import static com.nolanbaker.pgmodernized.compat.oc.OCNodeSupport.result;
 /** Synchroscope that plugs straight into OpenComputers cables as component "powergrid_synchroscope". */
 public class OCSynchroscopeBlockEntity extends SynchroscopeBlockEntity implements Environment {
     private final Node ocNode = OCNodeSupport.create(this, "powergrid_synchroscope");
+    private boolean reportedSync;
+    private boolean reportedAny;
 
     public OCSynchroscopeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -28,6 +30,14 @@ public class OCSynchroscopeBlockEntity extends SynchroscopeBlockEntity implement
     public void tick() {
         super.tick();
         OCNodeSupport.tick(this, ocNode);
+        if(level == null || level.isClientSide || ocNode.network() == null)
+            return;
+        boolean ready = inSync();
+        if(!reportedAny || ready != reportedSync) {
+            reportedAny = true;
+            reportedSync = ready;
+            ocNode.sendToReachable("computer.signal", "sync_change", ready, (double) angle(), (double) slip());
+        }
     }
 
     @Override

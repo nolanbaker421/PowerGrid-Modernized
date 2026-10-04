@@ -34,6 +34,18 @@ public class CtCabinetPeripheral implements IPeripheral {
         return cabinet.voltage(channel(channel));
     }
 
+    /** Frequency (Hz) of the channel's voltage; 0 on direct current. */
+    @LuaFunction
+    public double getFrequency(int channel) throws LuaException {
+        return cabinet.frequency(channel(channel));
+    }
+
+    /** Degrees the channel's voltage leads channel 1's, -180 to 180. */
+    @LuaFunction
+    public double getPhaseAngle(int channel) throws LuaException {
+        return cabinet.phaseAngle(channel(channel));
+    }
+
     @LuaFunction
     public double getCurrent(int channel) throws LuaException {
         return cabinet.current(channel(channel));
