@@ -35,7 +35,8 @@ import static com.nolanbaker.pgmodernized.ac.source.FeInverterBlock.*;
 /**
  * Three alternating sources from each line to the neutral, like the creative source, but paid
  * for: every tick the real power the lines deliver, measured through a series resistor per phase,
- * is taken out of the FE buffer at the configured FE per joule and efficiency. When the buffer
+ * is taken out of the FE buffer at Power Grid's FE per watt per tick (or the configured one) over
+ * the efficiency. When the buffer
  * cannot cover a tick the lines go dead (a brownout) and stay dead until it has refilled enough
  * to run for a second, so a starved inverter does not flicker at twenty hertz.
  */
@@ -165,8 +166,8 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         watts = (float) Math.max(0, total);
 
         // What this tick's delivery costs, and whether the buffer can pay it.
-        double joulesPerTick = watts / 20.0 / Math.max(0.05, PgmConfig.INVERTER_EFFICIENCY.get());
-        int fe = (int) Math.ceil(joulesPerTick * PgmConfig.INVERTER_FE_PER_JOULE.get());
+        double wattsIn = watts / Math.max(0.05, PgmConfig.INVERTER_EFFICIENCY.get());
+        int fe = (int) Math.ceil(wattsIn * PgmConfig.fePerWattTick());
         if(brownout) {
             if(energy.getEnergyStored() >= reserve())
                 brownout = false;

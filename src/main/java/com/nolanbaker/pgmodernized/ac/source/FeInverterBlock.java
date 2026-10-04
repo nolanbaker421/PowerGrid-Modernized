@@ -10,6 +10,7 @@ import com.nolanbaker.pgmodernized.registry.ModBlocks;
 import com.nolanbaker.pgmodernized.util.IFillerBase;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.simibubi.create.foundation.block.IBE;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
@@ -28,20 +29,22 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
+import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
 /**
  * A three-phase inverter fed with Forge Energy, the same two-block cabinet as the dry-type
- * transformer: FE in on any side from any mod's cable; L1, L2, L3 and a neutral out on four lugs
- * low on the front, or through the four conduit knockouts underneath whose conductors splice onto
- * the same four points; voltage and frequency on two value boxes on the front. The cell above is
+ * transformer: FE in on any side from any mod's cable; L1, L2, L3 and a neutral out through eight
+ * conduit knockouts, four low on the front and four underneath, whose conductors splice onto the
+ * four points in the splice editor; hanging wire does not land on it. Voltage and frequency on
+ * two value boxes on the front. The cell above is
  * a transformer filler placed and taken with the base. Real power drawn from the lines is taken
  * out of the FE buffer each tick; an empty buffer is a brownout.
  * <p>
@@ -55,16 +58,16 @@ public class FeInverterBlock extends HorizontalElectricBlock implements IBE<FeIn
     public static final double BOX_Y = 12;
     private static final Vec3i ABOVE = new Vec3i(0, 1, 0);
     private static final AABB BODY = new AABB(2, 0, 4, 14, 16, 16);
-    private static final double[] LUG_X = {12.5, 9.5, 6.5, 3.5};
-    private static final AABB[] LUGS = new AABB[4];
-    public static final AABB[] HUBS = new AABB[4];
+    private static final double[] HUB_X = {12.5, 9.5, 6.5, 3.5};
+    /** Knockouts 0-3 underneath, 4-7 low on the front, the dry-type's layout. */
+    public static final AABB[] HUBS = new AABB[8];
     private static final AABB HIDDEN = new AABB(7.5, 7.5, 11, 8.5, 8.5, 12);
 
     static {
         for(int i = 0; i < 4; ++i) {
-            double x = LUG_X[i];
-            LUGS[i] = new AABB(x - 1, 3, 3, x + 1, 5, 4);      // on the front, low
+            double x = HUB_X[i];
             HUBS[i] = new AABB(x - 1, 0, 9, x + 1, 1, 11);     // underneath
+            HUBS[4 + i] = new AABB(x - 1, 3, 3, x + 1, 5, 4);  // on the front, low
         }
     }
 
@@ -75,12 +78,13 @@ public class FeInverterBlock extends HorizontalElectricBlock implements IBE<FeIn
         setTerminalCollection(horizontalNorthTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(shape(), HUBS)));
     }
 
+    /** The four points live inside the cabinet, reached only through the splice editor. */
     private static TerminalBoundingBox[] terminals() {
         return new TerminalBoundingBox[] {
-                terminal("fe_inverter.l1", LUGS[L1], ConductorColors.rgb(0), ConductorColors.textRgb(0)),
-                terminal("fe_inverter.l2", LUGS[L2], ConductorColors.rgb(2), ConductorColors.textRgb(2)),
-                terminal("fe_inverter.l3", LUGS[L3], ConductorColors.rgb(3), ConductorColors.textRgb(3)),
-                terminal("fe_inverter.n", LUGS[N], IDecoratedTerminal.BLUE, IDecoratedTerminal.BLUE),
+                terminal("fe_inverter.l1", HIDDEN, ConductorColors.rgb(0), ConductorColors.textRgb(0)),
+                terminal("fe_inverter.l2", HIDDEN, ConductorColors.rgb(2), ConductorColors.textRgb(2)),
+                terminal("fe_inverter.l3", HIDDEN, ConductorColors.rgb(3), ConductorColors.textRgb(3)),
+                terminal("fe_inverter.n", HIDDEN, IDecoratedTerminal.BLUE, IDecoratedTerminal.BLUE),
         };
     }
 
@@ -90,10 +94,7 @@ public class FeInverterBlock extends HorizontalElectricBlock implements IBE<FeIn
     }
 
     private static VoxelShape shape() {
-        var shape = box(BODY);
-        for(var lug : LUGS)
-            shape = Shapes.or(shape, box(lug));
-        return shape;
+        return box(BODY);
     }
 
     private static VoxelShape box(AABB px) {
@@ -144,9 +145,16 @@ public class FeInverterBlock extends HorizontalElectricBlock implements IBE<FeIn
         return WireAcceptance.electrical(wireStack);
     }
 
+    /** Conduit lands on a knockout; any other wire is turned away, as on the dry-type. */
     @Override
     public InteractionResult onWire(BlockState state, UseOnContext context) {
-        return DeviceHubs.onWire(this, LAYOUT, state, context, super::onWire);
+        return DeviceHubs.onWire(this, LAYOUT, state, context, (s, c) -> {
+            if(WireAcceptance.electrical(c.getItemInHand())) {
+                IElectric.sendMessage(c, Lang.builder().translate("message.fe_inverter.conduit_only").style(ChatFormatting.RED).component());
+                return InteractionResult.FAIL;
+            }
+            return super.onWire(s, c);
+        });
     }
 
     /** Empty hand opens the splice editor; sneaking instead flips the voltage figure between line-to-neutral and line-to-line. */

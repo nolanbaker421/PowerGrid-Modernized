@@ -1,6 +1,8 @@
 package com.nolanbaker.pgmodernized;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 
 /** Common config: config/powergrid_modernized-common.toml. Read at use, so edits apply on the next reload. */
 public final class PgmConfig {
@@ -31,7 +33,7 @@ public final class PgmConfig {
     public static final ModConfigSpec.DoubleValue RANGEFINDER_DEFAULT_RANGE;
     public static final ModConfigSpec.IntValue RANGEFINDER_INTERVAL;
     public static final ModConfigSpec.IntValue INVERTER_MAX_INPUT;
-    public static final ModConfigSpec.DoubleValue INVERTER_FE_PER_JOULE;
+    public static final ModConfigSpec.DoubleValue INVERTER_FE_PER_WATT;
     public static final ModConfigSpec.DoubleValue INVERTER_EFFICIENCY;
 
     static {
@@ -87,9 +89,10 @@ public final class PgmConfig {
         b.pop();
         b.comment("Energy accounting between Create stress, Forge Energy and Power Grid watts").push("energy");
         WATTS_PER_SU = b.comment("Watts one Create stress unit is worth; the three-phase motor hands out stress it has bought at this rate.",
-                        "0 derives it from fe_per_joule and Create: New Age's generator rate (0.029296875 FE per stress unit per tick), so a loop",
-                        "inverter -> motor -> New Age generator -> inverter can only lose energy whatever fe_per_joule is. Set it yourself",
-                        "if something else in your pack turns stress into FE: watts per SU = its FE per SU per second / fe_per_joule.")
+                        "0 uses Power Grid's own figure for its motors and generators (torqueForStress over its conversion constant,",
+                        "about 0.159 W per SU: a kilowatt buys about 6,300 SU). A loop inverter -> motor -> New Age generator -> inverter",
+                        "stays lossy while this is above New Age's 0.029296875 FE per SU per tick divided by the FE per watt: with",
+                        "Power Grid's 10 FE per watt that floor is 0.003 W per SU. Below it the loop makes energy.")
                 .defineInRange("watts_per_su", 0.0, 0.0, 1000.0);
         MOTOR_EFFICIENCY = b.comment("Fraction of the electrical power the three-phase motor turns into stress; the rest is loss.")
                 .defineInRange("motor_efficiency", 0.9, 0.05, 1.0);
@@ -101,8 +104,11 @@ public final class PgmConfig {
                 .defineInRange("buffer", 1_000_000, 1_000, 1_000_000_000);
         INVERTER_MAX_INPUT = b.comment("Most FE it accepts per tick from cables.")
                 .defineInRange("max_input", 100_000, 1, 1_000_000_000);
-        INVERTER_FE_PER_JOULE = b.comment("FE taken per joule delivered on the lines. 10 means a watt costs 10 FE a second, so 1 kW is 500 FE a tick.")
-                .defineInRange("fe_per_joule", 10.0, 0.001, 1000.0);
+        INVERTER_FE_PER_WATT = b.comment("FE taken each tick for every watt delivered on the lines: the figure Power Grid's own FE Inverter and Device",
+                        "Connector use (its forgeEnergyPerWatt, 10 by default: a watt is 10 FE a tick, 1 kW is 10,000 FE a tick).",
+                        "0 follows Power Grid's setting, so a loop inverter -> lines -> Device Connector -> FE can only lose energy.",
+                        "Set it only to price this inverter apart from Power Grid's.")
+                .defineInRange("fe_per_watt", 0.0, 0.0, 1_000_000.0);
         INVERTER_EFFICIENCY = b.comment("Fraction of the FE that becomes AC power; the rest is loss.")
                 .defineInRange("efficiency", 0.95, 0.05, 1.0);
         b.pop();
@@ -117,13 +123,26 @@ public final class PgmConfig {
         SPEC = b.build();
     }
 
-    /** Create: New Age's generator rate, FE per stress unit per second. */
-    public static final double NEW_AGE_FE_PER_SU_SECOND = 0.029296875 * 20;
+    /** Create: New Age's generator rate, FE per stress unit per tick: the floor on what a stress unit may cost. */
+    public static final double NEW_AGE_FE_PER_SU_TICK = 0.029296875;
 
-    /** Watts a stress unit is worth: the configured figure, or the one that balances the inverter against New Age. */
+    /** FE taken per watt per tick: the configured figure, or Power Grid's forgeEnergyPerWatt, which its FE Inverter and Device Connector use. */
+    public static double fePerWattTick() {
+        double configured = INVERTER_FE_PER_WATT.get();
+        if(configured > 0)
+            return configured;
+        var configs = ModdedConfigs.server();
+        return configs == null ? 10 : configs.electricity.forgeEnergyPerWatt.getF();
+    }
+
+    /** Watts a stress unit is worth: the configured figure, or what Power Grid's own motors and generators use. */
     public static double wattsPerSu() {
         double configured = WATTS_PER_SU.get();
-        return configured > 0 ? configured : NEW_AGE_FE_PER_SU_SECOND / INVERTER_FE_PER_JOULE.get();
+        if(configured > 0)
+            return configured;
+        var configs = ModdedConfigs.server();
+        float perStress = configs == null ? 15 : configs.kinetics.torqueForStress.getF();
+        return perStress / ElectricMotorBlockEntity.CONVERSION_CONSTANT;
     }
 
     private PgmConfig() {}

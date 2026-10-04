@@ -868,28 +868,34 @@ Forge Energy from any mod's cables in, three-phase AC out.
 - Feed it FE on any side: Mekanism, EnderIO, Create New Age, anything that pushes Forge Energy.
   It holds a buffer (1,000,000 FE by default) and accepts up to 100,000 FE a tick.
 - The dry-type transformer's cabinet, one block wide and two tall: it needs the block above it
-  free and takes that cell with it. L1, L2, L3 and a neutral are four lugs low on the front, and
-  the same four points are reached through four conduit knockouts underneath: run conduit up
-  into them and splice with an empty hand on the front. Two value boxes on the front: the left
+  free and takes that cell with it. It is wired like the dry-type, through conduit knockouts:
+  four low on the front and four underneath. Run conduit into a knockout and splice its
+  conductors onto L1, L2, L3 and the neutral with an empty hand on the front; hanging wire does
+  not land on it. Two value boxes on the front: the left
   steps through the nameplate voltages (120, 208, 240, 277, 480, 600, 1 kV, 3.5 kV, 8 kV, 10 kV,
   35 kV, 100 kV), the right sets the frequency in hertz. Sneak-click with an empty hand to say
   whether the figure is line-to-neutral or line-to-line: pick 480 V L-L and each line gets 277 V
   to the neutral. The goggles show both figures, the power delivered and the FE it takes per tick.
-- It pays for what it delivers: the real power on the lines costs FE every tick at the configured
-  FE per joule (10 by default: a watt is 10 FE a second, 1 kW is 500 FE a tick) over the efficiency
-  (95 %). An empty buffer is a
+- It pays for what it delivers: the real power on the lines costs FE every tick at Power Grid's
+  own rate, the `forgeEnergyPerWatt` its FE Inverter and Device Connector use (10 by default: a
+  watt is 10 FE a tick, 1 kW is 10,000 FE a tick, which is just what a Device Connector would give
+  back for that kilowatt), over the efficiency (95 %). `inverter.fe_per_watt` prices it apart
+  from Power Grid if you must; following Power Grid is what keeps that loop lossy. An empty buffer is a
   brownout: the lines go dead and stay dead until the buffer holds a second of the steady draw
   again (at least 2 % of the buffer, never more than 10 %), so a starved inverter does not
   flicker. The goggles show how far the refill has got.
 - Goggles show the setting, the power being delivered, the buffer and any brownout. Computers see
   it as `powergrid_inverter`: setVoltage, getVoltage, setFrequency, getFrequency, getPower,
   getStored, getCapacity, isBrownedOut.
-- Config section `inverter`: buffer, max_input, fe_per_joule, efficiency.
-- **No free energy.** The Three-Phase Motor now carries only as much Create stress as its
+- Config section `inverter`: buffer, max_input, fe_per_watt, efficiency.
+- **No free energy.** The Three-Phase Motor carries only as much Create stress as its
   electrical draw buys: full-load watts times its efficiency (90 %) over the watts a stress unit
-  is worth, which by default follows from `fe_per_joule` and Create: New Age's generator rate
-  (`energy.watts_per_su` overrides it). More voltage, more stress, more FE. So inverter, motor, New Age generator and back loses about 15 % per
-  lap. If your pack turns stress into FE at another rate, set `watts_per_su` to match it.
+  is worth, which by default is Power Grid's own figure for its motors and generators (about
+  0.159 W per SU, so a kilowatt buys about 6,300 SU; `energy.watts_per_su` overrides it). More
+  voltage, more stress, more FE. A loop inverter, motor, Create New Age generator and back loses
+  almost everything per lap: New Age pays 0.59 FE a second for a stress unit the motor bought for
+  0.159 W, which is 32 FE a second. Setting `watts_per_su` below about 0.003 (at 10 FE per watt)
+  turns that loop into a source of energy.
 
 ## 15. Laser Rangefinder
 
@@ -933,8 +939,8 @@ each side. Mounts on any face and turns four ways like the other devices.
 ## 17. Load Bank (AC fork)
 
 A dummy three-phase load for testing generators, inverters and wiring: three resistors in star
-from L1, L2, L3 to the neutral, in the same wall cabinet as the inverter (four lugs low on the
-door, four conduit knockouts, two value boxes).
+from L1, L2, L3 to the neutral, in a wall cabinet (four lugs low on the door, four conduit
+knockouts, two value boxes).
 
 - Left box: the load, 0.5 kW to 5 MW, for all three phases together. Right box: the line-to-neutral
   voltage that load is rated at. Together they fix the resistance of each phase, which the goggles
