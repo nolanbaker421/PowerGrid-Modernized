@@ -2,6 +2,7 @@ package com.nolanbaker.pgmodernized.registry;
 
 import com.nolanbaker.pgmodernized.device.camlock.CamLockBoxBlock;
 import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlock;
+import com.nolanbaker.pgmodernized.device.helm.HelmBlock;
 import com.nolanbaker.pgmodernized.rack.RackBlock;
 import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
 import com.nolanbaker.pgmodernized.rack.PinionBlock;
@@ -116,6 +117,18 @@ public class ModBlocks {
             .properties(p -> p.noOcclusion())
             .transform(pickaxeOnly())
             .lang("Laser Rangefinder")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** Helm: right-click and the keyboard goes to the computers on its Cat6 jack while the view stays free. */
+    public static final BlockEntry<HelmBlock> HELM = REGISTRATE.block("helm", HelmBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Helm")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

@@ -9,5 +9,7 @@ public final class ModPackets {
         var registrar = event.registrar("1");
         registrar.playToServer(SplicePayload.TYPE, SplicePayload.STREAM_CODEC, SplicePayload::handle);
         registrar.playToServer(LoadBankPayload.TYPE, LoadBankPayload.STREAM_CODEC, LoadBankPayload::handle);
+        registrar.playToServer(HelmKeyPayload.TYPE, HelmKeyPayload.STREAM_CODEC, HelmKeyPayload::handle);
+        registrar.playToClient(HelmStatePayload.TYPE, HelmStatePayload.STREAM_CODEC, HelmStatePayload::handle);
     }
 }

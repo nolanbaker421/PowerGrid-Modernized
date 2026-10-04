@@ -2,6 +2,7 @@ package com.nolanbaker.pgmodernized.registry;
 
 import com.nolanbaker.pgmodernized.device.camlock.CamLockBoxBlockEntity;
 import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlockEntity;
+import com.nolanbaker.pgmodernized.device.helm.HelmBlockEntity;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
 import com.nolanbaker.pgmodernized.client.RailCollectorRenderer;
@@ -143,6 +144,11 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<RangefinderBlockEntity> RANGEFINDER =
             REGISTRATE.blockEntity("rangefinder", (BlockEntityFactory<RangefinderBlockEntity>) (type, pos, state) -> RangefinderBlockEntity.FACTORY.create(type, pos, state))
                     .validBlock(ModBlocks.RANGEFINDER)
+                    .register();
+
+    public static final BlockEntityEntry<HelmBlockEntity> HELM =
+            REGISTRATE.blockEntity("helm", (BlockEntityFactory<HelmBlockEntity>) (type, pos, state) -> HelmBlockEntity.FACTORY.create(type, pos, state))
+                    .validBlock(ModBlocks.HELM)
                     .register();
 
     public static final BlockEntityEntry<PinionBlockEntity> PINION =

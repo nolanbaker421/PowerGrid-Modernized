@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": {
+      "item": "create:cogwheel"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "N": {
+      "item": "powergrid_modernized:network_jack"
+    }
+  },
+  "pattern": [
+    " W ",
+    "INI",
+    " I "
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:helm"
+  }
+}

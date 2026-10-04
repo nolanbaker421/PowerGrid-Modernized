@@ -11,6 +11,7 @@ import com.nolanbaker.pgmodernized.inspector.VillageInjector;
 import com.nolanbaker.pgmodernized.inspector.Inspections;
 import com.nolanbaker.pgmodernized.client.BreakerPanelModels;
 import com.nolanbaker.pgmodernized.client.BreakerPlacementOutline;
+import com.nolanbaker.pgmodernized.client.HelmClientHandler;
 import com.nolanbaker.pgmodernized.client.Cat6Preview;
 import com.nolanbaker.pgmodernized.client.ConduitPreview;
 import com.nolanbaker.pgmodernized.compat.cc.CCBridge;
@@ -97,6 +98,7 @@ public class PowerGridModernized {
             NeoForge.EVENT_BUS.register(Cat6Preview.class);
             NeoForge.EVENT_BUS.register(ConduitPreview.class);
             NeoForge.EVENT_BUS.register(BreakerPlacementOutline.class);
+            NeoForge.EVENT_BUS.register(HelmClientHandler.class);
             bus.register(BreakerPanelModels.class);
             ForkHooks.get().registerClient(bus);
         }

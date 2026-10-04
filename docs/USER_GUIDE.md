@@ -979,3 +979,29 @@ Power Grid's Device Connector for three-phase: AC in, Forge Energy out, never th
   the buffer. Config section `rf_connector`: buffer (100,000 FE), max_output (100,000 FE a tick,
   which also caps the draw), efficiency (95 %).
 - Recipe: a Power Grid Device Connector between two copper coils in an iron plate frame.
+
+## 19. Helm
+
+A pedestal with a console and a wheel, and a Cat6 jack on the back of the console. It is a
+keyboard for a computer that does not need a screen: right-click it with an empty hand and every
+key you press goes to the computers on that jack's network, by name, while your view stays your
+own and the mouse still looks around. You stand still at it. Escape lets go, and so does opening
+any screen, walking more than five blocks away, logging out or dying. Only one player can hold a
+helm; the goggles say who.
+
+- **Keys** are named as the controls screen names them: `w`, `a`, `space`, `left.shift`,
+  `left.control`, `up`, `keypad.1`, `f`, and so on. Mouse buttons are `mouse.left`,
+  `mouse.right` and `mouse.middle`, and the wheel sends `scroll.up` or `scroll.down` as a press
+  and release together. While you hold the helm, the game does not see any of them: no inventory,
+  no chat, no attacking, no walking.
+- **Computers** see `powergrid_helm` over the jack's Cat6 or an adjacent cable. Poll with
+  `isDown(key)` and `getPressed()`, or wait on events: OpenComputers gets the signals `helm_key`
+  (name, pressed), `helm_taken` (player) and `helm_released`; CC: Tweaked gets the same as events.
+  `isManned()` and `getHelmsman()` say who is there. When the helmsman lets go, every key still
+  down is released first, so a drive program never sees a key stuck.
+- A helm on a physics body measures its five blocks from wherever the body holds it, so you can
+  stand at the wheel of a moving crane or ship.
+- A ten-line OpenComputers driver for a crane: wait on `helm_key`, and on `w`/`s` set the drive
+  forward or reverse, on their release stop it; `space` as a brake. The whole bridge is then one
+  block, one cable and one computer, with no screen anywhere.
+- Recipe: a Create cogwheel over a network jack between iron plates, a plate below.
