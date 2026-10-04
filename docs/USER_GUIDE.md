@@ -875,7 +875,8 @@ Forge Energy from any mod's cables in, three-phase AC out.
   hand to say whether the figure is line-to-neutral or line-to-line: pick 480 V L-L and each line
   gets 277 V to the neutral. The goggles show both figures.
 - It pays for what it delivers: the real power on the lines costs FE every tick at the configured
-  FE per joule (1 by default: 1 kW is 50 FE a tick) over the efficiency (95 %). An empty buffer is a
+  FE per joule (10 by default: a watt is 10 FE a second, 1 kW is 500 FE a tick) over the efficiency
+  (95 %). An empty buffer is a
   brownout: the lines go dead and stay dead until the buffer holds a second of the steady draw
   again (at least 2 % of the buffer, never more than 10 %), so a starved inverter does not
   flicker. The goggles show how far the refill has got.
@@ -884,9 +885,9 @@ Forge Energy from any mod's cables in, three-phase AC out.
   getStored, getCapacity, isBrownedOut.
 - Config section `inverter`: buffer, max_input, fe_per_joule, efficiency.
 - **No free energy.** The Three-Phase Motor now carries only as much Create stress as its
-  electrical draw buys: full-load watts times its efficiency (90 %) over `energy.watts_per_su`
-  (0.586 W per SU, which is Create: New Age's generator rate at 1 FE per joule). More voltage,
-  more stress, more FE. So inverter, motor, New Age generator and back loses about 15 % per
+  electrical draw buys: full-load watts times its efficiency (90 %) over the watts a stress unit
+  is worth, which by default follows from `fe_per_joule` and Create: New Age's generator rate
+  (`energy.watts_per_su` overrides it). More voltage, more stress, more FE. So inverter, motor, New Age generator and back loses about 15 % per
   lap. If your pack turns stress into FE at another rate, set `watts_per_su` to match it.
 
 ## 15. Laser Rangefinder

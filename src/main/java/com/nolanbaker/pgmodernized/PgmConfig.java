@@ -86,11 +86,11 @@ public final class PgmConfig {
                 .define("invert", false);
         b.pop();
         b.comment("Energy accounting between Create stress, Forge Energy and Power Grid watts").push("energy");
-        WATTS_PER_SU = b.comment("Watts one Create stress unit is worth. The three-phase motor hands out stress it has bought at this rate.",
-                        "0.586 matches Create: New Age's generator (0.029296875 FE per stress unit per tick) at 1 FE per joule, so a loop",
-                        "inverter -> motor -> New Age generator -> inverter can only lose energy. Keep fe_per_joule x this in step with",
-                        "whatever turns stress into FE in your pack.")
-                .defineInRange("watts_per_su", 0.5859375, 0.0001, 1000.0);
+        WATTS_PER_SU = b.comment("Watts one Create stress unit is worth; the three-phase motor hands out stress it has bought at this rate.",
+                        "0 derives it from fe_per_joule and Create: New Age's generator rate (0.029296875 FE per stress unit per tick), so a loop",
+                        "inverter -> motor -> New Age generator -> inverter can only lose energy whatever fe_per_joule is. Set it yourself",
+                        "if something else in your pack turns stress into FE: watts per SU = its FE per SU per second / fe_per_joule.")
+                .defineInRange("watts_per_su", 0.0, 0.0, 1000.0);
         MOTOR_EFFICIENCY = b.comment("Fraction of the electrical power the three-phase motor turns into stress; the rest is loss.")
                 .defineInRange("motor_efficiency", 0.9, 0.05, 1.0);
         MOTOR_MAX_CAPACITY = b.comment("Most stress per rpm a three-phase motor can carry, however much it is fed (1024 is four creative motors at 256 rpm).")
@@ -101,8 +101,8 @@ public final class PgmConfig {
                 .defineInRange("buffer", 1_000_000, 1_000, 1_000_000_000);
         INVERTER_MAX_INPUT = b.comment("Most FE it accepts per tick from cables.")
                 .defineInRange("max_input", 100_000, 1, 1_000_000_000);
-        INVERTER_FE_PER_JOULE = b.comment("FE taken per joule delivered on the lines (1 means 1 FE per joule, so 1 kW costs 50 FE a tick).")
-                .defineInRange("fe_per_joule", 1.0, 0.001, 1000.0);
+        INVERTER_FE_PER_JOULE = b.comment("FE taken per joule delivered on the lines. 10 means a watt costs 10 FE a second, so 1 kW is 500 FE a tick.")
+                .defineInRange("fe_per_joule", 10.0, 0.001, 1000.0);
         INVERTER_EFFICIENCY = b.comment("Fraction of the FE that becomes AC power; the rest is loss.")
                 .defineInRange("efficiency", 0.95, 0.05, 1.0);
         b.pop();
@@ -115,6 +115,15 @@ public final class PgmConfig {
                 .defineInRange("interval", 2, 1, 100);
         b.pop();
         SPEC = b.build();
+    }
+
+    /** Create: New Age's generator rate, FE per stress unit per second. */
+    public static final double NEW_AGE_FE_PER_SU_SECOND = 0.029296875 * 20;
+
+    /** Watts a stress unit is worth: the configured figure, or the one that balances the inverter against New Age. */
+    public static double wattsPerSu() {
+        double configured = WATTS_PER_SU.get();
+        return configured > 0 ? configured : NEW_AGE_FE_PER_SU_SECOND / INVERTER_FE_PER_JOULE.get();
     }
 
     private PgmConfig() {}

@@ -111,7 +111,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         float rpm = Math.max(1, Math.abs(generatedSpeed));
         float r = resistance("winding");
         double fullLoadWatts = r > 0 ? 3.0 * phaseVolts * phaseVolts / r : 0;
-        double stress = fullLoadWatts * PgmConfig.MOTOR_EFFICIENCY.get() / PgmConfig.WATTS_PER_SU.get();
+        double stress = fullLoadWatts * PgmConfig.MOTOR_EFFICIENCY.get() / PgmConfig.wattsPerSu();
         return (float) Math.min(PgmConfig.MOTOR_MAX_CAPACITY.get(), stress / rpm);
     }
 
