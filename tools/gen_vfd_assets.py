@@ -71,9 +71,11 @@ def recolour(px):
 
 def texture():
     rows = read_png(os.path.join(BLOCK_TEX, "vfd.png"))
-    out = [[recolour(px) for px in row] for row in rows]
-    # A warning stripe across the top row of the face.
-    for x in range(0, 16, 2):
+    # The housing is the left 12 columns; the top-right corner holds the red and blue terminal
+    # patches (columns 12-15, rows 0-1) that the models sample, and they stay as they are.
+    out = [[px if (x >= 12 and y < 2) else recolour(px) for x, px in enumerate(row)] for y, row in enumerate(rows)]
+    # A warning stripe across the top row of the face, the housing only.
+    for x in range(0, 12, 2):
         out[1][x] = (250, 200, 30, 255)
         out[1][x + 1] = (30, 30, 30, 255)
     write_png(os.path.join(BLOCK_TEX, "vfd_8kv.png"), out)
