@@ -38,6 +38,10 @@ import static com.nolanbaker.pgmodernized.device.vfd.VfdBlock.*;
  * The coupling's series resistance is never changed at runtime: the 2-primary coupling stamps it
  * with the opposite sign from the base class' setResistance(), which corrupts the matrix. Enabling
  * and disabling therefore rebuilds the internal circuit with or without the coupling instead.
+ * <p>
+ * The enable flag is stored inverted, as {@code disabled}, because buildCircuit runs from the
+ * superclass constructor before any field initialiser: a flag that defaulted to true would still
+ * read false there, and every regulator would be built without its coupling until toggled.
  */
 public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, INetworkJack, IDeviceSpliceHost {
     private DeviceSpliceHost deviceHubs;
@@ -66,7 +70,8 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
 
     private float setpoint = 0;
     private float currentLimit = MAX_CURRENT;
-    private boolean enabled = true;
+    /** Inverted so that the default (false) is "enabled" when buildCircuit runs from the superclass constructor. */
+    private boolean disabled;
 
     // No initializers here: SmartBlockEntity's constructor calls buildCircuit() before they would run.
     private float ratio;
@@ -161,7 +166,7 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
         // tick on the AC build is whichever point of the waveform the tick happened to land on.
         inputSense = builder.connect(SENSE_RESISTANCE, inPos, inNeg);
         outputSense = builder.connect(SENSE_RESISTANCE, outPos, outNeg);
-        if(enabled) {
+        if(!disabled) {
             var outMid = builder.addInternalNode();
             coupling = builder.couple(ratio, resistance("output"), inPos, inNeg, outMid, outNeg);
             outputShunt = builder.connect(SHUNT_RESISTANCE, outMid, outPos);
@@ -286,9 +291,9 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
     }
 
     public void setEnabled(boolean value) {
-        if(enabled == value)
+        if(!disabled == value)
             return;
-        enabled = value;
+        disabled = !value;
         ratio = MIN_RATIO; // soft start when re-enabled
         if(electricBehaviour != null && level != null && !level.isClientSide)
             electricBehaviour.rebuildCircuit(false);
@@ -297,7 +302,7 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
     }
 
     public boolean isEnabled() {
-        return enabled;
+        return !disabled;
     }
 
     public float getInputVoltage() {
@@ -322,20 +327,20 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
 
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
-        boolean wasEnabled = enabled;
+        boolean wasEnabled = !disabled;
         super.read(tag, registries, clientPacket);
         deviceHubs().read(tag, registries, clientPacket);
         setpoint = tag.getFloat("Setpoint");
         currentLimit = tag.contains("CurrentLimit") ? tag.getFloat("CurrentLimit") : MAX_CURRENT;
         int statusIndex = tag.getByte("Status");
         status = statusIndex >= 0 && statusIndex < Status.values().length ? Status.values()[statusIndex] : Status.OK;
-        enabled = !tag.contains("Enabled") || tag.getBoolean("Enabled");
+        disabled = tag.contains("Enabled") && !tag.getBoolean("Enabled");
         if(clientPacket) {
             inputVoltage = tag.getFloat("VIn");
             outputVoltage = tag.getFloat("VOut");
             outputCurrent = tag.getFloat("IOut");
             ratio = tag.getFloat("Ratio");
-        } else if(enabled != wasEnabled && electricBehaviour != null && level != null) {
+        } else if(!disabled != wasEnabled && electricBehaviour != null && level != null) {
             // Loaded from disk with a different enable state than the circuit was built with.
             electricBehaviour.rebuildCircuit(false);
         }
@@ -348,7 +353,7 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
         tag.putFloat("Setpoint", setpoint);
         tag.putFloat("CurrentLimit", currentLimit);
         tag.putByte("Status", (byte) status.ordinal());
-        tag.putBoolean("Enabled", enabled);
+        tag.putBoolean("Enabled", !disabled);
         if(clientPacket) {
             tag.putFloat("VIn", inputVoltage);
             tag.putFloat("VOut", outputVoltage);
@@ -366,7 +371,7 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
         Lang.builder().translate("gui.vfd.status." + status.key())
                 .style(status == Status.OK ? ChatFormatting.GREEN : status == Status.CURRENT_LIMIT || status == Status.INPUT_SAG ? ChatFormatting.GOLD : ChatFormatting.RED)
                 .forGoggles(tooltip, 1);
-        if(!enabled) {
+        if(disabled) {
             Lang.builder().translate("gui.vfd.disabled").style(ChatFormatting.RED).forGoggles(tooltip, 1);
         } else {
             line(tooltip, outputVoltage, Unit.VOLTAGE, ChatFormatting.GOLD);
