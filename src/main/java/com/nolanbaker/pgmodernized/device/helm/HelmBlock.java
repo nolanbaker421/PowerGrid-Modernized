@@ -94,9 +94,11 @@ public class HelmBlock extends Block implements IBE<HelmBlockEntity> {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
-    /** Take the helm. */
+    /** Take the helm, with an empty hand. Anything held (a Cat6 cable for the jack, a wrench) is left to the item. */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if(!player.getMainHandItem().isEmpty())
+            return InteractionResult.PASS;
         if(level.isClientSide)
             return InteractionResult.SUCCESS;
         if(player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof HelmBlockEntity helm)
