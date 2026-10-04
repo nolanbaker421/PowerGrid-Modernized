@@ -13,7 +13,8 @@ import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
  * their ends every tick; a block wire never moves on its own, and merely telling Sable to track it
  * did not move it either, so this remembers where the run was laid in the body's own coordinates
  * and puts the entity at that spot's current world position every tick, on both sides. The
- * body's rotation is not followed, only its position: a trolley on a straight runway does not turn.
+ * body's rotation is followed by the renderer, which turns the run's segments by the body's
+ * orientation about this origin; the entity's own position and boxes stay axis-aligned.
  */
 public final class BodyRide {
     @Nullable
@@ -47,6 +48,12 @@ public final class BodyRide {
 
     public boolean riding() {
         return origin != null;
+    }
+
+    /** Where the run was laid, in the body's own coordinates; null when it is not on a body. */
+    @Nullable
+    public Vec3 origin() {
+        return origin;
     }
 
     public void save(CompoundTag tag) {
