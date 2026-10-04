@@ -426,12 +426,21 @@ variable frequency drive.
 - Output voltage: −2000 V to +2000 V on the 2 kV unit, −8000 V to +8000 V on the 8 kV unit
   (negative reverses polarity). `getLimits()` reports the unit's ceiling.
 - Goggles show a status line under the output: running, output disabled, no input voltage, input
-  wired backwards, setpoint 0 V, input too low for the setpoint, holding the current limit, or
-  input sagging. If nothing comes out, the line says why.
+  wired backwards, setpoint 0 V, input too low for the setpoint, holding the current limit,
+  input sagging, or braking. If nothing comes out, the line says why.
 - Wire the input backwards (+ and - swapped) and nothing comes out while the drive heats until it
   fails; the status line says so.
 - Output current limit: 0 to 20 A. The drive backs off to hold the limit and to avoid dragging its
   input down.
+- Braking. A motor coil keeps its current flowing when the output drops, and the regulator's
+  converter is a transformer, which would carry that current straight back into the supply
+  multiplied by the ratio: a 45 A motor dumped into a weak line put 64 kV on it. So a reverse
+  current now opens the converter path and closes a braking resistor across the output, sized
+  so the coil's current stays within the current limit and never more than the unit's ceiling
+  voltage appears across it. The coil's energy is burnt in the regulator (watch its heat if you
+  brake a big motor every few seconds); the supply sees none of it. The status line says
+  "braking" and the goggles show the resistor's current and power while it lasts, which is a
+  few ticks. Disabling the output closes the resistor too, so a coil never floats.
 - Output can be enabled or disabled. Goggles show the setpoint and the measured input and output.
 
 ### Analog I/O Module
@@ -575,7 +584,7 @@ coordinates prefixed by `n`, so `peripheral.find("powergrid_vfd")` or
 | `getInputVoltage()` / `getInputCurrent()` | Measured input |
 | `getPower()` | Output power in W |
 | `getLimits()` | Maximum voltage and current of this unit |
-| `getStatus()` | Why the output is what it is: `ok`, `disabled`, `no_input`, `reversed`, `setpoint_zero`, `input_low`, `current_limit`, `input_sag` |
+| `getStatus()` | Why the output is what it is: `ok`, `disabled`, `no_input`, `reversed`, `setpoint_zero`, `input_low`, `current_limit`, `input_sag`, `braking` |
 
 **powergrid_transformer** (legs are 1 to the leg count; taps are −4 to 4)
 

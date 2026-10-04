@@ -293,6 +293,8 @@
   "powergrid.gui.vfd.status.input_low": "Input too low for that setpoint",
   "powergrid.gui.vfd.status.current_limit": "Holding the current limit",
   "powergrid.gui.vfd.status.input_sag": "Input sagging under load, holding back",
+  "powergrid.gui.vfd.status.braking": "Braking: burning the load's current off, the supply sees none of it",
+  "powergrid.gui.vfd.braking": "Braking resistor: %1$s A, %2$s W",
   "item.powergrid_modernized.electrical_license": "Electrical License",
   "item.powergrid_modernized.copper_scrap": "Copper Scrap",
   "item.powergrid_modernized.copper_scrap.tooltip.summary": "Offcuts from pulling wire and making splices. Village smiths buy it by the handful, no questions asked.",

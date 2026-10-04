@@ -42,6 +42,12 @@ import static com.nolanbaker.pgmodernized.device.vfd.VfdBlock.*;
  * The enable flag is stored inverted, as {@code disabled}, because buildCircuit runs from the
  * superclass constructor before any field initialiser: a flag that defaulted to true would still
  * read false there, and every regulator would be built without its coupling until toggled.
+ * <p>
+ * Braking: a motor coil keeps its current flowing when the output drops, and through the
+ * coupling that current would go back into the supply multiplied by the ratio, where the
+ * supply's own inductance turns it into a spike. So a reverse current opens the converter path
+ * and closes a braking resistor across the output instead, sized so the coil's current stays
+ * within the current limit; its energy is burnt here and the supply sees none of it.
  */
 public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, INetworkJack, IDeviceSpliceHost {
     private DeviceSpliceHost deviceHubs;
@@ -67,6 +73,9 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
     private static final float INPUT_SAG_FRACTION = 0.5f;
     private static final float SENSE_RESISTANCE = 1_000_000f;  // voltmeter branches across input and output
     private static final float SHUNT_RESISTANCE = 0.001f;      // ammeter in series with the output      // back off when the input drops below half its unloaded voltage
+    private static final float BLOCK_RESISTANCE = 100_000f;    // the converter path while braking: as good as a blocking diode
+    private static final float BRAKE_OPEN = 1_000_000f;        // the braking resistor when not braking
+    private static final int MAX_BRAKE_TICKS = 40;             // two seconds is longer than any coil takes to die away
 
     private float setpoint = 0;
     private float currentLimit = MAX_CURRENT;
@@ -79,13 +88,19 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
     private float inputReference;
     private float inputVoltage, outputVoltage, outputCurrent;
     private Status status = Status.OK;
+    // Braking state; no initialisers (see buildCircuit).
+    private ElectricWire brakeWire;
+    private boolean braking;
+    private int brakeTicks;
+    private float brakeResistance;
+    private float brakeCurrent;
     /** Heat a drive with its input wired backwards takes, watts. */
     private static final float REVERSE_WATTS = 150f;
 
     /** Why the output is what it is, for the goggles and the computer. */
     public enum Status {
         OK("ok"), DISABLED("disabled"), NO_INPUT("no_input"), REVERSED("reversed"), SETPOINT_ZERO("setpoint_zero"),
-        INPUT_LOW("input_low"), CURRENT_LIMIT("current_limit"), INPUT_SAG("input_sag");
+        INPUT_LOW("input_low"), CURRENT_LIMIT("current_limit"), INPUT_SAG("input_sag"), BRAKING("braking");
 
         private final String key;
 
@@ -107,6 +122,7 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
     private ElectricWire inputSense, outputSense, outputShunt;
     private final AcReadings.Filter inputReading = new AcReadings.Filter();
     private final AcReadings.Filter outputReading = new AcReadings.Filter();
+    private final AcReadings.Filter brakeReading = new AcReadings.Filter();
 
     private final JackSupport jack = new JackSupport(this, false);
 
@@ -170,10 +186,16 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
             var outMid = builder.addInternalNode();
             coupling = builder.couple(ratio, resistance("output"), inPos, inNeg, outMid, outNeg);
             outputShunt = builder.connect(SHUNT_RESISTANCE, outMid, outPos);
+            // Across the output, open until a reverse current closes it.
+            brakeWire = builder.connect(BRAKE_OPEN, outPos, outNeg);
         } else {
             coupling = null;
             outputShunt = null;
+            // Disabled, the output is dead and a connected coil discharges into the braking resistor.
+            brakeWire = builder.connect(brakeResistanceFor(), outPos, outNeg);
         }
+        braking = false;
+        brakeTicks = 0;
     }
 
     @Override
@@ -199,11 +221,35 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
         // Remember the input's unloaded voltage so a source that sags under load can be recognised and held
         // at its maximum-power point instead of collapsing. Measured directly whenever the drive is unloaded;
         // while loaded it only tracks rises (a weakening source pushes the ratio down until unloaded, which re-measures).
+        // Reverse current: the load's coil pushing back. Open the converter path and burn it off here.
+        float signedOut = finite((float) outputReading.signedRmsCurrent());
+        brakeReading.sample(brakeWire);
+        brakeCurrent = finite((float) brakeReading.rmsCurrent());
+        if(!braking) {
+            if(signedOut < -Math.max(0.05f, currentLimit * 0.05f)) {
+                braking = true;
+                brakeTicks = 0;
+                brakeResistance = brakeResistanceFor();
+                outputShunt.setResistance(BLOCK_RESISTANCE);
+                brakeWire.setResistance(brakeResistance);
+            }
+        } else {
+            ++brakeTicks;
+            if(thermalBehaviour != null)
+                thermalBehaviour.applyTickPower(brakeCurrent * brakeCurrent * brakeResistance);
+            if((brakeTicks >= 2 && brakeCurrent < Math.max(0.02f, currentLimit * 0.02f)) || brakeTicks > MAX_BRAKE_TICKS) {
+                braking = false;
+                outputShunt.setResistance(SHUNT_RESISTANCE);
+                brakeWire.setResistance(BRAKE_OPEN);
+            }
+        }
+
         float absVin = Math.abs(inputVoltage);
         boolean unloaded = Math.abs(ratio) <= MIN_RATIO * 1.5f;
         inputReference = unloaded ? absVin : Math.max(absVin, inputReference);
         boolean inputSagging = absVin < inputReference * INPUT_SAG_FRACTION;
-        boolean overCurrent = outputCurrent > currentLimit;
+        // The limiter acts on current the regulator is pushing out; a reverse current is the brake's business.
+        boolean overCurrent = signedOut > currentLimit;
         if((overCurrent || inputSagging) && Math.abs(ratio) > MIN_RATIO) {
             float factor = overCurrent ? currentLimit / outputCurrent : absVin / (inputReference * INPUT_SAG_FRACTION);
             ratioCap = Math.max(MIN_RATIO, Math.min(ratioCap, Math.abs(ratio)) * factor * CAP_MARGIN);
@@ -217,6 +263,7 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
             thermalBehaviour.applyTickPower(REVERSE_WATTS);
         status = reversed ? Status.REVERSED
                 : absVin < MIN_INPUT_VOLTAGE ? Status.NO_INPUT
+                : braking ? Status.BRAKING
                 : setpoint == 0 ? Status.SETPOINT_ZERO
                 : overCurrent ? Status.CURRENT_LIMIT
                 : inputSagging ? Status.INPUT_SAG
@@ -254,6 +301,20 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
 
     private static float finite(float value) {
         return Float.isFinite(value) ? value : 0;
+    }
+
+    /** The braking resistor: at most the unit's ceiling voltage across it at the current limit. */
+    private float brakeResistanceFor() {
+        return Math.max(resistance("output"), maxVoltage() / Math.max(0.1f, currentLimit));
+    }
+
+    public boolean isBraking() {
+        return braking;
+    }
+
+    /** Current through the braking resistor, amps. */
+    public float getBrakeCurrent() {
+        return brakeCurrent;
     }
 
     @Override
@@ -340,6 +401,8 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
             outputVoltage = tag.getFloat("VOut");
             outputCurrent = tag.getFloat("IOut");
             ratio = tag.getFloat("Ratio");
+            braking = tag.getBoolean("Braking");
+            brakeCurrent = tag.getFloat("IBrake");
         } else if(!disabled != wasEnabled && electricBehaviour != null && level != null) {
             // Loaded from disk with a different enable state than the circuit was built with.
             electricBehaviour.rebuildCircuit(false);
@@ -359,6 +422,8 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
             tag.putFloat("VOut", outputVoltage);
             tag.putFloat("IOut", outputCurrent);
             tag.putFloat("Ratio", ratio);
+            tag.putBoolean("Braking", braking);
+            tag.putFloat("IBrake", brakeCurrent);
         }
     }
 
@@ -377,6 +442,9 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
             line(tooltip, outputVoltage, Unit.VOLTAGE, ChatFormatting.GOLD);
             line(tooltip, outputCurrent, Unit.CURRENT, ChatFormatting.GOLD);
             line(tooltip, getPower(), Unit.POWER, ChatFormatting.GOLD);
+            if(braking)
+                Lang.builder().translate("gui.vfd.braking", String.format("%.2f", brakeCurrent), String.format("%.0f", brakeCurrent * brakeCurrent * brakeResistance))
+                        .style(ChatFormatting.YELLOW).forGoggles(tooltip, 1);
         }
         deviceHubs().addGoggleLines(tooltip);
         return true;
