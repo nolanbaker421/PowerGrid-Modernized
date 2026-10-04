@@ -69,6 +69,10 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
     private int sequence;
     private float syncedAmps, syncedFrequency;
     private float notifiedCapacity = -1;
+    /** No-load draw as a share of the full-load draw: magnetising and friction. */
+    public static final float IDLE_FRACTION = 0.03f;
+    /** Stress this motor carries right now (SU), and the electrical power that is worth. */
+    private float carriedStress, demandWatts;
 
     public ThreePhaseMotorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -166,11 +170,31 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
     public void updateFromNetwork(float maxStress, float currentStress, int networkSize) {
         super.updateFromNetwork(maxStress, currentStress, networkSize);
         load = maxStress != 0 ? Math.max(currentStress / maxStress, 0.05f) : 0.05f;
-        if(dynamicResistance() && windings != null) {
-            // Loaded windings draw more: the same rule Power Grid's motor uses, with L preserved.
-            for(var winding : windings)
-                winding.setResistance(resistance("winding") / load);
-        }
+        // The motor's share of the network's load, by its share of the capacity. Stalled by an
+        // overstressed network it carries everything it has, like a locked rotor.
+        float mine = Math.abs(generatedSpeed) * Math.max(0, energyCapacity());
+        float share = maxStress > 0 ? Math.min(1, mine / maxStress) : 0;
+        carriedStress = currentStress > maxStress ? mine : currentStress * share;
+        demandWatts = (float) (carriedStress * PgmConfig.wattsPerSu() / Math.max(0.05, PgmConfig.MOTOR_EFFICIENCY.get()));
+        applyWindingResistance();
+    }
+
+    /**
+     * Sets the windings so the motor draws just what the stress it carries is worth at the
+     * configured watts per stress unit, over its efficiency: never less than its no-load draw,
+     * never more than its full-load draw. Redone as the supply voltage moves, so the power, not
+     * the resistance, is what holds.
+     */
+    private void applyWindingResistance() {
+        if(!dynamicResistance() || windings == null)
+            return;
+        float r = resistance("winding");
+        double volts = Math.max(1, phaseVolts);
+        double full = 3.0 * volts * volts / r;
+        double want = Math.max(demandWatts, full * IDLE_FRACTION);
+        double target = Math.max(r, Math.min(r / IDLE_FRACTION, 3.0 * volts * volts / want));
+        for(var winding : windings)
+            winding.setResistance((float) target);
     }
 
     protected void applyPower(AbstractElectricWire wire) {
@@ -240,6 +264,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
             notifiedCapacity = capacity;
             notifyStressCapacityChange(capacity);
         }
+        applyWindingResistance();
         if(Math.abs(phaseAmps - syncedAmps) > Math.max(0.05f, syncedAmps * 0.05f) || Math.abs(frequency - syncedFrequency) > 0.1f)
             sendData();
     }
@@ -298,6 +323,8 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         generatedSpeed = tag.getFloat("GeneratedSpeed");
         if(clientPacket) {
             frequency = tag.getFloat("Frequency");
+            carriedStress = tag.getFloat("Carried");
+            demandWatts = tag.getFloat("Demand");
             phaseVolts = tag.getFloat("PhaseVolts");
             phaseAmps = tag.getFloat("PhaseAmps");
             sequence = tag.getInt("Sequence");
@@ -312,6 +339,8 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         tag.putFloat("GeneratedSpeed", generatedSpeed);
         if(clientPacket) {
             tag.putFloat("Frequency", frequency);
+            tag.putFloat("Carried", carriedStress);
+            tag.putFloat("Demand", demandWatts);
             tag.putFloat("PhaseVolts", phaseVolts);
             tag.putFloat("PhaseAmps", phaseAmps);
             tag.putInt("Sequence", sequence);
@@ -335,6 +364,8 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         Lang.builder().text(String.format("%.1f ", phaseVolts)).add(Unit.VOLTAGE.get()).text(String.format("  %.2f ", phaseAmps)).add(Unit.CURRENT.get())
                 .style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.three_phase_motor.sync", polePairs(), Math.round(synchronousSpeed())).style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.three_phase_motor.carrying", String.format("%.0f", carriedStress), String.format("%.0f", demandWatts))
+                .style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         deviceHubs().addGoggleLines(tooltip);
         return true;
     }

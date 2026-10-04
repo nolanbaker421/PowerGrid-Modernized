@@ -905,6 +905,13 @@ Forge Energy from any mod's cables in, three-phase AC out.
   almost everything per lap: New Age pays 0.59 FE a second for a stress unit the motor bought for
   0.159 W, which is 32 FE a second. Setting `watts_per_su` below about 0.003 (at 10 FE per watt)
   turns that loop into a source of energy.
+- **It draws what it carries.** The motor's windings are retuned every few ticks so its real
+  draw is the stress it is actually carrying, its share of the network's load, times the watts a
+  stress unit is worth, over its efficiency. An idle motor takes 3 % of its full-load draw for
+  magnetising and friction; one on a network that is overstressed carries everything it has,
+  like a locked rotor, and draws full load until something gives. The goggles show the stress
+  carried and the watts asked for. A supply that cannot deliver those watts sags, and the motor
+  takes what the sagged voltage allows.
 
 ## 15. Laser Rangefinder
 
