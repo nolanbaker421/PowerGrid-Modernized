@@ -3,6 +3,7 @@ package com.nolanbaker.pgmodernized.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.nolanbaker.pgmodernized.device.helm.HelmBlockEntity;
 import com.nolanbaker.pgmodernized.network.packets.HelmKeyPayload;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -39,6 +40,9 @@ public final class HelmClientHandler {
     public static void onState(BlockPos pos, boolean on) {
         if(on) {
             active = pos;
+            // The right-click that took the helm is still held; let every binding go so the game
+            // does not keep using the block (and swinging the hand) while the helm eats the release.
+            KeyMapping.releaseAll();
             var mc = Minecraft.getInstance();
             if(mc.gui != null)
                 mc.gui.setOverlayMessage(Component.translatable("powergrid.gui.helm.active"), false);
@@ -92,7 +96,10 @@ public final class HelmClientHandler {
     public static void onMouse(InputEvent.MouseButton.Pre event) {
         if(active == null || Minecraft.getInstance().screen != null || event.getAction() == GLFW.GLFW_REPEAT)
             return;
-        event.setCanceled(true);
+        // A press is the helm's alone. A release must still reach the game, or the use or attack
+        // binding it ends would stay down and the game would keep clicking the block.
+        if(event.getAction() == GLFW.GLFW_PRESS)
+            event.setCanceled(true);
         String name = switch(event.getButton()) {
             case GLFW.GLFW_MOUSE_BUTTON_LEFT -> "mouse.left";
             case GLFW.GLFW_MOUSE_BUTTON_RIGHT -> "mouse.right";
