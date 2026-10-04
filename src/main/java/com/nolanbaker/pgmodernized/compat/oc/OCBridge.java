@@ -25,6 +25,7 @@ public class OCBridge {
         expose(event, ModBlockEntities.TRANSFORMER.get());
         ForkHooks.get().registerOC(event);
         expose(event, ModBlockEntities.RANGEFINDER.get());
+        expose(event, ModBlockEntities.HELM.get());
         expose(event, ModBlockEntities.RAIL_FEED.get());
         expose(event, ModBlockEntities.RAIL_COLLECTOR.get());
         expose(event, ModBlockEntities.CABLE_CHAIN_ANCHOR.get());
