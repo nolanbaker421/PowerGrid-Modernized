@@ -325,21 +325,32 @@ RF = "rf_connector"
 
 
 def rf_connector():
-    """Power Grid's Device Connector for three-phase: the load bank's cabinet with an orange band and a port on the door."""
-    tex = os.path.join(ASSETS, "textures", "block")
-    grey = (0x4c, 0x4e, 0x54)
-    side = canvas(16, 16, grey + (255,))
-    fill(side, 0, 0, 16, 1, shade(grey, 1.3))
-    fill(side, 0, 15, 16, 16, shade(grey, 0.6))
-    write_png(os.path.join(tex, RF + "_side.png"), side)
-    front = canvas(16, 16, grey + (255,))
-    fill(front, 0, 0, 16, 1, shade(grey, 1.3))
-    fill(front, 0, 15, 16, 16, shade(grey, 0.6))
-    fill(front, 2, 4, 14, 7, (0xe0, 0x80, 0x20))            # orange band
-    fill(front, 6, 9, 10, 13, (0x18, 0x18, 0x1c))            # the port
-    fill(front, 7, 10, 9, 12, (0xd0, 0x30, 0x30))            # live
-    write_png(os.path.join(tex, RF + "_front.png"), front)
-    cabinet_model(RF, "%s:block/%s_front" % (MOD, RF), "%s:block/%s_side" % (MOD, RF), [])
+    """The Device Connector for Power Grid's AC: the conduit switch's box and knockout with an orange port on top, turned the six faces by four ways."""
+    from gen_conduit_assets import ROTATION4, to_h, SOCKET_BODY, SOCKET_HUB
+    tex_dir = os.path.join(ASSETS, "textures", "block")
+    port = canvas(16, 16, (0xe0, 0x80, 0x20, 255))
+    fill(port, 0, 0, 16, 1, (0xf0, 0xa0, 0x40))
+    fill(port, 0, 15, 16, 16, (0x90, 0x50, 0x10))
+    fill(port, 5, 5, 11, 11, (0x18, 0x18, 0x1c))
+    fill(port, 7, 7, 9, 9, (0xd0, 0x30, 0x30))
+    write_png(os.path.join(tex_dir, RF + "_port.png"), port)
+    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD,
+           "port": "%s:block/%s_port" % (MOD, RF), "particle": "%s:block/conduit_box" % MOD}
+    plate = (6, 3, 6, 10, 3.5, 10)
+    port_box = (7, 3.5, 7, 9, 4.5, 9)
+    boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#terminal"), (plate, "#box"), (port_box, "#port")]
+    for suffix, transform in (("v", lambda b: b), ("h", to_h)):
+        elements = [element(*transform(box), texture) for box, texture in boxes]
+        dump(os.path.join(ASSETS, "models", "block", RF, "block_%s.json" % suffix),
+             {"parent": "block/block", "textures": tex, "elements": elements})
+    dump(os.path.join(ASSETS, "models", "item", RF + ".json"), {"parent": "%s:block/%s/block_v" % (MOD, RF)})
+    variants = {}
+    for key, (suffix, rot) in ROTATION4.items():
+        v = {"model": "%s:block/%s/block_%s" % (MOD, RF, suffix)}
+        v.update(rot)
+        variants[key] = v
+    dump(os.path.join(ASSETS, "blockstates", RF + ".json"), {"variants": variants})
+    loot_table(RF)
 
 
 def recipes():
@@ -354,7 +365,7 @@ def recipes():
            {"items": "powergrid:copper_coil"})
     recipe(LOAD_BANK, ["III", "CFC", "III"], {"I": iron, "C": coil, "F": {"item": "create:encased_fan"}}, 1,
            {"items": "powergrid:copper_coil"})
-    recipe(RF, ["III", "CDC", "III"], {"I": iron, "C": coil, "D": {"item": "powergrid:device_connector"}}, 1,
+    recipe(RF, ["NDN", " N "], {"N": {"item": "minecraft:iron_nugget"}, "D": {"item": "powergrid:device_connector"}}, 1,
            {"items": "powergrid:device_connector"})
 
 

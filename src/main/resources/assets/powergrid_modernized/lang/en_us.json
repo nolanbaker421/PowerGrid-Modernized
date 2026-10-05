@@ -467,13 +467,12 @@
   "powergrid.gui.load_bank.clear": "Use boxes",
   "powergrid.gui.load_bank.typed": "Typed setting (sneak-click to change, boxes clear it)",
   "block.powergrid_modernized.rf_connector": "RF Connector",
-  "powergrid.rf_connector.l1": "L1",
-  "powergrid.rf_connector.l2": "L2",
-  "powergrid.rf_connector.l3": "L3",
-  "powergrid.rf_connector.n": "Neutral",
+  "powergrid.rf_connector.line": "Line",
+  "powergrid.rf_connector.neutral": "Neutral",
+  "powergrid.message.rf_connector.conduit_only": "The RF connector is wired through its knockout; wires go through the conduit",
   "powergrid.gui.rf_connector.title": "RF connector",
   "powergrid.gui.rf_connector.supplying": "Supplying %1$s FE/t (%2$s FE/s)",
-  "powergrid.gui.rf_connector.drawing": "Drawing %1$s kW at %2$s V, %3$s A per phase",
+  "powergrid.gui.rf_connector.drawing": "Drawing %1$s W at %2$s V, %3$s A",
   "powergrid.gui.rf_connector.buffer": "Buffer %1$s / %2$s FE",
   "powergrid.gui.fe_inverter.draw": "Taking %1$s FE/t (%2$s FE/s)"
 }

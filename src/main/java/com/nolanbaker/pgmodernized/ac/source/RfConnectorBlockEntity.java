@@ -1,9 +1,11 @@
 package com.nolanbaker.pgmodernized.ac.source;
 
 import com.nolanbaker.pgmodernized.PgmConfig;
+import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
-import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
-import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
+import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
+import com.nolanbaker.pgmodernized.conduit.splice.SplicePoint;
+import com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport;
 import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.ChatFormatting;
@@ -18,7 +20,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -27,15 +31,15 @@ import java.util.List;
 import static com.nolanbaker.pgmodernized.ac.source.RfConnectorBlock.*;
 
 /**
- * Power Grid's Device Connector for three-phase. Three loads in star from L1, L2, L3 to the
- * neutral are sized every tick to draw just the power the Forge Energy side is taking: the FE
- * missing from the buffer, at Power Grid's FE per watt, is the demand. The real power they draw
- * is banked as FE and handed out each tick to every neighbour that accepts it, up to the output
- * limit. One way only: the FE side gives and never takes, so an FE loop back through an inverter
- * can only lose what both lose.
+ * Power Grid's Device Connector for Power Grid's AC, single phase. One load from line to neutral
+ * is sized every tick to draw just the power the Forge Energy side is taking: the FE missing
+ * from the buffer, at Power Grid's FE per watt, is the demand. The real power it draws is banked
+ * as FE and handed out each tick to every neighbour that accepts it, up to the output limit. One
+ * way only: the FE side gives and never takes. Whenever the wires pulled through its run change,
+ * the first two are spliced to line and neutral by themselves, so there is nothing to edit.
  */
-public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, IDeviceSpliceHost {
-    /** The loads when nothing is wanted: as good as open. */
+public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, ISpliceHost {
+    /** The load when nothing is wanted: as good as open. */
     private static final float OPEN = 1_000_000f;
 
     /** The FE side: gives to any side, never takes anything in. */
@@ -58,11 +62,13 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
     }
 
     private final Buffer energy = new Buffer();
-    private DeviceSpliceHost deviceHubs;
+    private SpliceSupport splices;
+    private List<SplicePoint> points;
+    private int landedKey = -1;
 
     // No initialisers: buildCircuit runs from the superclass constructor.
-    private ElectricWire[] loads;
-    private AcReadings.Filter[] readings;
+    private ElectricWire load;
+    private AcReadings.Filter reading;
 
     private float appliedResistance = -1;
     private double feFraction;
@@ -81,27 +87,18 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
     }
 
     @Override
-    public DeviceSpliceHost deviceHubs() {
-        if(deviceHubs == null)
-            deviceHubs = new DeviceSpliceHost(this, RfConnectorBlock.LAYOUT);
-        return deviceHubs;
-    }
-
-    @Override
-    public ConduitSize maxConduit() {
-        return ConduitSize.FOUR;
+    public SpliceSupport splices() {
+        if(splices == null)
+            splices = new SpliceSupport(this);
+        return splices;
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        deviceHubs().buildCircuit(builder);
-        loads = new ElectricWire[3];
-        readings = new AcReadings.Filter[3];
-        var neutral = builder.terminalNode(N);
-        for(int k = 0; k < 3; ++k) {
-            loads[k] = builder.connect(OPEN, builder.terminalNode(L1 + k), neutral);
-            readings[k] = new AcReadings.Filter();
-        }
+        builder.setTerminalCount(TERMINAL_COUNT);
+        splices().buildCircuit(builder);
+        load = builder.connect(OPEN, builder.terminalNode(TERMINAL_LINE), builder.terminalNode(TERMINAL_NEUTRAL));
+        reading = new AcReadings.Filter();
         appliedResistance = OPEN;
     }
 
@@ -112,21 +109,14 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
 
     @Override
     public void electricalTick() {
-        if(loads == null || level == null)
+        if(load == null || level == null)
             return;
-        double v = 0, i = 0, p = 0;
-        for(int k = 0; k < 3; ++k) {
-            readings[k].sample(loads[k]);
-            double rv = readings[k].rmsVoltage(), ri = readings[k].rmsCurrent();
-            v += rv;
-            i += ri;
-            p += rv * ri;
-        }
-        volts = (float) (v / 3);
-        amps = (float) (i / 3);
-        watts = (float) Math.max(0, p);
+        reading.sample(load);
+        volts = (float) reading.rmsVoltage();
+        amps = (float) reading.rmsCurrent();
+        watts = (float) Math.max(0, volts * amps);
 
-        // Bank what the loads drew this tick.
+        // Bank what the load drew this tick.
         double rate = PgmConfig.fePerWattTick();
         double efficiency = Math.max(0.05, PgmConfig.RF_EFFICIENCY.get());
         feFraction += watts * rate * efficiency;
@@ -136,7 +126,7 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
             feFraction -= whole;
         }
 
-        // Hand it out, then size the loads for what is still wanted.
+        // Hand it out, then size the load for what is still wanted.
         supplied = push();
         int wanted = Math.min(energy.getMaxEnergyStored() - energy.getEnergyStored(), PgmConfig.RF_MAX_OUTPUT.get());
         double targetWatts = rate > 0 ? wanted / rate / efficiency : 0;
@@ -144,10 +134,9 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
         if(targetWatts <= 0 || volts < 1)
             r = OPEN;
         else
-            r = (float) Mth.clamp(volts * volts / (targetWatts / 3), Math.max(0.001f, resistance("load")), OPEN);
+            r = (float) Mth.clamp(volts * volts / targetWatts, Math.max(0.001f, resistance("load")), OPEN);
         if(Math.abs(r - appliedResistance) > appliedResistance * 1e-3) {
-            for(var load : loads)
-                load.setResistance(r);
+            load.setResistance(r);
             appliedResistance = r;
         }
     }
@@ -179,7 +168,19 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
         super.lazyTick();
         if(level == null || level.isClientSide)
             return;
-        deviceHubs().lazyTick();
+        splices().prune();
+        // Land the first two conductors on line and neutral whenever the run's wires change.
+        var run = hubRun(0);
+        int key = 0;
+        if(run != null) {
+            for(var conductor : run.conductors())
+                key |= 1 << conductor.slot();
+        }
+        if(key != landedKey) {
+            landedKey = key;
+            if(key != 0)
+                splices().land(0);
+        }
         if(Math.abs(watts - syncedWatts) > Math.max(5, syncedWatts * 0.05) || Math.abs(supplied - syncedSupplied) > Math.max(5, syncedSupplied * 0.05))
             sendData();
     }
@@ -200,10 +201,74 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
         return supplied;
     }
 
+    // ---- splice host ----
+
+    @Override
+    public List<SplicePoint> points() {
+        if(points == null) {
+            points = List.of(
+                    new SplicePoint(TERMINAL_LINE, Lang.builder().translate("rf_connector.line").style(ChatFormatting.RED).component(), IDecoratedTerminal.RED),
+                    new SplicePoint(TERMINAL_NEUTRAL, Lang.builder().translate("rf_connector.neutral").style(ChatFormatting.BLUE).component(), IDecoratedTerminal.BLUE));
+        }
+        return points;
+    }
+
+    @Override
+    public boolean isPoint(int terminal) {
+        return terminal == TERMINAL_LINE || terminal == TERMINAL_NEUTRAL;
+    }
+
+    @Override
+    public ConduitSize maxConduit() {
+        return ConduitSize.ONE;
+    }
+
+    @Override
+    public int hubCount() {
+        return 1;
+    }
+
+    @Override
+    public Component hubName(int hub) {
+        return Lang.builder().translate("conduit_socket.hub").style(ChatFormatting.AQUA).component();
+    }
+
+    @Override
+    public int hubTerminal(int hub) {
+        return TERMINAL_HUB;
+    }
+
+    @Override
+    public int hubAt(int terminal) {
+        return terminal == TERMINAL_HUB ? 0 : -1;
+    }
+
+    @Override
+    public int conductorTerminal(int hub, int conductor) {
+        return CONDUCTOR_BASE + conductor;
+    }
+
+    @Override
+    public int hubOf(int terminal) {
+        return terminal >= CONDUCTOR_BASE && terminal < TERMINAL_COUNT ? 0 : -1;
+    }
+
+    @Override
+    public int conductorOf(int terminal) {
+        return terminal - CONDUCTOR_BASE;
+    }
+
+    @Override
+    public @Nullable ConduitRunEntity hubRun(int hub) {
+        return hub == 0 ? SpliceSupport.runAt(this, TERMINAL_HUB) : null;
+    }
+
+    // ---- persistence ----
+
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
-        deviceHubs().write(tag, registries, clientPacket);
+        splices().write(tag);
         tag.putInt("Energy", energy.getEnergyStored());
         if(clientPacket) {
             tag.putFloat("Volts", volts);
@@ -216,9 +281,16 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
     }
 
     @Override
+    public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+        super.writeSafe(tag, registries);
+        splices().write(tag);
+        tag.putInt("Energy", energy.getEnergyStored());
+    }
+
+    @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
-        deviceHubs().read(tag, registries, clientPacket);
+        splices().read(tag);
         energy.set(tag.getInt("Energy"));
         if(clientPacket) {
             volts = tag.getFloat("Volts");
@@ -233,11 +305,11 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
         Lang.builder().translate("gui.rf_connector.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
         Lang.builder().translate("gui.rf_connector.supplying", String.format("%,d", supplied), String.format("%,d", supplied * 20))
                 .style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
-        Lang.builder().translate("gui.rf_connector.drawing", String.format("%.2f", watts / 1000), String.format("%.0f", volts), String.format("%.1f", amps))
+        Lang.builder().translate("gui.rf_connector.drawing", String.format("%.0f", watts), String.format("%.0f", volts), String.format("%.2f", amps))
                 .style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.rf_connector.buffer", String.format("%,d", energy.getEnergyStored()), String.format("%,d", energy.getMaxEnergyStored()))
                 .style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
-        deviceHubs().addGoggleLines(tooltip);
+        splices().addGoggleLines(tooltip);
         return true;
     }
 }

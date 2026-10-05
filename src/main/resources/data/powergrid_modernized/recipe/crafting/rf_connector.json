@@ -2,20 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "I": {
-      "tag": "c:plates/iron"
-    },
-    "C": {
-      "item": "powergrid:copper_coil"
+    "N": {
+      "item": "minecraft:iron_nugget"
     },
     "D": {
       "item": "powergrid:device_connector"
     }
   },
   "pattern": [
-    "III",
-    "CDC",
-    "III"
+    "NDN",
+    " N "
   ],
   "result": {
     "count": 1,
