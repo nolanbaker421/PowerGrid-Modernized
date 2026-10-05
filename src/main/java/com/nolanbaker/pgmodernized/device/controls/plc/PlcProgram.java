@@ -98,7 +98,7 @@ public final class PlcProgram {
     // ---- state ----
 
     private final List<Stmt> statements;
-    private final Map<String, Double> bits = new HashMap<>();      // coils C and network bits N
+    private Map<String, Double> bits = new HashMap<>();            // coils C and network bits N
     private final Map<String, int[]> timers = new HashMap<>();     // T: {elapsed}
     private final Map<Unary, Boolean> edges = new IdentityHashMap<>();
     private final List<String> devicesUsed = new ArrayList<>();
@@ -131,6 +131,12 @@ public final class PlcProgram {
 
     public Map<String, Double> bits() {
         return bits;
+    }
+
+    /** Share one bit table with other programs in the same PLC. */
+    public void useBits(Map<String, Double> shared) {
+        shared.putAll(bits);
+        bits = shared;
     }
 
     // ---- scanning ----

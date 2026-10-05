@@ -229,14 +229,14 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
             return result(plcWrite(args.checkString(0), v));
         }
 
-        @Callback(direct = true, doc = "function():string -- The program text.")
-        public Object[] getProgram(Context context, Arguments args) {
-            return result(program());
+        @Callback(direct = true, doc = "function():string -- The text of the program's first Rungs block, or an empty string.")
+        public Object[] getRungs(Context context, Arguments args) {
+            return result(rungsText());
         }
 
-        @Callback(doc = "function(text:string):boolean, string -- Replace the program; false and the message when it does not compile.")
-        public Object[] setProgram(Context context, Arguments args) {
-            OCControlsCabinetBlockEntity.this.setProgram(args.checkString(0));
+        @Callback(doc = "function(text:string):boolean, string -- Replace the first Rungs block's text, adding the block when the program has none; false and the message when it does not compile.")
+        public Object[] setRungs(Context context, Arguments args) {
+            setRungsText(args.checkString(0));
             return result(plcError().isEmpty(), plcError());
         }
 

@@ -1070,44 +1070,53 @@ computer network as `powergrid_controls`.
   between the minimum and the maximum; with no dial the module runs at the maximum. A pressed
   E-stop anywhere on the door, or a dead bus, stops every drive. One cabinet can run as many
   drives as it has VFD modules, each with its own buttons.
-- **PLC Module.** A small ladder logic that runs the cabinet with no computer, written as
-  text in the cabinet's screen, one rung per line, scanned every tick while the bus is live. It
-  reads and writes everything in the cabinet by name: `X1.1` an input (slot 1, channel 1),
-  `Y1.1` an output, `R1.1` a relay, `V1.run` / `V1.start` / `V1.stop` / `V1.reverse` / `V1.speed`
-  a VFD module, `D3` the device in door cell 3, `E` the E-stop, `P` the power, `C1` an internal
-  coil, `T1` a timer, `N1` a network bit. Rungs:
+- **PLC Module.** A block-diagram PLC, drawn in the cabinet's screen the way a Q-SYS or
+  function-block program is: blocks from a palette, wires from output pins to input pins, and
+  the live value of every pin shown while it runs. The program scans every tick while the bus
+  is live. No computer is needed anywhere. Blocks:
 
-  ```
-  Y1.1 = X1.1 & !X1.2 | C1          # a coil follows an expression
-  C1 S= X1.3                         # set while true
-  C1 R= X1.4 | E                     # reset while true
-  T1 = TON(X1.5, 40)                 # true once X1.5 has held for 40 ticks
-  V1.start = ^X1.6                   # ^ is a rising edge, true for one scan
-  when C1: three_phase_drive1.setFrequency(12)
-  Y1.2 = rangefinder1.getDistance() < 5
-  ```
+  - **Tag / Set tag / Constant.** A Tag block reads any cabinet name: `X1.1` an input (slot 1,
+    channel 1), `Y1.1` an output, `R1.1` a relay, `V1.run` / `V1.start` / `V1.stop` /
+    `V1.reverse` / `V1.speed` a VFD module, `D3` the device in door cell 3, `E` the E-stop,
+    `P` the power, `C1` a coil, `N1` a network bit. Set tag writes one.
+  - **Logic.** And, Or (2 to 8 inputs), Not, Xor, Rising edge, Falling edge, SR latch,
+    Toggle, Select.
+  - **Timers.** On delay, Off delay, One-shot and Blink, in ticks.
+  - **Math.** Add, Subtract, Multiply, Divide, Compare, Scale, Clamp, Counter.
+  - **Device call.** Calls a method on any OpenComputers component the cabinet's internal Cat6
+    reaches, picked from the devices the PLC discovered (a drive is `three_phase_drive1`, a
+    rangefinder `rangefinder1`), with its arguments on pins and its first result on an output
+    pin. It calls every scan, on the rising edge of En, or only when an argument changes.
+  - **Lua.** A script with as many input and output pins as you give it, run every scan in a
+    sandbox: `In[1]`.. are the pins, `Out[1]`.. the results, `tag(name)` and `tag(name,
+    value)` read and write cabinet names, `call(alias, method, ...)` calls a device,
+    `devices()` lists them, `print(...)` shows under the block, `tick` counts scans. Globals
+    keep their values between scans. Each scan gets 200 000 instructions.
+  - **Rungs.** The text ladder from 0.20, one rung per line, for when a line of text is
+    shorter than a diagram: `Y1.1 = X1.1 & !X1.2 | C1`, `C1 S= X1.3`, `T1 = TON(X1.5, 40)`,
+    `when ^X1.6: drive1.setEnabled(true)`. Rung coils and network bits are the same bits the
+    Tag blocks see.
+  - **Note.** Text on the canvas.
 
-  **Devices.** With OpenComputers installed the PLC sees every component on the cabinet's
-  internal Cat6 by discovery, the way a computer would, and lists them with their methods in
-  the program screen: a drive is `three_phase_drive1`, a rangefinder `rangefinder1`, a second
-  drive `three_phase_drive2`, counted by address. A rung calls any method, `when cond:
-  alias.method(args)` while the condition holds or on its rising edge, and any method's first
-  result can be used in an expression. Arguments are numbers or quoted text. So one cabinet
-  can read a rangefinder, run two drives and light the door with no computer anywhere.
-
-  **Cabinets talking to cabinets.** Run a Cat6 from one cabinet's PLC port into the other
-  cabinet's internal jack and the second PLC discovers the first as `plc1`, with the tag
-  methods below: `Y1.1 = plc1.get("N1")` reads its network bit, `when ^X1.1:
-  plc1.set("N2", 1)` writes one. Cable the other direction too and they can each read the
-  other. Joining the two internal jacks instead shows each PLC the other cabinet itself as
-  `controls1`, with its `getInput`, `setOutput` and the rest, and every device on both.
+  Right-click a block to set it, drag it by its body, drag from an output pin to an input pin
+  to wire, click a wired input to pull its wire off, Delete removes the selected block, drag
+  empty canvas to pan. Apply sends the drawing to the cabinet; the first problem comes back in
+  the top bar and outlines its block in red.
 
   **The external port.** Fitting a PLC module opens the second Cat6 jack on the left side of
   the cabinet, on a network of its own. A computer there sees only component `powergrid_plc`:
-  `get(name)` and `set(name, value)` for every name above, `getProgram`, `setProgram`,
+  `get(name)` and `set(name, value)` for every name above, `getRungs`, `setRungs`,
   `getError`, `getDevices`, and the signal `plc_bit` when the program moves a network bit. The
   machine runs by itself; the computer watches it and nudges it through N bits, and never sees
   the drives and meters behind the PLC. (On CC: Tweaked the two jacks share one network.)
+
+  **Cabinets talking to cabinets.** Run a Cat6 from one cabinet's PLC port into the other
+  cabinet's internal jack and the second PLC discovers the first as `plc1`. Its tags take a
+  name, so read and write them from a Lua block: `Out[1] = call("plc1", "get", "N1")` and
+  `call("plc1", "set", "N2", 1)`, or from a rung: `Y1.1 = plc1.get("N1")`. Cable the other
+  direction too and each can read the other. Joining the two internal jacks instead shows each
+  PLC the other cabinet itself as `controls1`, with its `getInput`, `setOutput` and the rest,
+  and every device on both.
 - Recipes: the cabinet is a network jack in iron plates; modules are iron nuggets around a copper
   coil, pins and redstone, a redstone torch, or a lever; door devices are iron nuggets under the
   obvious part (red and yellow dye, a lever, a stone button, a comparator, glowstone dust, glass

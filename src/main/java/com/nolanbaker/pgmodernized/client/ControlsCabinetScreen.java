@@ -77,7 +77,7 @@ public class ControlsCabinetScreen extends Screen {
         for(var drive : cabinet.drives())
             k = k * 31 + drive.asLong();
         k = k * 31 + cabinet.plcError().hashCode();
-        k = k * 31 + cabinet.program().hashCode();
+        k = k * 31 + cabinet.plcRevision();
         return k;
     }
 
@@ -234,9 +234,9 @@ public class ControlsCabinetScreen extends Screen {
             y += ROW;
             if(module == ControlModule.PLC) {
                 var error = cabinet.plcError();
-                lines.add(new Line(error.isEmpty() ? Component.translatable(cabinet.program().isBlank() ? "powergrid.gui.controls.plc_empty" : "powergrid.gui.controls.plc_ok") : Component.literal(error),
+                lines.add(new Line(error.isEmpty() ? Component.translatable(cabinet.graphEmpty() ? "powergrid.gui.controls.plc_empty" : "powergrid.gui.controls.plc_ok") : Component.literal(error),
                         left + 12, y + 6, error.isEmpty() ? 0xFF60E060 : 0xFFE06060));
-                button(Component.translatable("powergrid.gui.controls.program"), right - 80, y, 80, b -> Minecraft.getInstance().setScreen(new PlcProgramScreen(pos)));
+                button(Component.translatable("powergrid.gui.controls.program"), right - 80, y, 80, b -> Minecraft.getInstance().setScreen(new PlcGraphScreen(pos)));
                 y += ROW;
             }
             if(module == ControlModule.VFD) {

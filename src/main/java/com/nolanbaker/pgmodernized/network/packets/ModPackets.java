@@ -13,7 +13,7 @@ public final class ModPackets {
         registrar.playToServer(ConductorLabelPayload.TYPE, ConductorLabelPayload.STREAM_CODEC, ConductorLabelPayload::handle);
         registrar.playToServer(ControlsPayload.TYPE, ControlsPayload.STREAM_CODEC, ControlsPayload::handle);
         registrar.playToServer(ControlsVfdPayload.TYPE, ControlsVfdPayload.STREAM_CODEC, ControlsVfdPayload::handle);
-        registrar.playToServer(ControlsProgramPayload.TYPE, ControlsProgramPayload.STREAM_CODEC, ControlsProgramPayload::handle);
+        registrar.playToServer(ControlsGraphPayload.TYPE, ControlsGraphPayload.STREAM_CODEC, ControlsGraphPayload::handle);
         registrar.playToClient(HelmStatePayload.TYPE, HelmStatePayload.STREAM_CODEC, HelmStatePayload::handle);
     }
 }

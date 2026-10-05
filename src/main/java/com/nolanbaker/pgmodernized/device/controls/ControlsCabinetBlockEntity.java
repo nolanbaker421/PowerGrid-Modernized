@@ -2,7 +2,10 @@ package com.nolanbaker.pgmodernized.device.controls;
 
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.device.controls.plc.DeviceBridge;
+import com.nolanbaker.pgmodernized.device.controls.plc.NodeType;
+import com.nolanbaker.pgmodernized.device.controls.plc.PlcGraph;
 import com.nolanbaker.pgmodernized.device.controls.plc.PlcProgram;
+import com.nolanbaker.pgmodernized.device.controls.plc.PlcRunner;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.network.INetworkJack;
@@ -105,9 +108,13 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private List<BlockPos> drives = new ArrayList<>();
     private boolean[] drivesHertz = new boolean[0];
     // The PLC: its program, the compiled form, what it told the VFD modules, and the devices it can see.
-    private String program = "";
+    private PlcGraph graph = new PlcGraph();
+    private CompoundTag graphTag = graph.save();
+    private int plcRevision;
     @Nullable
-    private PlcProgram plc;
+    private PlcRunner plc;
+    private float[] plcValues = new float[0];
+    private List<String> plcMessages = List.of();
     private String plcError = "";
     private boolean plcCompiled;
     @Nullable
@@ -426,8 +433,51 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         this.bridge = bridge;
     }
 
-    public String program() {
-        return program;
+    /** The program as drawn; the editor copies it. */
+    public PlcGraph graph() {
+        return graph;
+    }
+
+    public boolean graphEmpty() {
+        return graph.isEmpty();
+    }
+
+    /** Counts up whenever the program changes, so screens know to rebuild. */
+    public int plcRevision() {
+        return plcRevision;
+    }
+
+    /** Every block's output pins, in block order, as last synced. */
+    public float[] plcValues() {
+        return plcValues;
+    }
+
+    public List<String> plcMessages() {
+        return plcMessages;
+    }
+
+    /** The text of the first rung block, for computers on the external port. */
+    public String rungsText() {
+        for(var node : graph.nodes)
+            if(node.type == NodeType.RUNGS)
+                return node.text;
+        return "";
+    }
+
+    /** Server side: writes the first rung block, adding one when there is none. */
+    public void setRungsText(String text) {
+        PlcGraph.Node rungs = null;
+        for(var node : graph.nodes)
+            if(node.type == NodeType.RUNGS) {
+                rungs = node;
+                break;
+            }
+        if(rungs == null)
+            rungs = graph.add(NodeType.RUNGS, 20, 20);
+        if(rungs == null)
+            return;
+        rungs.text = text == null ? "" : text;
+        setGraph(graph.save());
     }
 
     public String plcError() {
@@ -448,8 +498,11 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     /** Server side: a new program, compiled now; the error is kept for the screen and the port. */
-    public void setProgram(String text) {
-        program = text == null ? "" : text;
+    public void setGraph(CompoundTag tag) {
+        graph = PlcGraph.load(tag);
+        graph.sanitise();
+        graphTag = graph.save();
+        ++plcRevision;
         compilePlc();
         dirty = true;
         syncTimer = 2;
@@ -459,17 +512,18 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         plcCompiled = true;
         Arrays.fill(plcVfd, false);
         Arrays.fill(plcSpeed, -1);
-        if(program.isBlank()) {
+        if(graph.isEmpty()) {
             plc = null;
             plcError = "";
             return;
         }
         try {
-            plc = PlcProgram.compile(program, plcIo);
+            plc = PlcRunner.compile(graph, plcIo, () -> plcDevices);
             plcError = "";
-        } catch(PlcProgram.CompileError e) {
+        } catch(PlcRunner.CompileError e) {
             plc = null;
-            plcError = "line " + e.line + ": " + e.getMessage();
+            var node = graph.node(e.node);
+            plcError = "#" + e.node + " " + (node == null ? "" : node.type.title) + ": " + e.getMessage();
         }
     }
 
@@ -481,10 +535,15 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             Arrays.fill(plcSpeed, -1);
             return;
         }
-        plc.scan(plcIo);
+        plc.scan();
         var error = plc.lastError();
         if(!error.equals(plcError)) {
             plcError = error;
+            dirty = true;
+        }
+        if(level != null && level.getGameTime() % 10 == 0) {
+            plcValues = plc.values();
+            plcMessages = plc.messages();
             dirty = true;
         }
     }
@@ -1063,9 +1122,17 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         tag.putIntArray("VfdMin", tenths(vfdMin));
         tag.putIntArray("VfdMax", tenths(vfdMax));
         tag.putByteArray("VfdRun", bytes(vfdRun));
-        tag.putString("Program", program);
+        tag.put("Graph", graphTag.copy());
         if(clientPacket) {
             tag.putString("PlcError", plcError);
+            var valueBits = new int[plcValues.length];
+            for(int i = 0; i < valueBits.length; ++i)
+                valueBits[i] = Float.floatToIntBits(plcValues[i]);
+            tag.putIntArray("PlcValues", valueBits);
+            var messageList = new net.minecraft.nbt.ListTag();
+            for(var message : plcMessages)
+                messageList.add(net.minecraft.nbt.StringTag.valueOf(message));
+            tag.put("PlcMessages", messageList);
             var deviceList = new net.minecraft.nbt.ListTag();
             for(var device : plcDevices)
                 deviceList.add(net.minecraft.nbt.StringTag.valueOf(String.join("|", device)));
@@ -1106,13 +1173,35 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         fillTenths(vfdMin, tag.getIntArray("VfdMin"), 5);
         fillTenths(vfdMax, tag.getIntArray("VfdMax"), 30);
         fill(vfdRun, tag.getByteArray("VfdRun"));
-        var newProgram = tag.getString("Program");
-        if(!newProgram.equals(program)) {
-            program = newProgram;
+        if(tag.contains("Graph")) {
+            var newGraph = tag.getCompound("Graph");
+            if(!newGraph.equals(graphTag)) {
+                graphTag = newGraph.copy();
+                graph = PlcGraph.load(newGraph);
+                ++plcRevision;
+                plcCompiled = false;
+            }
+        } else if(!tag.getString("Program").isBlank()) {
+            // A 0.20 text program becomes one rung block.
+            graph = new PlcGraph();
+            var rungs = graph.add(NodeType.RUNGS, 20, 20);
+            if(rungs != null)
+                rungs.text = tag.getString("Program");
+            graphTag = graph.save();
+            ++plcRevision;
             plcCompiled = false;
         }
         if(clientPacket) {
             plcError = tag.getString("PlcError");
+            var valueBits = tag.getIntArray("PlcValues");
+            plcValues = new float[valueBits.length];
+            for(int i = 0; i < valueBits.length; ++i)
+                plcValues[i] = Float.intBitsToFloat(valueBits[i]);
+            var messageList = tag.getList("PlcMessages", net.minecraft.nbt.Tag.TAG_STRING);
+            var messages = new ArrayList<String>(messageList.size());
+            for(int i = 0; i < messageList.size(); ++i)
+                messages.add(messageList.getString(i));
+            plcMessages = messages;
             var deviceList = tag.getList("PlcDevices", net.minecraft.nbt.Tag.TAG_STRING);
             var foundDevices = new ArrayList<List<String>>();
             for(int i = 0; i < deviceList.size(); ++i)
@@ -1143,7 +1232,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             Lang.builder().translate("gui.controls.estopped").style(ChatFormatting.RED).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.controls.modules", moduleCount(), RAIL).style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         if(hasPlc())
-            Lang.builder().translate(plcError.isEmpty() ? (plc == null ? "gui.controls.plc_empty" : "gui.controls.plc_ok") : "gui.controls.plc_error_short")
+            Lang.builder().translate(plcError.isEmpty() ? (graph.isEmpty() ? "gui.controls.plc_empty" : "gui.controls.plc_ok") : "gui.controls.plc_error_short")
                     .style(plcError.isEmpty() ? ChatFormatting.AQUA : ChatFormatting.RED).forGoggles(tooltip, 1);
         for(int slot = 0; slot < RAIL; ++slot) {
             if(rail[slot] == ControlModule.VFD)

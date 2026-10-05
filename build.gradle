@@ -89,6 +89,10 @@ dependencies {
     modLocalRuntime("cc.tweaked:cc-tweaked-${project.minecraft_version}-forge:${project.cc_tweaked_version}")
     forgeRuntimeLibrary("cc.tweaked:cobalt:0.9.7")
 
+    // LuaJ, bundled: the controls cabinet's PLC runs Lua blocks on it
+    implementation("org.luaj:luaj-jse:3.0.1")
+    include("org.luaj:luaj-jse:3.0.1")
+
     // OpenComputers: Rebooted (optional at runtime)
     modCompileOnly("curse.maven:opencomputers-rebooted-1634364:${project.opencomputers_cursemaven_fileid}")
 
