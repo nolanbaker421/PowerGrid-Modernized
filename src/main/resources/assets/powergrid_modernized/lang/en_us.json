@@ -506,7 +506,7 @@
   "powergrid.gui.controls.wire_selector": "input %1$s.%2$s left, %1$s.%3$s right",
   "powergrid.gui.controls.remove": "Remove",
   "powergrid.gui.controls.colour": "Colour",
-  "powergrid.gui.controls.hint": "Right-click the door with a device or a module to fit it; cutters take them out",
+  "powergrid.gui.controls.hint": "Right-click the door with an item to fit it; scroll for more",
   "powergrid.gui.helm.title": "Helm",
   "powergrid.gui.helm.free": "Nobody at the helm: right-click to take it, ~ to let go",
   "powergrid.gui.helm.manned": "%1$s is at the helm",

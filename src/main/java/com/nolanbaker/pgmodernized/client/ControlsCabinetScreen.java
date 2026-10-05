@@ -15,7 +15,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlock.CELLS;
 import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlock.RAIL;
@@ -27,17 +29,21 @@ import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlockEn
  * A VFD module gets two more rows: the drive it commands, chosen from those found over the
  * Cat6, and its minimum and maximum setting (shift steps by ten, control by a hundred). Items go
  * in by hand on the block and come out with the Remove buttons here, or wire cutters on the door.
+ * The rows scroll with the mouse wheel when they outgrow the window.
  */
 public class ControlsCabinetScreen extends Screen {
-    private static final int PANEL_W = 340, ROW = 20, PADDING = 10;
+    private static final int PANEL_W = 400, ROW = 20, PADDING = 10, HEADER = 14, FOOTER = 16;
     private static final int PANEL_BG = 0xE0202024, PANEL_EDGE = 0xFF606068, TEXT = 0xFFE8E8E8, DIM = 0xFF9A9A9A, WIRE = 0xFFE0C060;
     private static final String[] CELL_KEYS = {"top_left", "top_centre", "top_right", "bottom_left", "bottom_centre", "bottom_right"};
     private static final String[] VFD_CHANNELS = {"vfd_start", "vfd_stop", "vfd_reverse", "vfd_speed"};
 
     private final BlockPos pos;
     private int panelX, panelY, panelH;
+    private int contentTop, contentH, contentFull, scroll;
     private long key = -1;
     private final List<Line> lines = new ArrayList<>();
+    /** Each button's y before scrolling. */
+    private final Map<Button, Integer> baseY = new HashMap<>();
 
     private record Line(Component text, int x, int y, int color) {}
 
@@ -154,7 +160,32 @@ public class ControlsCabinetScreen extends Screen {
     }
 
     private Button button(Component label, int x, int y, int w, Button.OnPress press) {
-        return addRenderableWidget(Button.builder(label, press).bounds(x, y, w, 18).build());
+        var button = addRenderableWidget(Button.builder(label, press).bounds(x, y - scroll, w, 18).build());
+        baseY.put(button, y);
+        return button;
+    }
+
+    private void setScroll(int value) {
+        scroll = Math.max(0, Math.min(Math.max(0, contentFull - contentH), value));
+        for(var entry : baseY.entrySet())
+            entry.getKey().setY(entry.getValue() - scroll);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if(contentFull > contentH) {
+            setScroll(scroll - (int) Math.signum(scrollY) * ROW);
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    /** Buttons scrolled out of the window must not take clicks through the title or the hint. */
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if(mouseX >= panelX && mouseX < panelX + PANEL_W && (mouseY < contentTop || mouseY >= contentTop + contentH))
+            return true;
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -172,15 +203,19 @@ public class ControlsCabinetScreen extends Screen {
             }
         }
         int rows = 2 + RAIL + vfds * 2 + plcs + 1 + CELLS;
-        panelH = PADDING * 2 + 14 + rows * ROW + 10;
+        contentFull = rows * ROW;
+        panelH = Math.min(height - 8, PADDING * 2 + HEADER + contentFull + FOOTER);
+        contentH = panelH - PADDING * 2 - HEADER - FOOTER;
         panelX = (width - PANEL_W) / 2;
         panelY = (height - panelH) / 2;
+        contentTop = panelY + PADDING + HEADER;
+        baseY.clear();
         if(cabinet == null)
             return;
         key = keyOf(cabinet);
         int left = panelX + PADDING;
         int right = panelX + PANEL_W - PADDING;
-        int y = panelY + PADDING + 14;
+        int y = contentTop;
         lines.add(new Line(Component.translatable(cabinet.isPowered() ? "powergrid.gui.controls.powered" : "powergrid.gui.controls.unpowered", String.format("%.0f", cabinet.volts())),
                 left, y + 6, cabinet.isPowered() ? 0xFF60E060 : 0xFFE06060));
         y += ROW;
@@ -232,11 +267,11 @@ public class ControlsCabinetScreen extends Screen {
             lines.add(new Line(text, left, y + 6, device == null ? DIM : TEXT));
             if(device != null) {
                 int c = cell;
-                int x = left + 140;
+                int x = left + 130;
                 if(device.isInput() || device.isOutput()) {
                     button(Component.literal("<"), x, y, 14, b -> step(cabinet, c, -1));
                     lines.add(new Line(wireName(cabinet, cell), x + 18, y + 6, cabinet.wireOf(cell) < 0 ? DIM : WIRE));
-                    button(Component.literal(">"), x + 122, y, 14, b -> step(cabinet, c, 1));
+                    button(Component.literal(">"), x + 110, y, 14, b -> step(cabinet, c, 1));
                 } else {
                     lines.add(new Line(wireName(cabinet, cell), x + 18, y + 6, DIM));
                 }
@@ -249,6 +284,7 @@ public class ControlsCabinetScreen extends Screen {
             }
             y += ROW;
         }
+        setScroll(scroll);
     }
 
     @Override
@@ -264,11 +300,20 @@ public class ControlsCabinetScreen extends Screen {
         graphics.fill(panelX, panelY, panelX + PANEL_W, panelY + panelH, PANEL_BG);
         graphics.renderOutline(panelX, panelY, PANEL_W, panelH, PANEL_EDGE);
         graphics.drawString(font, title, panelX + PADDING, panelY + PADDING, 0xFFFFFF);
+        graphics.enableScissor(panelX, contentTop, panelX + PANEL_W, contentTop + contentH);
         for(var line : lines)
-            graphics.drawString(font, line.text, line.x, line.y, line.color);
+            graphics.drawString(font, line.text, line.x, line.y - scroll, line.color);
+        boolean inside = mouseY >= contentTop && mouseY < contentTop + contentH;
         for(var child : children()) {
             if(child instanceof Button button)
-                button.render(graphics, mouseX, mouseY, partialTick);
+                button.render(graphics, inside ? mouseX : -1, inside ? mouseY : -1, partialTick);
+        }
+        graphics.disableScissor();
+        if(contentFull > contentH) {
+            int track = contentH, thumb = Math.max(10, track * contentH / contentFull);
+            int thumbY = contentTop + (track - thumb) * scroll / Math.max(1, contentFull - contentH);
+            graphics.fill(panelX + PANEL_W - 5, contentTop, panelX + PANEL_W - 2, contentTop + track, 0xFF303034);
+            graphics.fill(panelX + PANEL_W - 5, thumbY, panelX + PANEL_W - 2, thumbY + thumb, 0xFF8A8A92);
         }
         graphics.drawString(font, Component.translatable("powergrid.gui.controls.hint"), panelX + PADDING, panelY + panelH - PADDING - 6, DIM);
     }

@@ -69,7 +69,7 @@ public class SpliceScreen extends Screen {
 
     /** Changes whenever a hub gains or loses a run, or a run's pulled set or colours change. */
     private static long layoutKey(ISpliceHost host) {
-        long key = 0;
+        long key = host.points().size();
         for(int h = 0; h < host.hubCount(); ++h) {
             var run = host.hubRun(h);
             int pulled = 0;
@@ -219,7 +219,8 @@ public class SpliceScreen extends Screen {
             graphics.drawString(font, row.label, panelX + PADDING, row.y + (ROW - 8) / 2, hot ? LINE : clickable ? TEXT : DIM);
         }
         if(rows.size() == 1)
-            graphics.drawString(font, Component.translatable("powergrid.gui.splice.no_runs"), panelX + PADDING, rows.get(0).y + ROW + 4, DIM);
+            graphics.drawString(font, Component.translatable("powergrid.gui.splice.no_runs"), panelX + PADDING,
+                    rows.get(0).y + lines(host.points().size()) * ROW + 4, DIM);
 
         // The selected pin, or failing that the hovered one, lights up together with everything it is joined to.
         int focus = selected;

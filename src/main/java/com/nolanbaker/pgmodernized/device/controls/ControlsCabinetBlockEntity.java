@@ -141,6 +141,23 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         return deviceHubs;
     }
 
+    /** Line, neutral, and the contacts of the slots that actually hold a relay module. */
+    @Override
+    public List<com.nolanbaker.pgmodernized.conduit.splice.SplicePoint> points() {
+        var all = deviceHubs().points();
+        var shown = new ArrayList<com.nolanbaker.pgmodernized.conduit.splice.SplicePoint>(all.size());
+        for(var point : all) {
+            int terminal = point.terminal();
+            if(terminal >= RELAY_BASE && terminal < JACK) {
+                int slot = (terminal - RELAY_BASE) / (RELAY_CHANNELS * 2);
+                if(rail[slot] != ControlModule.RELAY)
+                    continue;
+            }
+            shown.add(point);
+        }
+        return shown;
+    }
+
     @Override
     public ConduitSize maxConduit() {
         return ConduitSize.ONE;
