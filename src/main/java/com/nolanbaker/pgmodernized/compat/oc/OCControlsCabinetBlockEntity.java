@@ -2,19 +2,26 @@ package com.nolanbaker.pgmodernized.compat.oc;
 
 import com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlockEntity;
 import com.nolanbaker.pgmodernized.device.controls.PanelDevice;
+import com.nolanbaker.pgmodernized.device.controls.plc.DeviceBridge;
+import li.cil.oc.api.Network;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
 import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.Component;
 import li.cil.oc.api.network.Environment;
 import li.cil.oc.api.network.Message;
 import li.cil.oc.api.network.Node;
+import li.cil.oc.api.network.Visibility;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.nolanbaker.pgmodernized.compat.oc.OCNodeSupport.result;
@@ -24,46 +31,116 @@ import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlock.R
 import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlockEntity.CHANNELS;
 
 /**
- * Controls cabinet as OpenComputers component "powergrid_controls". Slots, channels and cells
- * are numbered from 1. Signals: 'input_change' (slot, channel, state), 'estop' (active),
- * 'device' (cell, type, state) when someone works a button or switch on the door.
+ * Controls cabinet on OpenComputers. The internal port carries component "powergrid_controls"
+ * (slots, channels and cells numbered from 1; signals 'input_change', 'estop', 'device'), and
+ * with a PLC module on the rail the external port carries component "powergrid_plc" on a network
+ * of its own, through which a computer reads and writes the program's names and the program
+ * itself. The PLC reaches every component on the internal network through this class: it lists
+ * them with their methods and invokes them for the program.
  */
-public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity implements Environment, ControlsCabinetBlockEntity.Listener {
+public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity implements Environment, ControlsCabinetBlockEntity.Listener, DeviceBridge {
+    private static final String PLC_TAG = "PlcNode";
+
     private final Node ocNode = OCNodeSupport.create(this, "powergrid_controls");
+    private final PlcPort plcPort = new PlcPort();
+    @Nullable
+    private Node plcNode;
+    @Nullable
+    private CompoundTag plcNodeTag;
+    private final Map<String, Double> reportedBits = new HashMap<>();
 
     public OCControlsCabinetBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         addListener(this);
+        setDeviceBridge(this);
+    }
+
+    // ---- ports ----
+
+    /** Port 0 is the cabinet's own node; port 1 is the PLC's, which exists only while a PLC module is fitted. */
+    public @Nullable Node nodeForPort(int port) {
+        if(port != 1)
+            return ocNode;
+        if(!hasPlc())
+            return null;
+        if(plcNode == null) {
+            plcNode = Network.newNode(plcPort, Visibility.Network).withComponent("powergrid_plc").create();
+            if(plcNodeTag != null) {
+                try {
+                    plcNode.loadData(plcNodeTag, level == null ? null : level.registryAccess());
+                } catch(Exception ignored) {}
+                plcNodeTag = null;
+            }
+        }
+        return plcNode;
     }
 
     @Override
     public void tick() {
         super.tick();
         OCNodeSupport.tick(this, ocNode);
+        if(level == null || level.isClientSide || isRemoved())
+            return;
+        if(hasPlc()) {
+            var node = nodeForPort(1);
+            if(node != null && node.network() == null)
+                Network.joinNewNetwork(node);
+            // Tell the external port about network bits the program moved.
+            if(node != null && node.network() != null) {
+                for(var entry : plcBits().entrySet()) {
+                    if(!entry.getKey().startsWith("N"))
+                        continue;
+                    var was = reportedBits.get(entry.getKey());
+                    if(was == null || !was.equals(entry.getValue())) {
+                        reportedBits.put(entry.getKey(), entry.getValue());
+                        node.sendToReachable("computer.signal", "plc_bit", entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+        } else if(plcNode != null) {
+            OCNodeSupport.remove(plcNode);
+            plcNode = null;
+        }
     }
 
     @Override
     public void invalidate() {
         super.invalidate();
         OCNodeSupport.remove(ocNode);
+        OCNodeSupport.remove(plcNode);
     }
 
     @Override
     public void remove() {
         super.remove();
         OCNodeSupport.remove(ocNode);
+        OCNodeSupport.remove(plcNode);
     }
 
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         OCNodeSupport.load(tag, registries, ocNode, clientPacket);
+        if(!clientPacket && tag.contains(PLC_TAG)) {
+            if(plcNode != null) {
+                try {
+                    plcNode.loadData(tag.getCompound(PLC_TAG), registries);
+                } catch(Exception ignored) {}
+            } else {
+                plcNodeTag = tag.getCompound(PLC_TAG);
+            }
+        }
     }
 
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         OCNodeSupport.save(tag, registries, ocNode, clientPacket);
+        if(!clientPacket && plcNode != null) {
+            var nodeTag = new CompoundTag();
+            plcNode.saveData(nodeTag, registries);
+            tag.put(PLC_TAG, nodeTag);
+        }
     }
 
     @Override public Node node() { return ocNode; }
@@ -71,7 +148,128 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
     @Override public void onDisconnect(Node node) {}
     @Override public void onMessage(Message message) {}
 
-    // ---- signals ----
+    // ---- the PLC's view of the internal network ----
+
+    @Override
+    public List<Device> devices() {
+        var out = new ArrayList<Device>();
+        var network = ocNode.network();
+        if(network == null)
+            return out;
+        var components = new ArrayList<Component>();
+        for(var node : network.nodes()) {
+            if(node != ocNode && node != plcNode && node instanceof Component component && component.canBeSeenFrom(ocNode))
+                components.add(component);
+        }
+        components.sort((a, b) -> {
+            int byType = a.name().compareTo(b.name());
+            return byType != 0 ? byType : a.address().compareTo(b.address());
+        });
+        var counts = new HashMap<String, Integer>();
+        for(var component : components) {
+            String type = component.name();
+            int n = counts.merge(type, 1, Integer::sum);
+            String alias = (type.startsWith("powergrid_") ? type.substring("powergrid_".length()) : type) + n;
+            out.add(new Device(alias, type, component.address(), new ArrayList<>(component.methods())));
+        }
+        return out;
+    }
+
+    @Override
+    public @Nullable Object call(String alias, String method, List<Object> args) throws Exception {
+        var network = ocNode.network();
+        if(network == null)
+            return null;
+        for(var device : devices()) {
+            if(!device.alias().equals(alias))
+                continue;
+            if(!(network.node(device.address()) instanceof Component component))
+                return null;
+            if(!component.methods().contains(method))
+                throw new Exception(alias + " has no method " + method);
+            var result = component.invoke(method, new PlcContext(), args.toArray());
+            return result == null || result.length == 0 ? null : result[0];
+        }
+        return null;
+    }
+
+    /** The context a program's calls run in: no machine, nothing to pause, every call allowed. */
+    private final class PlcContext implements Context {
+        @Override public Node node() { return ocNode; }
+        @Override public boolean canInteract(String player) { return true; }
+        @Override public boolean isRunning() { return true; }
+        @Override public boolean isPaused() { return false; }
+        @Override public boolean start() { return false; }
+        @Override public boolean pause(double seconds) { return false; }
+        @Override public boolean stop() { return false; }
+        @Override public void consumeCallBudget(double callCost) {}
+        @Override public boolean signal(String name, Object... args) { return false; }
+    }
+
+    // ---- the external port ----
+
+    /** Component "powergrid_plc": the program's names, read and written from outside, and the program itself. */
+    public final class PlcPort implements Environment {
+        @Override public Node node() { return plcNode; }
+        @Override public void onConnect(Node node) {}
+        @Override public void onDisconnect(Node node) {}
+        @Override public void onMessage(Message message) {}
+
+        @Callback(direct = true, doc = "function(name:string):number -- Read a name the program sees: X1.1, Y1.1, R1.1, V1.run, D3, E, P, C1, T1, N1. Booleans are 0 or 1.")
+        public Object[] get(Context context, Arguments args) {
+            double v = plcRead(args.checkString(0));
+            if(Double.isNaN(v))
+                return result(null, "unknown name");
+            return result(v);
+        }
+
+        @Callback(doc = "function(name:string, value:number|boolean):boolean -- Write a network bit N1 to N32, a coil C1 to C32, or anything the program may write.")
+        public Object[] set(Context context, Arguments args) {
+            double v = args.isBoolean(1) ? (args.checkBoolean(1) ? 1 : 0) : args.checkDouble(1);
+            return result(plcWrite(args.checkString(0), v));
+        }
+
+        @Callback(direct = true, doc = "function():string -- The program text.")
+        public Object[] getProgram(Context context, Arguments args) {
+            return result(program());
+        }
+
+        @Callback(doc = "function(text:string):boolean, string -- Replace the program; false and the message when it does not compile.")
+        public Object[] setProgram(Context context, Arguments args) {
+            OCControlsCabinetBlockEntity.this.setProgram(args.checkString(0));
+            return result(plcError().isEmpty(), plcError());
+        }
+
+        @Callback(direct = true, doc = "function():string -- The current compile or scan error, or an empty string.")
+        public Object[] getError(Context context, Arguments args) {
+            return result(plcError());
+        }
+
+        @Callback(direct = true, doc = "function():table -- Devices on the cabinet's internal network: alias -> {type, address, methods}.")
+        public Object[] getDevices(Context context, Arguments args) {
+            Map<String, Object> map = new HashMap<>();
+            for(var device : devices()) {
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("type", device.type());
+                entry.put("address", device.address());
+                entry.put("methods", device.methods().toArray(new String[0]));
+                map.put(device.alias(), entry);
+            }
+            return result(map);
+        }
+
+        @Callback(direct = true, doc = "function():boolean -- Whether the cabinet's control bus is live.")
+        public Object[] isPowered(Context context, Arguments args) {
+            return result(OCControlsCabinetBlockEntity.this.isPowered());
+        }
+
+        @Callback(direct = true, doc = "function():boolean -- Whether an E-stop on the door is pressed.")
+        public Object[] isEStopped(Context context, Arguments args) {
+            return result(OCControlsCabinetBlockEntity.this.isEStopped());
+        }
+    }
+
+    // ---- signals on the internal port ----
 
     @Override
     public void input(int slot, int channel, boolean state) {
@@ -83,6 +281,8 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
     public void estop(boolean active) {
         if(ocNode.network() != null)
             ocNode.sendToReachable("computer.signal", "estop", active);
+        if(plcNode != null && plcNode.network() != null)
+            plcNode.sendToReachable("computer.signal", "estop", active);
     }
 
     @Override
@@ -91,7 +291,7 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
             ocNode.sendToReachable("computer.signal", "device", cell + 1, type.key(), state);
     }
 
-    // ---- callbacks ----
+    // ---- callbacks on the internal port ----
 
     @Callback(direct = true, doc = "function():boolean -- Whether the control bus is live: a power supply module with at least 50 V on line and neutral.")
     public Object[] isPowered(Context context, Arguments args) {
@@ -108,7 +308,7 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
         return result(isEStopped());
     }
 
-    @Callback(direct = true, doc = "function():table -- Module in each rail slot, 1 to 6: power_supply, digital_in, digital_out, relay, or nil.")
+    @Callback(direct = true, doc = "function():table -- Module in each rail slot, 1 to 6: power_supply, digital_in, digital_out, relay, vfd, plc, or nil.")
     public Object[] getModules(Context context, Arguments args) {
         Map<Integer, String> map = new HashMap<>();
         for(int slot = 0; slot < RAIL; ++slot)
@@ -117,7 +317,7 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
         return result(map);
     }
 
-    @Callback(direct = true, doc = "function():table -- Device in each door cell, 1 to 6 (top left to bottom right): e_stop, toggle, momentary, selector, led, display, or nil.")
+    @Callback(direct = true, doc = "function():table -- Device in each door cell, 1 to 6 (top left to bottom right): e_stop, toggle, momentary, selector, led, display, dial, or nil.")
     public Object[] getDevices(Context context, Arguments args) {
         Map<Integer, String> map = new HashMap<>();
         for(int cell = 0; cell < CELLS; ++cell)
@@ -165,7 +365,7 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
         return result(setDisplay(args.checkInteger(0) - 1, args.checkInteger(1)));
     }
 
-    @Callback(direct = true, doc = "function(cell:number):number -- What the device in a cell is doing: 0 or 1 for buttons and lights, 0 to 2 for a selector (left, centre, right), the value of a display.")
+    @Callback(direct = true, doc = "function(cell:number):number -- What the device in a cell is doing: 0 or 1 for buttons and lights, 0 to 2 for a selector, 0 to 100 for a dial, the value of a display.")
     public Object[] getDeviceState(Context context, Arguments args) {
         int cell = args.checkInteger(0) - 1;
         return result(cell >= 0 && cell < CELLS ? deviceState(cell) : 0);

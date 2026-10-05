@@ -62,6 +62,7 @@ public class OCBridge {
         ComputerBlockEntityFactories.NETWORK_SWITCH = OCNetworkSwitchBlockEntity::new;
         // Cat6 cables link the OC nodes of the jacks they join.
         JackSupport.registerLinkFactory((be, jack) -> be instanceof OCNetworkSwitchBlockEntity sw ? new OCJackLink(sw::nodeForPort)
+                : be instanceof OCControlsCabinetBlockEntity cabinet ? new OCJackLink(cabinet::nodeForPort)
                 : be instanceof Environment env ? new OCJackLink(env) : null);
     }
 }

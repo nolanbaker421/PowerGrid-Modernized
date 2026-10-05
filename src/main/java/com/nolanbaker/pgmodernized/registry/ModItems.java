@@ -134,7 +134,7 @@ public class ModItems {
                 .register();
 
         var modules = new EnumMap<ControlModule, ItemEntry<ControlModule.ModuleItem>>(ControlModule.class);
-        String[] moduleNames = {"24 V Power Supply Module", "8-Channel Input Module", "8-Channel Output Module", "2-Channel Relay Module", "VFD Control Module"};
+        String[] moduleNames = {"24 V Power Supply Module", "8-Channel Input Module", "8-Channel Output Module", "2-Channel Relay Module", "VFD Control Module", "PLC Module"};
         for(var module : ControlModule.values()) {
             modules.put(module, REGISTRATE.item(module.id(), p -> new ControlModule.ModuleItem(p, module))
                     .model(NonNullBiConsumer.noop())

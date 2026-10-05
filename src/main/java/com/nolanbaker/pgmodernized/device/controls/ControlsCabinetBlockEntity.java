@@ -1,6 +1,8 @@
 package com.nolanbaker.pgmodernized.device.controls;
 
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
+import com.nolanbaker.pgmodernized.device.controls.plc.DeviceBridge;
+import com.nolanbaker.pgmodernized.device.controls.plc.PlcProgram;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.network.INetworkJack;
@@ -30,6 +32,8 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
+import java.util.Map;
 import java.util.List;
 
 import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlock.*;
@@ -100,6 +104,18 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     /** Drives found over the Cat6, for the screen to choose from; refreshed on the server, synced to the client. */
     private List<BlockPos> drives = new ArrayList<>();
     private boolean[] drivesHertz = new boolean[0];
+    // The PLC: its program, the compiled form, what it told the VFD modules, and the devices it can see.
+    private String program = "";
+    @Nullable
+    private PlcProgram plc;
+    private String plcError = "";
+    private boolean plcCompiled;
+    @Nullable
+    private DeviceBridge bridge;
+    private final boolean[] plcVfd = new boolean[RAIL * 3];
+    private final float[] plcSpeed = new float[RAIL];
+    private List<List<String>> plcDevices = new ArrayList<>();
+    private final PlcIo plcIo = new PlcIo();
     private boolean powered;
     private boolean estopWas;
     private float volts;
@@ -114,6 +130,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         Arrays.fill(vfdMin, 5);
         Arrays.fill(vfdMax, 30);
         Arrays.fill(lastCommand, Integer.MIN_VALUE);
+        Arrays.fill(plcSpeed, -1);
         setLazyTickRate(10);
     }
 
@@ -215,6 +232,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 dirty = true;
         }
         refreshInputs();
+        scanPlc();
         commandDrives();
         boolean estop = isEStopped();
         if(estop != estopWas) {
@@ -301,9 +319,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 vfdRun[slot] = false;
                 continue;
             }
-            boolean start = inputs[slot * CHANNELS + ControlModule.VFD_START];
-            boolean stop = inputs[slot * CHANNELS + ControlModule.VFD_STOP];
-            boolean reverse = inputs[slot * CHANNELS + ControlModule.VFD_REVERSE];
+            boolean start = inputs[slot * CHANNELS + ControlModule.VFD_START] || plcVfd[slot * 3 + ControlModule.VFD_START];
+            boolean stop = inputs[slot * CHANNELS + ControlModule.VFD_STOP] || plcVfd[slot * 3 + ControlModule.VFD_STOP];
+            boolean reverse = inputs[slot * CHANNELS + ControlModule.VFD_REVERSE] || plcVfd[slot * 3 + ControlModule.VFD_REVERSE];
             if(start && !startWas[slot])
                 vfdRun[slot] = true;
             if(stop && !stopWas[slot])
@@ -318,7 +336,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             var be = level.getBlockEntity(target);
             if(!DriveLink.isDrive(be))
                 continue;
-            float setting = vfdMin[slot] + (vfdMax[slot] - vfdMin[slot]) * dialPercent(slot) / 100f;
+            float percent = plcSpeed[slot] >= 0 ? plcSpeed[slot] : dialPercent(slot);
+            float setting = vfdMin[slot] + (vfdMax[slot] - vfdMin[slot]) * Math.max(0, Math.min(100, percent)) / 100f;
             int command = (vfdRun[slot] ? 1 : 0) | (reverse ? 2 : 0) | Math.round(setting * 100) << 2;
             if(command != lastCommand[slot]) {
                 lastCommand[slot] = command;
@@ -380,6 +399,243 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             drives = found;
             drivesHertz = hertz;
             dirty = true;
+        }
+    }
+
+    // ---- the PLC ----
+
+    /** The OpenComputers binding supplies the view of the internal network. */
+    public void setDeviceBridge(@Nullable DeviceBridge bridge) {
+        this.bridge = bridge;
+    }
+
+    public String program() {
+        return program;
+    }
+
+    public String plcError() {
+        return plcError;
+    }
+
+    public boolean hasPlc() {
+        return hasModule(ControlModule.PLC);
+    }
+
+    /** Devices the PLC can see, each as alias, type, then its method names; synced for the screen. */
+    public List<List<String>> plcDevices() {
+        return plcDevices;
+    }
+
+    public Map<String, Double> plcBits() {
+        return plc == null ? Map.of() : plc.bits();
+    }
+
+    /** Server side: a new program, compiled now; the error is kept for the screen and the port. */
+    public void setProgram(String text) {
+        program = text == null ? "" : text;
+        compilePlc();
+        dirty = true;
+        syncTimer = 2;
+    }
+
+    private void compilePlc() {
+        plcCompiled = true;
+        Arrays.fill(plcVfd, false);
+        Arrays.fill(plcSpeed, -1);
+        if(program.isBlank()) {
+            plc = null;
+            plcError = "";
+            return;
+        }
+        try {
+            plc = PlcProgram.compile(program, plcIo);
+            plcError = "";
+        } catch(PlcProgram.CompileError e) {
+            plc = null;
+            plcError = "line " + e.line + ": " + e.getMessage();
+        }
+    }
+
+    private void scanPlc() {
+        if(!plcCompiled)
+            compilePlc();
+        if(plc == null || !hasPlc() || !powered) {
+            Arrays.fill(plcVfd, false);
+            Arrays.fill(plcSpeed, -1);
+            return;
+        }
+        plc.scan(plcIo);
+        var error = plc.lastError();
+        if(!error.equals(plcError)) {
+            plcError = error;
+            dirty = true;
+        }
+    }
+
+    /** A name the program or the external port reads: NaN when unknown. */
+    public double plcRead(String name) {
+        name = name.toUpperCase(Locale.ROOT);
+        if(plc != null && name.length() > 1 && (name.charAt(0) == 'C' || name.charAt(0) == 'N' || name.charAt(0) == 'T') && name.substring(1).chars().allMatch(Character::isDigit))
+            return plc.bit(name);
+        return plcIo.read(name);
+    }
+
+    /** From the external port: network bits and coils go to the program, anything else to the cabinet. */
+    public boolean plcWrite(String name, double value) {
+        name = name.toUpperCase(Locale.ROOT);
+        if(name.length() > 1 && (name.charAt(0) == 'C' || name.charAt(0) == 'N') && name.substring(1).chars().allMatch(Character::isDigit)) {
+            if(plc != null)
+                plc.setBit(name, value);
+            return true;
+        }
+        return plcIo.write(name, value);
+    }
+
+    /** Parses X1.1-style names: letter, slot, dot, channel. */
+    private static int[] slotChannel(String name) {
+        int dot = name.indexOf('.');
+        if(dot < 2)
+            return null;
+        try {
+            return new int[] {Integer.parseInt(name.substring(1, dot)) - 1, Integer.parseInt(name.substring(dot + 1)) - 1};
+        } catch(NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private final class PlcIo implements PlcProgram.Io {
+        @Override
+        public double read(String name) {
+            if(name.equals("E"))
+                return isEStopped() ? 1 : 0;
+            if(name.equals("P"))
+                return powered ? 1 : 0;
+            if(name.startsWith("D") && name.length() > 1 && name.indexOf('.') < 0) {
+                try {
+                    int cell = Integer.parseInt(name.substring(1)) - 1;
+                    return cell >= 0 && cell < CELLS && panel[cell] != null ? deviceState(cell) : Double.NaN;
+                } catch(NumberFormatException e) {
+                    return Double.NaN;
+                }
+            }
+            if(name.startsWith("V")) {
+                int dot = name.indexOf('.');
+                if(dot < 2)
+                    return Double.NaN;
+                int slot;
+                try {
+                    slot = Integer.parseInt(name.substring(1, dot)) - 1;
+                } catch(NumberFormatException e) {
+                    return Double.NaN;
+                }
+                if(slot < 0 || slot >= RAIL || rail[slot] != ControlModule.VFD)
+                    return Double.NaN;
+                return switch(name.substring(dot + 1)) {
+                    case "RUN" -> vfdRun[slot] ? 1 : 0;
+                    case "START" -> plcVfd[slot * 3] ? 1 : 0;
+                    case "STOP" -> plcVfd[slot * 3 + 1] ? 1 : 0;
+                    case "REVERSE" -> plcVfd[slot * 3 + 2] ? 1 : 0;
+                    case "SPEED" -> plcSpeed[slot] >= 0 ? plcSpeed[slot] : dialPercent(slot);
+                    default -> Double.NaN;
+                };
+            }
+            var sc = slotChannel(name);
+            if(sc == null || sc[0] < 0 || sc[0] >= RAIL || sc[1] < 0)
+                return Double.NaN;
+            int slot = sc[0], ch = sc[1];
+            return switch(name.charAt(0)) {
+                case 'X' -> ch < CHANNELS && (rail[slot] == ControlModule.DIGITAL_IN || (rail[slot] == ControlModule.VFD && ch < ControlModule.VFD_SPEED)) ? (inputs[slot * CHANNELS + ch] ? 1 : 0) : Double.NaN;
+                case 'Y' -> ch < CHANNELS && rail[slot] == ControlModule.DIGITAL_OUT ? (outputs[slot * CHANNELS + ch] ? 1 : 0) : Double.NaN;
+                case 'R' -> ch < RELAY_CHANNELS && rail[slot] == ControlModule.RELAY ? (relays[slot * RELAY_CHANNELS + ch] ? 1 : 0) : Double.NaN;
+                default -> Double.NaN;
+            };
+        }
+
+        @Override
+        public boolean exists(String name) {
+            return !Double.isNaN(read(name));
+        }
+
+        /** A NaN value only asks whether the name may be written. */
+        @Override
+        public boolean write(String name, double value) {
+            boolean probe = Double.isNaN(value);
+            if(name.startsWith("V")) {
+                int dot = name.indexOf('.');
+                if(dot < 2)
+                    return false;
+                int slot;
+                try {
+                    slot = Integer.parseInt(name.substring(1, dot)) - 1;
+                } catch(NumberFormatException e) {
+                    return false;
+                }
+                if(slot < 0 || slot >= RAIL || rail[slot] != ControlModule.VFD)
+                    return false;
+                switch(name.substring(dot + 1)) {
+                    case "START" -> { if(!probe) plcVfd[slot * 3] = value != 0; }
+                    case "STOP" -> { if(!probe) plcVfd[slot * 3 + 1] = value != 0; }
+                    case "REVERSE" -> { if(!probe) plcVfd[slot * 3 + 2] = value != 0; }
+                    case "SPEED" -> { if(!probe) plcSpeed[slot] = (float) value; }
+                    default -> { return false; }
+                }
+                return true;
+            }
+            var sc = slotChannel(name);
+            if(sc == null || sc[0] < 0 || sc[0] >= RAIL || sc[1] < 0)
+                return false;
+            int slot = sc[0], ch = sc[1];
+            switch(name.charAt(0)) {
+                case 'Y' -> {
+                    if(ch >= CHANNELS || rail[slot] != ControlModule.DIGITAL_OUT)
+                        return false;
+                    if(!probe)
+                        setOutput(slot, ch, value != 0);
+                    return true;
+                }
+                case 'R' -> {
+                    if(ch >= RELAY_CHANNELS || rail[slot] != ControlModule.RELAY)
+                        return false;
+                    if(!probe)
+                        setRelay(slot, ch, value != 0);
+                    return true;
+                }
+                default -> {
+                    return false;
+                }
+            }
+        }
+
+        @Override
+        public @Nullable Object call(String alias, String method, List<Object> args) throws Exception {
+            return bridge == null ? null : bridge.call(alias, method, args);
+        }
+
+        @Override
+        public boolean hasDevice(String alias) {
+            for(var device : plcDevices)
+                if(device.get(0).equals(alias))
+                    return true;
+            return false;
+        }
+    }
+
+    private void refreshPlcDevices() {
+        var found = new ArrayList<List<String>>();
+        if(bridge != null) {
+            for(var device : bridge.devices()) {
+                var entry = new ArrayList<String>();
+                entry.add(device.alias());
+                entry.add(device.type());
+                entry.addAll(device.methods());
+                found.add(entry);
+            }
+        }
+        if(!found.equals(plcDevices)) {
+            plcDevices = found;
+            dirty = true;
+            if(!plcError.isEmpty() && plc == null)
+                compilePlc();   // a device that was missing may be here now
         }
     }
 
@@ -689,6 +945,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         deviceHubs().lazyTick();
         if(hasModule(ControlModule.VFD) || !drives.isEmpty())
             refreshDrives();
+        if(hasPlc() || !plcDevices.isEmpty())
+            refreshPlcDevices();
     }
 
     @Override
@@ -709,8 +967,20 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     @Override
+    public int portCount() {
+        return 2;
+    }
+
+    /** The nearer jack: port 0 on the right side, port 1 (the PLC's) on the left. */
+    @Override
+    public int portAt(Vec3 localHit) {
+        var frame = toNorthFrame(getBlockState(), localHit);
+        return frame.x < 8 ? 1 : 0;
+    }
+
+    @Override
     public Vec3 jackPosition(int port) {
-        return IElectric.getTerminalPos(level, worldPosition, JACK);
+        return IElectric.getTerminalPos(level, worldPosition, port == 1 ? PLC_JACK : JACK);
     }
 
     @Override
@@ -776,7 +1046,13 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         tag.putIntArray("VfdMin", tenths(vfdMin));
         tag.putIntArray("VfdMax", tenths(vfdMax));
         tag.putByteArray("VfdRun", bytes(vfdRun));
+        tag.putString("Program", program);
         if(clientPacket) {
+            tag.putString("PlcError", plcError);
+            var deviceList = new net.minecraft.nbt.ListTag();
+            for(var device : plcDevices)
+                deviceList.add(net.minecraft.nbt.StringTag.valueOf(String.join("|", device)));
+            tag.put("PlcDevices", deviceList);
             tag.putByteArray("Inputs", bytes(inputs));
             tag.putIntArray("Pulse", pulse);
             tag.putBoolean("Powered", powered);
@@ -813,7 +1089,18 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         fillTenths(vfdMin, tag.getIntArray("VfdMin"), 5);
         fillTenths(vfdMax, tag.getIntArray("VfdMax"), 30);
         fill(vfdRun, tag.getByteArray("VfdRun"));
+        var newProgram = tag.getString("Program");
+        if(!newProgram.equals(program)) {
+            program = newProgram;
+            plcCompiled = false;
+        }
         if(clientPacket) {
+            plcError = tag.getString("PlcError");
+            var deviceList = tag.getList("PlcDevices", net.minecraft.nbt.Tag.TAG_STRING);
+            var foundDevices = new ArrayList<List<String>>();
+            for(int i = 0; i < deviceList.size(); ++i)
+                foundDevices.add(List.of(deviceList.getString(i).split("\\|")));
+            plcDevices = foundDevices;
             fill(inputs, tag.getByteArray("Inputs"));
             fill(pulse, tag.getIntArray("Pulse"), 0);
             powered = tag.getBoolean("Powered");
@@ -838,6 +1125,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         if(isEStopped())
             Lang.builder().translate("gui.controls.estopped").style(ChatFormatting.RED).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.controls.modules", moduleCount(), RAIL).style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
+        if(hasPlc())
+            Lang.builder().translate(plcError.isEmpty() ? (plc == null ? "gui.controls.plc_empty" : "gui.controls.plc_ok") : "gui.controls.plc_error_short")
+                    .style(plcError.isEmpty() ? ChatFormatting.AQUA : ChatFormatting.RED).forGoggles(tooltip, 1);
         for(int slot = 0; slot < RAIL; ++slot) {
             if(rail[slot] == ControlModule.VFD)
                 Lang.builder().translate(vfdRun[slot] ? "gui.controls.vfd_running" : "gui.controls.vfd_stopped", slot + 1)

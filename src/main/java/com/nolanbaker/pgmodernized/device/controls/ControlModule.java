@@ -14,7 +14,9 @@ public enum ControlModule {
     /** Two dry contacts on the cabinet's terminals, closed by the computer. */
     RELAY("relay_module", 2),
     /** Runs one drive found over the cabinet's Cat6 from Start, Stop, Reverse and a speed dial; no computer needed. */
-    VFD("vfd_control_module", 4);
+    VFD("vfd_control_module", 4),
+    /** Runs a ladder program over everything in the cabinet and on its internal network, and opens the external port. */
+    PLC("plc_module", 0);
 
     /** The VFD module's channels. */
     public static final int VFD_START = 0, VFD_STOP = 1, VFD_REVERSE = 2, VFD_SPEED = 3;

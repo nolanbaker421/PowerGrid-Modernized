@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "J": {
+      "item": "powergrid_modernized:network_jack"
+    }
+  },
+  "pattern": [
+    "PCP",
+    "NJN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:plc_module"
+  }
+}

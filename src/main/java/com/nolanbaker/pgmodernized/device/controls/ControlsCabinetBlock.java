@@ -47,11 +47,14 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
     public static final int RAIL = 6, CELLS = 6, RELAY_CHANNELS = 2;
     public static final int TERMINAL_LINE = 0, TERMINAL_NEUTRAL = 1, RELAY_BASE = 2;
     public static final int JACK = RELAY_BASE + RAIL * RELAY_CHANNELS * 2;
-    public static final int BASE_COUNT = JACK + 1;
+    /** The PLC's external port, on the other side; port 1 of the cabinet's jack. */
+    public static final int PLC_JACK = JACK + 1;
+    public static final int BASE_COUNT = PLC_JACK + 1;
 
     public static final AABB[] HUBS = new AABB[12];
     private static final AABB HIDDEN = new AABB(7.5, 7.5, 11, 8.5, 8.5, 12);
     private static final AABB JACK_BOX = new AABB(14, 7, 12.5, 15, 9, 14.5);
+    private static final AABB PLC_JACK_BOX = new AABB(1, 7, 12.5, 2, 9, 14.5);
     private static final VoxelShape BODY = box(2, 1, 10, 14, 15, 16);
     private static final double[] HUB_U = {3.5, 6.5, 9.5, 12.5};
     /** Door cells: three columns across (viewer's left first) by two rows, in 16ths. */
@@ -87,7 +90,7 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
     public ControlsCabinetBlock(Properties properties) {
         super(properties);
         var shape = DeviceHubs.withHubs(BODY, HUBS);
-        shape = DeviceHubs.withHubs(shape, JACK_BOX);
+        shape = DeviceHubs.withHubs(shape, JACK_BOX, PLC_JACK_BOX);
         setTerminalCollection(horizontalNorthTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), shape));
     }
 
@@ -104,6 +107,7 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
             }
         }
         terminals[JACK] = JackTerminals.jack(JACK_BOX.minX, JACK_BOX.minY, JACK_BOX.minZ, JACK_BOX.maxX, JACK_BOX.maxY, JACK_BOX.maxZ);
+        terminals[PLC_JACK] = JackTerminals.jack(PLC_JACK_BOX.minX, PLC_JACK_BOX.minY, PLC_JACK_BOX.minZ, PLC_JACK_BOX.maxX, PLC_JACK_BOX.maxY, PLC_JACK_BOX.maxZ);
         return terminals;
     }
 
@@ -174,17 +178,34 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
         return WireAcceptance.electrical(wireStack);
     }
 
-    /** Conduit on the knockouts, Cat6 on the jack, nothing else lands anywhere. */
+    /** Conduit on the knockouts, Cat6 on either jack (port 0 internal, port 1 the PLC's), nothing else lands anywhere. */
     @Override
     public InteractionResult onWire(BlockState state, UseOnContext context) {
-        return DeviceHubs.onWire(this, LAYOUT, state, context,
-                (s, c) -> JackTerminals.onWire(this, JACK, s, c, (s2, c2) -> {
-                    if(WireAcceptance.electrical(c2.getItemInHand())) {
-                        IElectric.sendMessage(c2, Lang.builder().translate("message.controls.conduit_only").style(ChatFormatting.RED).component());
-                        return InteractionResult.FAIL;
-                    }
-                    return InteractionResult.PASS;
-                }));
+        return DeviceHubs.onWire(this, LAYOUT, state, context, (s, c) -> {
+            var pos = c.getClickedPos();
+            var local = c.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+            int terminal = terminalIndexAt(s, local);
+            boolean cat6 = com.nolanbaker.pgmodernized.network.Cat6CableItem.isCat6(c.getItemInHand());
+            if(terminal == JACK || terminal == PLC_JACK) {
+                if(!cat6) {
+                    IElectric.sendMessage(c, Lang.translate("message.cat6_only").style(ChatFormatting.RED).component());
+                    return InteractionResult.FAIL;
+                }
+                return com.nolanbaker.pgmodernized.network.Cat6Placement.click(c, new com.nolanbaker.pgmodernized.network.JackEndpoint(pos, terminal == JACK ? 0 : 1));
+            }
+            if(cat6) {
+                if(terminal >= 0) {
+                    IElectric.sendMessage(c, Lang.translate("message.cat6_needs_jack").style(ChatFormatting.RED).component());
+                    return InteractionResult.FAIL;
+                }
+                return InteractionResult.PASS;
+            }
+            if(WireAcceptance.electrical(c.getItemInHand())) {
+                IElectric.sendMessage(c, Lang.builder().translate("message.controls.conduit_only").style(ChatFormatting.RED).component());
+                return InteractionResult.FAIL;
+            }
+            return InteractionResult.PASS;
+        });
     }
 
     /** Modules and devices go in by hand; cutters take them out; everything else falls through. */

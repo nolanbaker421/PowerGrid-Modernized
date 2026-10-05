@@ -70,6 +70,8 @@ public class ControlsCabinetScreen extends Screen {
         }
         for(var drive : cabinet.drives())
             k = k * 31 + drive.asLong();
+        k = k * 31 + cabinet.plcError().hashCode();
+        k = k * 31 + cabinet.program().hashCode();
         return k;
     }
 
@@ -160,12 +162,16 @@ public class ControlsCabinetScreen extends Screen {
         super.init();
         lines.clear();
         var cabinet = cabinet();
-        int vfds = 0;
-        if(cabinet != null)
-            for(int slot = 0; slot < RAIL; ++slot)
+        int vfds = 0, plcs = 0;
+        if(cabinet != null) {
+            for(int slot = 0; slot < RAIL; ++slot) {
                 if(cabinet.module(slot) == ControlModule.VFD)
                     ++vfds;
-        int rows = 2 + RAIL + vfds * 2 + 1 + CELLS;
+                if(cabinet.module(slot) == ControlModule.PLC)
+                    ++plcs;
+            }
+        }
+        int rows = 2 + RAIL + vfds * 2 + plcs + 1 + CELLS;
         panelH = PADDING * 2 + 14 + rows * ROW + 10;
         panelX = (width - PANEL_W) / 2;
         panelY = (height - panelH) / 2;
@@ -191,6 +197,13 @@ public class ControlsCabinetScreen extends Screen {
                         b -> PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.REMOVE_MODULE, s, 0)));
             }
             y += ROW;
+            if(module == ControlModule.PLC) {
+                var error = cabinet.plcError();
+                lines.add(new Line(error.isEmpty() ? Component.translatable(cabinet.program().isBlank() ? "powergrid.gui.controls.plc_empty" : "powergrid.gui.controls.plc_ok") : Component.literal(error),
+                        left + 12, y + 6, error.isEmpty() ? 0xFF60E060 : 0xFFE06060));
+                button(Component.translatable("powergrid.gui.controls.program"), right - 80, y, 80, b -> Minecraft.getInstance().setScreen(new PlcProgramScreen(pos)));
+                y += ROW;
+            }
             if(module == ControlModule.VFD) {
                 int s = slot;
                 lines.add(new Line(Component.translatable("powergrid.gui.controls.drive"), left + 12, y + 6, DIM));

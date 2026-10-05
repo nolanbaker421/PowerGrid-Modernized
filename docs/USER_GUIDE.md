@@ -1070,6 +1070,37 @@ computer network as `powergrid_controls`.
   between the minimum and the maximum; with no dial the module runs at the maximum. A pressed
   E-stop anywhere on the door, or a dead bus, stops every drive. One cabinet can run as many
   drives as it has VFD modules, each with its own buttons.
+- **PLC Module.** A small ladder logic that runs the cabinet with no computer, written as
+  text in the cabinet's screen, one rung per line, scanned every tick while the bus is live. It
+  reads and writes everything in the cabinet by name: `X1.1` an input (slot 1, channel 1),
+  `Y1.1` an output, `R1.1` a relay, `V1.run` / `V1.start` / `V1.stop` / `V1.reverse` / `V1.speed`
+  a VFD module, `D3` the device in door cell 3, `E` the E-stop, `P` the power, `C1` an internal
+  coil, `T1` a timer, `N1` a network bit. Rungs:
+
+  ```
+  Y1.1 = X1.1 & !X1.2 | C1          # a coil follows an expression
+  C1 S= X1.3                         # set while true
+  C1 R= X1.4 | E                     # reset while true
+  T1 = TON(X1.5, 40)                 # true once X1.5 has held for 40 ticks
+  V1.start = ^X1.6                   # ^ is a rising edge, true for one scan
+  when C1: three_phase_drive1.setFrequency(12)
+  Y1.2 = rangefinder1.getDistance() < 5
+  ```
+
+  **Devices.** With OpenComputers installed the PLC sees every component on the cabinet's
+  internal Cat6 by discovery, the way a computer would, and lists them with their methods in
+  the program screen: a drive is `three_phase_drive1`, a rangefinder `rangefinder1`, a second
+  drive `three_phase_drive2`, counted by address. A rung calls any method, `when cond:
+  alias.method(args)` while the condition holds or on its rising edge, and any method's first
+  result can be used in an expression. So one cabinet can read a rangefinder, run two drives
+  and light the door with no computer anywhere.
+
+  **The external port.** Fitting a PLC module opens the second Cat6 jack on the left side of
+  the cabinet, on a network of its own. A computer there sees only component `powergrid_plc`:
+  `get(name)` and `set(name, value)` for every name above, `getProgram`, `setProgram`,
+  `getError`, `getDevices`, and the signal `plc_bit` when the program moves a network bit. The
+  machine runs by itself; the computer watches it and nudges it through N bits, and never sees
+  the drives and meters behind the PLC. (On CC: Tweaked the two jacks share one network.)
 - Recipes: the cabinet is a network jack in iron plates; modules are iron nuggets around a copper
   coil, pins and redstone, a redstone torch, or a lever; door devices are iron nuggets under the
   obvious part (red and yellow dye, a lever, a stone button, a comparator, glowstone dust, glass

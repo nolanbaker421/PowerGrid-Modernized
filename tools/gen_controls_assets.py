@@ -14,7 +14,8 @@ HUB_U = [3.5, 6.5, 9.5, 12.5]
 HUB_Z1, HUB_Z2 = 12.5, 14.5
 JACK = (14, 7, 12.5, 15, 9, 14.5)
 MODULES = {"power_supply_module": (0x40, 0xC0, 0x50), "digital_in_module": (0x40, 0x80, 0xE0),
-           "digital_out_module": (0xE0, 0x90, 0x30), "relay_module": (0xE0, 0xD0, 0x40), "vfd_control_module": (0xA0, 0x50, 0xE0)}
+           "digital_out_module": (0xE0, 0x90, 0x30), "relay_module": (0xE0, 0xD0, 0x40), "vfd_control_module": (0xA0, 0x50, 0xE0),
+           "plc_module": (0x30, 0xC0, 0xC0)}
 DEVICES = ["estop_button", "toggle_button", "momentary_button", "selector_switch", "pilot_light", "number_display", "speed_dial"]
 
 
@@ -56,6 +57,7 @@ def model():
         elements.append(element(14, y, HUB_Z1, 15, y + 2, HUB_Z2, "#terminal"))
         elements.append(element(1, y, HUB_Z1, 2, y + 2, HUB_Z2, "#terminal"))
     elements.append(element(*JACK, "#jack"))
+    elements.append(element(1, 7, 12.5, 2, 9, 14.5, "#jack"))   # the PLC's external port
     dump(os.path.join(ASSETS, "models", "block", NAME + ".json"), {"parent": "block/block", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "models", "item", NAME + ".json"), {"parent": "%s:block/%s" % (MOD, NAME)})
     dump(os.path.join(ASSETS, "blockstates", NAME + ".json"), {"variants": {
@@ -145,6 +147,7 @@ def data():
     recipe("digital_out_module", ["NPN", "NTN"], {"N": nugget, "P": pins, "T": {"item": "minecraft:redstone_torch"}}, 1, {"items": "powergrid:pins"})
     recipe("relay_module", ["NPN", "NLN"], {"N": nugget, "P": pins, "L": {"item": "minecraft:lever"}}, 1, {"items": "powergrid:pins"})
     recipe("vfd_control_module", ["NPN", "NCN"], {"N": nugget, "P": pins, "C": {"item": "minecraft:comparator"}}, 1, {"items": "powergrid:pins"})
+    recipe("plc_module", ["PCP", "NJN"], {"N": nugget, "P": pins, "C": {"item": "minecraft:comparator"}, "J": jack}, 1, {"items": "%s:network_jack" % MOD})
     recipe("speed_dial", [" R ", "NNN"], {"R": {"item": "minecraft:repeater"}, "N": nugget}, 2, {"items": "%s:network_jack" % MOD})
     recipe("estop_button", [" R ", "YNY"], {"R": {"item": "minecraft:red_dye"}, "Y": {"item": "minecraft:yellow_dye"}, "N": nugget}, 1, {"items": "%s:network_jack" % MOD})
     recipe("toggle_button", [" L ", "NNN"], {"L": {"item": "minecraft:lever"}, "N": nugget}, 2, {"items": "%s:network_jack" % MOD})
