@@ -1,0 +1,148 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "screen": "powergrid_modernized:block/hmi_panel_screen",
+    "back": "powergrid_modernized:block/hmi_panel_back",
+    "jack": "powergrid_modernized:block/jack_pin",
+    "particle": "powergrid_modernized:block/hmi_panel_back"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        14
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#screen"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#back",
+          "cullface": "south"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#back"
+        },
+        "west": {
+          "uv": [
+            14,
+            0,
+            16,
+            16
+          ],
+          "texture": "#back"
+        },
+        "up": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#back"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ],
+          "texture": "#back"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        0,
+        12.5
+      ],
+      "to": [
+        15,
+        2,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            14,
+            3,
+            16
+          ],
+          "texture": "#jack"
+        },
+        "south": {
+          "uv": [
+            13,
+            14,
+            15,
+            16
+          ],
+          "texture": "#jack"
+        },
+        "east": {
+          "uv": [
+            2,
+            14,
+            3.5,
+            16
+          ],
+          "texture": "#jack"
+        },
+        "west": {
+          "uv": [
+            12.5,
+            14,
+            14,
+            16
+          ],
+          "texture": "#jack"
+        },
+        "up": {
+          "uv": [
+            13,
+            12.5,
+            15,
+            14
+          ],
+          "texture": "#jack"
+        },
+        "down": {
+          "uv": [
+            13,
+            2,
+            15,
+            3.5
+          ],
+          "texture": "#jack"
+        }
+      }
+    }
+  ]
+}

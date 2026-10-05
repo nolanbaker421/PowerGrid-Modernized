@@ -17,6 +17,16 @@ public final class ClientHooks {
         Minecraft.getInstance().setScreen(new ControlsCabinetScreen(pos));
     }
 
+    /** Opens an HMI panel large, buttons live. */
+    public static void openHmi(BlockPos pos) {
+        Minecraft.getInstance().setScreen(new HmiScreen(pos));
+    }
+
+    /** Opens an HMI panel's layout editor. */
+    public static void openHmiEditor(BlockPos pos) {
+        Minecraft.getInstance().setScreen(new HmiEditorScreen(pos));
+    }
+
     /** Opens the typed-setting screen of a load bank. */
     public static void openLoadBank(BlockPos pos) {
         Minecraft.getInstance().setScreen(new LoadBankScreen(pos));

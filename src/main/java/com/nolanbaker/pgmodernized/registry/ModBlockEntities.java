@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.client.HmiRenderer;
+import com.nolanbaker.pgmodernized.device.hmi.HmiBlockEntity;
 import com.nolanbaker.pgmodernized.device.controls.ControlsExtensionBlockEntity;
 import com.nolanbaker.pgmodernized.device.camlock.CamLockBoxBlockEntity;
 import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlockEntity;
@@ -158,6 +160,12 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<RangefinderBlockEntity> RANGEFINDER =
             REGISTRATE.blockEntity("rangefinder", (BlockEntityFactory<RangefinderBlockEntity>) (type, pos, state) -> RangefinderBlockEntity.FACTORY.create(type, pos, state))
                     .validBlock(ModBlocks.RANGEFINDER)
+                    .register();
+
+    public static final BlockEntityEntry<HmiBlockEntity> HMI =
+            REGISTRATE.blockEntity("hmi_panel", HmiBlockEntity::new)
+                    .validBlock(ModBlocks.HMI)
+                    .renderer(() -> HmiRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<HelmBlockEntity> HELM =

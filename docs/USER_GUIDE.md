@@ -1146,3 +1146,27 @@ computer network as `powergrid_controls`.
   coil, pins and redstone, a redstone torch, or a lever; door devices are iron nuggets under the
   obvious part (red and yellow dye, a lever, a stone button, a comparator, glowstone dust, glass
   and redstone).
+
+## 21. HMI Panel
+
+A flat screen one block wide, two pixels deep, with a Cat6 jack under its right corner. Run a
+Cat6 from the jack to a controls cabinet, on its PLC port or its internal port, and the panel
+finds the cabinet over the cable and shows that PLC's tags the way you lay them out. No
+computer, no program: the panel reads and writes tags directly.
+
+- **Laying it out.** Sneak-right-click the screen to open the editor. Pick a widget kind at the
+  top, click a free cell on the 8 by 8 grid to place it, click a widget to select it and drag it
+  about, and set it on the right: its text, the tag it shows or writes, a range for bars and
+  setpoints, decimals, width, height and colour. Right-click a widget to remove it. Apply sends
+  the layout to the panel.
+- **Widgets.** A *Label* is text. A *Value* shows a tag's number next to its label. A *Lamp*
+  lights while its tag is nonzero. A *Button* writes its tag: momentary gives a 1 for half a
+  second and then a 0, toggle flips it between 0 and 1. A *Bar* fills from min to max. A
+  *Setpoint* shows a number with minus and plus that step the tag, kept between min and max.
+- **Using it.** The screen on the block shows everything live. Right-click a button on the face
+  to press it, the left or right half of a setpoint to step it, and anywhere else to open the
+  panel large, where the same widgets work with the mouse.
+- **Tags.** Every name the PLC knows: `X1.1`, `Y1.1`, `R1.1`, `V1.run`, `V1.start`, `D3`, `E`,
+  `P`, `C1`, `N1`, `AI1.1`, `AO1.1`. A button on `V1.start` starts a drive through its VFD
+  module; a setpoint on `AO1.1` or `N5` hands the PLC a number; a lamp on `V1.run` shows it
+  running. Network bits are the usual handshake: the panel writes `N1`, the program reads it.

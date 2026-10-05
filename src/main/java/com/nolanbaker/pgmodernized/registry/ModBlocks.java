@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.hmi.HmiBlock;
 import com.nolanbaker.pgmodernized.device.controls.ControlsExtensionBlock;
 import com.nolanbaker.pgmodernized.device.camlock.CamLockBoxBlock;
 import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlock;
@@ -125,6 +126,17 @@ public class ModBlocks {
             .register();
 
     /** Helm: right-click and the keyboard goes to the computers on its Cat6 jack while the view stays free. */
+    public static final BlockEntry<HmiBlock> HMI = REGISTRATE.block("hmi_panel", HmiBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("HMI Panel")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
     public static final BlockEntry<HelmBlock> HELM = REGISTRATE.block("helm", HelmBlock::new)
             .blockstate(NonNullBiConsumer.noop())
             .initialProperties(SharedProperties::softMetal)
