@@ -300,7 +300,9 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
             } else {
                 lines.add(Lang.builder().text("  " + (k + 1) + " ").add(ConductorColors.name(conductor.colorIndex())).text(": ")
                         .add(Lang.builder().add(conductor.getItem().getDescription()).style(ChatFormatting.WHITE))
-                        .text(String.format(" (%s), %.1f A", WireGauge.of(level(), conductor.getItem()).label(), conductor.measuredCurrent())).style(ChatFormatting.GRAY).component());
+                        .text(String.format(" (%s), %.1f A", WireGauge.of(level(), conductor.getItem()).label(), conductor.measuredCurrent()))
+                        .add(conductor.label().isEmpty() ? Lang.builder() : Lang.builder().text(" \"" + conductor.label() + "\"").style(ChatFormatting.YELLOW))
+                        .style(ChatFormatting.GRAY).component());
             }
         }
         return lines;

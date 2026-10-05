@@ -4,6 +4,7 @@ import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceReadings;
 import com.nolanbaker.pgmodernized.network.packets.SplicePayload;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -76,10 +77,12 @@ public class SpliceScreen extends Screen {
             if(run != null) {
                 for(var conductor : run.conductors()) {
                     pulled |= 1 << conductor.slot();
-                    colours = colours * 13 + conductor.colorIndex() + 1;
+                    colours = colours * 13 + conductor.colorIndex() + 1 + conductor.label().hashCode();
                 }
             }
-            key = key * 65536 + (run == null ? 0 : (run.size().ordinal() + 1) * 4096 + pulled);
+            // Odd multipliers only: a power of two shifts the early hubs' terms clean out of the
+            // 64 bits on a twelve-hub box, and their colour changes never redrew.
+            key = key * 1_000_003L + (run == null ? 0 : (run.size().ordinal() + 1) * 4096 + pulled);
             key = key * 31 + colours;
         }
         return key;
@@ -134,6 +137,8 @@ public class SpliceScreen extends Screen {
                 Component name = conductor == null
                         ? Component.translatable("powergrid.gui.splice.empty_slot", k + 1)
                         : Component.literal((k + 1) + " ").append(ConductorColors.name(colour)).append(", ").append(conductor.getItem().getDescription());
+                if(conductor != null && !conductor.label().isEmpty())
+                    name = name.copy().append(Component.literal(" \"" + conductor.label() + "\"").withStyle(ChatFormatting.YELLOW));
                 var at = pinAt(k, y);
                 pins.add(new Pin(host.conductorTerminal(h, k), at[0], at[1], ConductorColors.rgb(colour), conductor != null, true, name));
             }
@@ -255,8 +260,10 @@ public class SpliceScreen extends Screen {
             if(pin.contains(mouseX, mouseY)) {
                 var lines = new ArrayList<Component>();
                 lines.add(pin.name);
-                if(pin.usable && pin.conductor)
+                if(pin.usable && pin.conductor) {
                     lines.add(Component.translatable("powergrid.gui.splice.recolor_hint"));
+                    lines.add(Component.translatable("powergrid.gui.splice.label_hint"));
+                }
                 graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
             }
         }
@@ -316,7 +323,9 @@ public class SpliceScreen extends Screen {
                 int hub = host.hubOf(pin.terminal);
                 var run = hub < 0 ? null : host.hubRun(hub);
                 var conductor = run == null ? null : run.conductor(host.conductorOf(pin.terminal));
-                if(conductor != null)
+                if(conductor != null && hasShiftDown())
+                    Minecraft.getInstance().setScreen(new ConductorLabelScreen(pos, pin.terminal, pin.name, conductor.label()));
+                else if(conductor != null)
                     PacketDistributor.sendToServer(new SplicePayload(pos, SplicePayload.RECOLOR, pin.terminal, (conductor.colorIndex() + 1) % ConductorColors.COUNT));
                 return true;
             }

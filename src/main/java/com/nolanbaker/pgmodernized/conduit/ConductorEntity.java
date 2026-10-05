@@ -44,6 +44,7 @@ public class ConductorEntity extends BlockWireEntity implements BodyRider {
     /** Ticks after loading before the run is looked for: entities of a chunk arrive after its blocks. */
     private static final int LOAD_GRACE = 100;
     private static final EntityDataAccessor<Integer> COLOR_INDEX = SynchedEntityData.defineId(ConductorEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> LABEL = SynchedEntityData.defineId(ConductorEntity.class, EntityDataSerializers.STRING);
 
     private UUID runId = new UUID(0, 0);
     private BlockPos runPos = BlockPos.ZERO;
@@ -77,6 +78,7 @@ public class ConductorEntity extends BlockWireEntity implements BodyRider {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(COLOR_INDEX, -1);
+        builder.define(LABEL, "");
     }
 
     public UUID runId() {
@@ -96,6 +98,17 @@ public class ConductorEntity extends BlockWireEntity implements BodyRider {
 
     public boolean hasChosenColor() {
         return entityData.get(COLOR_INDEX) >= 0;
+    }
+
+    /** The tag on this wire's end, or an empty string. Works on both sides. */
+    public String label() {
+        return entityData.get(LABEL);
+    }
+
+    /** Server side. */
+    public void setLabel(String label) {
+        var trimmed = label == null ? "" : label.strip();
+        entityData.set(LABEL, trimmed.length() > 32 ? trimmed.substring(0, 32) : trimmed);
     }
 
     /** Server side. A negative index goes back to the slot's colour. */
@@ -188,6 +201,8 @@ public class ConductorEntity extends BlockWireEntity implements BodyRider {
         nbt.put("RunPos", NbtUtils.writeBlockPos(runPos));
         nbt.putInt("Slot", slot);
         nbt.putInt("ChosenColor", entityData.get(COLOR_INDEX));
+        if(!label().isEmpty())
+            nbt.putString("Label", label());
     }
 
     @Override
@@ -199,6 +214,7 @@ public class ConductorEntity extends BlockWireEntity implements BodyRider {
         runPos = NbtUtils.readBlockPos(nbt, "RunPos").orElse(blockPosition());
         slot = nbt.getInt("Slot");
         entityData.set(COLOR_INDEX, nbt.contains("ChosenColor") ? nbt.getInt("ChosenColor") : -1);
+        entityData.set(LABEL, nbt.getString("Label"));
         checkTimer = -LOAD_GRACE;
     }
 

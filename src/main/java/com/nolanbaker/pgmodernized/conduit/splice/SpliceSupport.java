@@ -159,7 +159,10 @@ public final class SpliceSupport {
             var run = host.hubRun(hub);
             var conductor = run == null ? null : run.conductor(host.conductorOf(terminal));
             int colour = conductor == null ? host.conductorOf(terminal) : conductor.colorIndex();
-            return Lang.builder().add(host.hubName(hub)).text(" ").add(ConductorColors.name(colour)).component();
+            var name = Lang.builder().add(host.hubName(hub)).text(" ").add(ConductorColors.name(colour));
+            if(conductor != null && !conductor.label().isEmpty())
+                name = name.text(" \"" + conductor.label() + "\"");
+            return name.component();
         }
         return Component.literal("#" + terminal);
     }
