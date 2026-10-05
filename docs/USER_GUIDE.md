@@ -1092,8 +1092,15 @@ computer network as `powergrid_controls`.
   the program screen: a drive is `three_phase_drive1`, a rangefinder `rangefinder1`, a second
   drive `three_phase_drive2`, counted by address. A rung calls any method, `when cond:
   alias.method(args)` while the condition holds or on its rising edge, and any method's first
-  result can be used in an expression. So one cabinet can read a rangefinder, run two drives
-  and light the door with no computer anywhere.
+  result can be used in an expression. Arguments are numbers or quoted text. So one cabinet
+  can read a rangefinder, run two drives and light the door with no computer anywhere.
+
+  **Cabinets talking to cabinets.** Run a Cat6 from one cabinet's PLC port into the other
+  cabinet's internal jack and the second PLC discovers the first as `plc1`, with the tag
+  methods below: `Y1.1 = plc1.get("N1")` reads its network bit, `when ^X1.1:
+  plc1.set("N2", 1)` writes one. Cable the other direction too and they can each read the
+  other. Joining the two internal jacks instead shows each PLC the other cabinet itself as
+  `controls1`, with its `getInput`, `setOutput` and the rest, and every device on both.
 
   **The external port.** Fitting a PLC module opens the second Cat6 jack on the left side of
   the cabinet, on a network of its own. A computer there sees only component `powergrid_plc`:

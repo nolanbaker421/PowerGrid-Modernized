@@ -458,7 +458,7 @@
   "powergrid.gui.controls.plc_names_1": "X1.1 input  Y1.1 output  R1.1 relay  (slot.channel)",
   "powergrid.gui.controls.plc_names_2": "V1.run .start .stop .reverse .speed   D3 door cell   E e-stop   P power",
   "powergrid.gui.controls.plc_names_3": "C1 coil   T1 = TON(enable, ticks)   N1 network bit (external port)",
-  "powergrid.gui.controls.plc_names_4": "=  S=  R=   ! & | ^(rising)  < <= > >= == !=   when cond: alias.method(args)",
+  "powergrid.gui.controls.plc_names_4": "=  S=  R=   ! & | ^(rising)  < <= > >= == !=   when cond: alias.method(args)   \"text\" for names",
   "powergrid.gui.controls.plc_devices": "Devices on the internal Cat6",
   "powergrid.gui.controls.plc_no_devices": "none found (needs OpenComputers)",
   "powergrid.gui.controls.drive": "Drive",

@@ -61,9 +61,12 @@ public final class PlcProgram {
 
     // ---- syntax tree ----
 
-    private sealed interface Expr permits Num, Ref, Call, Unary, Binary {}
+    private sealed interface Expr permits Num, Str, Ref, Call, Unary, Binary {}
 
     private record Num(double value) implements Expr {}
+
+    /** A quoted string, for device calls that take a name: plc1.get("N1"). */
+    private record Str(String value) implements Expr {}
 
     private record Ref(String name) implements Expr {}
 
@@ -182,6 +185,10 @@ public final class PlcProgram {
     private Object call(Call call, Io io, int line) throws Exception {
         var args = new ArrayList<Object>(call.args.size());
         for(var arg : call.args) {
+            if(arg instanceof Str s) {
+                args.add(s.value);
+                continue;
+            }
             double v = eval(arg, io);
             args.add(v == Math.rint(v) && Math.abs(v) < 1e9 ? (Object) (int) v : (Object) v);
         }
@@ -192,6 +199,9 @@ public final class PlcProgram {
         switch(expr) {
             case Num n -> {
                 return n.value;
+            }
+            case Str s -> {
+                return toNumber(s.value);
             }
             case Ref r -> {
                 char kind = r.name.charAt(0);
@@ -275,9 +285,15 @@ public final class PlcProgram {
         var lines = text.split("\\r?\\n");
         for(int i = 0; i < lines.length; ++i) {
             String line = lines[i];
-            int hash = line.indexOf('#');
-            if(hash >= 0)
-                line = line.substring(0, hash);
+            boolean quoted = false;
+            for(int c = 0; c < line.length(); ++c) {
+                if(line.charAt(c) == '"')
+                    quoted = !quoted;
+                else if(line.charAt(c) == '#' && !quoted) {
+                    line = line.substring(0, c);
+                    break;
+                }
+            }
             line = line.strip();
             if(line.isEmpty())
                 continue;
@@ -324,6 +340,7 @@ public final class PlcProgram {
     private static void checkExpr(Expr expr, Io io, int line, List<String> devices) throws CompileError {
         switch(expr) {
             case Num n -> {}
+            case Str s -> {}
             case Ref r -> {
                 char kind = r.name.charAt(0);
                 if((kind == 'C' || kind == 'N' || kind == 'T') && isNumbered(r.name))
@@ -505,6 +522,14 @@ public final class PlcProgram {
 
         private Expr primary() throws CompileError {
             skip();
+            if(at < text.length() && text.charAt(at) == '"') {
+                int close = text.indexOf('"', at + 1);
+                if(close < 0)
+                    throw error("missing closing quote");
+                var s = new Str(text.substring(at + 1, close));
+                at = close + 1;
+                return s;
+            }
             if(take("(")) {
                 var inner = expression();
                 if(!take(")"))
