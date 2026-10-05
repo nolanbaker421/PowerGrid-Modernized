@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "N": {
+      "tag": "c:nuggets/iron"
+    }
+  },
+  "pattern": [
+    "III",
+    "N N",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:controls_extension"
+  }
+}

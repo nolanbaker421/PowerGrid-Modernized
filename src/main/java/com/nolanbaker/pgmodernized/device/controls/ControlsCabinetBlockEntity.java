@@ -6,8 +6,14 @@ import com.nolanbaker.pgmodernized.device.controls.plc.NodeType;
 import com.nolanbaker.pgmodernized.device.controls.plc.PlcGraph;
 import com.nolanbaker.pgmodernized.device.controls.plc.PlcProgram;
 import com.nolanbaker.pgmodernized.device.controls.plc.PlcRunner;
-import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
-import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
+import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
+import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
+import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
+import com.nolanbaker.pgmodernized.conduit.splice.SplicePoint;
+import com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
+import net.minecraft.world.phys.AABB;
 import com.nolanbaker.pgmodernized.network.INetworkJack;
 import com.nolanbaker.pgmodernized.network.JackSupport;
 import com.nolanbaker.pgmodernized.registry.ModItems;
@@ -53,7 +59,7 @@ import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlock.*
  * the cabinet's screen; a pressed E-stop stops every drive. The computer bindings listen through
  * {@link Listener}.
  */
-public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements IDeviceSpliceHost, INetworkJack, IHaveGoggleInformation {
+public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements ISpliceHost, INetworkJack, IHaveGoggleInformation {
     /** Replaced by the computer bridges with their network-node subclasses. */
     public static BlockEntityFactory<ControlsCabinetBlockEntity> FACTORY = ControlsCabinetBlockEntity::new;
 
@@ -74,7 +80,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         void device(int cell, PanelDevice type, int state);
     }
 
-    private DeviceSpliceHost deviceHubs;
+    private SpliceSupport splices;
+    /** The head plus the extensions below it, from the block state. */
+    private int sections = 1;
     private final JackSupport jack = new JackSupport(this, false);
     private final List<Listener> listeners = new ArrayList<>();
 
@@ -90,32 +98,32 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private ElectricWire[] aiSense;
     private AcReadings.Filter[] aiReading;
 
-    private final ControlModule[] rail = new ControlModule[RAIL];
-    private final PanelDevice[] panel = new PanelDevice[CELLS];
-    private final int[] wire = new int[CELLS];
-    private final int[] color = new int[CELLS];
-    private final boolean[] latched = new boolean[CELLS];
-    private final int[] selector = new int[CELLS];
-    private final int[] pulse = new int[CELLS];
-    private final int[] display = new int[CELLS];
-    private final int[] dial = new int[CELLS];
-    private final boolean[] outputs = new boolean[RAIL * CHANNELS];
-    private final boolean[] relays = new boolean[RAIL * RELAY_CHANNELS];
-    private final boolean[] inputs = new boolean[RAIL * CHANNELS];
+    private final ControlModule[] rail = new ControlModule[MAX_RAIL];
+    private final PanelDevice[] panel = new PanelDevice[MAX_CELLS];
+    private final int[] wire = new int[MAX_CELLS];
+    private final int[] color = new int[MAX_CELLS];
+    private final boolean[] latched = new boolean[MAX_CELLS];
+    private final int[] selector = new int[MAX_CELLS];
+    private final int[] pulse = new int[MAX_CELLS];
+    private final int[] display = new int[MAX_CELLS];
+    private final int[] dial = new int[MAX_CELLS];
+    private final boolean[] outputs = new boolean[MAX_RAIL * CHANNELS];
+    private final boolean[] relays = new boolean[MAX_RAIL * RELAY_CHANNELS];
+    private final boolean[] inputs = new boolean[MAX_RAIL * CHANNELS];
     /** Input channels driven from their terminal, by voltage against neutral. */
-    private final boolean[] external = new boolean[RAIL * CHANNELS];
+    private final boolean[] external = new boolean[MAX_RAIL * CHANNELS];
     /** Analog inputs: volts on the terminal, or a dial's percent; analog outputs as set. */
-    private final float[] aiVolts = new float[RAIL * ANALOG_CHANNELS];
-    private final float[] analogIn = new float[RAIL * ANALOG_CHANNELS];
-    private final float[] analogOut = new float[RAIL * ANALOG_CHANNELS];
+    private final float[] aiVolts = new float[MAX_RAIL * ANALOG_CHANNELS];
+    private final float[] analogIn = new float[MAX_RAIL * ANALOG_CHANNELS];
+    private final float[] analogOut = new float[MAX_RAIL * ANALOG_CHANNELS];
     // VFD modules: the drive each commands, its range, and its run latch.
-    private final BlockPos[] vfdTarget = new BlockPos[RAIL];
-    private final float[] vfdMin = new float[RAIL];
-    private final float[] vfdMax = new float[RAIL];
-    private final boolean[] vfdRun = new boolean[RAIL];
-    private final boolean[] startWas = new boolean[RAIL];
-    private final boolean[] stopWas = new boolean[RAIL];
-    private final int[] lastCommand = new int[RAIL];
+    private final BlockPos[] vfdTarget = new BlockPos[MAX_RAIL];
+    private final float[] vfdMin = new float[MAX_RAIL];
+    private final float[] vfdMax = new float[MAX_RAIL];
+    private final boolean[] vfdRun = new boolean[MAX_RAIL];
+    private final boolean[] startWas = new boolean[MAX_RAIL];
+    private final boolean[] stopWas = new boolean[MAX_RAIL];
+    private final int[] lastCommand = new int[MAX_RAIL];
     /** Drives found over the Cat6, for the screen to choose from; refreshed on the server, synced to the client. */
     private List<BlockPos> drives = new ArrayList<>();
     private boolean[] drivesHertz = new boolean[0];
@@ -131,8 +139,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private boolean plcCompiled;
     @Nullable
     private DeviceBridge bridge;
-    private final boolean[] plcVfd = new boolean[RAIL * 3];
-    private final float[] plcSpeed = new float[RAIL];
+    private final boolean[] plcVfd = new boolean[MAX_RAIL * 3];
+    private final float[] plcSpeed = new float[MAX_RAIL];
     private List<List<String>> plcDevices = new ArrayList<>();
     private final PlcIo plcIo = new PlcIo();
     private boolean powered;
@@ -145,6 +153,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
 
     public ControlsCabinetBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        sections = ControlsCabinetBlock.sectionsOf(state);
         Arrays.fill(wire, -1);
         Arrays.fill(vfdMin, 5);
         Arrays.fill(vfdMax, 30);
@@ -153,46 +162,154 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         setLazyTickRate(10);
     }
 
+    // ---- sections ----
+
+    public int sections() {
+        return sections;
+    }
+
+    /** Rail slots the cabinet has with its present extensions. */
+    public int slots() {
+        return RAIL * sections;
+    }
+
+    /** Door cells the cabinet has with its present extensions. */
+    public int cells() {
+        return CELLS * sections;
+    }
+
+    /** Whether any of the head's bottom knockouts carries a run, which an extension would cover. */
+    public boolean bottomHubsUsed() {
+        for(int h = 4; h < 8; ++h)
+            if(SpliceSupport.runAt(this, CabinetLayout.hubTerminal(h)) != null)
+                return true;
+        return false;
+    }
+
+    /** An extension came or went: what sat beyond the new end comes out, and the circuit gains or loses its terminals. */
     @Override
-    public DeviceSpliceHost deviceHubs() {
-        if(deviceHubs == null)
-            deviceHubs = new DeviceSpliceHost(this, LAYOUT);
-        return deviceHubs;
+    public void setBlockState(BlockState state) {
+        super.setBlockState(state);
+        int now = ControlsCabinetBlock.sectionsOf(state);
+        if(now == sections)
+            return;
+        sections = now;
+        if(level != null && !level.isClientSide) {
+            for(int slot = MAX_RAIL - 1; slot >= slots(); --slot)
+                if(rail[slot] != null)
+                    removeModule(slot, null);
+            for(int cell = MAX_CELLS - 1; cell >= cells(); --cell)
+                if(panel[cell] != null)
+                    removeDevice(cell, null);
+            var behaviour = getBehaviour(ElectricBehaviour.TYPE);
+            if(behaviour != null)
+                behaviour.rebuildCircuit(false);
+            plcCompiled = false;
+            dirty = true;
+            syncTimer = 2;
+            notifyUpdate();
+        }
+    }
+
+    /** The extensions' devices are drawn by this block entity, a block or two below it. */
+    @Override
+    public AABB getRenderBoundingBox() {
+        return new AABB(worldPosition.getX(), worldPosition.getY() - (sections - 1), worldPosition.getZ(),
+                worldPosition.getX() + 1, worldPosition.getY() + 1, worldPosition.getZ() + 1);
+    }
+
+    // ---- splice host over the head and its extensions ----
+
+    @Override
+    public SpliceSupport splices() {
+        if(splices == null)
+            splices = new SpliceSupport(this);
+        return splices;
+    }
+
+    @Override
+    public boolean isPoint(int terminal) {
+        return CabinetLayout.isPoint(terminal) && CabinetLayout.sectionOf(terminal) < sections;
+    }
+
+    @Override
+    public int hubCount() {
+        return CabinetLayout.hubCount(sections);
+    }
+
+    @Override
+    public Component hubName(int hub) {
+        return DeviceHubs.hubName(hub);
+    }
+
+    @Override
+    public int hubTerminal(int hub) {
+        return CabinetLayout.hubTerminal(hub);
+    }
+
+    @Override
+    public int hubAt(int terminal) {
+        return CabinetLayout.hubAt(terminal);
+    }
+
+    @Override
+    public int conductorTerminal(int hub, int conductor) {
+        return CabinetLayout.conductorTerminal(hub, conductor);
+    }
+
+    @Override
+    public int hubOf(int terminal) {
+        return CabinetLayout.hubOf(terminal);
+    }
+
+    @Override
+    public int conductorOf(int terminal) {
+        return CabinetLayout.conductorOf(terminal);
+    }
+
+    @Override
+    public @Nullable ConduitRunEntity hubRun(int hub) {
+        return hub < 0 || hub >= hubCount() ? null : SpliceSupport.runAt(this, CabinetLayout.hubTerminal(hub));
     }
 
     /**
      * Line, neutral, the contacts of the slots that hold a relay module, and the channel terminals
-     * of input and output modules that no door device is wired to.
+     * of input and output modules that no door device is wired to, over the head and its extensions.
      */
     @Override
-    public List<com.nolanbaker.pgmodernized.conduit.splice.SplicePoint> points() {
-        var all = deviceHubs().points();
-        var shown = new ArrayList<com.nolanbaker.pgmodernized.conduit.splice.SplicePoint>(all.size());
-        for(var point : all) {
-            int terminal = point.terminal();
-            if(terminal >= RELAY_BASE && terminal < JACK) {
-                int slot = (terminal - RELAY_BASE) / (RELAY_CHANNELS * 2);
-                if(rail[slot] != ControlModule.RELAY)
-                    continue;
-            } else if(terminal >= IO_BASE && terminal < IO_BASE + IO_COUNT) {
-                int channel = terminal - IO_BASE;
+    public List<SplicePoint> points() {
+        var shown = new ArrayList<SplicePoint>();
+        var state = getBlockState();
+        if(!(state.getBlock() instanceof ControlsCabinetBlock block))
+            return shown;
+        for(int terminal : CabinetLayout.points(sections)) {
+            int relaySlot = CabinetLayout.relaySlot(terminal);
+            if(relaySlot >= 0 && rail[relaySlot] != ControlModule.RELAY)
+                continue;
+            int channel = CabinetLayout.ioChannel(terminal);
+            if(channel >= 0) {
                 var module = rail[channel / CHANNELS];
                 if((module != ControlModule.DIGITAL_IN && module != ControlModule.DIGITAL_OUT) || channelWired(channel))
                     continue;
-            } else if(terminal >= AI_BASE && terminal < AI_BASE + AI_COUNT) {
-                int index = terminal - AI_BASE;
-                int slot = index / ANALOG_CHANNELS, ch = index % ANALOG_CHANNELS;
+            }
+            int analog = CabinetLayout.aiIndex(terminal);
+            if(analog >= 0) {
+                int slot = analog / ANALOG_CHANNELS, ch = analog % ANALOG_CHANNELS;
                 if(rail[slot] != ControlModule.ANALOG_IN || channelWired(slot * CHANNELS + ch))
                     continue;
             }
-            shown.add(point);
+            var placement = block.terminal(state, terminal);
+            Component name = placement instanceof IDecoratedTerminal decorated && decorated.getName() != null
+                    ? decorated.getName() : Component.literal("#" + terminal);
+            int rgb = placement instanceof IDecoratedTerminal decorated ? decorated.getColor() : 0xAAAAAA;
+            shown.add(new SplicePoint(terminal, name, rgb));
         }
         return shown;
     }
 
     /** Whether a door device is wired to that channel index (a selector takes the next channel too). */
     private boolean channelWired(int channel) {
-        for(int cell = 0; cell < CELLS; ++cell) {
+        for(int cell = 0; cell < MAX_CELLS; ++cell) {
             if(panel[cell] == null || wire[cell] < 0)
                 continue;
             if(wire[cell] == channel)
@@ -220,31 +337,32 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        deviceHubs().buildCircuit(builder);
+        builder.setTerminalCount(CabinetLayout.TERMINAL_COUNT);
+        splices().buildCircuit(builder);
         var line = builder.terminalNode(TERMINAL_LINE);
         var neutral = builder.terminalNode(TERMINAL_NEUTRAL);
         sense = builder.connect(SENSE, line, neutral);
         psuLoad = builder.connect(OPEN, line, neutral);
-        contacts = new SwitchedWire[RAIL * RELAY_CHANNELS];
-        for(int slot = 0; slot < RAIL; ++slot) {
+        contacts = new SwitchedWire[MAX_RAIL * RELAY_CHANNELS];
+        for(int slot = 0; slot < MAX_RAIL; ++slot) {
             for(int ch = 0; ch < RELAY_CHANNELS; ++ch) {
                 contacts[slot * RELAY_CHANNELS + ch] = builder.connectSwitch(resistance("contact"),
-                        builder.terminalNode(relayTerminal(slot, ch, 0)), builder.terminalNode(relayTerminal(slot, ch, 1)), false);
+                        builder.terminalNode(CabinetLayout.relayTerminal(slot, ch, 0)), builder.terminalNode(CabinetLayout.relayTerminal(slot, ch, 1)), false);
             }
         }
-        ioSense = new ElectricWire[RAIL * CHANNELS];
-        ioOut = new SwitchedWire[RAIL * CHANNELS];
-        ioReading = new AcReadings.Filter[RAIL * CHANNELS];
-        for(int i = 0; i < RAIL * CHANNELS; ++i) {
-            var terminal = builder.terminalNode(ioTerminal(i / CHANNELS, i % CHANNELS));
+        ioSense = new ElectricWire[MAX_RAIL * CHANNELS];
+        ioOut = new SwitchedWire[MAX_RAIL * CHANNELS];
+        ioReading = new AcReadings.Filter[MAX_RAIL * CHANNELS];
+        for(int i = 0; i < MAX_RAIL * CHANNELS; ++i) {
+            var terminal = builder.terminalNode(CabinetLayout.ioTerminal(i / CHANNELS, i % CHANNELS));
             ioSense[i] = builder.connect(SENSE, terminal, neutral);
             ioOut[i] = builder.connectSwitch(resistance("contact"), line, terminal, false);
             ioReading[i] = new AcReadings.Filter();
         }
-        aiSense = new ElectricWire[RAIL * ANALOG_CHANNELS];
-        aiReading = new AcReadings.Filter[RAIL * ANALOG_CHANNELS];
-        for(int i = 0; i < RAIL * ANALOG_CHANNELS; ++i) {
-            aiSense[i] = builder.connect(SENSE, builder.terminalNode(aiTerminal(i / ANALOG_CHANNELS, i % ANALOG_CHANNELS)), neutral);
+        aiSense = new ElectricWire[MAX_RAIL * ANALOG_CHANNELS];
+        aiReading = new AcReadings.Filter[MAX_RAIL * ANALOG_CHANNELS];
+        for(int i = 0; i < MAX_RAIL * ANALOG_CHANNELS; ++i) {
+            aiSense[i] = builder.connect(SENSE, builder.terminalNode(CabinetLayout.aiTerminal(i / ANALOG_CHANNELS, i % ANALOG_CHANNELS)), neutral);
             aiReading[i] = new AcReadings.Filter();
         }
         reading = new AcReadings.Filter();
@@ -289,7 +407,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             psuLoad.setResistance(load);
             appliedLoad = load;
         }
-        for(int slot = 0; slot < RAIL; ++slot) {
+        for(int slot = 0; slot < MAX_RAIL; ++slot) {
             boolean relay = rail[slot] == ControlModule.RELAY;
             for(int ch = 0; ch < RELAY_CHANNELS; ++ch) {
                 int i = slot * RELAY_CHANNELS + ch;
@@ -326,7 +444,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         jack.tick();
         if(level == null || level.isClientSide)
             return;
-        for(int cell = 0; cell < CELLS; ++cell) {
+        for(int cell = 0; cell < MAX_CELLS; ++cell) {
             if(pulse[cell] > 0 && --pulse[cell] == 0)
                 dirty = true;
         }
@@ -378,20 +496,20 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
 
     /** Analog inputs follow a wired dial or their terminal; displays wired to an analog output follow it. */
     private void refreshAnalog() {
-        for(int slot = 0; slot < RAIL; ++slot) {
+        for(int slot = 0; slot < MAX_RAIL; ++slot) {
             for(int ch = 0; ch < ANALOG_CHANNELS; ++ch) {
                 int i = slot * ANALOG_CHANNELS + ch;
                 float value = 0;
                 if(powered && rail[slot] == ControlModule.ANALOG_IN) {
                     value = aiVolts[i];
-                    for(int cell = 0; cell < CELLS; ++cell)
+                    for(int cell = 0; cell < MAX_CELLS; ++cell)
                         if(panel[cell] == PanelDevice.DIAL && wire[cell] == slot * CHANNELS + ch)
                             value = dial[cell];
                 }
                 analogIn[i] = value;
             }
         }
-        for(int cell = 0; cell < CELLS; ++cell) {
+        for(int cell = 0; cell < MAX_CELLS; ++cell) {
             if(panel[cell] != PanelDevice.DISPLAY || wire[cell] < 0)
                 continue;
             int slot = wire[cell] / CHANNELS, ch = wire[cell] % CHANNELS;
@@ -407,14 +525,14 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     private void refreshInputs() {
-        for(int slot = 0; slot < RAIL; ++slot) {
+        for(int slot = 0; slot < MAX_RAIL; ++slot) {
             boolean digital = rail[slot] == ControlModule.DIGITAL_IN;
             boolean vfd = rail[slot] == ControlModule.VFD;
             for(int ch = 0; ch < CHANNELS; ++ch) {
                 int i = slot * CHANNELS + ch;
                 boolean state = false;
                 if(powered && (digital || (vfd && ch < ControlModule.VFD_SPEED))) {
-                    for(int cell = 0; cell < CELLS && !state; ++cell)
+                    for(int cell = 0; cell < MAX_CELLS && !state; ++cell)
                         state = drives(cell, i);
                     if(digital && external[i])
                         state = true;
@@ -434,7 +552,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     /** The speed dial wired to a VFD module's speed channel, 0 to 100; full speed with none. */
     private int dialPercent(int slot) {
         int target = slot * CHANNELS + ControlModule.VFD_SPEED;
-        for(int cell = 0; cell < CELLS; ++cell)
+        for(int cell = 0; cell < MAX_CELLS; ++cell)
             if(panel[cell] == PanelDevice.DIAL && wire[cell] == target)
                 return dial[cell];
         return 100;
@@ -446,7 +564,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             return;
         commandTimer = 0;
         boolean estop = isEStopped();
-        for(int slot = 0; slot < RAIL; ++slot) {
+        for(int slot = 0; slot < MAX_RAIL; ++slot) {
             if(rail[slot] != ControlModule.VFD) {
                 vfdRun[slot] = false;
                 continue;
@@ -480,7 +598,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     public @Nullable BlockPos vfdTarget(int slot) {
-        return slot >= 0 && slot < RAIL ? vfdTarget[slot] : null;
+        return slot >= 0 && slot < MAX_RAIL ? vfdTarget[slot] : null;
     }
 
     public float vfdMin(int slot) {
@@ -492,7 +610,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     public boolean vfdRunning(int slot) {
-        return slot >= 0 && slot < RAIL && vfdRun[slot];
+        return slot >= 0 && slot < MAX_RAIL && vfdRun[slot];
     }
 
     /** Drives found over the Cat6 at the last look, by position. */
@@ -507,7 +625,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
 
     /** Server side, from the screen. The range is clamped to what the drive can do. */
     public void setVfd(int slot, @Nullable BlockPos target, float min, float max) {
-        if(slot < 0 || slot >= RAIL || rail[slot] != ControlModule.VFD)
+        if(slot < 0 || slot >= MAX_RAIL || rail[slot] != ControlModule.VFD)
             return;
         if(target != null && !(level != null && level.isLoaded(target) && DriveLink.isDrive(level.getBlockEntity(target))))
             target = null;
@@ -695,7 +813,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         try {
             int slot = Integer.parseInt(name.substring(2, dot)) - 1;
             int ch = Integer.parseInt(name.substring(dot + 1)) - 1;
-            return slot < 0 || slot >= RAIL || ch < 0 || ch >= ANALOG_CHANNELS ? -1 : slot * ANALOG_CHANNELS + ch;
+            return slot < 0 || slot >= MAX_RAIL || ch < 0 || ch >= ANALOG_CHANNELS ? -1 : slot * ANALOG_CHANNELS + ch;
         } catch(NumberFormatException e) {
             return -1;
         }
@@ -720,7 +838,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             if(name.startsWith("D") && name.length() > 1 && name.indexOf('.') < 0) {
                 try {
                     int cell = Integer.parseInt(name.substring(1)) - 1;
-                    return cell >= 0 && cell < CELLS && panel[cell] != null ? deviceState(cell) : Double.NaN;
+                    return cell >= 0 && cell < MAX_CELLS && panel[cell] != null ? deviceState(cell) : Double.NaN;
                 } catch(NumberFormatException e) {
                     return Double.NaN;
                 }
@@ -735,7 +853,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 } catch(NumberFormatException e) {
                     return Double.NaN;
                 }
-                if(slot < 0 || slot >= RAIL || rail[slot] != ControlModule.VFD)
+                if(slot < 0 || slot >= MAX_RAIL || rail[slot] != ControlModule.VFD)
                     return Double.NaN;
                 return switch(name.substring(dot + 1)) {
                     case "RUN" -> vfdRun[slot] ? 1 : 0;
@@ -747,7 +865,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 };
             }
             var sc = slotChannel(name);
-            if(sc == null || sc[0] < 0 || sc[0] >= RAIL || sc[1] < 0)
+            if(sc == null || sc[0] < 0 || sc[0] >= MAX_RAIL || sc[1] < 0)
                 return Double.NaN;
             int slot = sc[0], ch = sc[1];
             return switch(name.charAt(0)) {
@@ -785,7 +903,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 } catch(NumberFormatException e) {
                     return false;
                 }
-                if(slot < 0 || slot >= RAIL || rail[slot] != ControlModule.VFD)
+                if(slot < 0 || slot >= MAX_RAIL || rail[slot] != ControlModule.VFD)
                     return false;
                 switch(name.substring(dot + 1)) {
                     case "START" -> { if(!probe) plcVfd[slot * 3] = value != 0; }
@@ -797,7 +915,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 return true;
             }
             var sc = slotChannel(name);
-            if(sc == null || sc[0] < 0 || sc[0] >= RAIL || sc[1] < 0)
+            if(sc == null || sc[0] < 0 || sc[0] >= MAX_RAIL || sc[1] < 0)
                 return false;
             int slot = sc[0], ch = sc[1];
             switch(name.charAt(0)) {
@@ -857,11 +975,11 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     // ---- the rail and the door ----
 
     public @Nullable ControlModule module(int slot) {
-        return slot >= 0 && slot < RAIL ? rail[slot] : null;
+        return slot >= 0 && slot < MAX_RAIL ? rail[slot] : null;
     }
 
     public @Nullable PanelDevice device(int cell) {
-        return cell >= 0 && cell < CELLS ? panel[cell] : null;
+        return cell >= 0 && cell < MAX_CELLS ? panel[cell] : null;
     }
 
     public int wireOf(int cell) {
@@ -885,31 +1003,31 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     public boolean isEStopped() {
-        for(int cell = 0; cell < CELLS; ++cell)
+        for(int cell = 0; cell < MAX_CELLS; ++cell)
             if(panel[cell] == PanelDevice.E_STOP && latched[cell])
                 return true;
         return false;
     }
 
     public boolean input(int slot, int channel) {
-        return slot >= 0 && slot < RAIL && channel >= 0 && channel < CHANNELS && inputs[slot * CHANNELS + channel];
+        return slot >= 0 && slot < MAX_RAIL && channel >= 0 && channel < CHANNELS && inputs[slot * CHANNELS + channel];
     }
 
     public boolean output(int slot, int channel) {
-        return slot >= 0 && slot < RAIL && channel >= 0 && channel < CHANNELS && outputs[slot * CHANNELS + channel];
+        return slot >= 0 && slot < MAX_RAIL && channel >= 0 && channel < CHANNELS && outputs[slot * CHANNELS + channel];
     }
 
     public float analogIn(int slot, int channel) {
-        return slot >= 0 && slot < RAIL && channel >= 0 && channel < ANALOG_CHANNELS ? analogIn[slot * ANALOG_CHANNELS + channel] : 0;
+        return slot >= 0 && slot < MAX_RAIL && channel >= 0 && channel < ANALOG_CHANNELS ? analogIn[slot * ANALOG_CHANNELS + channel] : 0;
     }
 
     public float analogOut(int slot, int channel) {
-        return slot >= 0 && slot < RAIL && channel >= 0 && channel < ANALOG_CHANNELS ? analogOut[slot * ANALOG_CHANNELS + channel] : 0;
+        return slot >= 0 && slot < MAX_RAIL && channel >= 0 && channel < ANALOG_CHANNELS ? analogOut[slot * ANALOG_CHANNELS + channel] : 0;
     }
 
     /** Server side, from the PLC or a computer. Only an analog output module's channels take a value. */
     public boolean setAnalogOut(int slot, int channel, float value) {
-        if(slot < 0 || slot >= RAIL || channel < 0 || channel >= ANALOG_CHANNELS || rail[slot] != ControlModule.ANALOG_OUT)
+        if(slot < 0 || slot >= MAX_RAIL || channel < 0 || channel >= ANALOG_CHANNELS || rail[slot] != ControlModule.ANALOG_OUT)
             return false;
         if(Float.isNaN(value) || Float.isInfinite(value))
             return false;
@@ -918,12 +1036,12 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     public boolean relay(int slot, int channel) {
-        return slot >= 0 && slot < RAIL && channel >= 0 && channel < RELAY_CHANNELS && relays[slot * RELAY_CHANNELS + channel];
+        return slot >= 0 && slot < MAX_RAIL && channel >= 0 && channel < RELAY_CHANNELS && relays[slot * RELAY_CHANNELS + channel];
     }
 
     /** Server side, from the computer. Only an output module's channels take a value. */
     public boolean setOutput(int slot, int channel, boolean state) {
-        if(slot < 0 || slot >= RAIL || channel < 0 || channel >= CHANNELS || rail[slot] != ControlModule.DIGITAL_OUT)
+        if(slot < 0 || slot >= MAX_RAIL || channel < 0 || channel >= CHANNELS || rail[slot] != ControlModule.DIGITAL_OUT)
             return false;
         int i = slot * CHANNELS + channel;
         if(outputs[i] != state) {
@@ -934,7 +1052,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     public boolean setRelay(int slot, int channel, boolean state) {
-        if(slot < 0 || slot >= RAIL || channel < 0 || channel >= RELAY_CHANNELS || rail[slot] != ControlModule.RELAY)
+        if(slot < 0 || slot >= MAX_RAIL || channel < 0 || channel >= RELAY_CHANNELS || rail[slot] != ControlModule.RELAY)
             return false;
         int i = slot * RELAY_CHANNELS + channel;
         if(relays[i] != state) {
@@ -945,7 +1063,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     public boolean setDisplay(int cell, int value) {
-        if(cell < 0 || cell >= CELLS || panel[cell] != PanelDevice.DISPLAY)
+        if(cell < 0 || cell >= MAX_CELLS || panel[cell] != PanelDevice.DISPLAY)
             return false;
         value = Math.max(-999, Math.min(9999, value));
         if(display[cell] != value) {
@@ -993,7 +1111,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
 
     /** Server side. */
     public boolean installDevice(int cell, PanelDevice device, Player player) {
-        if(cell < 0 || cell >= CELLS || panel[cell] != null) {
+        if(cell < 0 || cell >= cells() || panel[cell] != null) {
             player.displayClientMessage(Lang.builder().translate("message.controls.cell_used").style(ChatFormatting.RED).component(), true);
             return false;
         }
@@ -1013,14 +1131,14 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
 
     /** Server side: onto the first free rail slot. */
     public boolean installModule(ControlModule module, Player player) {
-        for(int slot = 0; slot < RAIL; ++slot) {
+        for(int slot = 0; slot < slots(); ++slot) {
             if(rail[slot] == null) {
                 rail[slot] = module;
                 vfdTarget[slot] = null;
                 vfdMin[slot] = 5;
                 vfdMax[slot] = 30;
                 vfdRun[slot] = false;
-                for(int cell = 0; cell < CELLS; ++cell)
+                for(int cell = 0; cell < MAX_CELLS; ++cell)
                     if(panel[cell] != null && wire[cell] < 0)
                         autoWire(cell);
                 if(module == ControlModule.VFD && level != null && drives.size() == 1)
@@ -1035,14 +1153,14 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     private boolean freeTarget(int target, int cell) {
-        for(int other = 0; other < CELLS; ++other)
+        for(int other = 0; other < MAX_CELLS; ++other)
             if(other != cell && wire[other] == target)
                 return false;
         return true;
     }
 
     private boolean wireTo(int cell, ControlModule module, int firstChannel, int lastChannel) {
-        for(int slot = 0; slot < RAIL; ++slot) {
+        for(int slot = 0; slot < MAX_RAIL; ++slot) {
             if(rail[slot] != module)
                 continue;
             for(int ch = firstChannel; ch <= lastChannel; ++ch) {
@@ -1076,13 +1194,13 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
 
     /** Whether a device may be wired to slot * CHANNELS + channel. */
     public boolean canWire(int cell, int target) {
-        var device = cell >= 0 && cell < CELLS ? panel[cell] : null;
+        var device = cell >= 0 && cell < MAX_CELLS ? panel[cell] : null;
         if(device == null)
             return false;
         if(target < 0)
             return true;
         int slot = target / CHANNELS, ch = target % CHANNELS;
-        var module = slot < RAIL ? rail[slot] : null;
+        var module = slot < MAX_RAIL ? rail[slot] : null;
         if(device == PanelDevice.DIAL)
             return (module == ControlModule.VFD && ch == ControlModule.VFD_SPEED) || (module == ControlModule.ANALOG_IN && ch < ANALOG_CHANNELS);
         if(device == PanelDevice.DISPLAY)
@@ -1102,7 +1220,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     public void setColor(int cell, int index) {
-        if(cell < 0 || cell >= CELLS)
+        if(cell < 0 || cell >= MAX_CELLS)
             return;
         color[cell] = Math.floorMod(index, LED_COLORS.length);
         dirty = true;
@@ -1111,7 +1229,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
 
     /** Server side. */
     public void removeDevice(int cell, @Nullable Player player) {
-        if(cell < 0 || cell >= CELLS || panel[cell] == null || level == null)
+        if(cell < 0 || cell >= MAX_CELLS || panel[cell] == null || level == null)
             return;
         drop(ModItems.PANEL_DEVICES.get(panel[cell]).asStack());
         panel[cell] = null;
@@ -1124,7 +1242,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
 
     /** Server side: the last module on the rail comes off. */
     public void removeLastModule(@Nullable Player player) {
-        for(int slot = RAIL - 1; slot >= 0; --slot) {
+        for(int slot = MAX_RAIL - 1; slot >= 0; --slot) {
             if(rail[slot] != null) {
                 removeModule(slot, player);
                 return;
@@ -1133,7 +1251,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     public void removeModule(int slot, @Nullable Player player) {
-        if(slot < 0 || slot >= RAIL || rail[slot] == null || level == null)
+        if(slot < 0 || slot >= MAX_RAIL || rail[slot] == null || level == null)
             return;
         if(rail[slot] == ControlModule.VFD && vfdTarget[slot] != null && level.isLoaded(vfdTarget[slot])) {
             var be = level.getBlockEntity(vfdTarget[slot]);
@@ -1144,7 +1262,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         rail[slot] = null;
         vfdTarget[slot] = null;
         vfdRun[slot] = false;
-        for(int cell = 0; cell < CELLS; ++cell)
+        for(int cell = 0; cell < MAX_CELLS; ++cell)
             if(wire[cell] >= 0 && wire[cell] / CHANNELS == slot)
                 wire[cell] = -1;
         for(int ch = 0; ch < CHANNELS; ++ch)
@@ -1167,10 +1285,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         super.destroy();
         if(level == null || level.isClientSide)
             return;
-        for(int cell = 0; cell < CELLS; ++cell)
+        for(int cell = 0; cell < MAX_CELLS; ++cell)
             if(panel[cell] != null)
                 drop(ModItems.PANEL_DEVICES.get(panel[cell]).asStack());
-        for(int slot = 0; slot < RAIL; ++slot)
+        for(int slot = 0; slot < MAX_RAIL; ++slot)
             if(rail[slot] != null)
                 drop(ModItems.CONTROL_MODULES.get(rail[slot]).asStack());
     }
@@ -1182,7 +1300,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         super.lazyTick();
         if(level == null || level.isClientSide)
             return;
-        deviceHubs().lazyTick();
+        splices().prune();
         if(hasModule(ControlModule.VFD) || !drives.isEmpty())
             refreshDrives();
         if(hasPlc() || !plcDevices.isEmpty())
@@ -1262,15 +1380,15 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
-        deviceHubs().write(tag, registries, clientPacket);
-        var railTag = new int[RAIL];
-        for(int i = 0; i < RAIL; ++i)
+        splices().write(tag);
+        var railTag = new int[MAX_RAIL];
+        for(int i = 0; i < MAX_RAIL; ++i)
             railTag[i] = rail[i] == null ? -1 : rail[i].ordinal();
-        var panelTag = new int[CELLS];
-        for(int i = 0; i < CELLS; ++i)
+        var panelTag = new int[MAX_CELLS];
+        for(int i = 0; i < MAX_CELLS; ++i)
             panelTag[i] = panel[i] == null ? -1 : panel[i].ordinal();
-        var targets = new long[RAIL];
-        for(int i = 0; i < RAIL; ++i)
+        var targets = new long[MAX_RAIL];
+        for(int i = 0; i < MAX_RAIL; ++i)
             targets[i] = vfdTarget[i] == null ? Long.MIN_VALUE : vfdTarget[i].asLong();
         tag.putIntArray("Rail", railTag);
         tag.putIntArray("Panel", panelTag);
@@ -1320,12 +1438,12 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
-        deviceHubs().read(tag, registries, clientPacket);
+        splices().read(tag);
         var railTag = tag.getIntArray("Rail");
-        for(int i = 0; i < RAIL; ++i)
+        for(int i = 0; i < MAX_RAIL; ++i)
             rail[i] = i < railTag.length ? ControlModule.fromOrdinal(railTag[i]) : null;
         var panelTag = tag.getIntArray("Panel");
-        for(int i = 0; i < CELLS; ++i)
+        for(int i = 0; i < MAX_CELLS; ++i)
             panel[i] = i < panelTag.length ? PanelDevice.fromOrdinal(panelTag[i]) : null;
         fill(wire, tag.getIntArray("Wire"), -1);
         fill(color, tag.getIntArray("Color"), 0);
@@ -1336,7 +1454,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         fill(outputs, tag.getByteArray("Outputs"));
         fill(relays, tag.getByteArray("Relays"));
         var targets = tag.getLongArray("VfdTarget");
-        for(int i = 0; i < RAIL; ++i)
+        for(int i = 0; i < MAX_RAIL; ++i)
             vfdTarget[i] = i < targets.length && targets[i] != Long.MIN_VALUE ? BlockPos.of(targets[i]) : null;
         fillTenths(vfdMin, tag.getIntArray("VfdMin"), 5);
         fillTenths(vfdMax, tag.getIntArray("VfdMax"), 30);
@@ -1401,16 +1519,16 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 .style(powered ? ChatFormatting.GREEN : ChatFormatting.RED).forGoggles(tooltip, 1);
         if(isEStopped())
             Lang.builder().translate("gui.controls.estopped").style(ChatFormatting.RED).forGoggles(tooltip, 1);
-        Lang.builder().translate("gui.controls.modules", moduleCount(), RAIL).style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.controls.modules", moduleCount(), MAX_RAIL).style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         if(hasPlc())
             Lang.builder().translate(plcError.isEmpty() ? (graph.isEmpty() ? "gui.controls.plc_empty" : "gui.controls.plc_ok") : "gui.controls.plc_error_short")
                     .style(plcError.isEmpty() ? ChatFormatting.AQUA : ChatFormatting.RED).forGoggles(tooltip, 1);
-        for(int slot = 0; slot < RAIL; ++slot) {
+        for(int slot = 0; slot < MAX_RAIL; ++slot) {
             if(rail[slot] == ControlModule.VFD)
                 Lang.builder().translate(vfdRun[slot] ? "gui.controls.vfd_running" : "gui.controls.vfd_stopped", slot + 1)
                         .style(vfdRun[slot] ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
         }
-        deviceHubs().addGoggleLines(tooltip);
+        splices().addGoggleLines(tooltip);
         return true;
     }
 }

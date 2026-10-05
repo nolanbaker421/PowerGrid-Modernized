@@ -1070,6 +1070,15 @@ computer network as `powergrid_controls`.
   between the minimum and the maximum; with no dial the module runs at the maximum. A pressed
   E-stop anywhere on the door, or a dead bus, stops every drive. One cabinet can run as many
   drives as it has VFD modules, each with its own buttons.
+- **Controls Cabinet Extension.** Placed directly under a cabinet, or under its first extension,
+  on the same wall, it adds six rail slots and six door cells on the same control bus, with four
+  knockouts along its bottom and two down each side; up to two extensions per cabinet. The slots
+  and cells number on from the head's: an extension's rail is slots 7 to 12, its door cells 7 to
+  12, so a tag there reads `X7.1` or `D8`. Everything stays in the head cabinet, which draws
+  the extension's devices and answers every click on it; the extension's own knockouts take
+  conduit and their wires appear in the head's splice screen. The head's bottom knockouts must
+  be free before an extension goes on, as it covers them. Breaking an extension drops whatever
+  sat in it and takes the extensions below it with it.
 - **Wiring the modules.** Relay modules put a COM and an NO terminal per channel in the splice
   screen (sneak-click the cabinet). Digital In and Digital Out modules put one terminal per
   channel there too, but only for channels that no door device is wired to: wire a button to

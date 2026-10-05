@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.controls.ControlsExtensionBlockEntity;
 import com.nolanbaker.pgmodernized.device.camlock.CamLockBoxBlockEntity;
 import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlockEntity;
 import com.nolanbaker.pgmodernized.device.helm.HelmBlockEntity;
@@ -108,6 +109,11 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<ConduitSwitchBlockEntity> CONDUIT_SWITCH =
             REGISTRATE.blockEntity("conduit_switch", ConduitSwitchBlockEntity::new)
                     .validBlock(ModBlocks.CONDUIT_SWITCH)
+                    .register();
+
+    public static final BlockEntityEntry<ControlsExtensionBlockEntity> CONTROLS_EXTENSION =
+            REGISTRATE.blockEntity("controls_extension", ControlsExtensionBlockEntity::new)
+                    .validBlock(ModBlocks.CONTROLS_EXTENSION)
                     .register();
 
     public static final BlockEntityEntry<ControlsCabinetBlockEntity> CONTROLS_CABINET =

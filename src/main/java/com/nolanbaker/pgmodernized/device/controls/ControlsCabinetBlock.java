@@ -1,5 +1,9 @@
 package com.nolanbaker.pgmodernized.device.controls;
 
+import net.minecraft.world.level.block.Block;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.StateDefinition;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
 import com.nolanbaker.pgmodernized.network.JackTerminals;
@@ -45,6 +49,11 @@ import org.patryk3211.powergrid.utility.Lang;
  */
 public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE<ControlsCabinetBlockEntity> {
     public static final int RAIL = 6, CELLS = 6, RELAY_CHANNELS = 2;
+    /** Extension sections a cabinet can carry below its head, and the rail and door it has with all of them. */
+    public static final int MAX_EXT = 2, MAX_SECTIONS = 1 + MAX_EXT;
+    public static final int MAX_RAIL = RAIL * MAX_SECTIONS, MAX_CELLS = CELLS * MAX_SECTIONS;
+    /** The head plus its extensions below. */
+    public static final IntegerProperty SECTIONS = IntegerProperty.create("sections", 1, MAX_SECTIONS);
     public static final int TERMINAL_LINE = 0, TERMINAL_NEUTRAL = 1, RELAY_BASE = 2;
     public static final int JACK = RELAY_BASE + RAIL * RELAY_CHANNELS * 2;
     /** The PLC's external port, on the other side; port 1 of the cabinet's jack. */
@@ -61,10 +70,10 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
     public static final int ANALOG_CHANNELS = 4;
     public static final int AI_COUNT = RAIL * ANALOG_CHANNELS;
     public static final int AI_BASE = IO_BASE + IO_COUNT;
-    private static final AABB HIDDEN = new AABB(7.5, 7.5, 11, 8.5, 8.5, 12);
+    static final AABB HIDDEN = new AABB(7.5, 7.5, 11, 8.5, 8.5, 12);
     private static final AABB JACK_BOX = new AABB(14, 7, 12.5, 15, 9, 14.5);
     private static final AABB PLC_JACK_BOX = new AABB(1, 7, 12.5, 2, 9, 14.5);
-    private static final VoxelShape BODY = box(2, 1, 10, 14, 15, 16);
+    static final VoxelShape BODY = box(2, 1, 10, 14, 15, 16);
     private static final double[] HUB_U = {3.5, 6.5, 9.5, 12.5};
     /** Door cells: three columns across (viewer's left first) by two rows, in 16ths. */
     public static final double CELL_X0 = 12, CELL_W = 3, ROW_TOP_Y1 = 8.5, ROW_TOP_Y2 = 14, ROW_BOTTOM_Y1 = 2, ROW_BOTTOM_Y2 = 7.5;
@@ -110,9 +119,43 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
 
     public ControlsCabinetBlock(Properties properties) {
         super(properties);
+        registerDefaultState(defaultBlockState().setValue(SECTIONS, 1));
         var shape = DeviceHubs.withHubs(BODY, HUBS);
         shape = DeviceHubs.withHubs(shape, JACK_BOX, PLC_JACK_BOX);
-        setTerminalCollection(horizontalNorthTerminals(this, DeviceHubs.withExtras(DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), ioTerminals()), shape));
+        var head = DeviceHubs.withExtras(DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), ioTerminals());
+        setTerminalCollection(horizontalNorthTerminals(this, CabinetLayout.terminals(head), shape));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(SECTIONS);
+    }
+
+    public static int sectionsOf(BlockState state) {
+        return state.hasProperty(SECTIONS) ? state.getValue(SECTIONS) : 1;
+    }
+
+    /** Terminals of extensions the cabinet does not have, and the bottom knockouts an extension covers, do not exist. */
+    @Override
+    public ITerminalPlacement terminal(BlockState state, int index) {
+        int sections = sectionsOf(state);
+        if(CabinetLayout.sectionOf(index) >= sections)
+            return null;
+        if(sections > 1 && CabinetLayout.isHeadBottomHub(CabinetLayout.hubAt(index)))
+            return null;
+        return super.terminal(state, index);
+    }
+
+    /** The head takes its extensions with it. */
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
+        if(!state.is(newState.getBlock()) && !level.isClientSide) {
+            var below = pos.below();
+            if(level.getBlockState(below).getBlock() instanceof ControlsExtensionBlock)
+                level.destroyBlock(below, true);
+        }
+        super.onRemove(state, level, pos, newState, moved);
     }
 
     private static TerminalBoundingBox[] terminals() {
@@ -159,7 +202,7 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
         var facing = face.getAxis().isHorizontal() ? face : ctx.getHorizontalDirection().getOpposite();
         if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
             facing = facing.getOpposite();
-        return defaultBlockState().setValue(HORIZONTAL_FACING, facing);
+        return defaultBlockState().setValue(HORIZONTAL_FACING, facing).setValue(SECTIONS, 1);
     }
 
     public static Direction facing(BlockState state) {
@@ -245,15 +288,32 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
     /** Modules and devices go in by hand; cutters take them out; everything else falls through. */
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return interactItem(stack, state, level, pos, player, hand, hit);
+    }
+
+    /** The door cell under a hit on the head or on one of its extensions, numbered on from the head's six, or -1. */
+    private static int cellOf(BlockState headState, BlockPos headPos, BlockHitResult hit) {
+        if(hit.getDirection() != facing(headState))
+            return -1;
+        var clicked = hit.getBlockPos();
+        int section = headPos.getY() - clicked.getY();
+        if(section < 0 || section > MAX_EXT)
+            return -1;
+        var local = hit.getLocation().subtract(clicked.getX(), clicked.getY(), clicked.getZ());
+        int cell = cellAt(headState, local);
+        return cell < 0 ? -1 : section * CELLS + cell;
+    }
+
+    /** An item used on the head or an extension; {@code pos} is always the head's. */
+    public ItemInteractionResult interactItem(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(stack.isEmpty())
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         if(!(level.getBlockEntity(pos) instanceof ControlsCabinetBlockEntity cabinet))
             return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
-        var local = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
         var device = PanelDevice.DeviceItem.of(stack);
         if(device != null) {
-            int cell = cellAt(state, local);
-            if(cell < 0 || hit.getDirection() != facing(state))
+            int cell = cellOf(state, pos, hit);
+            if(cell < 0)
                 return ItemInteractionResult.FAIL;
             if(!level.isClientSide && cabinet.installDevice(cell, device, player) && !player.isCreative())
                 stack.shrink(1);
@@ -267,7 +327,7 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
         }
         if(stack.is(ModdedTags.Item.WIRE_CUTTERS.tag) || stack.is(ModdedTags.Item.BAD_WIRE_CUTTERS.tag)) {
             if(!level.isClientSide) {
-                int cell = hit.getDirection() == facing(state) ? cellAt(state, local) : -1;
+                int cell = cellOf(state, pos, hit);
                 if(player.isShiftKeyDown() || cell < 0)
                     cabinet.removeLastModule(player);
                 else
@@ -281,15 +341,21 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
     /** Empty hand on a device works it; elsewhere on the door opens the cabinet; sneaking opens the splice editor. */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(hand != InteractionHand.MAIN_HAND || !player.getMainHandItem().isEmpty())
+        if(hand != InteractionHand.MAIN_HAND)
+            return InteractionResult.PASS;
+        return interact(state, level, pos, player, hit);
+    }
+
+    /** An empty hand on the head or an extension; {@code pos} is always the head's. */
+    public InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if(!player.getMainHandItem().isEmpty())
             return InteractionResult.PASS;
         if(player.isShiftKeyDown()) {
             if(level.isClientSide)
                 ClientHooks.openSplices(pos);
             return InteractionResult.SUCCESS;
         }
-        var local = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
-        int cell = hit.getDirection() == facing(state) ? cellAt(state, local) : -1;
+        int cell = cellOf(state, pos, hit);
         if(cell >= 0 && level.getBlockEntity(pos) instanceof ControlsCabinetBlockEntity cabinet && cabinet.device(cell) != null && cabinet.device(cell).isInput()) {
             if(!level.isClientSide)
                 cabinet.operate(cell, player);

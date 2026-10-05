@@ -41,12 +41,12 @@ public class ControlsCabinetRenderer extends SafeBlockEntityRenderer<ControlsCab
         ms.translate(0.5, 0.5, 0.5);
         ms.mulPose(Axis.YP.rotationDegrees(-(facing.toYRot() + 180)));
         ms.translate(-0.5, -0.5, -0.5);
-        for(int cell = 0; cell < CELLS; ++cell) {
+        for(int cell = 0; cell < be.cells(); ++cell) {
             var device = be.device(cell);
             if(device == null)
                 continue;
-            var c = ControlsCabinetBlock.cellCenter(cell);
-            double x = c.x, y = c.y;
+            var c = ControlsCabinetBlock.cellCenter(cell % CELLS);
+            double x = c.x, y = c.y - 16 * (cell / CELLS);
             int stateValue = be.deviceState(cell);
             switch(device) {
                 case E_STOP -> {

@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.nolanbaker.pgmodernized.compat.oc.OCNodeSupport.result;
-import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlock.CELLS;
-import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlock.RAIL;
 import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlock.RELAY_CHANNELS;
 import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlockEntity.CHANNELS;
 
@@ -326,7 +324,7 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
     @Callback(direct = true, doc = "function():table -- Module in each rail slot, 1 to 6: power_supply, digital_in, digital_out, relay, vfd, plc, analog_in, analog_out, or nil.")
     public Object[] getModules(Context context, Arguments args) {
         Map<Integer, String> map = new HashMap<>();
-        for(int slot = 0; slot < RAIL; ++slot)
+        for(int slot = 0; slot < slots(); ++slot)
             if(module(slot) != null)
                 map.put(slot + 1, module(slot).key());
         return result(map);
@@ -335,7 +333,7 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
     @Callback(direct = true, doc = "function():table -- Device in each door cell, 1 to 6 (top left to bottom right): e_stop, toggle, momentary, selector, led, display, dial, or nil.")
     public Object[] getDevices(Context context, Arguments args) {
         Map<Integer, String> map = new HashMap<>();
-        for(int cell = 0; cell < CELLS; ++cell)
+        for(int cell = 0; cell < cells(); ++cell)
             if(device(cell) != null)
                 map.put(cell + 1, device(cell).key());
         return result(map);
@@ -383,11 +381,11 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
     @Callback(direct = true, doc = "function(cell:number):number -- What the device in a cell is doing: 0 or 1 for buttons and lights, 0 to 2 for a selector, 0 to 100 for a dial, the value of a display.")
     public Object[] getDeviceState(Context context, Arguments args) {
         int cell = args.checkInteger(0) - 1;
-        return result(cell >= 0 && cell < CELLS ? deviceState(cell) : 0);
+        return result(cell >= 0 && cell < cells() ? deviceState(cell) : 0);
     }
 
     @Callback(direct = true, doc = "function():number, number, number -- Rail slots, channels per input or output module, channels per relay module.")
     public Object[] getLimits(Context context, Arguments args) {
-        return result(RAIL, CHANNELS, RELAY_CHANNELS);
+        return result(slots(), CHANNELS, RELAY_CHANNELS);
     }
 }

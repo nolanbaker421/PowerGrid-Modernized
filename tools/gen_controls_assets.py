@@ -60,12 +60,41 @@ def model():
     elements.append(element(1, 7, 12.5, 2, 9, 14.5, "#jack"))   # the PLC's external port
     dump(os.path.join(ASSETS, "models", "block", NAME + ".json"), {"parent": "block/block", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "models", "item", NAME + ".json"), {"parent": "%s:block/%s" % (MOD, NAME)})
-    dump(os.path.join(ASSETS, "blockstates", NAME + ".json"), {"variants": {
-        "facing=north": {"model": "%s:block/%s" % (MOD, NAME)},
-        "facing=east": {"model": "%s:block/%s" % (MOD, NAME), "y": 90},
-        "facing=south": {"model": "%s:block/%s" % (MOD, NAME), "y": 180},
-        "facing=west": {"model": "%s:block/%s" % (MOD, NAME), "y": 270},
+    variants = {}
+    for sections in (1, 2, 3):
+        for facing, y in (("north", 0), ("east", 90), ("south", 180), ("west", 270)):
+            variant = {"model": "%s:block/%s" % (MOD, NAME)}
+            if y:
+                variant["y"] = y
+            variants["facing=%s,sections=%d" % (facing, sections)] = variant
+    dump(os.path.join(ASSETS, "blockstates", NAME + ".json"), {"variants": variants})
+
+
+def extension_assets():
+    """The extension block: the enclosure with a door of six cells, knockouts along the bottom and sides only."""
+    name = "controls_extension"
+    tex = {"front": "%s:block/%s_front" % (MOD, NAME), "side": "%s:block/%s_side" % (MOD, NAME),
+           "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/%s_side" % (MOD, NAME)}
+    # The body reaches a pixel into the head block above, closing the seam and covering the head's bottom knockouts.
+    x1, y1, z1, x2, y2, z2 = BODY
+    elements = [element(x1, y1, z1, x2, 17, z2, "#side", cull_south=True)]
+    elements[0]["faces"]["north"]["texture"] = "#front"
+    for u in HUB_U:
+        x = 16 - u
+        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#terminal"))
+    for y in (3, 11):
+        elements.append(element(14, y, HUB_Z1, 15, y + 2, HUB_Z2, "#terminal"))
+        elements.append(element(1, y, HUB_Z1, 2, y + 2, HUB_Z2, "#terminal"))
+    dump(os.path.join(ASSETS, "models", "block", name + ".json"), {"parent": "block/block", "textures": tex, "elements": elements})
+    dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s" % (MOD, name)})
+    dump(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": {
+        "facing=north": {"model": "%s:block/%s" % (MOD, name)},
+        "facing=east": {"model": "%s:block/%s" % (MOD, name), "y": 90},
+        "facing=south": {"model": "%s:block/%s" % (MOD, name), "y": 180},
+        "facing=west": {"model": "%s:block/%s" % (MOD, name), "y": 270},
     }})
+    loot_table(name)
+    recipe(name, ["III", "N N", "III"], {"I": {"tag": "c:plates/iron"}, "N": {"tag": "c:nuggets/iron"}}, 1, {"items": "%s:%s" % (MOD, NAME)})
 
 
 def item_icon(name, draw):
@@ -162,6 +191,7 @@ def data():
 def main():
     textures()
     model()
+    extension_assets()
     icons()
     data()
     print("controls cabinet assets written")

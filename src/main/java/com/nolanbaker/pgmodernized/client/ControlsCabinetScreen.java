@@ -59,8 +59,8 @@ public class ControlsCabinetScreen extends Screen {
     }
 
     private static long keyOf(ControlsCabinetBlockEntity cabinet) {
-        long k = cabinet.isPowered() ? 1 : 0;
-        for(int slot = 0; slot < RAIL; ++slot) {
+        long k = (cabinet.isPowered() ? 1 : 0) + cabinet.slots() * 2L;
+        for(int slot = 0; slot < cabinet.slots(); ++slot) {
             var module = cabinet.module(slot);
             k = k * 7 + (module == null ? 0 : module.ordinal() + 1);
             if(module == ControlModule.VFD) {
@@ -69,7 +69,7 @@ public class ControlsCabinetScreen extends Screen {
                 k = k * 31 + Math.round(cabinet.vfdMin(slot) * 10) + Math.round(cabinet.vfdMax(slot) * 10) * 1_000_003L;
             }
         }
-        for(int cell = 0; cell < CELLS; ++cell) {
+        for(int cell = 0; cell < cabinet.cells(); ++cell) {
             k = k * 9 + (cabinet.device(cell) == null ? 0 : cabinet.device(cell).ordinal() + 1);
             k = k * 67 + cabinet.wireOf(cell) + 2;
             k = k * 11 + cabinet.colorOf(cell);
@@ -85,6 +85,12 @@ public class ControlsCabinetScreen extends Screen {
         return Component.translatable("item.powergrid_modernized." + module.id());
     }
 
+    /** "Top left" on the head; "Ext 1: top left" on an extension. */
+    private static net.minecraft.network.chat.MutableComponent cellName(int cell) {
+        var name = Component.translatable("powergrid.gui.controls." + CELL_KEYS[cell % CELLS]);
+        return cell < CELLS ? name : Component.translatable("powergrid.gui.controls.ext_cell", cell / CELLS, name);
+    }
+
     private static Component deviceName(PanelDevice device) {
         return Component.translatable("item.powergrid_modernized." + device.id());
     }
@@ -92,7 +98,7 @@ public class ControlsCabinetScreen extends Screen {
     /** Every channel index a device in that cell may be wired to, in rail order, then "nothing". */
     private static List<Integer> targets(ControlsCabinetBlockEntity cabinet, int cell) {
         var out = new ArrayList<Integer>();
-        for(int slot = 0; slot < RAIL; ++slot)
+        for(int slot = 0; slot < cabinet.slots(); ++slot)
             for(int ch = 0; ch < CHANNELS; ++ch)
                 if(cabinet.canWire(cell, slot * CHANNELS + ch))
                     out.add(slot * CHANNELS + ch);
@@ -199,14 +205,14 @@ public class ControlsCabinetScreen extends Screen {
         var cabinet = cabinet();
         int vfds = 0, plcs = 0;
         if(cabinet != null) {
-            for(int slot = 0; slot < RAIL; ++slot) {
+            for(int slot = 0; slot < cabinet.slots(); ++slot) {
                 if(cabinet.module(slot) == ControlModule.VFD)
                     ++vfds;
                 if(cabinet.module(slot) == ControlModule.PLC)
                     ++plcs;
             }
         }
-        int rows = 2 + RAIL + vfds * 2 + plcs + 1 + CELLS;
+        int rows = 2 + (cabinet == null ? RAIL : cabinet.slots()) + vfds * 2 + plcs + 1 + (cabinet == null ? CELLS : cabinet.cells());
         contentFull = rows * ROW;
         panelH = Math.min(height - 8, PADDING * 2 + HEADER + contentFull + FOOTER);
         contentH = panelH - PADDING * 2 - HEADER - FOOTER;
@@ -225,7 +231,7 @@ public class ControlsCabinetScreen extends Screen {
         y += ROW;
         lines.add(new Line(Component.translatable("powergrid.gui.controls.rail"), left, y + 6, DIM));
         y += ROW;
-        for(int slot = 0; slot < RAIL; ++slot) {
+        for(int slot = 0; slot < cabinet.slots(); ++slot) {
             var module = cabinet.module(slot);
             var text = Component.translatable("powergrid.gui.controls.slot", slot + 1).append(": ")
                     .append(module == null ? Component.translatable("powergrid.gui.controls.empty") : moduleName(module));
@@ -264,9 +270,9 @@ public class ControlsCabinetScreen extends Screen {
         }
         lines.add(new Line(Component.translatable("powergrid.gui.controls.door"), left, y + 6, DIM));
         y += ROW;
-        for(int cell = 0; cell < CELLS; ++cell) {
+        for(int cell = 0; cell < cabinet.cells(); ++cell) {
             var device = cabinet.device(cell);
-            var text = Component.translatable("powergrid.gui.controls." + CELL_KEYS[cell]).append(": ")
+            var text = cellName(cell).append(": ")
                     .append(device == null ? Component.translatable("powergrid.gui.controls.empty") : deviceName(device));
             lines.add(new Line(text, left, y + 6, device == null ? DIM : TEXT));
             if(device != null) {

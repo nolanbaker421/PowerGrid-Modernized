@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.controls.ControlsExtensionBlock;
 import com.nolanbaker.pgmodernized.device.camlock.CamLockBoxBlock;
 import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlock;
 import com.nolanbaker.pgmodernized.device.helm.HelmBlock;
@@ -205,6 +206,17 @@ public class ModBlocks {
             .register();
 
     /** Controls cabinet: a DIN rail of modules inside, buttons and lights on the door, one jack on the network. */
+    public static final BlockEntry<ControlsExtensionBlock> CONTROLS_EXTENSION = REGISTRATE.block("controls_extension", ControlsExtensionBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Controls Cabinet Extension")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
     public static final BlockEntry<ControlsCabinetBlock> CONTROLS_CABINET = REGISTRATE.block("controls_cabinet", ControlsCabinetBlock::new)
             .blockstate(NonNullBiConsumer.noop())
             .initialProperties(SharedProperties::softMetal)

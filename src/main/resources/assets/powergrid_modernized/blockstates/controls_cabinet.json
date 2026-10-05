@@ -1,17 +1,47 @@
 {
   "variants": {
-    "facing=north": {
+    "facing=north,sections=1": {
       "model": "powergrid_modernized:block/controls_cabinet"
     },
-    "facing=east": {
+    "facing=east,sections=1": {
       "model": "powergrid_modernized:block/controls_cabinet",
       "y": 90
     },
-    "facing=south": {
+    "facing=south,sections=1": {
       "model": "powergrid_modernized:block/controls_cabinet",
       "y": 180
     },
-    "facing=west": {
+    "facing=west,sections=1": {
+      "model": "powergrid_modernized:block/controls_cabinet",
+      "y": 270
+    },
+    "facing=north,sections=2": {
+      "model": "powergrid_modernized:block/controls_cabinet"
+    },
+    "facing=east,sections=2": {
+      "model": "powergrid_modernized:block/controls_cabinet",
+      "y": 90
+    },
+    "facing=south,sections=2": {
+      "model": "powergrid_modernized:block/controls_cabinet",
+      "y": 180
+    },
+    "facing=west,sections=2": {
+      "model": "powergrid_modernized:block/controls_cabinet",
+      "y": 270
+    },
+    "facing=north,sections=3": {
+      "model": "powergrid_modernized:block/controls_cabinet"
+    },
+    "facing=east,sections=3": {
+      "model": "powergrid_modernized:block/controls_cabinet",
+      "y": 90
+    },
+    "facing=south,sections=3": {
+      "model": "powergrid_modernized:block/controls_cabinet",
+      "y": 180
+    },
+    "facing=west,sections=3": {
       "model": "powergrid_modernized:block/controls_cabinet",
       "y": 270
     }

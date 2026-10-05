@@ -13,8 +13,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlock.CELLS;
-import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlock.RAIL;
 import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlockEntity.CHANNELS;
 
 /**
@@ -87,7 +85,7 @@ public class ControlsCabinetPeripheral implements IPeripheral, ControlsCabinetBl
     @LuaFunction
     public Map<Integer, String> getModules() {
         Map<Integer, String> map = new HashMap<>();
-        for(int slot = 0; slot < RAIL; ++slot)
+        for(int slot = 0; slot < cabinet.slots(); ++slot)
             if(cabinet.module(slot) != null)
                 map.put(slot + 1, cabinet.module(slot).key());
         return map;
@@ -96,7 +94,7 @@ public class ControlsCabinetPeripheral implements IPeripheral, ControlsCabinetBl
     @LuaFunction
     public Map<Integer, String> getDevices() {
         Map<Integer, String> map = new HashMap<>();
-        for(int cell = 0; cell < CELLS; ++cell)
+        for(int cell = 0; cell < cabinet.cells(); ++cell)
             if(cabinet.device(cell) != null)
                 map.put(cell + 1, cabinet.device(cell).key());
         return map;
@@ -157,7 +155,7 @@ public class ControlsCabinetPeripheral implements IPeripheral, ControlsCabinetBl
 
     @LuaFunction
     public int getDeviceState(int cell) {
-        return cell >= 1 && cell <= CELLS ? cabinet.deviceState(cell - 1) : 0;
+        return cell >= 1 && cell <= cabinet.cells() ? cabinet.deviceState(cell - 1) : 0;
     }
 
     @Override
