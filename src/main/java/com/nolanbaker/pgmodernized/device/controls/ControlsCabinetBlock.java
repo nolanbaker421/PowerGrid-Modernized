@@ -51,7 +51,12 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
     public static final int PLC_JACK = JACK + 1;
     public static final int BASE_COUNT = PLC_JACK + 1;
 
-    public static final AABB[] HUBS = new AABB[12];
+    public static final int HUB_COUNT = 12;
+    public static final AABB[] HUBS = new AABB[HUB_COUNT];
+    /** One terminal per channel of every slot, for input and output modules; numbered after the knockouts. */
+    public static final int IO_CHANNELS = ControlsCabinetBlockEntity.CHANNELS;
+    public static final int IO_COUNT = RAIL * IO_CHANNELS;
+    public static final int IO_BASE = BASE_COUNT + HUB_COUNT * (1 + DeviceHubs.PER_HUB);
     private static final AABB HIDDEN = new AABB(7.5, 7.5, 11, 8.5, 8.5, 12);
     private static final AABB JACK_BOX = new AABB(14, 7, 12.5, 15, 9, 14.5);
     private static final AABB PLC_JACK_BOX = new AABB(1, 7, 12.5, 2, 9, 14.5);
@@ -73,7 +78,12 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
         HUBS[11] = new AABB(1, 11, 12.5, 2, 13, 14.5);
     }
 
-    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUBS.length, points());
+    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUBS.length, points(), IO_COUNT);
+
+    /** Terminal of an input or output module's channel. */
+    public static int ioTerminal(int slot, int channel) {
+        return IO_BASE + slot * IO_CHANNELS + channel;
+    }
 
     /** Terminal of a relay contact: side 0 is COM, 1 is NO. */
     public static int relayTerminal(int slot, int channel, int side) {
@@ -81,9 +91,11 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
     }
 
     private static int[] points() {
-        var points = new int[JACK];
-        for(int i = 0; i < points.length; ++i)
+        var points = new int[JACK + IO_COUNT];
+        for(int i = 0; i < JACK; ++i)
             points[i] = i;
+        for(int i = 0; i < IO_COUNT; ++i)
+            points[JACK + i] = IO_BASE + i;
         return points;
     }
 
@@ -91,7 +103,7 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
         super(properties);
         var shape = DeviceHubs.withHubs(BODY, HUBS);
         shape = DeviceHubs.withHubs(shape, JACK_BOX, PLC_JACK_BOX);
-        setTerminalCollection(horizontalNorthTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), shape));
+        setTerminalCollection(horizontalNorthTerminals(this, DeviceHubs.withExtras(DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), ioTerminals()), shape));
     }
 
     private static TerminalBoundingBox[] terminals() {
@@ -108,6 +120,15 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
         }
         terminals[JACK] = JackTerminals.jack(JACK_BOX.minX, JACK_BOX.minY, JACK_BOX.minZ, JACK_BOX.maxX, JACK_BOX.maxY, JACK_BOX.maxZ);
         terminals[PLC_JACK] = JackTerminals.jack(PLC_JACK_BOX.minX, PLC_JACK_BOX.minY, PLC_JACK_BOX.minZ, PLC_JACK_BOX.maxX, PLC_JACK_BOX.maxY, PLC_JACK_BOX.maxZ);
+        return terminals;
+    }
+
+    private static TerminalBoundingBox[] ioTerminals() {
+        var terminals = new TerminalBoundingBox[IO_COUNT];
+        for(int slot = 0; slot < RAIL; ++slot)
+            for(int ch = 0; ch < IO_CHANNELS; ++ch)
+                terminals[slot * IO_CHANNELS + ch] = terminal(Lang.builder().translate("controls.io", slot + 1, ch + 1).style(ChatFormatting.AQUA).component(), HIDDEN)
+                        .withColor(0x70C8F0);
         return terminals;
     }
 

@@ -492,6 +492,7 @@
   "powergrid.controls.neutral": "Neutral",
   "powergrid.controls.relay_com": "Relay %1$s.%2$s COM",
   "powergrid.controls.relay_no": "Relay %1$s.%2$s NO",
+  "powergrid.controls.io": "I/O %1$s.%2$s",
   "powergrid.message.controls.conduit_only": "The controls cabinet is wired through its knockouts",
   "powergrid.message.controls.cell_used": "That cell already holds a device",
   "powergrid.message.controls.rail_full": "The rail is full",

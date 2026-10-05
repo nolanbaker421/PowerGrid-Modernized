@@ -33,8 +33,14 @@ public final class DeviceHubs {
      * @param baseCount the device's own terminal count, jack included
      * @param hubCount knockouts
      * @param points the device terminals a pulled wire can be spliced to (everything but the jack)
+     * @param extraCount device terminals numbered after the knockouts' landings, so a device can grow
+     *                   terminals without renumbering wiring in older worlds
      */
-    public record Layout(int baseCount, int hubCount, int[] points) {
+    public record Layout(int baseCount, int hubCount, int[] points, int extraCount) {
+        public Layout(int baseCount, int hubCount, int[] points) {
+            this(baseCount, hubCount, points, 0);
+        }
+
         public int hubBase() {
             return baseCount;
         }
@@ -43,8 +49,12 @@ public final class DeviceHubs {
             return baseCount + hubCount;
         }
 
-        public int terminalCount() {
+        public int extraBase() {
             return conductorBase() + hubCount * PER_HUB;
+        }
+
+        public int terminalCount() {
+            return extraBase() + extraCount;
         }
 
         public int hubTerminal(int hub) {
@@ -91,6 +101,13 @@ public final class DeviceHubs {
                 terminals[base.length + hubs.length + h * PER_HUB + k] = terminal(name, hidden).withColor(ConductorColors.rgb(k));
             }
         }
+        return terminals;
+    }
+
+    /** Appends a device's extra terminals after the knockouts' landings. */
+    public static TerminalBoundingBox[] withExtras(TerminalBoundingBox[] base, TerminalBoundingBox... extras) {
+        var terminals = Arrays.copyOf(base, base.length + extras.length);
+        System.arraycopy(extras, 0, terminals, base.length, extras.length);
         return terminals;
     }
 

@@ -83,6 +83,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private ElectricWire psuLoad;
     private SwitchedWire[] contacts;
     private AcReadings.Filter reading;
+    // Input and output module terminals: a sense to neutral per channel, and a contact from line per channel.
+    private ElectricWire[] ioSense;
+    private SwitchedWire[] ioOut;
+    private AcReadings.Filter[] ioReading;
 
     private final ControlModule[] rail = new ControlModule[RAIL];
     private final PanelDevice[] panel = new PanelDevice[CELLS];
@@ -96,6 +100,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private final boolean[] outputs = new boolean[RAIL * CHANNELS];
     private final boolean[] relays = new boolean[RAIL * RELAY_CHANNELS];
     private final boolean[] inputs = new boolean[RAIL * CHANNELS];
+    /** Input channels driven from their terminal, by voltage against neutral. */
+    private final boolean[] external = new boolean[RAIL * CHANNELS];
     // VFD modules: the drive each commands, its range, and its run latch.
     private final BlockPos[] vfdTarget = new BlockPos[RAIL];
     private final float[] vfdMin = new float[RAIL];
@@ -148,7 +154,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         return deviceHubs;
     }
 
-    /** Line, neutral, and the contacts of the slots that actually hold a relay module. */
+    /**
+     * Line, neutral, the contacts of the slots that hold a relay module, and the channel terminals
+     * of input and output modules that no door device is wired to.
+     */
     @Override
     public List<com.nolanbaker.pgmodernized.conduit.splice.SplicePoint> points() {
         var all = deviceHubs().points();
@@ -159,10 +168,28 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 int slot = (terminal - RELAY_BASE) / (RELAY_CHANNELS * 2);
                 if(rail[slot] != ControlModule.RELAY)
                     continue;
+            } else if(terminal >= IO_BASE && terminal < IO_BASE + IO_COUNT) {
+                int channel = terminal - IO_BASE;
+                var module = rail[channel / CHANNELS];
+                if((module != ControlModule.DIGITAL_IN && module != ControlModule.DIGITAL_OUT) || channelWired(channel))
+                    continue;
             }
             shown.add(point);
         }
         return shown;
+    }
+
+    /** Whether a door device is wired to that channel index (a selector takes the next channel too). */
+    private boolean channelWired(int channel) {
+        for(int cell = 0; cell < CELLS; ++cell) {
+            if(panel[cell] == null || wire[cell] < 0)
+                continue;
+            if(wire[cell] == channel)
+                return true;
+            if(panel[cell] == PanelDevice.SELECTOR && wire[cell] + 1 == channel && wire[cell] % CHANNELS < CHANNELS - 1)
+                return true;
+        }
+        return false;
     }
 
     @Override
@@ -193,6 +220,15 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 contacts[slot * RELAY_CHANNELS + ch] = builder.connectSwitch(resistance("contact"),
                         builder.terminalNode(relayTerminal(slot, ch, 0)), builder.terminalNode(relayTerminal(slot, ch, 1)), false);
             }
+        }
+        ioSense = new ElectricWire[RAIL * CHANNELS];
+        ioOut = new SwitchedWire[RAIL * CHANNELS];
+        ioReading = new AcReadings.Filter[RAIL * CHANNELS];
+        for(int i = 0; i < RAIL * CHANNELS; ++i) {
+            var terminal = builder.terminalNode(ioTerminal(i / CHANNELS, i % CHANNELS));
+            ioSense[i] = builder.connect(SENSE, terminal, neutral);
+            ioOut[i] = builder.connectSwitch(resistance("contact"), line, terminal, false);
+            ioReading[i] = new AcReadings.Filter();
         }
         reading = new AcReadings.Filter();
         appliedLoad = OPEN;
@@ -241,6 +277,18 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             for(int ch = 0; ch < RELAY_CHANNELS; ++ch) {
                 int i = slot * RELAY_CHANNELS + ch;
                 contacts[i].setState(powered && relay && relays[i]);
+            }
+            // Output terminals source line while their channel is on; input terminals read against neutral.
+            boolean in = rail[slot] == ControlModule.DIGITAL_IN, out = rail[slot] == ControlModule.DIGITAL_OUT;
+            for(int ch = 0; ch < CHANNELS; ++ch) {
+                int i = slot * CHANNELS + ch;
+                ioOut[i].setState(powered && out && outputs[i]);
+                if(in && powered) {
+                    ioReading[i].sample(ioSense[i]);
+                    external[i] = ioReading[i].rmsVoltage() >= MIN_VOLTS;
+                } else {
+                    external[i] = false;
+                }
             }
         }
     }
@@ -310,6 +358,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 if(powered && (digital || (vfd && ch < ControlModule.VFD_SPEED))) {
                     for(int cell = 0; cell < CELLS && !state; ++cell)
                         state = drives(cell, i);
+                    if(digital && external[i])
+                        state = true;
                 }
                 if(state != inputs[i]) {
                     inputs[i] = state;

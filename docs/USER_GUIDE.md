@@ -1070,6 +1070,15 @@ computer network as `powergrid_controls`.
   between the minimum and the maximum; with no dial the module runs at the maximum. A pressed
   E-stop anywhere on the door, or a dead bus, stops every drive. One cabinet can run as many
   drives as it has VFD modules, each with its own buttons.
+- **Wiring the modules.** Relay modules put a COM and an NO terminal per channel in the splice
+  screen (sneak-click the cabinet). Digital In and Digital Out modules put one terminal per
+  channel there too, but only for channels that no door device is wired to: wire a button to
+  input 1.3 in the cabinet screen and terminal I/O 1.3 disappears from the splices, pull the
+  wire off and it is back. An input channel turns on when its terminal sees at least 50 V
+  against Neutral, so a contact anywhere that feeds Line to it through conduit closes the
+  input. An output channel's terminal sources Line while the channel is on, enough to drive a
+  lamp, a contactor coil or another cabinet's input. Terminals exist only while the module is
+  in the slot.
 - **PLC Module.** A block-diagram PLC, drawn in the cabinet's screen the way a Q-SYS or
   function-block program is: blocks from a palette, wires from output pins to input pins, and
   the live value of every pin shown while it runs. The program scans every tick while the bus
