@@ -308,7 +308,22 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
         return result(isEStopped());
     }
 
-    @Callback(direct = true, doc = "function():table -- Module in each rail slot, 1 to 6: power_supply, digital_in, digital_out, relay, vfd, plc, or nil.")
+    @Callback(direct = true, doc = "function(slot:number, channel:number):number -- An analog input module's channel: volts on its terminal against neutral, or a wired dial's percent.")
+    public Object[] getAnalog(Context context, Arguments args) {
+        return result((double) analogIn(args.checkInteger(0) - 1, args.checkInteger(1) - 1));
+    }
+
+    @Callback(doc = "function(slot:number, channel:number, value:number):boolean -- Set an analog output module's channel; false if that slot holds no analog output module.")
+    public Object[] setAnalog(Context context, Arguments args) {
+        return result(setAnalogOut(args.checkInteger(0) - 1, args.checkInteger(1) - 1, (float) args.checkDouble(2)));
+    }
+
+    @Callback(direct = true, doc = "function(slot:number, channel:number):number -- An analog output module's channel as last set.")
+    public Object[] getAnalogOut(Context context, Arguments args) {
+        return result((double) analogOut(args.checkInteger(0) - 1, args.checkInteger(1) - 1));
+    }
+
+    @Callback(direct = true, doc = "function():table -- Module in each rail slot, 1 to 6: power_supply, digital_in, digital_out, relay, vfd, plc, analog_in, analog_out, or nil.")
     public Object[] getModules(Context context, Arguments args) {
         Map<Integer, String> map = new HashMap<>();
         for(int slot = 0; slot < RAIL; ++slot)

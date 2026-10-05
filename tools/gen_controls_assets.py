@@ -15,7 +15,7 @@ HUB_Z1, HUB_Z2 = 12.5, 14.5
 JACK = (14, 7, 12.5, 15, 9, 14.5)
 MODULES = {"power_supply_module": (0x40, 0xC0, 0x50), "digital_in_module": (0x40, 0x80, 0xE0),
            "digital_out_module": (0xE0, 0x90, 0x30), "relay_module": (0xE0, 0xD0, 0x40), "vfd_control_module": (0xA0, 0x50, 0xE0),
-           "plc_module": (0x30, 0xC0, 0xC0)}
+           "plc_module": (0x30, 0xC0, 0xC0), "analog_in_module": (0x60, 0xB0, 0x70), "analog_out_module": (0xC0, 0x80, 0x40)}
 DEVICES = ["estop_button", "toggle_button", "momentary_button", "selector_switch", "pilot_light", "number_display", "speed_dial"]
 
 
@@ -148,6 +148,8 @@ def data():
     recipe("relay_module", ["NPN", "NLN"], {"N": nugget, "P": pins, "L": {"item": "minecraft:lever"}}, 1, {"items": "powergrid:pins"})
     recipe("vfd_control_module", ["NPN", "NCN"], {"N": nugget, "P": pins, "C": {"item": "minecraft:comparator"}}, 1, {"items": "powergrid:pins"})
     recipe("plc_module", ["PCP", "NJN"], {"N": nugget, "P": pins, "C": {"item": "minecraft:comparator"}, "J": jack}, 1, {"items": "%s:network_jack" % MOD})
+    recipe("analog_in_module", ["NPN", "NDN"], {"N": nugget, "P": pins, "D": {"item": "minecraft:daylight_detector"}}, 1, {"items": "powergrid:pins"})
+    recipe("analog_out_module", ["NPN", "NRN"], {"N": nugget, "P": pins, "R": {"item": "minecraft:repeater"}}, 1, {"items": "powergrid:pins"})
     recipe("speed_dial", [" R ", "NNN"], {"R": {"item": "minecraft:repeater"}, "N": nugget}, 2, {"items": "%s:network_jack" % MOD})
     recipe("estop_button", [" R ", "YNY"], {"R": {"item": "minecraft:red_dye"}, "Y": {"item": "minecraft:yellow_dye"}, "N": nugget}, 1, {"items": "%s:network_jack" % MOD})
     recipe("toggle_button", [" L ", "NNN"], {"L": {"item": "minecraft:lever"}, "N": nugget}, 2, {"items": "%s:network_jack" % MOD})

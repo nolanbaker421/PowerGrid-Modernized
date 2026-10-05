@@ -1079,6 +1079,13 @@ computer network as `powergrid_controls`.
   input. An output channel's terminal sources Line while the channel is on, enough to drive a
   lamp, a contactor coil or another cabinet's input. Terminals exist only while the module is
   in the slot.
+- **Analog Input Module.** Four channels. Each has a terminal in the splices that reads its
+  volts against Neutral, or takes a Speed Dial wired to it in the cabinet screen, which then
+  reads 0 to 100. The PLC sees them as `AI1.1` and so on, a computer through `getAnalog`.
+  Scale blocks turn volts into whatever the program wants.
+- **Analog Output Module.** Four values the PLC writes as `AO1.1` and a computer with
+  `setAnalog`. A Number Display wired to a channel shows it. The values are read back with
+  `AO1.1` and `getAnalogOut`; there is no electrical output on this module.
 - **PLC Module.** A block-diagram PLC, drawn in the cabinet's screen the way a Q-SYS or
   function-block program is: blocks from a palette, wires from output pins to input pins, and
   the live value of every pin shown while it runs. The program scans every tick while the bus

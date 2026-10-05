@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    },
+    "R": {
+      "item": "minecraft:repeater"
+    }
+  },
+  "pattern": [
+    "NPN",
+    "NRN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:analog_out_module"
+  }
+}

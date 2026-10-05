@@ -57,6 +57,10 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
     public static final int IO_CHANNELS = ControlsCabinetBlockEntity.CHANNELS;
     public static final int IO_COUNT = RAIL * IO_CHANNELS;
     public static final int IO_BASE = BASE_COUNT + HUB_COUNT * (1 + DeviceHubs.PER_HUB);
+    /** Analog input terminals, one per channel of every slot, after the digital ones. */
+    public static final int ANALOG_CHANNELS = 4;
+    public static final int AI_COUNT = RAIL * ANALOG_CHANNELS;
+    public static final int AI_BASE = IO_BASE + IO_COUNT;
     private static final AABB HIDDEN = new AABB(7.5, 7.5, 11, 8.5, 8.5, 12);
     private static final AABB JACK_BOX = new AABB(14, 7, 12.5, 15, 9, 14.5);
     private static final AABB PLC_JACK_BOX = new AABB(1, 7, 12.5, 2, 9, 14.5);
@@ -78,7 +82,12 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
         HUBS[11] = new AABB(1, 11, 12.5, 2, 13, 14.5);
     }
 
-    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUBS.length, points(), IO_COUNT);
+    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUBS.length, points(), IO_COUNT + AI_COUNT);
+
+    /** Terminal of an analog input module's channel. */
+    public static int aiTerminal(int slot, int channel) {
+        return AI_BASE + slot * ANALOG_CHANNELS + channel;
+    }
 
     /** Terminal of an input or output module's channel. */
     public static int ioTerminal(int slot, int channel) {
@@ -91,10 +100,10 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
     }
 
     private static int[] points() {
-        var points = new int[JACK + IO_COUNT];
+        var points = new int[JACK + IO_COUNT + AI_COUNT];
         for(int i = 0; i < JACK; ++i)
             points[i] = i;
-        for(int i = 0; i < IO_COUNT; ++i)
+        for(int i = 0; i < IO_COUNT + AI_COUNT; ++i)
             points[JACK + i] = IO_BASE + i;
         return points;
     }
@@ -124,11 +133,15 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
     }
 
     private static TerminalBoundingBox[] ioTerminals() {
-        var terminals = new TerminalBoundingBox[IO_COUNT];
+        var terminals = new TerminalBoundingBox[IO_COUNT + AI_COUNT];
         for(int slot = 0; slot < RAIL; ++slot)
             for(int ch = 0; ch < IO_CHANNELS; ++ch)
                 terminals[slot * IO_CHANNELS + ch] = terminal(Lang.builder().translate("controls.io", slot + 1, ch + 1).style(ChatFormatting.AQUA).component(), HIDDEN)
                         .withColor(0x70C8F0);
+        for(int slot = 0; slot < RAIL; ++slot)
+            for(int ch = 0; ch < ANALOG_CHANNELS; ++ch)
+                terminals[IO_COUNT + slot * ANALOG_CHANNELS + ch] = terminal(Lang.builder().translate("controls.ai", slot + 1, ch + 1).style(ChatFormatting.GREEN).component(), HIDDEN)
+                        .withColor(0x90E0A0);
         return terminals;
     }
 

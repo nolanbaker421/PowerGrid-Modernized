@@ -104,11 +104,15 @@ public class ControlsCabinetScreen extends Screen {
     private static Component wireName(ControlsCabinetBlockEntity cabinet, int cell) {
         var device = cabinet.device(cell);
         int target = cabinet.wireOf(cell);
-        if(device == PanelDevice.DISPLAY)
+        if(device == PanelDevice.DISPLAY && target < 0)
             return Component.translatable("powergrid.gui.controls.by_computer");
         if(device == null || target < 0)
             return Component.translatable("powergrid.gui.controls.not_wired");
         int slot = target / CHANNELS, ch = target % CHANNELS;
+        if(cabinet.module(slot) == ControlModule.ANALOG_IN)
+            return Component.translatable("powergrid.gui.controls.wire_ai", slot + 1, ch + 1);
+        if(cabinet.module(slot) == ControlModule.ANALOG_OUT)
+            return Component.translatable("powergrid.gui.controls.wire_ao", slot + 1, ch + 1);
         if(cabinet.module(slot) == ControlModule.VFD)
             return Component.translatable("powergrid.gui.controls.wire_vfd", slot + 1, Component.translatable("powergrid.gui.controls." + VFD_CHANNELS[Math.min(ch, 3)]));
         if(device == PanelDevice.SELECTOR)
@@ -268,7 +272,7 @@ public class ControlsCabinetScreen extends Screen {
             if(device != null) {
                 int c = cell;
                 int x = left + 130;
-                if(device.isInput() || device.isOutput()) {
+                if(device.isInput() || device.isOutput() || device == PanelDevice.DISPLAY) {
                     button(Component.literal("<"), x, y, 14, b -> step(cabinet, c, -1));
                     lines.add(new Line(wireName(cabinet, cell), x + 18, y + 6, cabinet.wireOf(cell) < 0 ? DIM : WIRE));
                     button(Component.literal(">"), x + 110, y, 14, b -> step(cabinet, c, 1));

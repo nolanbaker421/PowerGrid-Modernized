@@ -87,6 +87,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private ElectricWire[] ioSense;
     private SwitchedWire[] ioOut;
     private AcReadings.Filter[] ioReading;
+    private ElectricWire[] aiSense;
+    private AcReadings.Filter[] aiReading;
 
     private final ControlModule[] rail = new ControlModule[RAIL];
     private final PanelDevice[] panel = new PanelDevice[CELLS];
@@ -102,6 +104,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private final boolean[] inputs = new boolean[RAIL * CHANNELS];
     /** Input channels driven from their terminal, by voltage against neutral. */
     private final boolean[] external = new boolean[RAIL * CHANNELS];
+    /** Analog inputs: volts on the terminal, or a dial's percent; analog outputs as set. */
+    private final float[] aiVolts = new float[RAIL * ANALOG_CHANNELS];
+    private final float[] analogIn = new float[RAIL * ANALOG_CHANNELS];
+    private final float[] analogOut = new float[RAIL * ANALOG_CHANNELS];
     // VFD modules: the drive each commands, its range, and its run latch.
     private final BlockPos[] vfdTarget = new BlockPos[RAIL];
     private final float[] vfdMin = new float[RAIL];
@@ -173,6 +179,11 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 var module = rail[channel / CHANNELS];
                 if((module != ControlModule.DIGITAL_IN && module != ControlModule.DIGITAL_OUT) || channelWired(channel))
                     continue;
+            } else if(terminal >= AI_BASE && terminal < AI_BASE + AI_COUNT) {
+                int index = terminal - AI_BASE;
+                int slot = index / ANALOG_CHANNELS, ch = index % ANALOG_CHANNELS;
+                if(rail[slot] != ControlModule.ANALOG_IN || channelWired(slot * CHANNELS + ch))
+                    continue;
             }
             shown.add(point);
         }
@@ -229,6 +240,12 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             ioSense[i] = builder.connect(SENSE, terminal, neutral);
             ioOut[i] = builder.connectSwitch(resistance("contact"), line, terminal, false);
             ioReading[i] = new AcReadings.Filter();
+        }
+        aiSense = new ElectricWire[RAIL * ANALOG_CHANNELS];
+        aiReading = new AcReadings.Filter[RAIL * ANALOG_CHANNELS];
+        for(int i = 0; i < RAIL * ANALOG_CHANNELS; ++i) {
+            aiSense[i] = builder.connect(SENSE, builder.terminalNode(aiTerminal(i / ANALOG_CHANNELS, i % ANALOG_CHANNELS)), neutral);
+            aiReading[i] = new AcReadings.Filter();
         }
         reading = new AcReadings.Filter();
         appliedLoad = OPEN;
@@ -290,6 +307,16 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                     external[i] = false;
                 }
             }
+            boolean analog = rail[slot] == ControlModule.ANALOG_IN;
+            for(int ch = 0; ch < ANALOG_CHANNELS; ++ch) {
+                int i = slot * ANALOG_CHANNELS + ch;
+                if(analog && powered) {
+                    aiReading[i].sample(aiSense[i]);
+                    aiVolts[i] = (float) aiReading[i].rmsVoltage();
+                } else {
+                    aiVolts[i] = 0;
+                }
+            }
         }
     }
 
@@ -304,6 +331,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 dirty = true;
         }
         refreshInputs();
+        refreshAnalog();
         scanPlc();
         commandDrives();
         boolean estop = isEStopped();
@@ -346,6 +374,36 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             case SELECTOR -> (selector[cell] == 0 && wire[cell] == channel) || (selector[cell] == 2 && wire[cell] + 1 == channel && (wire[cell] % CHANNELS) < CHANNELS - 1);
             default -> false;
         };
+    }
+
+    /** Analog inputs follow a wired dial or their terminal; displays wired to an analog output follow it. */
+    private void refreshAnalog() {
+        for(int slot = 0; slot < RAIL; ++slot) {
+            for(int ch = 0; ch < ANALOG_CHANNELS; ++ch) {
+                int i = slot * ANALOG_CHANNELS + ch;
+                float value = 0;
+                if(powered && rail[slot] == ControlModule.ANALOG_IN) {
+                    value = aiVolts[i];
+                    for(int cell = 0; cell < CELLS; ++cell)
+                        if(panel[cell] == PanelDevice.DIAL && wire[cell] == slot * CHANNELS + ch)
+                            value = dial[cell];
+                }
+                analogIn[i] = value;
+            }
+        }
+        for(int cell = 0; cell < CELLS; ++cell) {
+            if(panel[cell] != PanelDevice.DISPLAY || wire[cell] < 0)
+                continue;
+            int slot = wire[cell] / CHANNELS, ch = wire[cell] % CHANNELS;
+            if(rail[slot] != ControlModule.ANALOG_OUT || ch >= ANALOG_CHANNELS)
+                continue;
+            int shown = powered ? Math.round(analogOut[slot * ANALOG_CHANNELS + ch]) : 0;
+            shown = Math.max(-999, Math.min(9999, shown));
+            if(display[cell] != shown) {
+                display[cell] = shown;
+                dirty = true;
+            }
+        }
     }
 
     private void refreshInputs() {
@@ -629,11 +687,34 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         }
     }
 
+    /** Index of an AI1.2-style analog name (slot * ANALOG_CHANNELS + channel), or -1. */
+    private static int analogIndex(String name) {
+        int dot = name.indexOf('.');
+        if(dot < 3)
+            return -1;
+        try {
+            int slot = Integer.parseInt(name.substring(2, dot)) - 1;
+            int ch = Integer.parseInt(name.substring(dot + 1)) - 1;
+            return slot < 0 || slot >= RAIL || ch < 0 || ch >= ANALOG_CHANNELS ? -1 : slot * ANALOG_CHANNELS + ch;
+        } catch(NumberFormatException e) {
+            return -1;
+        }
+    }
+
     private final class PlcIo implements PlcProgram.Io {
         @Override
         public double read(String name) {
             if(name.equals("E"))
                 return isEStopped() ? 1 : 0;
+            if(name.startsWith("AI") || name.startsWith("AO")) {
+                int i = analogIndex(name);
+                if(i < 0)
+                    return Double.NaN;
+                boolean in = name.charAt(1) == 'I';
+                if(rail[i / ANALOG_CHANNELS] != (in ? ControlModule.ANALOG_IN : ControlModule.ANALOG_OUT))
+                    return Double.NaN;
+                return in ? analogIn[i] : analogOut[i];
+            }
             if(name.equals("P"))
                 return powered ? 1 : 0;
             if(name.startsWith("D") && name.length() > 1 && name.indexOf('.') < 0) {
@@ -686,6 +767,14 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         @Override
         public boolean write(String name, double value) {
             boolean probe = Double.isNaN(value);
+            if(name.startsWith("AO")) {
+                int i = analogIndex(name);
+                if(i < 0 || rail[i / ANALOG_CHANNELS] != ControlModule.ANALOG_OUT)
+                    return false;
+                if(!probe)
+                    analogOut[i] = (float) value;
+                return true;
+            }
             if(name.startsWith("V")) {
                 int dot = name.indexOf('.');
                 if(dot < 2)
@@ -808,6 +897,24 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
 
     public boolean output(int slot, int channel) {
         return slot >= 0 && slot < RAIL && channel >= 0 && channel < CHANNELS && outputs[slot * CHANNELS + channel];
+    }
+
+    public float analogIn(int slot, int channel) {
+        return slot >= 0 && slot < RAIL && channel >= 0 && channel < ANALOG_CHANNELS ? analogIn[slot * ANALOG_CHANNELS + channel] : 0;
+    }
+
+    public float analogOut(int slot, int channel) {
+        return slot >= 0 && slot < RAIL && channel >= 0 && channel < ANALOG_CHANNELS ? analogOut[slot * ANALOG_CHANNELS + channel] : 0;
+    }
+
+    /** Server side, from the PLC or a computer. Only an analog output module's channels take a value. */
+    public boolean setAnalogOut(int slot, int channel, float value) {
+        if(slot < 0 || slot >= RAIL || channel < 0 || channel >= ANALOG_CHANNELS || rail[slot] != ControlModule.ANALOG_OUT)
+            return false;
+        if(Float.isNaN(value) || Float.isInfinite(value))
+            return false;
+        analogOut[slot * ANALOG_CHANNELS + channel] = value;
+        return true;
     }
 
     public boolean relay(int slot, int channel) {
@@ -955,7 +1062,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         if(device == null)
             return;
         if(device == PanelDevice.DIAL) {
-            wireTo(cell, ControlModule.VFD, ControlModule.VFD_SPEED, ControlModule.VFD_SPEED);
+            if(!wireTo(cell, ControlModule.VFD, ControlModule.VFD_SPEED, ControlModule.VFD_SPEED))
+                wireTo(cell, ControlModule.ANALOG_IN, 0, ANALOG_CHANNELS - 1);
+        } else if(device == PanelDevice.DISPLAY) {
+            wireTo(cell, ControlModule.ANALOG_OUT, 0, ANALOG_CHANNELS - 1);
         } else if(device.isInput()) {
             if(!wireTo(cell, ControlModule.DIGITAL_IN, 0, CHANNELS - 1))
                 wireTo(cell, ControlModule.VFD, ControlModule.VFD_START, ControlModule.VFD_REVERSE);
@@ -974,7 +1084,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         int slot = target / CHANNELS, ch = target % CHANNELS;
         var module = slot < RAIL ? rail[slot] : null;
         if(device == PanelDevice.DIAL)
-            return module == ControlModule.VFD && ch == ControlModule.VFD_SPEED;
+            return (module == ControlModule.VFD && ch == ControlModule.VFD_SPEED) || (module == ControlModule.ANALOG_IN && ch < ANALOG_CHANNELS);
+        if(device == PanelDevice.DISPLAY)
+            return module == ControlModule.ANALOG_OUT && ch < ANALOG_CHANNELS;
         if(device.isInput())
             return module == ControlModule.DIGITAL_IN || (module == ControlModule.VFD && ch < ControlModule.VFD_SPEED);
         return device.isOutput() && module == ControlModule.DIGITAL_OUT;
@@ -1039,6 +1151,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             outputs[slot * CHANNELS + ch] = false;
         for(int ch = 0; ch < RELAY_CHANNELS; ++ch)
             relays[slot * RELAY_CHANNELS + ch] = false;
+        for(int ch = 0; ch < ANALOG_CHANNELS; ++ch)
+            analogOut[slot * ANALOG_CHANNELS + ch] = 0;
         dirty = true;
         syncTimer = 2;
     }
@@ -1172,6 +1286,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         tag.putIntArray("VfdMin", tenths(vfdMin));
         tag.putIntArray("VfdMax", tenths(vfdMax));
         tag.putByteArray("VfdRun", bytes(vfdRun));
+        var aoBits = new int[analogOut.length];
+        for(int i = 0; i < aoBits.length; ++i)
+            aoBits[i] = Float.floatToIntBits(analogOut[i]);
+        tag.putIntArray("AnalogOut", aoBits);
         tag.put("Graph", graphTag.copy());
         if(clientPacket) {
             tag.putString("PlcError", plcError);
@@ -1223,6 +1341,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         fillTenths(vfdMin, tag.getIntArray("VfdMin"), 5);
         fillTenths(vfdMax, tag.getIntArray("VfdMax"), 30);
         fill(vfdRun, tag.getByteArray("VfdRun"));
+        var aoBits = tag.getIntArray("AnalogOut");
+        for(int i = 0; i < Math.min(aoBits.length, analogOut.length); ++i)
+            analogOut[i] = Float.intBitsToFloat(aoBits[i]);
         if(tag.contains("Graph")) {
             var newGraph = tag.getCompound("Graph");
             if(!newGraph.equals(graphTag)) {

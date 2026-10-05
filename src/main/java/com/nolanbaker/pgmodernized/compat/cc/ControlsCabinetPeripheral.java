@@ -125,6 +125,21 @@ public class ControlsCabinetPeripheral implements IPeripheral, ControlsCabinetBl
         return cabinet.output(slot - 1, channel - 1);
     }
 
+    @LuaFunction
+    public double getAnalog(int slot, int channel) {
+        return cabinet.analogIn(slot - 1, channel - 1);
+    }
+
+    @LuaFunction(mainThread = true)
+    public boolean setAnalog(int slot, int channel, double value) {
+        return cabinet.setAnalogOut(slot - 1, channel - 1, (float) value);
+    }
+
+    @LuaFunction
+    public double getAnalogOut(int slot, int channel) {
+        return cabinet.analogOut(slot - 1, channel - 1);
+    }
+
     @LuaFunction(mainThread = true)
     public boolean setRelay(int slot, int channel, boolean closed) {
         return cabinet.setRelay(slot - 1, channel - 1, closed);

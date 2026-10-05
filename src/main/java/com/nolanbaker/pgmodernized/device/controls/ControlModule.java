@@ -16,7 +16,11 @@ public enum ControlModule {
     /** Runs one drive found over the cabinet's Cat6 from Start, Stop, Reverse and a speed dial; no computer needed. */
     VFD("vfd_control_module", 4),
     /** Runs a ladder program over everything in the cabinet and on its internal network, and opens the external port. */
-    PLC("plc_module", 0);
+    PLC("plc_module", 0),
+    /** Four analog inputs: a terminal's volts against neutral, or a dial's percent. */
+    ANALOG_IN("analog_in_module", 4),
+    /** Four analog values set by the PLC or a computer, shown on displays wired to them. */
+    ANALOG_OUT("analog_out_module", 4);
 
     /** The VFD module's channels. */
     public static final int VFD_START = 0, VFD_STOP = 1, VFD_REVERSE = 2, VFD_SPEED = 3;
