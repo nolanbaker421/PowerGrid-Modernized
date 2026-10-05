@@ -16,7 +16,9 @@ public enum PanelDevice {
     /** A pilot light on an output. */
     LED("pilot_light", false, true),
     /** Four digits the computer writes. */
-    DISPLAY("number_display", false, false);
+    DISPLAY("number_display", false, false),
+    /** A knob from 0 to 100 % in steps of ten, the speed reference of a VFD module. */
+    DIAL("speed_dial", true, false);
 
     private final String id;
     private final boolean input;

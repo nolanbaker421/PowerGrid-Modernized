@@ -76,6 +76,17 @@ public class ControlsCabinetRenderer extends SafeBlockEntityRenderer<ControlsCab
                     box(ms, consumer, light, x - 1.0, y - 1.0, DOOR - 0.3, x + 1.0, y + 1.0, DOOR, 0x202224);
                     box(ms, consumer, lit ? LightTexture.FULL_BRIGHT : light, x - 0.6, y - 0.6, DOOR - 0.6, x + 0.6, y + 0.6, DOOR - 0.3, lit ? rgb : dim(rgb));
                 }
+                case DIAL -> {
+                    box(ms, consumer, light, x - 1.2, y - 1.2, DOOR - 0.3, x + 1.2, y + 1.2, DOOR, 0x202224);
+                    box(ms, consumer, light, x - 0.9, y - 0.9, DOOR - 0.7, x + 0.9, y + 0.9, DOOR - 0.3, 0x404448);
+                    // The mark sweeps 270 degrees, from the viewer's lower left at 0 to lower right at 100.
+                    float angle = 135 - 270 * stateValue / 100f;
+                    ms.pushPose();
+                    ms.translate(x / 16, y / 16, 0);
+                    ms.mulPose(Axis.ZP.rotationDegrees(angle));
+                    box(ms, consumer, light, -0.2, 0.25, DOOR - 1.0, 0.2, 0.9, DOOR - 0.7, 0xF0F0F0);
+                    ms.popPose();
+                }
                 case DISPLAY -> {
                     box(ms, consumer, light, x - 1.45, y - 1.0, DOOR - 0.3, x + 1.45, y + 1.0, DOOR, 0x101214);
                     if(be.isPowered())

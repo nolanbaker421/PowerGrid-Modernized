@@ -3,6 +3,7 @@ package com.nolanbaker.pgmodernized.ac;
 import com.nolanbaker.pgmodernized.ac.motor.PhaseSenseWire;
 import com.nolanbaker.pgmodernized.ac.compat.cc.AcCcBridge;
 import com.nolanbaker.pgmodernized.ac.compat.oc.AcOcBridge;
+import com.nolanbaker.pgmodernized.ac.drive.ThreePhaseDriveBlockEntity;
 import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.IEventBus;
@@ -91,6 +92,25 @@ public final class AcHooks implements ForkHooks {
     @Override
     public void registerCapabilities(RegisterCapabilitiesEvent event) {
         AcContent.registerCapabilities(event);
+    }
+
+    @Override
+    public boolean isDrive(@Nullable BlockEntity be) {
+        return be instanceof ThreePhaseDriveBlockEntity;
+    }
+
+    @Override
+    public float driveCeiling(@Nullable BlockEntity be) {
+        return ThreePhaseDriveBlockEntity.MAX_HZ;
+    }
+
+    @Override
+    public void commandDrive(BlockEntity be, boolean run, boolean reverse, float hertz) {
+        if(!(be instanceof ThreePhaseDriveBlockEntity drive))
+            return;
+        drive.setReversed(reverse);
+        drive.setFrequency(hertz);
+        drive.setEnabled(run);
     }
 
     @Override

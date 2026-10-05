@@ -12,7 +12,12 @@ public enum ControlModule {
     /** Eight outputs the panel's lights are wired to, set by the computer. */
     DIGITAL_OUT("digital_out_module", 8),
     /** Two dry contacts on the cabinet's terminals, closed by the computer. */
-    RELAY("relay_module", 2);
+    RELAY("relay_module", 2),
+    /** Runs one drive found over the cabinet's Cat6 from Start, Stop, Reverse and a speed dial; no computer needed. */
+    VFD("vfd_control_module", 4);
+
+    /** The VFD module's channels. */
+    public static final int VFD_START = 0, VFD_STOP = 1, VFD_REVERSE = 2, VFD_SPEED = 3;
 
     private final String id;
     private final int channels;

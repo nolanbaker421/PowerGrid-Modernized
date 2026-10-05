@@ -1060,6 +1060,16 @@ computer network as `powergrid_controls`.
   something on the door. An unpowered bus reads every input as off.
 - The power supply draws about 15 W plus 2 W per module from Line and Neutral at whatever
   voltage it is given, 120 V or 277 V alike.
+- **VFD Control Module.** Runs a drive with no computer at all. Fit one on the rail, and in the
+  cabinet's screen choose which drive it commands from those found over the cabinet's Cat6 (a
+  Three-Phase Drive, set in hertz, or a Digital Voltage Regulator, set in volts) and set its
+  minimum and maximum (the arrows step by one; hold shift for ten, control for a hundred). Its
+  four channels are Start, Stop, Reverse and Speed: wire a momentary button to Start and another
+  to Stop (they latch a run on their rising edge), a toggle or selector to Reverse, and a **Speed
+  Dial** to Speed. The dial steps from 0 to 100 % in tens with each click and sets the drive
+  between the minimum and the maximum; with no dial the module runs at the maximum. A pressed
+  E-stop anywhere on the door, or a dead bus, stops every drive. One cabinet can run as many
+  drives as it has VFD modules, each with its own buttons.
 - Recipes: the cabinet is a network jack in iron plates; modules are iron nuggets around a copper
   coil, pins and redstone, a redstone torch, or a lever; door devices are iron nuggets under the
   obvious part (red and yellow dye, a lever, a stone button, a comparator, glowstone dust, glass

@@ -134,7 +134,7 @@ public class ModItems {
                 .register();
 
         var modules = new EnumMap<ControlModule, ItemEntry<ControlModule.ModuleItem>>(ControlModule.class);
-        String[] moduleNames = {"24 V Power Supply Module", "8-Channel Input Module", "8-Channel Output Module", "2-Channel Relay Module"};
+        String[] moduleNames = {"24 V Power Supply Module", "8-Channel Input Module", "8-Channel Output Module", "2-Channel Relay Module", "VFD Control Module"};
         for(var module : ControlModule.values()) {
             modules.put(module, REGISTRATE.item(module.id(), p -> new ControlModule.ModuleItem(p, module))
                     .model(NonNullBiConsumer.noop())
@@ -143,7 +143,7 @@ public class ModItems {
         }
         CONTROL_MODULES = Collections.unmodifiableMap(modules);
         var devices = new EnumMap<PanelDevice, ItemEntry<PanelDevice.DeviceItem>>(PanelDevice.class);
-        String[] deviceNames = {"E-Stop Button", "Toggle Button", "Momentary Button", "Selector Switch", "Pilot Light", "Number Display"};
+        String[] deviceNames = {"E-Stop Button", "Toggle Button", "Momentary Button", "Selector Switch", "Pilot Light", "Number Display", "Speed Dial"};
         for(var device : PanelDevice.values()) {
             devices.put(device, REGISTRATE.item(device.id(), p -> new PanelDevice.DeviceItem(p, device))
                     .model(NonNullBiConsumer.noop())

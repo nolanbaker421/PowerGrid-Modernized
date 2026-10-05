@@ -14,8 +14,8 @@ HUB_U = [3.5, 6.5, 9.5, 12.5]
 HUB_Z1, HUB_Z2 = 12.5, 14.5
 JACK = (14, 7, 12.5, 15, 9, 14.5)
 MODULES = {"power_supply_module": (0x40, 0xC0, 0x50), "digital_in_module": (0x40, 0x80, 0xE0),
-           "digital_out_module": (0xE0, 0x90, 0x30), "relay_module": (0xE0, 0xD0, 0x40)}
-DEVICES = ["estop_button", "toggle_button", "momentary_button", "selector_switch", "pilot_light", "number_display"]
+           "digital_out_module": (0xE0, 0x90, 0x30), "relay_module": (0xE0, 0xD0, 0x40), "vfd_control_module": (0xA0, 0x50, 0xE0)}
+DEVICES = ["estop_button", "toggle_button", "momentary_button", "selector_switch", "pilot_light", "number_display", "speed_dial"]
 
 
 def textures():
@@ -121,7 +121,14 @@ def icons():
             fill(img, x, 6, x + 2, 10, (0x40, 0xff, 0x60))
             fill(img, x, 7, x + 1, 9, (0x10, 0x12, 0x14))
 
-    for name, draw in zip(DEVICES, (estop, toggle, momentary, selector, led, display)):
+    def dial(img):
+        fill(img, 3, 3, 13, 13, dark)
+        fill(img, 4, 4, 12, 12, (0x40, 0x44, 0x48))
+        fill(img, 7, 4, 9, 8, (0xf0, 0xf0, 0xf0))
+        for x in (3, 7, 12):
+            fill(img, x, 13, x + 1, 14, (0xa0, 0xa4, 0xa8))
+
+    for name, draw in zip(DEVICES, (estop, toggle, momentary, selector, led, display, dial)):
         item_icon(name, draw)
 
 
@@ -137,6 +144,8 @@ def data():
     recipe("digital_in_module", ["NPN", "NRN"], {"N": nugget, "P": pins, "R": {"item": "minecraft:redstone"}}, 1, {"items": "powergrid:pins"})
     recipe("digital_out_module", ["NPN", "NTN"], {"N": nugget, "P": pins, "T": {"item": "minecraft:redstone_torch"}}, 1, {"items": "powergrid:pins"})
     recipe("relay_module", ["NPN", "NLN"], {"N": nugget, "P": pins, "L": {"item": "minecraft:lever"}}, 1, {"items": "powergrid:pins"})
+    recipe("vfd_control_module", ["NPN", "NCN"], {"N": nugget, "P": pins, "C": {"item": "minecraft:comparator"}}, 1, {"items": "powergrid:pins"})
+    recipe("speed_dial", [" R ", "NNN"], {"R": {"item": "minecraft:repeater"}, "N": nugget}, 2, {"items": "%s:network_jack" % MOD})
     recipe("estop_button", [" R ", "YNY"], {"R": {"item": "minecraft:red_dye"}, "Y": {"item": "minecraft:yellow_dye"}, "N": nugget}, 1, {"items": "%s:network_jack" % MOD})
     recipe("toggle_button", [" L ", "NNN"], {"L": {"item": "minecraft:lever"}, "N": nugget}, 2, {"items": "%s:network_jack" % MOD})
     recipe("momentary_button", [" B ", "NNN"], {"B": {"item": "minecraft:stone_button"}, "N": nugget}, 2, {"items": "%s:network_jack" % MOD})

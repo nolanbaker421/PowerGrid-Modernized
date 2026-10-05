@@ -4,6 +4,7 @@ import com.nolanbaker.pgmodernized.device.controls.ControlModule;
 import com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlockEntity;
 import com.nolanbaker.pgmodernized.device.controls.PanelDevice;
 import com.nolanbaker.pgmodernized.network.packets.ControlsPayload;
+import com.nolanbaker.pgmodernized.network.packets.ControlsVfdPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -22,21 +23,23 @@ import static com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlockEn
 
 /**
  * The cabinet with the door open: the rail's modules, the door's devices, and what each device
- * is wired to. Wiring is a pair of arrows that step a device through the channels of every
- * module of the right kind. Items go in by hand on the block and come out with the Remove
- * buttons here (or wire cutters on the door).
+ * is wired to. Wiring is a pair of arrows that step a device through the channels it may use.
+ * A VFD module gets two more rows: the drive it commands, chosen from those found over the
+ * Cat6, and its minimum and maximum setting (shift steps by ten, control by a hundred). Items go
+ * in by hand on the block and come out with the Remove buttons here, or wire cutters on the door.
  */
 public class ControlsCabinetScreen extends Screen {
-    private static final int PANEL_W = 330, ROW = 20, PADDING = 10;
-    private static final int PANEL_BG = 0xE0202024, PANEL_EDGE = 0xFF606068, TEXT = 0xFFE8E8E8, DIM = 0xFF9A9A9A;
+    private static final int PANEL_W = 340, ROW = 20, PADDING = 10;
+    private static final int PANEL_BG = 0xE0202024, PANEL_EDGE = 0xFF606068, TEXT = 0xFFE8E8E8, DIM = 0xFF9A9A9A, WIRE = 0xFFE0C060;
     private static final String[] CELL_KEYS = {"top_left", "top_centre", "top_right", "bottom_left", "bottom_centre", "bottom_right"};
+    private static final String[] VFD_CHANNELS = {"vfd_start", "vfd_stop", "vfd_reverse", "vfd_speed"};
 
     private final BlockPos pos;
     private int panelX, panelY, panelH;
     private long key = -1;
     private final List<Line> lines = new ArrayList<>();
 
-    private record Line(Component text, int y, int color) {}
+    private record Line(Component text, int x, int y, int color) {}
 
     public ControlsCabinetScreen(BlockPos pos) {
         super(Component.translatable("powergrid.gui.controls.title"));
@@ -51,13 +54,22 @@ public class ControlsCabinetScreen extends Screen {
 
     private static long keyOf(ControlsCabinetBlockEntity cabinet) {
         long k = cabinet.isPowered() ? 1 : 0;
-        for(int slot = 0; slot < RAIL; ++slot)
-            k = k * 7 + (cabinet.module(slot) == null ? 0 : cabinet.module(slot).ordinal() + 1);
+        for(int slot = 0; slot < RAIL; ++slot) {
+            var module = cabinet.module(slot);
+            k = k * 7 + (module == null ? 0 : module.ordinal() + 1);
+            if(module == ControlModule.VFD) {
+                var target = cabinet.vfdTarget(slot);
+                k = k * 31 + (target == null ? 0 : target.asLong());
+                k = k * 31 + Math.round(cabinet.vfdMin(slot) * 10) + Math.round(cabinet.vfdMax(slot) * 10) * 1_000_003L;
+            }
+        }
         for(int cell = 0; cell < CELLS; ++cell) {
             k = k * 9 + (cabinet.device(cell) == null ? 0 : cabinet.device(cell).ordinal() + 1);
             k = k * 67 + cabinet.wireOf(cell) + 2;
             k = k * 11 + cabinet.colorOf(cell);
         }
+        for(var drive : cabinet.drives())
+            k = k * 31 + drive.asLong();
         return k;
     }
 
@@ -72,17 +84,12 @@ public class ControlsCabinetScreen extends Screen {
     /** Every channel index a device in that cell may be wired to, in rail order, then "nothing". */
     private static List<Integer> targets(ControlsCabinetBlockEntity cabinet, int cell) {
         var out = new ArrayList<Integer>();
-        var device = cabinet.device(cell);
-        if(device == null || !(device.isInput() || device.isOutput()))
-            return out;
-        var want = device.isInput() ? ControlModule.DIGITAL_IN : ControlModule.DIGITAL_OUT;
-        for(int slot = 0; slot < RAIL; ++slot) {
-            if(cabinet.module(slot) != want)
-                continue;
+        for(int slot = 0; slot < RAIL; ++slot)
             for(int ch = 0; ch < CHANNELS; ++ch)
-                out.add(slot * CHANNELS + ch);
-        }
-        out.add(-1);
+                if(cabinet.canWire(cell, slot * CHANNELS + ch))
+                    out.add(slot * CHANNELS + ch);
+        if(!out.isEmpty() || cabinet.device(cell) != null)
+            out.add(-1);
         return out;
     }
 
@@ -93,10 +100,12 @@ public class ControlsCabinetScreen extends Screen {
             return Component.translatable("powergrid.gui.controls.by_computer");
         if(device == null || target < 0)
             return Component.translatable("powergrid.gui.controls.not_wired");
-        int slot = target / CHANNELS + 1, ch = target % CHANNELS + 1;
+        int slot = target / CHANNELS, ch = target % CHANNELS;
+        if(cabinet.module(slot) == ControlModule.VFD)
+            return Component.translatable("powergrid.gui.controls.wire_vfd", slot + 1, Component.translatable("powergrid.gui.controls." + VFD_CHANNELS[Math.min(ch, 3)]));
         if(device == PanelDevice.SELECTOR)
-            return Component.translatable("powergrid.gui.controls.wire_selector", slot, ch, Math.min(CHANNELS, ch + 1));
-        return Component.translatable(device.isInput() ? "powergrid.gui.controls.wire_in" : "powergrid.gui.controls.wire_out", slot, ch);
+            return Component.translatable("powergrid.gui.controls.wire_selector", slot + 1, ch + 1, Math.min(CHANNELS, ch + 2));
+        return Component.translatable(device.isInput() ? "powergrid.gui.controls.wire_in" : "powergrid.gui.controls.wire_out", slot + 1, ch + 1);
     }
 
     private void step(ControlsCabinetBlockEntity cabinet, int cell, int direction) {
@@ -108,62 +117,122 @@ public class ControlsCabinetScreen extends Screen {
         PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.WIRE, cell, targets.get(next)));
     }
 
+    private void stepDrive(ControlsCabinetBlockEntity cabinet, int slot, int direction) {
+        var drives = cabinet.drives();
+        int at = cabinet.vfdTarget(slot) == null ? drives.size() : drives.indexOf(cabinet.vfdTarget(slot));
+        int next = Math.floorMod(at + direction, drives.size() + 1);
+        var target = next < drives.size() ? drives.get(next) : null;
+        PacketDistributor.sendToServer(new ControlsVfdPayload(pos, slot, target != null, target == null ? BlockPos.ZERO : target, cabinet.vfdMin(slot), cabinet.vfdMax(slot)));
+    }
+
+    private void stepRange(ControlsCabinetBlockEntity cabinet, int slot, boolean maximum, int direction) {
+        float step = hasControlDown() ? 100 : hasShiftDown() ? 10 : 1;
+        float min = cabinet.vfdMin(slot), max = cabinet.vfdMax(slot);
+        if(maximum)
+            max = Math.max(0, max + direction * step);
+        else
+            min = Math.max(0, min + direction * step);
+        var target = cabinet.vfdTarget(slot);
+        PacketDistributor.sendToServer(new ControlsVfdPayload(pos, slot, target != null, target == null ? BlockPos.ZERO : target, min, max));
+    }
+
+    private Component driveName(ControlsCabinetBlockEntity cabinet, int slot) {
+        var target = cabinet.vfdTarget(slot);
+        if(target == null)
+            return Component.translatable(cabinet.drives().isEmpty() ? "powergrid.gui.controls.drive_none_found" : "powergrid.gui.controls.drive_none");
+        int index = cabinet.drives().indexOf(target);
+        boolean hertz = index >= 0 && cabinet.driveUsesHertz(index);
+        return Component.translatable(hertz ? "powergrid.gui.controls.drive_hz" : "powergrid.gui.controls.drive_v", target.getX(), target.getY(), target.getZ());
+    }
+
+    private String unit(ControlsCabinetBlockEntity cabinet, int slot) {
+        var target = cabinet.vfdTarget(slot);
+        int index = target == null ? -1 : cabinet.drives().indexOf(target);
+        return index >= 0 && !cabinet.driveUsesHertz(index) ? "V" : "Hz";
+    }
+
+    private Button button(Component label, int x, int y, int w, Button.OnPress press) {
+        return addRenderableWidget(Button.builder(label, press).bounds(x, y, w, 18).build());
+    }
+
     @Override
     protected void init() {
         super.init();
         lines.clear();
         var cabinet = cabinet();
-        int rows = 2 + RAIL + 1 + CELLS;
-        panelH = PADDING * 2 + 14 + rows * ROW;
+        int vfds = 0;
+        if(cabinet != null)
+            for(int slot = 0; slot < RAIL; ++slot)
+                if(cabinet.module(slot) == ControlModule.VFD)
+                    ++vfds;
+        int rows = 2 + RAIL + vfds * 2 + 1 + CELLS;
+        panelH = PADDING * 2 + 14 + rows * ROW + 10;
         panelX = (width - PANEL_W) / 2;
         panelY = (height - panelH) / 2;
         if(cabinet == null)
             return;
         key = keyOf(cabinet);
+        int left = panelX + PADDING;
+        int right = panelX + PANEL_W - PADDING;
         int y = panelY + PADDING + 14;
         lines.add(new Line(Component.translatable(cabinet.isPowered() ? "powergrid.gui.controls.powered" : "powergrid.gui.controls.unpowered", String.format("%.0f", cabinet.volts())),
-                y + 6, cabinet.isPowered() ? 0xFF60E060 : 0xFFE06060));
+                left, y + 6, cabinet.isPowered() ? 0xFF60E060 : 0xFFE06060));
         y += ROW;
-        lines.add(new Line(Component.translatable("powergrid.gui.controls.rail"), y + 6, DIM));
+        lines.add(new Line(Component.translatable("powergrid.gui.controls.rail"), left, y + 6, DIM));
         y += ROW;
         for(int slot = 0; slot < RAIL; ++slot) {
             var module = cabinet.module(slot);
             var text = Component.translatable("powergrid.gui.controls.slot", slot + 1).append(": ")
                     .append(module == null ? Component.translatable("powergrid.gui.controls.empty") : moduleName(module));
-            lines.add(new Line(text, y + 6, module == null ? DIM : TEXT));
+            lines.add(new Line(text, left, y + 6, module == null ? DIM : TEXT));
             if(module != null) {
                 int s = slot;
-                addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.controls.remove"),
-                                b -> PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.REMOVE_MODULE, s, 0)))
-                        .bounds(panelX + PANEL_W - PADDING - 60, y, 60, 18).build());
+                button(Component.translatable("powergrid.gui.controls.remove"), right - 60, y, 60,
+                        b -> PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.REMOVE_MODULE, s, 0)));
             }
             y += ROW;
+            if(module == ControlModule.VFD) {
+                int s = slot;
+                lines.add(new Line(Component.translatable("powergrid.gui.controls.drive"), left + 12, y + 6, DIM));
+                button(Component.literal("<"), left + 50, y, 14, b -> stepDrive(cabinet, s, -1));
+                lines.add(new Line(driveName(cabinet, slot), left + 68, y + 6, cabinet.vfdTarget(slot) == null ? DIM : WIRE));
+                button(Component.literal(">"), right - 14, y, 14, b -> stepDrive(cabinet, s, 1));
+                y += ROW;
+                String unit = unit(cabinet, slot);
+                lines.add(new Line(Component.translatable("powergrid.gui.controls.min", String.format("%.0f", cabinet.vfdMin(slot)), unit), left + 12, y + 6, TEXT));
+                button(Component.literal("-"), left + 100, y, 14, b -> stepRange(cabinet, s, false, -1));
+                button(Component.literal("+"), left + 116, y, 14, b -> stepRange(cabinet, s, false, 1));
+                lines.add(new Line(Component.translatable("powergrid.gui.controls.max", String.format("%.0f", cabinet.vfdMax(slot)), unit), left + 150, y + 6, TEXT));
+                button(Component.literal("-"), left + 240, y, 14, b -> stepRange(cabinet, s, true, -1));
+                button(Component.literal("+"), left + 256, y, 14, b -> stepRange(cabinet, s, true, 1));
+                lines.add(new Line(Component.translatable(cabinet.vfdRunning(slot) ? "powergrid.gui.controls.running" : "powergrid.gui.controls.stopped"),
+                        right - 60, y + 6, cabinet.vfdRunning(slot) ? 0xFF60E060 : DIM));
+                y += ROW;
+            }
         }
-        lines.add(new Line(Component.translatable("powergrid.gui.controls.door"), y + 6, DIM));
+        lines.add(new Line(Component.translatable("powergrid.gui.controls.door"), left, y + 6, DIM));
         y += ROW;
         for(int cell = 0; cell < CELLS; ++cell) {
             var device = cabinet.device(cell);
             var text = Component.translatable("powergrid.gui.controls." + CELL_KEYS[cell]).append(": ")
                     .append(device == null ? Component.translatable("powergrid.gui.controls.empty") : deviceName(device));
-            lines.add(new Line(text, y + 6, device == null ? DIM : TEXT));
+            lines.add(new Line(text, left, y + 6, device == null ? DIM : TEXT));
             if(device != null) {
                 int c = cell;
-                int x = panelX + PADDING + 150;
+                int x = left + 140;
                 if(device.isInput() || device.isOutput()) {
-                    addRenderableWidget(Button.builder(Component.literal("<"), b -> step(cabinet, c, -1)).bounds(x, y, 14, 18).build());
-                    lines.add(new Line(wireName(cabinet, cell), y + 6, 0xFFE0C060));
-                    addRenderableWidget(Button.builder(Component.literal(">"), b -> step(cabinet, c, 1)).bounds(x + 92, y, 14, 18).build());
+                    button(Component.literal("<"), x, y, 14, b -> step(cabinet, c, -1));
+                    lines.add(new Line(wireName(cabinet, cell), x + 18, y + 6, cabinet.wireOf(cell) < 0 ? DIM : WIRE));
+                    button(Component.literal(">"), x + 122, y, 14, b -> step(cabinet, c, 1));
                 } else {
-                    lines.add(new Line(wireName(cabinet, cell), y + 6, DIM));
+                    lines.add(new Line(wireName(cabinet, cell), x + 18, y + 6, DIM));
                 }
                 if(device == PanelDevice.LED) {
-                    addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.controls.colour"),
-                                    b -> PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.COLOR, c, cabinet.colorOf(c) + 1)))
-                            .bounds(panelX + PANEL_W - PADDING - 108, y, 44, 18).build());
+                    button(Component.translatable("powergrid.gui.controls.colour"), right - 108, y, 44,
+                            b -> PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.COLOR, c, cabinet.colorOf(c) + 1)));
                 }
-                addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.controls.remove"),
-                                b -> PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.REMOVE_DEVICE, c, 0)))
-                        .bounds(panelX + PANEL_W - PADDING - 60, y, 60, 18).build());
+                button(Component.translatable("powergrid.gui.controls.remove"), right - 60, y, 60,
+                        b -> PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.REMOVE_DEVICE, c, 0)));
             }
             y += ROW;
         }
@@ -182,24 +251,13 @@ public class ControlsCabinetScreen extends Screen {
         graphics.fill(panelX, panelY, panelX + PANEL_W, panelY + panelH, PANEL_BG);
         graphics.renderOutline(panelX, panelY, PANEL_W, panelH, PANEL_EDGE);
         graphics.drawString(font, title, panelX + PADDING, panelY + PADDING, 0xFFFFFF);
-        int wireX = panelX + PADDING + 166;
-        for(var line : lines) {
-            boolean wired = line.color == 0xFFE0C060 || (line.color == DIM && line.text.getString().length() < 24 && line.y > panelY + PADDING + 14 + ROW * (RAIL + 3));
-            int x = isWireLine(line) ? wireX : panelX + PADDING;
-            graphics.drawString(font, line.text, x, line.y, line.color);
-        }
+        for(var line : lines)
+            graphics.drawString(font, line.text, line.x, line.y, line.color);
         for(var child : children()) {
             if(child instanceof Button button)
                 button.render(graphics, mouseX, mouseY, partialTick);
         }
         graphics.drawString(font, Component.translatable("powergrid.gui.controls.hint"), panelX + PADDING, panelY + panelH - PADDING - 6, DIM);
-    }
-
-    /** Wire descriptions sit in the middle column; everything else is a row label on the left. */
-    private boolean isWireLine(Line line) {
-        var s = line.text.getString();
-        return line.color == 0xFFE0C060 || s.equals(Component.translatable("powergrid.gui.controls.not_wired").getString())
-                || s.equals(Component.translatable("powergrid.gui.controls.by_computer").getString());
     }
 
     @Override

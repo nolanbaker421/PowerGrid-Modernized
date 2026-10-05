@@ -94,6 +94,21 @@ public interface ForkHooks {
     /** Capabilities of fork-only blocks that need no computer mod (the inverter's energy side). */
     default void registerCapabilities(RegisterCapabilitiesEvent event) {}
 
+    // ---- drives a controls cabinet may command ----
+
+    /** Whether this is the fork's three-phase drive. */
+    default boolean isDrive(@Nullable BlockEntity be) {
+        return false;
+    }
+
+    /** The most hertz the drive can be told. */
+    default float driveCeiling(@Nullable BlockEntity be) {
+        return 0;
+    }
+
+    /** Run or stop the drive at that frequency, with that phase sequence. */
+    default void commandDrive(BlockEntity be, boolean run, boolean reverse, float hertz) {}
+
     void registerCC(RegisterCapabilitiesEvent event);
 
     /** A ComputerCraft peripheral for an AC device, or null. Typed as Object so this interface never names CC classes. */
