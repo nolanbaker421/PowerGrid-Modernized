@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "pattern": [
+    "NPN",
+    "NTN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:digital_out_module"
+  }
+}

@@ -9,6 +9,8 @@ import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.BuildingWireItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.conduit.FlexConduitItem;
+import com.nolanbaker.pgmodernized.device.controls.ControlModule;
+import com.nolanbaker.pgmodernized.device.controls.PanelDevice;
 import com.nolanbaker.pgmodernized.conduit.WireGauge;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerFrame;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerItem;
@@ -94,6 +96,9 @@ public class ModItems {
     public static final Map<ConduitSize, ItemEntry<ConduitItem>> CONDUIT;
     /** 1" flexible conduit: a whip from one knockout straight to another, on any two bodies. */
     public static final ItemEntry<FlexConduitItem> CONDUIT_FLEX_ONE;
+    /** What clips onto a controls cabinet's rail, and what mounts in its door. */
+    public static final Map<ControlModule, ItemEntry<ControlModule.ModuleItem>> CONTROL_MODULES;
+    public static final Map<PanelDevice, ItemEntry<PanelDevice.DeviceItem>> PANEL_DEVICES;
 
     /** THHN building wire per gauge. Wire stats in wire_types/wire_<gauge>.json. */
     public static final Map<WireGauge, ItemEntry<BuildingWireItem>> BUILDING_WIRE;
@@ -127,6 +132,25 @@ public class ModItems {
                 .model(NonNullBiConsumer.noop())
                 .lang("1\" Flexible Conduit")
                 .register();
+
+        var modules = new EnumMap<ControlModule, ItemEntry<ControlModule.ModuleItem>>(ControlModule.class);
+        String[] moduleNames = {"24 V Power Supply Module", "8-Channel Input Module", "8-Channel Output Module", "2-Channel Relay Module"};
+        for(var module : ControlModule.values()) {
+            modules.put(module, REGISTRATE.item(module.id(), p -> new ControlModule.ModuleItem(p, module))
+                    .model(NonNullBiConsumer.noop())
+                    .lang(moduleNames[module.ordinal()])
+                    .register());
+        }
+        CONTROL_MODULES = Collections.unmodifiableMap(modules);
+        var devices = new EnumMap<PanelDevice, ItemEntry<PanelDevice.DeviceItem>>(PanelDevice.class);
+        String[] deviceNames = {"E-Stop Button", "Toggle Button", "Momentary Button", "Selector Switch", "Pilot Light", "Number Display"};
+        for(var device : PanelDevice.values()) {
+            devices.put(device, REGISTRATE.item(device.id(), p -> new PanelDevice.DeviceItem(p, device))
+                    .model(NonNullBiConsumer.noop())
+                    .lang(deviceNames[device.ordinal()])
+                    .register());
+        }
+        PANEL_DEVICES = Collections.unmodifiableMap(devices);
 
         var wires = new EnumMap<WireGauge, ItemEntry<BuildingWireItem>>(WireGauge.class);
         for(var gauge : WireGauge.values()) {

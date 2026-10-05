@@ -3,6 +3,8 @@ package com.nolanbaker.pgmodernized.registry;
 import com.nolanbaker.pgmodernized.device.camlock.CamLockBoxBlockEntity;
 import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlockEntity;
 import com.nolanbaker.pgmodernized.device.helm.HelmBlockEntity;
+import com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlockEntity;
+import com.nolanbaker.pgmodernized.client.ControlsCabinetRenderer;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
 import com.nolanbaker.pgmodernized.client.RailCollectorRenderer;
@@ -106,6 +108,12 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<ConduitSwitchBlockEntity> CONDUIT_SWITCH =
             REGISTRATE.blockEntity("conduit_switch", ConduitSwitchBlockEntity::new)
                     .validBlock(ModBlocks.CONDUIT_SWITCH)
+                    .register();
+
+    public static final BlockEntityEntry<ControlsCabinetBlockEntity> CONTROLS_CABINET =
+            REGISTRATE.blockEntity("controls_cabinet", (BlockEntityFactory<ControlsCabinetBlockEntity>) (type, pos, state) -> ControlsCabinetBlockEntity.FACTORY.create(type, pos, state))
+                    .validBlock(ModBlocks.CONTROLS_CABINET)
+                    .renderer(() -> ControlsCabinetRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<CtCabinetBlockEntity> CT_CABINET =

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    },
+    "L": {
+      "item": "minecraft:lever"
+    }
+  },
+  "pattern": [
+    "NPN",
+    "NLN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:relay_module"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "tag": "c:glass_panes"
+    },
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "NRN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:number_display"
+  }
+}

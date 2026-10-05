@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "C": {
+      "item": "powergrid:copper_coil"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "NCN",
+    "NRN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:power_supply_module"
+  }
+}

@@ -1026,3 +1026,41 @@ helm; the goggles say who.
   forward or reverse, on their release stop it; `space` as a brake. The whole bridge is then one
   block, one cable and one computer, with no screen anywhere.
 - Recipe: a Create cogwheel over a network jack between iron plates, a plate below.
+
+## 20. Controls Cabinet
+
+A wall cabinet with a DIN rail inside and a door of six cells outside, for the operator side of a
+machine. It mounts on a wall like the CT cabinet, has twelve conduit knockouts (four top, four
+bottom, two each side) and one Cat6 jack on the right side that puts the whole cabinet on the
+computer network as `powergrid_controls`.
+
+- **The rail** takes six modules, fitted by right-clicking the cabinet with one: a **24 V Power
+  Supply** (the bus is live while it sees at least 50 V between the cabinet's Line and Neutral
+  terminals; without one nothing works), **8-Channel Input** modules, **8-Channel Output**
+  modules and **2-Channel Relay** modules. Each relay contact is a pair of terminals in the splice
+  editor, Relay n.k COM and NO, that the computer closes; wire a motor starter or a light circuit
+  through one. Modules come off with the Remove buttons in the cabinet's screen, or with wire
+  cutters while sneaking.
+- **The door** takes six devices, fitted by right-clicking a cell with one: **E-Stop** (press to
+  latch, press again to twist out; it stays pressed with the power off), **Toggle Button**,
+  **Momentary Button** (half a second), **Selector Switch** (three positions, left, centre, right),
+  **Pilot Light** (five colours) and **Number Display** (four digits the computer writes). Devices
+  come out with Remove or with cutters on the cell.
+- **Wiring** is done in the cabinet's screen (empty hand on the door off a device): each input
+  device is wired to one channel of an input module, each light to one channel of an output
+  module, with the arrow buttons; a selector takes two channels, its left position on the first,
+  its right on the next. A new device wires itself to the first free channel of the first fitting
+  module, so a small cabinet needs no editing at all. Sneak with an empty hand for the splice
+  editor, where Line, Neutral and the relay contacts meet the conduit.
+- **Computers** see `powergrid_controls`, with slots, channels and cells numbered from 1:
+  isPowered, getVoltage, isEStopped, getModules, getDevices, getInput(slot, ch), getInputs(slot),
+  setOutput(slot, ch, on), getOutput, setRelay(slot, ch, closed), getRelay, setDisplay(cell, value),
+  getDeviceState(cell), getLimits. OpenComputers signals and CC: Tweaked events: `input_change`
+  (slot, channel, state), `estop` (active) and `device` (cell, type, state) when a player works
+  something on the door. An unpowered bus reads every input as off.
+- The power supply draws about 15 W plus 2 W per module from Line and Neutral at whatever
+  voltage it is given, 120 V or 277 V alike.
+- Recipes: the cabinet is a network jack in iron plates; modules are iron nuggets around a copper
+  coil, pins and redstone, a redstone torch, or a lever; door devices are iron nuggets under the
+  obvious part (red and yellow dye, a lever, a stone button, a comparator, glowstone dust, glass
+  and redstone).
