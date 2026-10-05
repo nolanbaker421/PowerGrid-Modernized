@@ -213,6 +213,16 @@ the hot conductor of a lighting circuit and give the light its own conduit run b
 
 ---
 
+### Flexible Conduit
+
+A 1" whip that hangs from one knockout straight to another instead of following blocks, for the
+places a rigid run cannot go: a crane boom's pivot, a drawbridge, a ship against a dock. Its two
+ends may be on different physics bodies or one on the ground, and it follows both wherever they
+move; it is never routed, extended or merged. Click one knockout, then the other, up to 16
+blocks apart. Wire is pulled through it like any run, up to a 1" run's capacity, and the pulled
+wires connect across however the two ends move. Recipe: a 1" conduit between two string, for
+two.
+
 ## 4. Breaker panels
 
 Seven wall-mounted load centres. The rating is the main breaker's job and the largest breaker any

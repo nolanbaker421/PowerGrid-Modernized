@@ -8,6 +8,7 @@ import com.nolanbaker.pgmodernized.conduit.ConduitCoverItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.BuildingWireItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
+import com.nolanbaker.pgmodernized.conduit.FlexConduitItem;
 import com.nolanbaker.pgmodernized.conduit.WireGauge;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerFrame;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerItem;
@@ -91,6 +92,8 @@ public class ModItems {
 
     /** Conduit per trade size, laid like block wire. Wire stats in wire_types/conduit_<size>.json. */
     public static final Map<ConduitSize, ItemEntry<ConduitItem>> CONDUIT;
+    /** 1" flexible conduit: a whip from one knockout straight to another, on any two bodies. */
+    public static final ItemEntry<FlexConduitItem> CONDUIT_FLEX_ONE;
 
     /** THHN building wire per gauge. Wire stats in wire_types/wire_<gauge>.json. */
     public static final Map<WireGauge, ItemEntry<BuildingWireItem>> BUILDING_WIRE;
@@ -120,6 +123,10 @@ public class ModItems {
                     .register());
         }
         CONDUIT = Collections.unmodifiableMap(conduit);
+        CONDUIT_FLEX_ONE = REGISTRATE.item("conduit_flex_one", p -> new FlexConduitItem(p, ConduitSize.ONE))
+                .model(NonNullBiConsumer.noop())
+                .lang("1\" Flexible Conduit")
+                .register();
 
         var wires = new EnumMap<WireGauge, ItemEntry<BuildingWireItem>>(WireGauge.class);
         for(var gauge : WireGauge.values()) {

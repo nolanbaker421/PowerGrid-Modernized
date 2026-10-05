@@ -20,9 +20,18 @@ public final class BodyRide {
     @Nullable
     private Vec3 origin;
     private boolean tracked;
+    private boolean disabled;
+
+    /** For an entity that places itself every tick (a flexible conduit): never ride. */
+    public void disable() {
+        disabled = true;
+        origin = null;
+    }
 
     /** Call every tick, and once right after the entity is created so its recorded block position is the world one. */
     public void tick(BlockWireEntity entity) {
+        if(disabled)
+            return;
         var level = entity.level();
         if(origin == null) {
             if(SableCompanion.INSTANCE.getContaining(level, entity.position()) == null)

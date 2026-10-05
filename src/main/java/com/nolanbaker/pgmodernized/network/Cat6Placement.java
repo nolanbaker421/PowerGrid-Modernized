@@ -148,7 +148,8 @@ public final class Cat6Placement {
         var entry = wireEntry(level, stack, player);
         if(entry == null)
             return InteractionResult.FAIL;
-        float distance = (float) origin.getExactPosition(level).distanceTo(clicked.getExactPosition(level));
+        // Measured where the two jacks really are: a jack on a physics body sits far away in its plot.
+        float distance = (float) SableUtils.projectedDistance(level, origin.getExactPosition(level), clicked.getExactPosition(level));
         if(distance > entry.maximumLength()) {
             message(player, "message.connection_too_long", ChatFormatting.RED);
             return InteractionResult.FAIL;

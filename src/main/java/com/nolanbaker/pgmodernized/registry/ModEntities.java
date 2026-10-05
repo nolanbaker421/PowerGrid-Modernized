@@ -19,6 +19,8 @@ import com.nolanbaker.pgmodernized.client.NoopEntityRenderer;
 import com.nolanbaker.pgmodernized.client.BodyWireRenderer;
 import com.nolanbaker.pgmodernized.conduit.ConductorEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
+import com.nolanbaker.pgmodernized.conduit.FlexConduitEntity;
+import com.nolanbaker.pgmodernized.client.FlexConduitRenderer;
 import com.nolanbaker.pgmodernized.device.breaker.BusLinkEntity;
 import com.nolanbaker.pgmodernized.network.Cat6BlockWireEntity;
 import com.nolanbaker.pgmodernized.network.Cat6WireEntity;
@@ -51,6 +53,12 @@ public class ModEntities {
     public static final EntityEntry<ConduitRunEntity> CONDUIT_RUN =
             REGISTRATE.entity("conduit_run", ConduitRunEntity::new, MobCategory.MISC)
                     .renderer(() -> BodyWireRenderer::new)
+                    .register();
+
+    /** A flexible conduit whip hung from one knockout to another, ends on any bodies. */
+    public static final EntityEntry<FlexConduitEntity> FLEX_CONDUIT =
+            REGISTRATE.entity("flex_conduit", FlexConduitEntity::new, MobCategory.MISC)
+                    .renderer(() -> FlexConduitRenderer::new)
                     .register();
 
     /** Invisible bus bar between two adjacent switchgear sections. */

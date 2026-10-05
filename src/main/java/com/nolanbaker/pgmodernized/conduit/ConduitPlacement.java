@@ -152,6 +152,8 @@ public final class ConduitPlacement {
         var entry = wireEntry(level, stack, player);
         if(entry == null)
             return InteractionResultHolder.fail(null);
+        if(FlexConduitItem.isFlex(stack))
+            return connectFlex(level, stack, player, from, to, entry);
         if(from.type() == WireEndpointType.BLOCK_WIRE && to.type() == WireEndpointType.BLOCK_WIRE)
             return merge(level, stack, player, (BlockWireEntityEndpoint) from, (BlockWireEntityEndpoint) to, entry);
         if(!(from instanceof BlockWireEntityEndpoint) && to instanceof BlockWireEntityEndpoint) {
@@ -238,6 +240,40 @@ public final class ConduitPlacement {
             takeItems(player, stack, newItems);
             return InteractionResultHolder.success(closes ? null : existing);
         }
+    }
+
+    /**
+     * A flexible whip: one knockout straight to another, hung between them, however the two are
+     * placed and whether or not they share a body. Never routed, never extended, never merged.
+     */
+    private static InteractionResultHolder<ConduitRunEntity> connectFlex(Level level, ItemStack stack, @Nullable Player player,
+                                                                         IWireEndpoint from, IWireEndpoint to, WireItemEntry entry) {
+        if(!(from instanceof BlockWireEndpoint a) || !(to instanceof BlockWireEndpoint b)) {
+            message(player, "message.conduit.flex_hubs", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
+        if(a.equals(b) || !hubFree(level, player, a, stack) || !hubFree(level, player, b, stack))
+            return InteractionResultHolder.fail(null);
+        float distance = (float) SableUtils.projectedDistance(level, a.getExactPosition(level), b.getExactPosition(level));
+        if(distance > entry.maximumLength()) {
+            message(player, "message.connection_too_long", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
+        int items = Math.max(1, (int) Math.ceil(distance * FlexConduitEntity.SLACK * entry.itemsPerMeter()));
+        if(!PlayerUtilities.hasEnoughItems(player, stack, items)) {
+            message(player, "message.connection_missing_items", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
+        if(level.isClientSide)
+            return InteractionResultHolder.success(null);
+        var entity = FlexConduitEntity.create(level, a, b, stack.copyWithCount(items));
+        if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
+            PowerGridModernized.LOGGER.error("Failed to spawn flexible conduit entity");
+            message(player, "message.connection_failed", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
+        takeItems(player, stack, items);
+        return InteractionResultHolder.success(null);
     }
 
     /** Join two open runs end to end. */

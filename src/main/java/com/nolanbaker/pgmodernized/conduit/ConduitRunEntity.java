@@ -266,11 +266,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         int terminalB = hostB.conductorTerminal(hubB, slot);
         var start = IElectric.getTerminalPos(level, e1.getPos(), terminalA);
         var end = IElectric.getTerminalPos(level, e2.getPos(), terminalB);
-        var path = new ArrayList<Point>();
-        path.addAll(manhattan(start, position()));
-        for(var segment : segments)
-            path.add(new Point(segment.direction, segment.gridLength));
-        path.addAll(manhattan(endPosition(), end));
+        var path = conductorPath(start, end);
 
         var entity = ConductorEntity.create(level, this, slot, stack.copyWithCount(required),
                 new BlockWireEndpoint(e1.getPos(), terminalA), new BlockWireEndpoint(e2.getPos(), terminalB), start, path);
@@ -342,6 +338,16 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
     private static InteractionResult fail(Player player, String key) {
         player.displayClientMessage(Lang.translate(key).style(ChatFormatting.RED).component(), true);
         return InteractionResult.FAIL;
+    }
+
+    /** The route a pulled wire takes from its first terminal to its second: into the run, along it, and out. */
+    protected List<Point> conductorPath(Vec3 start, Vec3 end) {
+        var path = new ArrayList<Point>();
+        path.addAll(manhattan(start, position()));
+        for(var segment : segments)
+            path.add(new Point(segment.direction, segment.gridLength));
+        path.addAll(manhattan(endPosition(), end));
+        return path;
     }
 
     /** Axis-aligned segments from one point to the next; the conductor is invisible so the route only needs to be legal. */
