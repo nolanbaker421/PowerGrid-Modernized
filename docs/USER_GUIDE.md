@@ -497,7 +497,7 @@ A variable frequency drive in the DC VFD's form: floor-mounted, wrench-rotated, 
 knockouts and a Cat6 jack. Three-phase in on L1, L2, L3 (DC across two of them works too); three
 phases out on U, V, W.
 
-- Set the **frequency** on the value box on top (whole hertz, 0 to 30) or from a computer.
+- Set the **frequency** on the value box on top (whole hertz, 0 to 120) or from a computer.
 - Sneak-right-click the drive with an empty hand to type its **ratings**: the rated volts, the
   hertz they are reached at, and the ramp rate; computers set them with `setRated(volts, hz)` and
   `setRamp`, and read them with `getRated`.

@@ -40,7 +40,8 @@ import static com.nolanbaker.pgmodernized.ac.drive.ThreePhaseDriveBlock.*;
  * what the input can supply, a third of a volt per volt of line input.
  */
 public class ThreePhaseDriveBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, INetworkJack, IDeviceSpliceHost, DriveRatingPayload.IDriveRatings {
-    public static final int MAX_HZ = 30;
+    /** As high as the AC sources go; the simulation samples the same way for both. */
+    public static final int MAX_HZ = com.nolanbaker.pgmodernized.ac.source.AcSourceBehaviour.MAX_HZ;
     public static final float MAX_VOLTS = 1400f;
     public static final float OUTPUT_R = 0.05f;
     public static final float SERIES_R = 0.005f;
