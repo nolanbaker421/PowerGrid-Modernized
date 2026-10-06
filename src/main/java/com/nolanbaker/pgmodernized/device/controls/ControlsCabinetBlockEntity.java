@@ -81,6 +81,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     private SpliceSupport splices;
+    /** The rail read differs from what the circuit was built for; rebuilt on the next tick, once the behaviour exists. */
+    private boolean railDirty;
     /** The head plus the extensions below it, from the block state. */
     private int sections = 1;
     private final JackSupport jack = new JackSupport(this, false);
@@ -343,30 +345,50 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         var neutral = builder.terminalNode(TERMINAL_NEUTRAL);
         sense = builder.connect(SENSE, line, neutral);
         psuLoad = builder.connect(OPEN, line, neutral);
+        // Only a fitted module puts wires in the circuit: a slot's contacts, channel senses and
+        // output contacts exist while its module does, and the circuit is rebuilt when the rail
+        // changes. (Wiring every possible slot made some four hundred wires, and the client's
+        // network builder froze the game over them.) The rail is still null from the constructor.
+        var modules = rail == null ? new ControlModule[MAX_RAIL] : rail;
         contacts = new SwitchedWire[MAX_RAIL * RELAY_CHANNELS];
-        for(int slot = 0; slot < MAX_RAIL; ++slot) {
-            for(int ch = 0; ch < RELAY_CHANNELS; ++ch) {
-                contacts[slot * RELAY_CHANNELS + ch] = builder.connectSwitch(resistance("contact"),
-                        builder.terminalNode(CabinetLayout.relayTerminal(slot, ch, 0)), builder.terminalNode(CabinetLayout.relayTerminal(slot, ch, 1)), false);
-            }
-        }
         ioSense = new ElectricWire[MAX_RAIL * CHANNELS];
         ioOut = new SwitchedWire[MAX_RAIL * CHANNELS];
         ioReading = new AcReadings.Filter[MAX_RAIL * CHANNELS];
-        for(int i = 0; i < MAX_RAIL * CHANNELS; ++i) {
-            var terminal = builder.terminalNode(CabinetLayout.ioTerminal(i / CHANNELS, i % CHANNELS));
-            ioSense[i] = builder.connect(SENSE, terminal, neutral);
-            ioOut[i] = builder.connectSwitch(resistance("contact"), line, terminal, false);
-            ioReading[i] = new AcReadings.Filter();
-        }
         aiSense = new ElectricWire[MAX_RAIL * ANALOG_CHANNELS];
         aiReading = new AcReadings.Filter[MAX_RAIL * ANALOG_CHANNELS];
-        for(int i = 0; i < MAX_RAIL * ANALOG_CHANNELS; ++i) {
-            aiSense[i] = builder.connect(SENSE, builder.terminalNode(CabinetLayout.aiTerminal(i / ANALOG_CHANNELS, i % ANALOG_CHANNELS)), neutral);
-            aiReading[i] = new AcReadings.Filter();
+        for(int slot = 0; slot < MAX_RAIL; ++slot) {
+            var module = modules[slot];
+            if(module == ControlModule.RELAY) {
+                for(int ch = 0; ch < RELAY_CHANNELS; ++ch) {
+                    contacts[slot * RELAY_CHANNELS + ch] = builder.connectSwitch(resistance("contact"),
+                            builder.terminalNode(CabinetLayout.relayTerminal(slot, ch, 0)), builder.terminalNode(CabinetLayout.relayTerminal(slot, ch, 1)), false);
+                }
+            } else if(module == ControlModule.DIGITAL_IN) {
+                for(int ch = 0; ch < CHANNELS; ++ch) {
+                    int i = slot * CHANNELS + ch;
+                    ioSense[i] = builder.connect(SENSE, builder.terminalNode(CabinetLayout.ioTerminal(slot, ch)), neutral);
+                    ioReading[i] = new AcReadings.Filter();
+                }
+            } else if(module == ControlModule.DIGITAL_OUT) {
+                for(int ch = 0; ch < CHANNELS; ++ch)
+                    ioOut[slot * CHANNELS + ch] = builder.connectSwitch(resistance("contact"), line, builder.terminalNode(CabinetLayout.ioTerminal(slot, ch)), false);
+            } else if(module == ControlModule.ANALOG_IN) {
+                for(int ch = 0; ch < ANALOG_CHANNELS; ++ch) {
+                    int i = slot * ANALOG_CHANNELS + ch;
+                    aiSense[i] = builder.connect(SENSE, builder.terminalNode(CabinetLayout.aiTerminal(slot, ch)), neutral);
+                    aiReading[i] = new AcReadings.Filter();
+                }
+            }
         }
         reading = new AcReadings.Filter();
         appliedLoad = OPEN;
+    }
+
+    /** The rail changed: the circuit gets the fitted modules' wires. */
+    private void rebuildCircuit() {
+        var behaviour = getBehaviour(ElectricBehaviour.TYPE);
+        if(behaviour != null)
+            behaviour.rebuildCircuit(false);
     }
 
     @Override
@@ -411,14 +433,16 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             boolean relay = rail[slot] == ControlModule.RELAY;
             for(int ch = 0; ch < RELAY_CHANNELS; ++ch) {
                 int i = slot * RELAY_CHANNELS + ch;
-                contacts[i].setState(powered && relay && relays[i]);
+                if(contacts[i] != null)
+                    contacts[i].setState(powered && relay && relays[i]);
             }
             // Output terminals source line while their channel is on; input terminals read against neutral.
             boolean in = rail[slot] == ControlModule.DIGITAL_IN, out = rail[slot] == ControlModule.DIGITAL_OUT;
             for(int ch = 0; ch < CHANNELS; ++ch) {
                 int i = slot * CHANNELS + ch;
-                ioOut[i].setState(powered && out && outputs[i]);
-                if(in && powered) {
+                if(ioOut[i] != null)
+                    ioOut[i].setState(powered && out && outputs[i]);
+                if(in && powered && ioSense[i] != null) {
                     ioReading[i].sample(ioSense[i]);
                     external[i] = ioReading[i].rmsVoltage() >= MIN_VOLTS;
                 } else {
@@ -428,7 +452,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             boolean analog = rail[slot] == ControlModule.ANALOG_IN;
             for(int ch = 0; ch < ANALOG_CHANNELS; ++ch) {
                 int i = slot * ANALOG_CHANNELS + ch;
-                if(analog && powered) {
+                if(analog && powered && aiSense[i] != null) {
                     aiReading[i].sample(aiSense[i]);
                     aiVolts[i] = (float) aiReading[i].rmsVoltage();
                 } else {
@@ -442,6 +466,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     public void tick() {
         super.tick();
         jack.tick();
+        if(railDirty) {
+            railDirty = false;
+            rebuildCircuit();
+        }
         if(level == null || level.isClientSide)
             return;
         for(int cell = 0; cell < MAX_CELLS; ++cell) {
@@ -768,9 +796,13 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             dirty = true;
         }
         if(level != null && level.getGameTime() % 10 == 0) {
-            plcValues = plc.values();
-            plcMessages = plc.messages();
-            dirty = true;
+            var values = plc.values();
+            var messages = plc.messages();
+            if(!Arrays.equals(values, plcValues) || !messages.equals(plcMessages)) {
+                plcValues = values;
+                plcMessages = messages;
+                dirty = true;
+            }
         }
     }
 
@@ -1134,6 +1166,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         for(int slot = 0; slot < slots(); ++slot) {
             if(rail[slot] == null) {
                 rail[slot] = module;
+                rebuildCircuit();
                 vfdTarget[slot] = null;
                 vfdMin[slot] = 5;
                 vfdMax[slot] = 30;
@@ -1260,6 +1293,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         }
         drop(ModItems.CONTROL_MODULES.get(rail[slot]).asStack());
         rail[slot] = null;
+        rebuildCircuit();
         vfdTarget[slot] = null;
         vfdRun[slot] = false;
         for(int cell = 0; cell < MAX_CELLS; ++cell)
@@ -1440,8 +1474,15 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         super.read(tag, registries, clientPacket);
         splices().read(tag);
         var railTag = tag.getIntArray("Rail");
-        for(int i = 0; i < MAX_RAIL; ++i)
-            rail[i] = i < railTag.length ? ControlModule.fromOrdinal(railTag[i]) : null;
+        boolean railChanged = false;
+        for(int i = 0; i < MAX_RAIL; ++i) {
+            var module = i < railTag.length ? ControlModule.fromOrdinal(railTag[i]) : null;
+            if(module != rail[i])
+                railChanged = true;
+            rail[i] = module;
+        }
+        if(railChanged)
+            railDirty = true;
         var panelTag = tag.getIntArray("Panel");
         for(int i = 0; i < MAX_CELLS; ++i)
             panel[i] = i < panelTag.length ? PanelDevice.fromOrdinal(panelTag[i]) : null;
