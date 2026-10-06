@@ -42,9 +42,13 @@ import java.util.List;
  */
 public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity, IDeviceSpliceHost {
     public static final double STRESS_CAPACITY = 64;
-    /** Full excitation: 120 V per phase at 10 Hz. Below a fifth of this the motor stalls. */
+    /**
+     * Full excitation: 120 V per phase at 10 Hz. Above the hertz its supply holds that ratio to, a
+     * motor runs in field weakening: it keeps turning, and the stress it can carry falls with the
+     * volts per hertz instead. Only with next to no field does it stop.
+     */
     public static final float RATED_VOLTS_PER_HZ = 12f;
-    public static final float MIN_EXCITATION = 0.2f;
+    public static final float MIN_EXCITATION = 0.05f;
     public static final float FULL_LOAD_SLIP = 0.05f;
     public static final float SENSE = 1_000_000f;
     public static final float CONVERSION_CONSTANT = (float) (60 * Math.PI / 2);
@@ -73,6 +77,8 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
     public static final float IDLE_FRACTION = 0.03f;
     /** Stress this motor carries right now (SU), and the electrical power that is worth. */
     private float carriedStress, demandWatts;
+    /** Volts per hertz against the rated ratio, 0 to 1; synced for the goggles. */
+    private float excitation;
 
     public ThreePhaseMotorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -116,7 +122,8 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         float r = resistance("winding");
         double fullLoadWatts = r > 0 ? 3.0 * phaseVolts * phaseVolts / r : 0;
         double stress = fullLoadWatts * PgmConfig.MOTOR_EFFICIENCY.get() / PgmConfig.wattsPerSu();
-        return (float) Math.min(PgmConfig.MOTOR_MAX_CAPACITY.get(), stress / rpm);
+        // In field weakening the torque falls with the field: what the windings could draw is not all usable.
+        return (float) Math.min(PgmConfig.MOTOR_MAX_CAPACITY.get(), stress / rpm * Math.max(0, Math.min(1, excitation)));
     }
 
     @Override
@@ -222,11 +229,9 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
             sequence = PhaseSenseWire.sequence(senses[0], senses[1]);
 
             float speed = 0;
-            if(sequence != 0 && frequency > 0.2f) {
-                float excitation = Math.min(1, phaseVolts / frequency / RATED_VOLTS_PER_HZ);
-                if(excitation >= MIN_EXCITATION)
-                    speed = sequence * synchronousSpeed() * (1 - FULL_LOAD_SLIP * load);
-            }
+            excitation = sequence != 0 && frequency > 0.2f ? Math.min(1, phaseVolts / frequency / RATED_VOLTS_PER_HZ) : 0;
+            if(excitation >= MIN_EXCITATION)
+                speed = sequence * synchronousSpeed() * (1 - FULL_LOAD_SLIP * load);
             speedSum += speed;
             ++speedSamples;
         }
@@ -324,6 +329,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         if(clientPacket) {
             frequency = tag.getFloat("Frequency");
             carriedStress = tag.getFloat("Carried");
+            excitation = tag.getFloat("Excitation");
             demandWatts = tag.getFloat("Demand");
             phaseVolts = tag.getFloat("PhaseVolts");
             phaseAmps = tag.getFloat("PhaseAmps");
@@ -340,6 +346,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         if(clientPacket) {
             tag.putFloat("Frequency", frequency);
             tag.putFloat("Carried", carriedStress);
+            tag.putFloat("Excitation", excitation);
             tag.putFloat("Demand", demandWatts);
             tag.putFloat("PhaseVolts", phaseVolts);
             tag.putFloat("PhaseAmps", phaseAmps);
@@ -364,6 +371,8 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         Lang.builder().text(String.format("%.1f ", phaseVolts)).add(Unit.VOLTAGE.get()).text(String.format("  %.2f ", phaseAmps)).add(Unit.CURRENT.get())
                 .style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.three_phase_motor.sync", polePairs(), Math.round(synchronousSpeed())).style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.three_phase_motor.excitation", Math.round(excitation * 100))
+                .style(excitation >= 0.95f ? ChatFormatting.GREEN : excitation >= MIN_EXCITATION ? ChatFormatting.GOLD : ChatFormatting.RED).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.three_phase_motor.carrying", String.format("%.0f", carriedStress), String.format("%.0f", demandWatts))
                 .style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         deviceHubs().addGoggleLines(tooltip);

@@ -487,7 +487,11 @@ box at the back and the shaft out of the front. Feed it three phases (from three
   4.5 Hz, the speed of the alternator feeding it.
 - The **phase sequence** sets the direction: U-V-W forward, U-W-V reverse. Swap two phases, or use
   the drive's reverse, to turn it the other way. With one phase missing or on DC it does not turn.
-- It needs about 12 V per hertz per phase for full excitation and stalls below a fifth of that.
+- It needs about 12 V per hertz per phase for full excitation. Above the hertz its drive holds that
+  ratio to (the drive's rated point) it runs in field weakening: it keeps turning at the
+  synchronous speed, but the stress it can carry falls with the volts per hertz, so for full torque
+  at 60 Hz give the drive a rated point of 720 V at 60 Hz and the input to match. Only with almost
+  no field (a twentieth of the ratio) does it stop. The goggles show the excitation.
 - Loaded windings draw more current, as Power Grid's motor does. It heats and can burn out.
 - Goggles show frequency, sequence, phase voltage and current, pole pairs and synchronous speed.
 

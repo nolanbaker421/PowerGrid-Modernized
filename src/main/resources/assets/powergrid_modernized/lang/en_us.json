@@ -343,6 +343,7 @@
   "powergrid.gui.three_phase_motor.reverse": "sequence U-W-V (reversed)",
   "powergrid.gui.three_phase_motor.none": "no three-phase supply",
   "powergrid.gui.three_phase_motor.sync": "%1$s pole pairs, synchronous %2$s rpm",
+  "powergrid.gui.three_phase_motor.excitation": "Excitation %1$s%% of 12 V per Hz",
   "powergrid.gui.three_phase_motor.carrying": "Carrying %1$s SU, asking %2$s W of the supply",
   "powergrid.gui.three_phase_drive.frequency": "Frequency",
   "powergrid.gui.three_phase_drive.output": "Output",
