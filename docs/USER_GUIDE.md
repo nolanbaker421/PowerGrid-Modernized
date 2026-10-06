@@ -1079,6 +1079,18 @@ computer network as `powergrid_controls`.
   conduit and their wires appear in the head's splice screen. The head's bottom knockouts must
   be free before an extension goes on, as it covers them. Breaking an extension drops whatever
   sat in it and takes the extensions below it with it.
+- **Control Station.** The cabinet's door, four cells at a time, anywhere the Cat6 reaches: a
+  small box on the wall that takes the same buttons, lights, dials and displays, with two
+  jack pins underneath that share one node, so stations daisy-chain from one to the next and
+  on to the cabinet's internal jack (a switch works too). Fit devices by right-clicking the
+  face with them, work them with an empty hand, and right-click elsewhere or sneak to open
+  the station's screen, where each cell is wired to a cabinet module channel exactly like a
+  door cell: a button to input 1.3, a light to output 3.1, a dial to a VFD module's speed. A
+  new device takes the first free channel by itself. The cabinet reads station inputs every
+  tick, station E-stops stop everything, and station lights follow the cabinet's outputs.
+  Each station has a number, set in its screen, and the PLC reads its cells directly as
+  `B1.1` to `B1.4` for station 1. An elevator is a station per floor with an up and a down
+  button and a lamp each, all on one chain back to the cabinet.
 - **Wiring the modules.** Relay modules put a COM and an NO terminal per channel in the splice
   screen (sneak-click the cabinet). Digital In and Digital Out modules put one terminal per
   channel there too, but only for channels that no door device is wired to: wire a button to

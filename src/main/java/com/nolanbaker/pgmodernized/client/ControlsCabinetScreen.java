@@ -97,19 +97,26 @@ public class ControlsCabinetScreen extends Screen {
 
     /** Every channel index a device in that cell may be wired to, in rail order, then "nothing". */
     private static List<Integer> targets(ControlsCabinetBlockEntity cabinet, int cell) {
+        var device = cabinet.device(cell);
+        return device == null ? List.of() : targetsFor(cabinet, device);
+    }
+
+    /** Every channel index a device of that kind may be wired to, in rail order, then "nothing". */
+    static List<Integer> targetsFor(ControlsCabinetBlockEntity cabinet, PanelDevice device) {
         var out = new ArrayList<Integer>();
         for(int slot = 0; slot < cabinet.slots(); ++slot)
             for(int ch = 0; ch < CHANNELS; ++ch)
-                if(cabinet.canWire(cell, slot * CHANNELS + ch))
+                if(cabinet.canWireDevice(device, slot * CHANNELS + ch))
                     out.add(slot * CHANNELS + ch);
-        if(!out.isEmpty() || cabinet.device(cell) != null)
-            out.add(-1);
+        out.add(-1);
         return out;
     }
 
     private static Component wireName(ControlsCabinetBlockEntity cabinet, int cell) {
-        var device = cabinet.device(cell);
-        int target = cabinet.wireOf(cell);
+        return wireNameFor(cabinet, cabinet.device(cell), cabinet.wireOf(cell));
+    }
+
+    static Component wireNameFor(ControlsCabinetBlockEntity cabinet, @Nullable PanelDevice device, int target) {
         if(device == PanelDevice.DISPLAY && target < 0)
             return Component.translatable("powergrid.gui.controls.by_computer");
         if(device == null || target < 0)

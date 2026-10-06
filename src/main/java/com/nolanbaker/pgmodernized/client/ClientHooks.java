@@ -22,6 +22,11 @@ public final class ClientHooks {
         Minecraft.getInstance().setScreen(new HmiScreen(pos));
     }
 
+    /** Opens a control station's screen: its number and its cells' wiring. */
+    public static void openStation(BlockPos pos) {
+        Minecraft.getInstance().setScreen(new StationScreen(pos));
+    }
+
     /** Opens an HMI panel's layout editor. */
     public static void openHmiEditor(BlockPos pos) {
         Minecraft.getInstance().setScreen(new HmiEditorScreen(pos));

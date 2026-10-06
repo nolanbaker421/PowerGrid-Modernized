@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "J": {
+      "item": "powergrid_modernized:network_jack"
+    },
+    "N": {
+      "tag": "c:nuggets/iron"
+    }
+  },
+  "pattern": [
+    "III",
+    "IJI",
+    "NNN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:control_station"
+  }
+}

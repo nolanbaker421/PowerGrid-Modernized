@@ -128,6 +128,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private final int[] lastCommand = new int[MAX_RAIL];
     /** Drives found over the Cat6, for the screen to choose from; refreshed on the server, synced to the client. */
     private List<BlockPos> drives = new ArrayList<>();
+    /** Control stations found over the Cat6, by position; their devices count like door devices. */
+    private List<BlockPos> stations = new ArrayList<>();
     private boolean[] drivesHertz = new boolean[0];
     // The PLC: its program, the compiled form, what it told the VFD modules, and the devices it can see.
     private PlcGraph graph = new PlcGraph();
@@ -537,6 +539,12 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                     for(int cell = 0; cell < MAX_CELLS; ++cell)
                         if(panel[cell] == PanelDevice.DIAL && wire[cell] == slot * CHANNELS + ch)
                             value = dial[cell];
+                    if(!stations.isEmpty())
+                        for(var station : stationEntities()) {
+                            int v = station.dialFor(slot * CHANNELS + ch);
+                            if(v >= 0)
+                                value = v;
+                        }
                 }
                 analogIn[i] = value;
             }
@@ -557,6 +565,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     private void refreshInputs() {
+        var stationList = stations.isEmpty() ? List.<StationBlockEntity>of() : stationEntities();
         for(int slot = 0; slot < MAX_RAIL; ++slot) {
             boolean digital = rail[slot] == ControlModule.DIGITAL_IN;
             boolean vfd = rail[slot] == ControlModule.VFD;
@@ -568,6 +577,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                         state = drives(cell, i);
                     if(digital && external[i])
                         state = true;
+                    for(var station : stationList)
+                        if(!state && station.drives(i))
+                            state = true;
                 }
                 if(state != inputs[i]) {
                     inputs[i] = state;
@@ -587,6 +599,12 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         for(int cell = 0; cell < MAX_CELLS; ++cell)
             if(panel[cell] == PanelDevice.DIAL && wire[cell] == target)
                 return dial[cell];
+        if(!stations.isEmpty())
+            for(var station : stationEntities()) {
+                int v = station.dialFor(target);
+                if(v >= 0)
+                    return v;
+            }
         return 100;
     }
 
@@ -646,6 +664,52 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     /** Drives found over the Cat6 at the last look, by position. */
+    /** The stations found over the Cat6 that are loaded right now. */
+    public List<StationBlockEntity> stationEntities() {
+        var list = new ArrayList<StationBlockEntity>(stations.size());
+        if(level == null)
+            return list;
+        for(var at : stations)
+            if(level.isLoaded(at) && level.getBlockEntity(at) instanceof StationBlockEntity station)
+                list.add(station);
+        return list;
+    }
+
+    @Nullable
+    public StationBlockEntity stationNumber(int number) {
+        for(var station : stationEntities())
+            if(station.station() == number)
+                return station;
+        return null;
+    }
+
+    /** Whether a device of that kind may be wired to slot * CHANNELS + channel, for stations as for door cells. */
+    public boolean canWireDevice(PanelDevice device, int target) {
+        if(target < 0)
+            return true;
+        int slot = target / CHANNELS, ch = target % CHANNELS;
+        var module = slot < MAX_RAIL ? rail[slot] : null;
+        if(device == PanelDevice.DIAL)
+            return (module == ControlModule.VFD && ch == ControlModule.VFD_SPEED) || (module == ControlModule.ANALOG_IN && ch < ANALOG_CHANNELS);
+        if(device == PanelDevice.DISPLAY)
+            return module == ControlModule.ANALOG_OUT && ch < ANALOG_CHANNELS;
+        if(device.isInput())
+            return module == ControlModule.DIGITAL_IN || (module == ControlModule.VFD && ch < ControlModule.VFD_SPEED);
+        return device.isOutput() && module == ControlModule.DIGITAL_OUT;
+    }
+
+    /** The first channel a device of that kind could take that no door cell uses, or -1. */
+    public int firstFreeTarget(PanelDevice device) {
+        for(int slot = 0; slot < slots(); ++slot) {
+            for(int ch = 0; ch < CHANNELS; ++ch) {
+                int target = slot * CHANNELS + ch;
+                if(canWireDevice(device, target) && freeTarget(target, -1))
+                    return target;
+            }
+        }
+        return -1;
+    }
+
     public List<BlockPos> drives() {
         return drives;
     }
@@ -893,6 +957,16 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         public double read(String name) {
             if(name.equals("E"))
                 return isEStopped() ? 1 : 0;
+            if(name.startsWith("B") && name.indexOf('.') > 1) {
+                int dot = name.indexOf('.');
+                try {
+                    var station = stationNumber(Integer.parseInt(name.substring(1, dot)));
+                    int cell = Integer.parseInt(name.substring(dot + 1)) - 1;
+                    return station != null && cell >= 0 && cell < StationBlockEntity.CELLS && station.device(cell) != null ? station.deviceState(cell) : Double.NaN;
+                } catch(NumberFormatException e) {
+                    return Double.NaN;
+                }
+            }
             if(name.startsWith("AI") || name.startsWith("AO")) {
                 int i = analogIndex(name);
                 if(i < 0)
@@ -1085,6 +1159,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         for(int cell = 0; cell < MAX_CELLS; ++cell)
             if(panel[cell] == PanelDevice.E_STOP && latched[cell])
                 return true;
+        if(!stations.isEmpty())
+            for(var station : stationEntities())
+                if(station.isEStopped())
+                    return true;
         return false;
     }
 
@@ -1384,6 +1462,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         splices().prune();
         if(hasModule(ControlModule.VFD) || !drives.isEmpty())
             refreshDrives();
+        var foundStations = DriveLink.discoverAll(level, jack, StationBlockEntity.class);
+        if(!foundStations.equals(stations))
+            stations = foundStations;
         if(hasPlc() || !plcDevices.isEmpty())
             refreshPlcDevices();
     }

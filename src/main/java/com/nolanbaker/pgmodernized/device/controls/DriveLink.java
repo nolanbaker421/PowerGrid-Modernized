@@ -53,6 +53,69 @@ public final class DriveLink {
     }
 
     /** Every drive reachable from this jack over Cat6 cable, in a stable order by position. */
+    /** The nearest block entity of that class reachable over the jack's cables (any port), or null. */
+    public static <T extends BlockEntity> @org.jetbrains.annotations.Nullable BlockPos nearest(Level level, JackSupport start, Class<T> type, BlockPos from) {
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
+        var visited = new HashSet<BlockPos>();
+        var queue = new ArrayDeque<JackSupport>();
+        queue.add(start);
+        visited.add(start.pos());
+        while(!queue.isEmpty() && visited.size() < LIMIT) {
+            var jack = queue.poll();
+            var owner = jack.owner();
+            if(type.isInstance(owner)) {
+                double d = owner.getBlockPos().distSqr(from);
+                if(d < bestDistance) {
+                    bestDistance = d;
+                    best = owner.getBlockPos();
+                }
+            }
+            for(var cable : List.copyOf(jack.cables())) {
+                var wire = cable.asWireEntity();
+                for(IWireEndpoint endpoint : new IWireEndpoint[] {wire.getEndpoint1(), wire.getEndpoint2()}) {
+                    if(!(endpoint instanceof JackEndpoint end) || visited.contains(end.getPos()))
+                        continue;
+                    var other = end.jack(level);
+                    if(other == null)
+                        continue;
+                    visited.add(end.getPos());
+                    queue.add(other);
+                }
+            }
+        }
+        return best;
+    }
+
+    /** Every block entity of that class reachable over the jack's cables, by position. */
+    public static <T extends BlockEntity> List<BlockPos> discoverAll(Level level, JackSupport start, Class<T> type) {
+        var found = new ArrayList<BlockPos>();
+        var visited = new HashSet<BlockPos>();
+        var queue = new ArrayDeque<JackSupport>();
+        queue.add(start);
+        visited.add(start.pos());
+        while(!queue.isEmpty() && visited.size() < LIMIT) {
+            var jack = queue.poll();
+            var owner = jack.owner();
+            if(type.isInstance(owner) && !found.contains(owner.getBlockPos()))
+                found.add(owner.getBlockPos());
+            for(var cable : List.copyOf(jack.cables())) {
+                var wire = cable.asWireEntity();
+                for(IWireEndpoint endpoint : new IWireEndpoint[] {wire.getEndpoint1(), wire.getEndpoint2()}) {
+                    if(!(endpoint instanceof JackEndpoint end) || visited.contains(end.getPos()))
+                        continue;
+                    var other = end.jack(level);
+                    if(other == null)
+                        continue;
+                    visited.add(end.getPos());
+                    queue.add(other);
+                }
+            }
+        }
+        found.sort(Comparator.comparingLong(BlockPos::asLong));
+        return found;
+    }
+
     public static List<BlockPos> discover(Level level, JackSupport start) {
         var drives = new ArrayList<BlockPos>();
         var visited = new HashSet<BlockPos>();

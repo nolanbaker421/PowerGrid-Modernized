@@ -16,6 +16,7 @@ public final class ModPackets {
         registrar.playToServer(ControlsGraphPayload.TYPE, ControlsGraphPayload.STREAM_CODEC, ControlsGraphPayload::handle);
         registrar.playToServer(HmiLayoutPayload.TYPE, HmiLayoutPayload.STREAM_CODEC, HmiLayoutPayload::handle);
         registrar.playToServer(HmiPressPayload.TYPE, HmiPressPayload.STREAM_CODEC, HmiPressPayload::handle);
+        registrar.playToServer(StationPayload.TYPE, StationPayload.STREAM_CODEC, StationPayload::handle);
         registrar.playToClient(HelmStatePayload.TYPE, HelmStatePayload.STREAM_CODEC, HelmStatePayload::handle);
     }
 }
