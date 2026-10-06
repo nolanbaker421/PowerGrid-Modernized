@@ -157,8 +157,13 @@ public class HelmBlockEntity extends SmartBlockEntity implements INetworkJack, I
         checkTimer = 0;
         var server = level.getServer();
         var player = server == null ? null : server.getPlayerList().getPlayer(helmsman);
-        if(player == null || !player.isAlive() || player.level() != level || player.position().distanceToSqr(worldCenter()) > REACH * REACH)
+        if(player == null || !player.isAlive() || player.level() != level || !holdsOn(player))
             release();
+    }
+
+    /** Whether the helmsman still keeps the helm: within reach of it. */
+    protected boolean holdsOn(ServerPlayer player) {
+        return player.position().distanceToSqr(worldCenter()) <= REACH * REACH;
     }
 
     // ---- jack ----

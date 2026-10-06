@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.helm.RadioBaseBlockEntity;
 import com.nolanbaker.pgmodernized.client.StationRenderer;
 import com.nolanbaker.pgmodernized.device.controls.StationBlockEntity;
 import com.nolanbaker.pgmodernized.client.HmiRenderer;
@@ -174,6 +175,11 @@ public class ModBlockEntities {
             REGISTRATE.blockEntity("hmi_panel", HmiBlockEntity::new)
                     .validBlock(ModBlocks.HMI)
                     .renderer(() -> HmiRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<RadioBaseBlockEntity> RADIO_BASE =
+            REGISTRATE.blockEntity("radio_base", (BlockEntityFactory<RadioBaseBlockEntity>) (type, pos, state) -> RadioBaseBlockEntity.FACTORY.create(type, pos, state))
+                    .validBlock(ModBlocks.RADIO_BASE)
                     .register();
 
     public static final BlockEntityEntry<HelmBlockEntity> HELM =

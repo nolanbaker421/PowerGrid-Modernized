@@ -27,6 +27,7 @@ public class OCBridge {
         ForkHooks.get().registerOC(event);
         expose(event, ModBlockEntities.RANGEFINDER.get());
         expose(event, ModBlockEntities.HELM.get());
+        expose(event, ModBlockEntities.RADIO_BASE.get());
         expose(event, ModBlockEntities.CONTROLS_CABINET.get());
         expose(event, ModBlockEntities.RAIL_FEED.get());
         expose(event, ModBlockEntities.RAIL_COLLECTOR.get());
@@ -54,6 +55,7 @@ public class OCBridge {
         ForkHooks.get().swapOCFactories();
         RangefinderBlockEntity.FACTORY = OCRangefinderBlockEntity::new;
         HelmBlockEntity.FACTORY = OCHelmBlockEntity::new;
+        com.nolanbaker.pgmodernized.device.helm.RadioBaseBlockEntity.FACTORY = OCRadioBaseBlockEntity::new;
         ControlsCabinetBlockEntity.FACTORY = OCControlsCabinetBlockEntity::new;
         ComputerBlockEntityFactories.RAIL_FEED = OCRailFeedBlockEntity::new;
         ComputerBlockEntityFactories.RAIL_COLLECTOR = OCRailCollectorBlockEntity::new;

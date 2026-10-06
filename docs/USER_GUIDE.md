@@ -1027,6 +1027,19 @@ helm; the goggles say who.
   block, one cable and one computer, with no screen anywhere.
 - Recipe: a Create cogwheel over a network jack between iron plates, a plate below.
 
+## 19a. Radio Remote and Radio Base
+
+The helm without the pedestal. The **Radio Base** is a small box with an antenna and a Cat6 jack
+on its back; cable it to a computer or to a controls cabinet's internal jack and it is a
+`powergrid_radio` component with the helm's methods (`isManned`, `getHelmsman`, `isDown`,
+`getPressed`) and signals (`radio_key`, `radio_taken`, `radio_released`), and the PLC discovers it
+as `radio1`. The **Radio Remote** is a handheld item: right-click a base with it to pair, then
+right-click with it anywhere in that dimension and your keys go to the base as if you stood at a
+helm, with no range limit, so it drives a vehicle from the ground or a crane from the floor. You
+keep the base while the remote is in either hand; putting it away, or ~, lets go. The base must be
+loaded, which on a vehicle it is while anyone is near it. One base takes one holder at a time;
+several remotes may be paired to the same base.
+
 ## 20. Controls Cabinet
 
 A wall cabinet with a DIN rail inside and a door of six cells outside, for the operator side of a

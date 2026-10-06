@@ -18,10 +18,16 @@ import java.util.Set;
  */
 public class HelmPeripheral implements IPeripheral, HelmBlockEntity.Listener {
     private final HelmBlockEntity helm;
+    private final String type;
     private final Set<IComputerAccess> computers = new HashSet<>();
 
     public HelmPeripheral(HelmBlockEntity helm) {
+        this(helm, helm instanceof com.nolanbaker.pgmodernized.device.helm.RadioBaseBlockEntity ? "powergrid_radio" : "powergrid_helm");
+    }
+
+    public HelmPeripheral(HelmBlockEntity helm, String type) {
         this.helm = helm;
+        this.type = type;
     }
 
     @Override
@@ -88,7 +94,7 @@ public class HelmPeripheral implements IPeripheral, HelmBlockEntity.Listener {
 
     @Override
     public @NotNull String getType() {
-        return "powergrid_helm";
+        return type;
     }
 
     @Override

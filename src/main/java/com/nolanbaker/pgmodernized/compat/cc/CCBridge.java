@@ -49,6 +49,8 @@ public class CCBridge {
                 (be, direction) -> new RangefinderPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.HELM.get(),
                 (be, direction) -> new HelmPeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.RADIO_BASE.get(),
+                (be, direction) -> new HelmPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.CONTROLS_CABINET.get(),
                 (be, direction) -> new ControlsCabinetPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.LINE_AMMETER.get(),

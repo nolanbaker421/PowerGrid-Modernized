@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.helm.RadioBaseBlock;
 import com.nolanbaker.pgmodernized.device.controls.StationBlock;
 import com.nolanbaker.pgmodernized.device.hmi.HmiBlock;
 import com.nolanbaker.pgmodernized.device.controls.ControlsExtensionBlock;
@@ -144,6 +145,17 @@ public class ModBlocks {
             .properties(p -> p.noOcclusion())
             .transform(pickaxeOnly())
             .lang("HMI Panel")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    public static final BlockEntry<RadioBaseBlock> RADIO_BASE = REGISTRATE.block("radio_base", RadioBaseBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Radio Base")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

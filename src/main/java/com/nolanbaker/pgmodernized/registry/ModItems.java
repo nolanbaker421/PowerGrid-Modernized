@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.helm.RadioRemoteItem;
 import com.nolanbaker.pgmodernized.rail.RailShoeItem;
 import com.nolanbaker.pgmodernized.chain.CableChainItem;
 import net.minecraft.world.item.Rarity;
@@ -97,6 +98,7 @@ public class ModItems {
     /** 1" flexible conduit: a whip from one knockout straight to another, on any two bodies. */
     public static final ItemEntry<FlexConduitItem> CONDUIT_FLEX_ONE;
     /** What clips onto a controls cabinet's rail, and what mounts in its door. */
+    public static final ItemEntry<RadioRemoteItem> RADIO_REMOTE;
     public static final Map<ControlModule, ItemEntry<ControlModule.ModuleItem>> CONTROL_MODULES;
     public static final Map<PanelDevice, ItemEntry<PanelDevice.DeviceItem>> PANEL_DEVICES;
 
@@ -131,6 +133,10 @@ public class ModItems {
         CONDUIT_FLEX_ONE = REGISTRATE.item("conduit_flex_one", p -> new FlexConduitItem(p, ConduitSize.ONE))
                 .model(NonNullBiConsumer.noop())
                 .lang("1\" Flexible Conduit")
+                .register();
+        RADIO_REMOTE = REGISTRATE.item("radio_remote", RadioRemoteItem::new)
+                .model(NonNullBiConsumer.noop())
+                .lang("Radio Remote")
                 .register();
 
         var modules = new EnumMap<ControlModule, ItemEntry<ControlModule.ModuleItem>>(ControlModule.class);
