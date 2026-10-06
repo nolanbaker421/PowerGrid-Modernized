@@ -1154,6 +1154,13 @@ Cat6 from the jack to a controls cabinet, on its PLC port or its internal port, 
 finds the cabinet over the cable and shows that PLC's tags the way you lay them out. No
 computer, no program: the panel reads and writes tags directly.
 
+- **Bigger screens.** Panels placed flush on one wall, facing the same way, join into one
+  screen the way OpenComputers screens do: a row of panels becomes one wide screen, and rows
+  of the same width stacked on each other become one tall one, up to eight by eight. Each
+  panel adds eight by eight cells to the grid. The bottom-left panel holds the layout; any
+  panel's jack will do for the Cat6, and any panel's face works its buttons. Breaking a
+  panel splits the screen back into what still forms rectangles, keeping the layout where
+  the bottom-left panel survives.
 - **Laying it out.** Sneak-right-click the screen to open the editor. Pick a widget kind at the
   top, click a free cell on the 8 by 8 grid to place it, click a widget to select it and drag it
   about, and set it on the right: its text, the tag it shows or writes, a range for bars and
@@ -1163,6 +1170,9 @@ computer, no program: the panel reads and writes tags directly.
   lights while its tag is nonzero. A *Button* writes its tag: momentary gives a 1 for half a
   second and then a 0, toggle flips it between 0 and 1. A *Bar* fills from min to max. A
   *Setpoint* shows a number with minus and plus that step the tag, kept between min and max.
+  A *Gauge* is a needle over an arc from min to max, the arc coloured in three bands the way a
+  SCADA gauge is: the first colour up to the first threshold, the second up to the second,
+  the third above it, with the value and label under the needle. Two cells tall by default.
 - **Using it.** The screen on the block shows everything live. Right-click a button on the face
   to press it, the left or right half of a setpoint to step it, and anywhere else to open the
   panel large, where the same widgets work with the mouse.

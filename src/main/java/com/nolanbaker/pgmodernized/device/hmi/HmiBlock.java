@@ -7,7 +7,9 @@ import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -27,10 +29,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A flat screen on the wall with a Cat6 jack under its corner. Over the cable it finds a controls
- * cabinet and shows that PLC's tags the way its editor laid them out; its buttons write tags.
- * Right-click a button on the face to press it, anywhere else to open the screen large, and
- * sneak-right-click to edit the layout. Built facing north, screen on the north face, and turned.
+ * A flat screen on the wall with a Cat6 jack under its corner. Panels placed flush on one wall
+ * merge into one screen, like OpenComputers screens, up to eight by eight. Over the cable it
+ * finds a controls cabinet and shows that PLC's tags the way its editor laid them out; its
+ * buttons write tags. Right-click a button on the face to press it, anywhere else to open the
+ * screen large, and sneak-right-click to edit the layout. Built facing north, screen on the north
+ * face, and turned.
  */
 public class HmiBlock extends Block implements IBE<HmiBlockEntity> {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -39,8 +43,8 @@ public class HmiBlock extends Block implements IBE<HmiBlockEntity> {
     public static final double[] JACK_BOX = {13, 0, 12.5, 15, 2, 14};
     private static final VoxelShaper SHAPES = VoxelShaper.forHorizontal(
             Shapes.or(box(0, 0, FACE_Z, 16, 16, 16), box(JACK_BOX[0], JACK_BOX[1], JACK_BOX[2], JACK_BOX[3], JACK_BOX[4], JACK_BOX[5])), Direction.NORTH);
-    /** Grid cell size on the face, in 16ths. */
-    public static final double CELL = 16.0 / HmiLayout.COLS;
+    /** Grid cell size on a panel, in 16ths. */
+    public static final double CELL = 16.0 / HmiLayout.PANEL;
 
     public HmiBlock(Properties properties) {
         super(properties);
@@ -79,6 +83,22 @@ public class HmiBlock extends Block implements IBE<HmiBlockEntity> {
         return state.rotate(mirror.getRotation(facing(state)));
     }
 
+    // ---- screens of several panels ----
+
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if(!level.isClientSide)
+            HmiGroups.onPlaced(level, pos);
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if(!state.is(newState.getBlock()) && !level.isClientSide)
+            HmiGroups.onRemoved(level, pos, facing(state));
+        IBE.onRemove(state, level, pos, newState);
+    }
+
     // ---- frames ----
 
     /** A block-local point (0..1) turned back into the north frame, in 16ths. */
@@ -111,20 +131,26 @@ public class HmiBlock extends Block implements IBE<HmiBlockEntity> {
         return Vec3.atLowerCornerOf(pos).add(local);
     }
 
-    /** The grid cell under a block-local hit on the screen face, as {column, row} from the viewer's top left, or null. */
-    public static int @Nullable [] cellAt(BlockState state, Vec3 local) {
+    /**
+     * The screen's grid cell under a block-local hit on this panel's face, as {column, row} from
+     * the whole screen's top left, or null off the face.
+     */
+    public static int @Nullable [] cellAt(BlockState state, Vec3 local, HmiBlockEntity panel) {
         var p = toNorthFrame(state, local);
         if(p.z > FACE_Z + 0.6)
             return null;
         int col = (int) ((16 - p.x) / CELL), row = (int) ((16 - p.y) / CELL);
-        return new int[] {Math.max(0, Math.min(HmiLayout.COLS - 1, col)), Math.max(0, Math.min(HmiLayout.ROWS - 1, row))};
+        col = Math.max(0, Math.min(HmiLayout.PANEL - 1, col));
+        row = Math.max(0, Math.min(HmiLayout.PANEL - 1, row));
+        var offset = panel.offset();
+        return new int[] {offset[0] * HmiLayout.PANEL + col, (panel.height() - 1 - offset[1]) * HmiLayout.PANEL + row};
     }
 
     /** Where inside a widget a hit landed, 0 at its left edge to 1 at its right, in the viewer's frame. */
-    public static double fractionAcross(BlockState state, Vec3 local, HmiLayout.Widget widget) {
+    public static double fractionAcross(BlockState state, Vec3 local, HmiBlockEntity panel, HmiLayout.Widget widget) {
         var p = toNorthFrame(state, local);
-        double left = 16 - widget.col * CELL;
-        return Math.max(0, Math.min(1, (left - p.x) / (widget.w * CELL)));
+        double hitCol = panel.offset()[0] * HmiLayout.PANEL + (16 - p.x) / CELL;
+        return Math.max(0, Math.min(1, (hitCol - widget.col) / widget.w));
     }
 
     // ---- interaction ----
@@ -134,27 +160,33 @@ public class HmiBlock extends Block implements IBE<HmiBlockEntity> {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if(!player.getMainHandItem().isEmpty())
             return InteractionResult.PASS;
+        if(!(level.getBlockEntity(pos) instanceof HmiBlockEntity panel))
+            return InteractionResult.PASS;
+        var head = panel.head();
+        var headPos = head == null ? pos : head.getBlockPos();
         if(player.isShiftKeyDown()) {
             if(level.isClientSide)
-                ClientHooks.openHmiEditor(pos);
+                ClientHooks.openHmiEditor(headPos);
             return InteractionResult.SUCCESS;
         }
-        if(hit.getDirection() == facing(state) && level.getBlockEntity(pos) instanceof HmiBlockEntity hmi) {
+        if(hit.getDirection() == facing(state) && head != null) {
             var local = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
-            var cell = cellAt(state, local);
+            var cell = cellAt(state, local, panel);
             if(cell != null) {
-                int index = hmi.layout().indexAt(cell[0], cell[1]);
-                if(index >= 0 && hmi.layout().widgets.get(index).kind.writes()) {
-                    var widget = hmi.layout().widgets.get(index);
-                    int action = widget.kind == HmiLayout.Kind.SETPOINT ? (fractionAcross(state, local, widget) < 0.5 ? HmiBlockEntity.MINUS : HmiBlockEntity.PLUS) : HmiBlockEntity.PRESS;
+                var layout = head.layout();
+                int index = layout.indexAt(cell[0], cell[1]);
+                if(index >= 0 && layout.widgets.get(index).kind.writes()) {
+                    var widget = layout.widgets.get(index);
+                    int action = widget.kind == HmiLayout.Kind.SETPOINT
+                            ? (fractionAcross(state, local, panel, widget) < 0.5 ? HmiBlockEntity.MINUS : HmiBlockEntity.PLUS) : HmiBlockEntity.PRESS;
                     if(!level.isClientSide)
-                        hmi.press(index, action, player);
+                        head.press(index, action, player);
                     return InteractionResult.sidedSuccess(level.isClientSide);
                 }
             }
         }
         if(level.isClientSide)
-            ClientHooks.openHmi(pos);
+            ClientHooks.openHmi(headPos);
         return InteractionResult.SUCCESS;
     }
 
@@ -163,11 +195,6 @@ public class HmiBlock extends Block implements IBE<HmiBlockEntity> {
         super.neighborChanged(state, level, pos, neighbor, neighborPos, movedByPiston);
         if(level.getBlockEntity(pos) instanceof HmiBlockEntity be)
             be.networkJack().markNeighboursDirty();
-    }
-
-    @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        IBE.onRemove(state, level, pos, newState);
     }
 
     @Override

@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * What an HMI panel shows: widgets on an 8 by 8 grid, each tied to a PLC tag. The block entity
- * holds the layout and the editor works on a copy it sends back whole.
+ * What an HMI screen shows: widgets on a grid of cells, eight by eight per panel, each tied to a
+ * PLC tag. The origin panel holds the layout and the editor works on a copy it sends back whole.
  */
 public final class HmiLayout {
-    public static final int COLS = 8, ROWS = 8, MAX_WIDGETS = 32, MAX_TEXT = 40;
+    public static final int PANEL = 8, MAX_WIDGETS = 64, MAX_TEXT = 40;
     /** Colours a widget may pick, by index. */
     public static final int[] COLORS = {0xF0F0F0, 0x40D050, 0xE04040, 0xE8C030, 0x40A0F0, 0xF08030, 0xC060E0, 0x40E0D0};
 
@@ -30,7 +30,9 @@ public final class HmiLayout {
         /** A bar from min to max. */
         BAR,
         /** A number with minus and plus that writes the tag by a step, kept between min and max. */
-        SETPOINT;
+        SETPOINT,
+        /** A needle over an arc from min to max, the arc in three coloured bands with two thresholds. */
+        GAUGE;
 
         public String key() {
             return name().toLowerCase(Locale.ROOT);
@@ -52,13 +54,16 @@ public final class HmiLayout {
         }
 
         public boolean hasRange() {
-            return this == BAR || this == SETPOINT;
+            return this == BAR || this == SETPOINT || this == GAUGE;
+        }
+
+        public boolean hasDecimals() {
+            return this == VALUE || this == SETPOINT || this == GAUGE;
         }
 
         int defaultWidth() {
             return switch(this) {
-                case INDICATOR -> 3;
-                case BUTTON -> 3;
+                case INDICATOR, BUTTON -> 3;
                 default -> 4;
             };
         }
@@ -73,6 +78,9 @@ public final class HmiLayout {
         public int decimals;
         public int color;
         public boolean toggle;
+        /** Gauge bands: below band1 the first colour, below band2 the second, above it the third. */
+        public double band1 = 60, band2 = 80;
+        public int color2 = 3, color3 = 2;
 
         public Widget(Kind kind, int col, int row) {
             this.kind = kind;
@@ -85,11 +93,22 @@ public final class HmiLayout {
                 default -> "";
             };
             this.color = switch(kind) {
-                case INDICATOR -> 1;
-                case BUTTON -> 1;
+                case INDICATOR, BUTTON, GAUGE -> 1;
                 case BAR -> 4;
                 default -> 0;
             };
+            if(kind == Kind.GAUGE)
+                h = 2;
+        }
+
+        /** The gauge band a value falls in: 0, 1 or 2. */
+        public int band(double value) {
+            return Double.isNaN(value) || value < band1 ? 0 : value < band2 ? 1 : 2;
+        }
+
+        public int bandColor(int band) {
+            int index = band == 0 ? color : band == 1 ? color2 : color3;
+            return COLORS[Math.floorMod(index, COLORS.length)];
         }
 
         public boolean contains(int c, int r) {
@@ -112,6 +131,10 @@ public final class HmiLayout {
             o.decimals = decimals;
             o.color = color;
             o.toggle = toggle;
+            o.band1 = band1;
+            o.band2 = band2;
+            o.color2 = color2;
+            o.color3 = color3;
             return o;
         }
 
@@ -130,6 +153,10 @@ public final class HmiLayout {
             t.putInt("Decimals", decimals);
             t.putInt("Color", color);
             t.putBoolean("Toggle", toggle);
+            t.putDouble("Band1", band1);
+            t.putDouble("Band2", band2);
+            t.putInt("Color2", color2);
+            t.putInt("Color3", color3);
             return t;
         }
 
@@ -148,15 +175,21 @@ public final class HmiLayout {
             o.decimals = t.getInt("Decimals");
             o.color = t.getInt("Color");
             o.toggle = t.getBoolean("Toggle");
+            if(t.contains("Band1")) {
+                o.band1 = t.getDouble("Band1");
+                o.band2 = t.getDouble("Band2");
+                o.color2 = t.getInt("Color2");
+                o.color3 = t.getInt("Color3");
+            }
             return o;
         }
 
-        /** Keeps the widget inside the grid and its settings sane. */
-        void clamp() {
-            w = Math.max(1, Math.min(COLS, w));
-            h = Math.max(1, Math.min(ROWS, h));
-            col = Math.max(0, Math.min(COLS - w, col));
-            row = Math.max(0, Math.min(ROWS - h, row));
+        /** Keeps the widget inside a grid of that size and its settings sane. */
+        void clamp(int cols, int rows) {
+            w = Math.max(1, Math.min(cols, w));
+            h = Math.max(1, Math.min(rows, h));
+            col = Math.max(0, Math.min(cols - w, col));
+            row = Math.max(0, Math.min(rows - h, row));
             if(text.length() > MAX_TEXT)
                 text = text.substring(0, MAX_TEXT);
             if(tag.length() > MAX_TEXT)
@@ -175,10 +208,43 @@ public final class HmiLayout {
                 min = max;
                 max = t;
             }
+            color2 = Math.floorMod(color2, COLORS.length);
+            color3 = Math.floorMod(color3, COLORS.length);
+            if(Double.isNaN(band1) || Double.isInfinite(band1))
+                band1 = min;
+            if(Double.isNaN(band2) || Double.isInfinite(band2))
+                band2 = max;
+            if(band2 < band1) {
+                double t = band1;
+                band1 = band2;
+                band2 = t;
+            }
         }
     }
 
     public final List<Widget> widgets = new ArrayList<>();
+    private int cols = PANEL, rows = PANEL;
+
+    public int cols() {
+        return cols;
+    }
+
+    public int rows() {
+        return rows;
+    }
+
+    /** The grid grows or shrinks with the screen; widgets that no longer fit are dropped. Returns whether anything changed. */
+    public boolean resize(int cols, int rows) {
+        cols = Math.max(PANEL, cols);
+        rows = Math.max(PANEL, rows);
+        if(cols == this.cols && rows == this.rows)
+            return false;
+        this.cols = cols;
+        this.rows = rows;
+        final int c = cols, r = rows;
+        widgets.removeIf(w -> w.col + w.w > c || w.row + w.h > r);
+        return true;
+    }
 
     @Nullable
     public Widget at(int col, int row) {
@@ -197,7 +263,7 @@ public final class HmiLayout {
 
     /** Whether a widget could sit there without covering another (ignoring {@code except}). */
     public boolean free(Widget probe, @Nullable Widget except) {
-        if(probe.col < 0 || probe.row < 0 || probe.col + probe.w > COLS || probe.row + probe.h > ROWS)
+        if(probe.col < 0 || probe.row < 0 || probe.col + probe.w > cols || probe.row + probe.h > rows)
             return false;
         for(var w : widgets)
             if(w != except && w.overlaps(probe))
@@ -211,7 +277,7 @@ public final class HmiLayout {
             return null;
         var w = new Widget(kind, col, row);
         // Shrink to fit the right edge, then refuse if it still covers something.
-        w.w = Math.min(w.w, COLS - col);
+        w.w = Math.min(w.w, cols - col);
         while(w.w > 1 && !free(w, null))
             --w.w;
         if(!free(w, null))
@@ -222,11 +288,13 @@ public final class HmiLayout {
 
     public void clampAll() {
         for(var w : widgets)
-            w.clamp();
+            w.clamp(cols, rows);
     }
 
     public HmiLayout copy() {
         var l = new HmiLayout();
+        l.cols = cols;
+        l.rows = rows;
         for(var w : widgets)
             l.widgets.add(w.copy());
         return l;
@@ -234,6 +302,8 @@ public final class HmiLayout {
 
     public CompoundTag save() {
         var tag = new CompoundTag();
+        tag.putInt("Cols", cols);
+        tag.putInt("Rows", rows);
         var list = new ListTag();
         for(var w : widgets)
             list.add(w.save());
@@ -243,6 +313,10 @@ public final class HmiLayout {
 
     public static HmiLayout load(CompoundTag tag) {
         var l = new HmiLayout();
+        if(tag.contains("Cols"))
+            l.cols = Math.max(PANEL, Math.min(PANEL * HmiGroups.MAX_WIDTH, tag.getInt("Cols")));
+        if(tag.contains("Rows"))
+            l.rows = Math.max(PANEL, Math.min(PANEL * HmiGroups.MAX_HEIGHT, tag.getInt("Rows")));
         var list = tag.getList("Widgets", Tag.TAG_COMPOUND);
         for(int i = 0; i < list.size() && l.widgets.size() < MAX_WIDGETS; ++i) {
             var w = Widget.load(list.getCompound(i));

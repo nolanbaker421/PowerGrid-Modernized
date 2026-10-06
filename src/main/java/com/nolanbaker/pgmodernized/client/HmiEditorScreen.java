@@ -24,7 +24,8 @@ import java.util.Locale;
  * right. Apply sends the layout to the panel; nothing changes on the block until then.
  */
 public class HmiEditorScreen extends Screen {
-    private static final int CELL = HmiScreen.CELL, PADDING = 10, TITLE = 16, PROPS_W = 190, ROW = 22, LABEL_W = 62;
+    private static final int PADDING = 10, TITLE = 16, PROPS_W = 190, ROW = 22, LABEL_W = 62;
+    private int cell = HmiScreen.MAX_CELL;
 
     private final BlockPos pos;
     private HmiLayout layout = new HmiLayout();
@@ -37,6 +38,10 @@ public class HmiEditorScreen extends Screen {
     private int panelX, panelY, panelW, panelH, gridX, gridY, propsX;
     private final List<Line> lines = new ArrayList<>();
     private final List<Button> kindButtons = new ArrayList<>();
+    /** Where the width, height and colour rows sit, for the values drawn between their buttons. */
+    private int widthY, heightY;
+    private final int[] colourY = new int[3];
+    private int colourRows;
 
     private record Line(Component text, int x, int y, int color) {}
 
@@ -48,7 +53,7 @@ public class HmiEditorScreen extends Screen {
     @Nullable
     private HmiBlockEntity hmi() {
         var level = Minecraft.getInstance().level;
-        return level != null && level.getBlockEntity(pos) instanceof HmiBlockEntity hmi ? hmi : null;
+        return level != null && level.getBlockEntity(pos) instanceof HmiBlockEntity hmi ? hmi.head() : null;
     }
 
     @Nullable
@@ -66,13 +71,15 @@ public class HmiEditorScreen extends Screen {
         }
         lines.clear();
         kindButtons.clear();
-        panelW = PADDING * 3 + HmiLayout.COLS * CELL + PROPS_W;
-        panelH = PADDING * 2 + TITLE + 22 + HmiLayout.ROWS * CELL + 40;
+        cell = HmiScreen.cellSize(layout.cols(), layout.rows(), width, height, PADDING * 3 + PROPS_W + 8, PADDING * 2 + TITLE + 22 + 48);
+        int gridW = Math.max(layout.cols() * cell, 6 * 64);
+        panelW = PADDING * 3 + gridW + PROPS_W;
+        panelH = PADDING * 2 + TITLE + 22 + Math.max(layout.rows() * cell, 16 * ROW) + 40;
         panelX = (width - panelW) / 2;
         panelY = (height - panelH) / 2;
         gridX = panelX + PADDING;
         gridY = panelY + PADDING + TITLE + 22;
-        propsX = gridX + HmiLayout.COLS * CELL + PADDING;
+        propsX = gridX + gridW + PADDING;
 
         // The kinds to place, across the top.
         int x = panelX + PADDING;
@@ -102,12 +109,29 @@ public class HmiEditorScreen extends Screen {
             }
             if(w.kind == HmiLayout.Kind.SETPOINT)
                 y = numberRow(y, "powergrid.gui.hmi.step", w.step, v -> w.step = v > 0 ? v : 1);
-            if(w.kind == HmiLayout.Kind.VALUE || w.kind == HmiLayout.Kind.SETPOINT)
+            if(w.kind.hasDecimals())
                 y = numberRow(y, "powergrid.gui.hmi.decimals", w.decimals, v -> w.decimals = (int) Math.max(0, Math.min(3, v)));
+            if(w.kind == HmiLayout.Kind.GAUGE) {
+                y = numberRow(y, "powergrid.gui.hmi.band1", w.band1, v -> w.band1 = v);
+                y = numberRow(y, "powergrid.gui.hmi.band2", w.band2, v -> w.band2 = v);
+            }
+            widthY = y;
             y = stepRow(y, "powergrid.gui.hmi.width", () -> resize(w, w.w - 1, w.h), () -> resize(w, w.w + 1, w.h));
+            heightY = y;
             y = stepRow(y, "powergrid.gui.hmi.height", () -> resize(w, w.w, w.h - 1), () -> resize(w, w.w, w.h + 1));
-            y = stepRow(y, "powergrid.gui.hmi.colour", () -> { w.color = Math.floorMod(w.color - 1, HmiLayout.COLORS.length); modified = true; },
+            colourRows = w.kind == HmiLayout.Kind.GAUGE ? 3 : 1;
+            colourY[0] = y;
+            y = stepRow(y, colourRows == 1 ? "powergrid.gui.hmi.colour" : "powergrid.gui.hmi.colour1",
+                    () -> { w.color = Math.floorMod(w.color - 1, HmiLayout.COLORS.length); modified = true; },
                     () -> { w.color = Math.floorMod(w.color + 1, HmiLayout.COLORS.length); modified = true; });
+            if(colourRows == 3) {
+                colourY[1] = y;
+                y = stepRow(y, "powergrid.gui.hmi.colour2", () -> { w.color2 = Math.floorMod(w.color2 - 1, HmiLayout.COLORS.length); modified = true; },
+                        () -> { w.color2 = Math.floorMod(w.color2 + 1, HmiLayout.COLORS.length); modified = true; });
+                colourY[2] = y;
+                y = stepRow(y, "powergrid.gui.hmi.colour3", () -> { w.color3 = Math.floorMod(w.color3 - 1, HmiLayout.COLORS.length); modified = true; },
+                        () -> { w.color3 = Math.floorMod(w.color3 + 1, HmiLayout.COLORS.length); modified = true; });
+            }
             if(w.kind == HmiLayout.Kind.BUTTON) {
                 lines.add(new Line(Component.translatable("powergrid.gui.hmi.mode"), propsX, y + 5, HmiScreen.TEXT));
                 int yy = y;
@@ -210,24 +234,16 @@ public class HmiEditorScreen extends Screen {
         graphics.drawString(font, title, panelX + PADDING, panelY + PADDING, 0xFFFFFF);
         // Live values line up with the panel's layout only while the two agree in length.
         var values = hmi.values().length == layout.widgets.size() ? hmi.values() : new float[0];
-        HmiScreen.drawLayout(graphics, font, layout, values, gridX, gridY, CELL, selected, true);
+        HmiScreen.drawLayout(graphics, font, layout, values, gridX, gridY, cell, selected, true);
         for(var line : lines)
             graphics.drawString(font, line.text, line.x, line.y, line.color);
         // The values the selected widget's -/+ rows show.
         var w = selectedWidget();
         if(w != null) {
-            int y = gridY + ROW * 2;
-            if(w.kind.usesTag())
-                y += ROW;
-            if(w.kind.hasRange())
-                y += ROW * 2;
-            if(w.kind == HmiLayout.Kind.SETPOINT)
-                y += ROW;
-            if(w.kind == HmiLayout.Kind.VALUE || w.kind == HmiLayout.Kind.SETPOINT)
-                y += ROW;
-            graphics.drawString(font, Integer.toString(w.w), propsX + LABEL_W + 26, y + 5, HmiScreen.SEL);
-            graphics.drawString(font, Integer.toString(w.h), propsX + LABEL_W + 26, y + ROW + 5, HmiScreen.SEL);
-            graphics.fill(propsX + LABEL_W + 22, y + ROW * 2 + 2, propsX + LABEL_W + 46, y + ROW * 2 + 16, 0xFF000000 | HmiLayout.COLORS[Math.floorMod(w.color, HmiLayout.COLORS.length)]);
+            graphics.drawString(font, Integer.toString(w.w), propsX + LABEL_W + 26, widthY + 5, HmiScreen.SEL);
+            graphics.drawString(font, Integer.toString(w.h), propsX + LABEL_W + 26, heightY + 5, HmiScreen.SEL);
+            for(int i = 0; i < colourRows; ++i)
+                graphics.fill(propsX + LABEL_W + 22, colourY[i] + 2, propsX + LABEL_W + 46, colourY[i] + 16, 0xFF000000 | w.bandColor(i));
         }
         for(int i = 0; i < kindButtons.size(); ++i)
             if(placing == HmiLayout.Kind.values()[i])
@@ -241,9 +257,9 @@ public class HmiEditorScreen extends Screen {
     }
 
     private int @Nullable [] cellAt(double mx, double my) {
-        if(mx < gridX || my < gridY || mx >= gridX + HmiLayout.COLS * CELL || my >= gridY + HmiLayout.ROWS * CELL)
+        if(mx < gridX || my < gridY || mx >= gridX + layout.cols() * cell || my >= gridY + layout.rows() * cell)
             return null;
-        return new int[] {(int) ((mx - gridX) / CELL), (int) ((my - gridY) / CELL)};
+        return new int[] {(int) ((mx - gridX) / cell), (int) ((my - gridY) / cell)};
     }
 
     @Override

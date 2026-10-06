@@ -34,10 +34,14 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
         var state = be.getBlockState();
         if(!(state.getBlock() instanceof HmiBlock))
             return;
+        if(!be.isOrigin())
+            return;
         var facing = HmiBlock.facing(state);
         var consumer = buffer.getBuffer(RenderType.entitySolid(WHITE));
         var font = Minecraft.getInstance().font;
         var layout = be.layout();
+        // The screen spans this panel and those to the viewer's right (-x here) and above it.
+        double top0 = layout.rows() * C;
         ms.pushPose();
         ms.translate(0.5, 0.5, 0.5);
         ms.mulPose(Axis.YP.rotationDegrees(-(facing.toYRot() + 180)));
@@ -49,7 +53,7 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
             int rgb = HmiLayout.COLORS[Math.floorMod(w.color, HmiLayout.COLORS.length)];
             // The widget's rectangle in the north frame: left is the larger x.
             double left = 16 - w.col * C, right = 16 - (w.col + w.w) * C;
-            double top = 16 - w.row * C, bottom = 16 - (w.row + w.h) * C;
+            double top = top0 - w.row * C, bottom = top0 - (w.row + w.h) * C;
             double midY = (top + bottom) / 2;
             switch(w.kind) {
                 case LABEL -> text(ms, buffer, font, w.text, left - 0.3, midY, right - left + 0.6, w.h, rgb, Align.LEFT);
@@ -75,6 +79,32 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
                     if(fraction > 0)
                         box(ms, consumer, left - 0.35, bottom + 0.35, FLAT_Z1 + 0.03, left - 0.35 - ((left - right) - 0.7) * fraction, top - 0.35, FLAT_Z2, rgb);
                     text(ms, buffer, font, w.text, left - 0.5, midY, (left - right) - 1, w.h, 0xF0F0F0, Align.LEFT);
+                }
+                case GAUGE -> {
+                    double cx = (left + right) / 2, cy = bottom + C * 0.9;
+                    double radius = Math.max(C * 0.5, Math.min((left - right) / 2 - 0.4, top - cy - 0.3));
+                    double span = w.max - w.min;
+                    int steps = 24;
+                    double dot = Math.max(0.12, radius * 0.1);
+                    for(int s = 0; s <= steps; ++s) {
+                        double t = (double) s / steps;
+                        double angle = Math.PI - Math.PI * t;
+                        // The viewer's left is +x, so the arc runs from +x (min) over the top to -x (max).
+                        double px = cx + radius * Math.cos(angle), py = cy + radius * Math.sin(angle);
+                        box(ms, consumer, px - dot, py - dot, FLAT_Z1, px + dot, py + dot, FLAT_Z2, w.bandColor(w.band(w.min + span * t)));
+                    }
+                    if(!Float.isNaN(v) && span > 0) {
+                        double t = Math.max(0, Math.min(1, (v - w.min) / span));
+                        double angle = Math.PI - Math.PI * t;
+                        int needle = 8;
+                        for(int s = 0; s <= needle; ++s) {
+                            double d = (radius - 0.3) * s / needle;
+                            double px = cx + d * Math.cos(angle), py = cy + d * Math.sin(angle);
+                            box(ms, consumer, px - 0.08, py - 0.08, FLAT_Z2, px + 0.08, py + 0.08, FLAT_Z2 + 0.03, 0xF0F0F0);
+                        }
+                    }
+                    var shown = (w.text.isEmpty() ? "" : w.text + " ") + HmiLayout.format(v, w.decimals);
+                    text(ms, buffer, font, shown, cx, bottom + C * 0.4, (left - right) - 0.4, 1, on ? rgb : 0xA0A0A0, Align.CENTER);
                 }
                 case SETPOINT -> {
                     double key = Math.min(C * 0.9, (left - right) / 4);

@@ -18,11 +18,11 @@ import org.jetbrains.annotations.Nullable;
  * and setpoints that step. Edit opens the layout editor.
  */
 public class HmiScreen extends Screen {
-    static final int CELL = 24, PADDING = 10, TITLE = 16;
+    static final int MAX_CELL = 24, PADDING = 10, TITLE = 16;
     static final int PANEL_BG = 0xF0202024, PANEL_EDGE = 0xFF606068, TEXT = 0xFFE8E8E8, DIM = 0xFF9A9A9A, SCREEN_BG = 0xFF0C1014, SEL = 0xFFE0C060;
 
     private final BlockPos pos;
-    private int panelX, panelY, panelW, panelH, gridX, gridY;
+    private int panelX, panelY, panelW, panelH, gridX, gridY, cell = MAX_CELL, cols = HmiLayout.PANEL, rows = HmiLayout.PANEL;
 
     public HmiScreen(BlockPos pos) {
         super(Component.translatable("powergrid.gui.hmi.title"));
@@ -32,14 +32,23 @@ public class HmiScreen extends Screen {
     @Nullable
     private HmiBlockEntity hmi() {
         var level = Minecraft.getInstance().level;
-        return level != null && level.getBlockEntity(pos) instanceof HmiBlockEntity hmi ? hmi : null;
+        return level != null && level.getBlockEntity(pos) instanceof HmiBlockEntity hmi ? hmi.head() : null;
+    }
+
+    /** Cells as large as the window allows for that grid, up to the usual size. */
+    static int cellSize(int cols, int rows, int width, int height, int reservedW, int reservedH) {
+        return Math.max(8, Math.min(MAX_CELL, Math.min((width - reservedW) / cols, (height - reservedH) / rows)));
     }
 
     @Override
     protected void init() {
         super.init();
-        panelW = PADDING * 2 + HmiLayout.COLS * CELL;
-        panelH = PADDING * 2 + TITLE + HmiLayout.ROWS * CELL + 28;
+        var hmi = hmi();
+        cols = hmi == null ? HmiLayout.PANEL : hmi.layout().cols();
+        rows = hmi == null ? HmiLayout.PANEL : hmi.layout().rows();
+        cell = cellSize(cols, rows, width, height, PADDING * 2 + 8, PADDING * 2 + TITLE + 36);
+        panelW = PADDING * 2 + cols * cell;
+        panelH = PADDING * 2 + TITLE + rows * cell + 28;
         panelX = (width - panelW) / 2;
         panelY = (height - panelH) / 2;
         gridX = panelX + PADDING;
@@ -58,7 +67,9 @@ public class HmiScreen extends Screen {
         graphics.fill(panelX, panelY, panelX + panelW, panelY + panelH, PANEL_BG);
         graphics.renderOutline(panelX, panelY, panelW, panelH, PANEL_EDGE);
         graphics.drawString(font, title, panelX + PADDING, panelY + PADDING, 0xFFFFFF);
-        drawLayout(graphics, font, hmi.layout(), hmi.values(), gridX, gridY, CELL, -1, false);
+        if(hmi.layout().cols() != cols || hmi.layout().rows() != rows)
+            rebuildWidgets();
+        drawLayout(graphics, font, hmi.layout(), hmi.values(), gridX, gridY, cell, -1, false);
         graphics.drawString(font, status(hmi), panelX + PADDING, panelY + panelH - PADDING - 13, hmi.connected() ? DIM : 0xFFE06060);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
@@ -72,8 +83,8 @@ public class HmiScreen extends Screen {
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
         var hmi = hmi();
-        if(hmi != null && button == 0 && mx >= gridX && my >= gridY && mx < gridX + HmiLayout.COLS * CELL && my < gridY + HmiLayout.ROWS * CELL) {
-            int col = (int) ((mx - gridX) / CELL), row = (int) ((my - gridY) / CELL);
+        if(hmi != null && button == 0 && mx >= gridX && my >= gridY && mx < gridX + cols * cell && my < gridY + rows * cell) {
+            int col = (int) ((mx - gridX) / cell), row = (int) ((my - gridY) / cell);
             int index = hmi.layout().indexAt(col, row);
             if(index >= 0) {
                 var w = hmi.layout().widgets.get(index);
@@ -82,7 +93,7 @@ public class HmiScreen extends Screen {
                     return true;
                 }
                 if(w.kind == HmiLayout.Kind.SETPOINT) {
-                    double across = (mx - (gridX + w.col * CELL)) / (w.w * CELL);
+                    double across = (mx - (gridX + w.col * cell)) / (w.w * cell);
                     PacketDistributor.sendToServer(new HmiPressPayload(pos, index, across < 0.5 ? HmiBlockEntity.MINUS : HmiBlockEntity.PLUS));
                     return true;
                 }
@@ -94,7 +105,7 @@ public class HmiScreen extends Screen {
 
     /** The widgets on a grid of that cell size, as the block face shows them; {@code selected} gets an outline. */
     static void drawLayout(GuiGraphics g, Font font, HmiLayout layout, float[] values, int x0, int y0, int cell, int selected, boolean gridLines) {
-        int cols = HmiLayout.COLS, rows = HmiLayout.ROWS;
+        int cols = layout.cols(), rows = layout.rows();
         g.fill(x0, y0, x0 + cols * cell, y0 + rows * cell, SCREEN_BG);
         if(gridLines) {
             for(int c = 1; c < cols; ++c)
@@ -137,6 +148,28 @@ public class HmiScreen extends Screen {
                         g.fill(x + 3, y + 3, x + 3 + (int) ((wd - 6) * fraction), y + ht - 3, rgb);
                     g.renderOutline(x + 2, y + 2, wd - 4, ht - 4, 0xFF505860);
                     g.drawString(font, clip(font, w.text, wd - 8), x + 5, ty, 0xFFF0F0F0, false);
+                }
+                case GAUGE -> {
+                    int cx = x + wd / 2, cy = y + ht - 10;
+                    int radius = Math.max(6, Math.min(wd / 2 - 4, ht - 14));
+                    double span = w.max - w.min;
+                    int steps = Math.max(12, radius);
+                    for(int s = 0; s <= steps; ++s) {
+                        double t = (double) s / steps;
+                        double angle = Math.PI - Math.PI * t;
+                        int px = cx + (int) Math.round(radius * Math.cos(angle)), py = cy - (int) Math.round(radius * Math.sin(angle));
+                        g.fill(px - 1, py - 1, px + 2, py + 2, 0xFF000000 | w.bandColor(w.band(w.min + span * t)));
+                    }
+                    if(!Float.isNaN(v) && span > 0) {
+                        double t = Math.max(0, Math.min(1, (v - w.min) / span));
+                        double angle = Math.PI - Math.PI * t;
+                        for(int s = 0; s <= radius - 3; ++s) {
+                            int px = cx + (int) Math.round(s * Math.cos(angle)), py = cy - (int) Math.round(s * Math.sin(angle));
+                            g.fill(px, py, px + 1, py + 1, 0xFFF0F0F0);
+                        }
+                    }
+                    var s = clip(font, (w.text.isEmpty() ? "" : w.text + " ") + HmiLayout.format(v, w.decimals), wd - 4);
+                    g.drawString(font, s, cx - font.width(s) / 2, y + ht - 9, on ? rgb : 0xFFA0A0A0, false);
                 }
                 case SETPOINT -> {
                     int key = Math.min(cell - 2, wd / 4);
