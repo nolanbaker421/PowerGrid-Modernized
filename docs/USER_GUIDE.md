@@ -1153,6 +1153,11 @@ computer network as `powergrid_controls`.
     reaches, picked from the devices the PLC discovered (a drive is `three_phase_drive1`, a
     rangefinder `rangefinder1`), with its arguments on pins and its first result on an output
     pin. It calls every scan, on the rising edge of En, or only when an argument changes.
+    Pins carry numbers, so arguments are converted to what the method's documentation says it
+    takes: a boolean parameter gets true for nonzero and false for zero, a string gets the
+    number's text. If a method's documentation does not say and it rejects the numbers, the
+    call is retried with them as booleans. "Arguments as" on the block forces numbers or true
+    and false. The same applies to calls from Lua and Rungs blocks.
   - **Lua.** A script with as many input and output pins as you give it, run every scan in a
     sandbox: `In[1]`.. are the pins, `Out[1]`.. the results, `tag(name)` and `tag(name,
     value)` read and write cabinet names, `call(alias, method, ...)` calls a device,
@@ -1165,6 +1170,8 @@ computer network as `powergrid_controls`.
   - **Note.** Text on the canvas.
 
   Ctrl+wheel or the - and + buttons zoom the canvas out for the whole picture and back in.
+  Every block's settings start with a Name; a named block shows the name in its title bar
+  instead of its type, so a canvas reads "Door interlock" rather than "And".
   Right-click a block to set it, drag it by its body, drag from an output pin to an input pin
   to wire, click a wired input to pull its wire off, Delete removes the selected block, drag
   empty canvas to pan. Apply sends the drawing to the cabinet; the first problem comes back in

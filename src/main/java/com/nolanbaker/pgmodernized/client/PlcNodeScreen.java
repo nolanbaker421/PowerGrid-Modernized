@@ -35,6 +35,8 @@ public class PlcNodeScreen extends Screen {
     @Nullable
     private EditBox textBox;
     @Nullable
+    private EditBox nameBox;
+    @Nullable
     private MultiLineEditBox scriptBox;
     private final List<Line> lines = new ArrayList<>();
     private final List<Runnable> refreshers = new ArrayList<>();
@@ -80,9 +82,7 @@ public class PlcNodeScreen extends Screen {
         numberParams.clear();
         textBox = null;
         scriptBox = null;
-        int rows = 0;
-        for(var p : node.type.params)
-            rows += p.kind() == NodeType.Param.Kind.DEVICE ? 2 : p.kind() == NodeType.Param.Kind.SCRIPT ? 0 : 1;
+        int rows = rowsOf();
         boolean script = hasScript();
         panelW = script ? Math.min(width - 16, 520) : 360;
         panelH = script ? height - 16 : PADDING * 2 + 18 + rows * ROW + 30;
@@ -91,6 +91,14 @@ public class PlcNodeScreen extends Screen {
         int left = panelX + PADDING;
         int y = panelY + PADDING + 18;
         int scriptH = panelH - PADDING * 2 - 18 - rows * ROW - 30 - 14;
+
+        // The block's name, shown in its title bar on the canvas.
+        lines.add(new Line(Component.translatable("powergrid.gui.controls.plc_block_name").getString(), left, y + 5, TEXT));
+        nameBox = new EditBox(font, left + LABEL_W, y, panelW - PADDING * 2 - LABEL_W, 18, Component.translatable("powergrid.gui.controls.plc_block_name"));
+        nameBox.setMaxLength(32);
+        nameBox.setValue(node.name);
+        addRenderableWidget(nameBox);
+        y += ROW;
 
         for(var p : node.type.params) {
             switch(p.kind()) {
@@ -208,6 +216,8 @@ public class PlcNodeScreen extends Screen {
         }
         node.text = node.type == NodeType.TAG || node.type == NodeType.SET ? text.strip().toUpperCase(Locale.ROOT) : text;
         node.nums = nums;
+        if(nameBox != null)
+            node.name = nameBox.getValue().strip();
         parent.edited();
         Minecraft.getInstance().setScreen(parent);
     }
@@ -221,7 +231,7 @@ public class PlcNodeScreen extends Screen {
             graphics.drawString(font, font.plainSubstrByWidth(line.text, panelW - PADDING * 2), line.x, line.y, line.color);
         // Current values of counts, choices and the device pick, between their arrows.
         int left = panelX + PADDING;
-        int y = panelY + PADDING + 18;
+        int y = panelY + PADDING + 18 + ROW;   // past the name row
         for(var p : node.type.params) {
             switch(p.kind()) {
                 case SCRIPT -> y += panelH - PADDING * 2 - 18 - rowsOf() * ROW - 30 - 14 + 14;
@@ -251,8 +261,9 @@ public class PlcNodeScreen extends Screen {
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
+    /** Settings rows, the name row included. */
     private int rowsOf() {
-        int rows = 0;
+        int rows = 1;
         for(var p : node.type.params)
             rows += p.kind() == NodeType.Param.Kind.DEVICE ? 2 : p.kind() == NodeType.Param.Kind.SCRIPT ? 0 : 1;
         return rows;

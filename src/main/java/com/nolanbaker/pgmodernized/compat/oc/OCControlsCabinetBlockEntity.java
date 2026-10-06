@@ -185,10 +185,71 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
                 return null;
             if(!component.methods().contains(method))
                 throw new Exception(alias + " has no method " + method);
-            var result = component.invoke(method, new PlcContext(), args.toArray());
+            var typed = typedArguments(component, method, args);
+            Object[] result;
+            try {
+                result = component.invoke(method, new PlcContext(), typed);
+            } catch(IllegalArgumentException e) {
+                // The doc did not say; the method did. Try the numbers the other way round once.
+                var message = e.getMessage() == null ? "" : e.getMessage().toLowerCase(java.util.Locale.ROOT);
+                if(message.contains("boolean"))
+                    result = component.invoke(method, new PlcContext(), flipped(typed, true));
+                else if(message.contains("number") || message.contains("integer"))
+                    result = component.invoke(method, new PlcContext(), flipped(typed, false));
+                else
+                    throw e;
+            }
             return result == null || result.length == 0 ? null : result[0];
         }
         return null;
+    }
+
+    /**
+     * The program's pins carry numbers, but many methods want booleans. A method's doc string names
+     * its parameters as {@code function(enable:boolean, speed:number)}; each argument is converted
+     * to the type the doc gives it, nonzero meaning true.
+     */
+    private static Object[] typedArguments(Component component, String method, List<Object> args) {
+        var out = args.toArray();
+        String doc;
+        try {
+            var annotation = component.annotation(method);
+            doc = annotation == null ? null : annotation.doc();
+        } catch(Exception e) {
+            doc = null;
+        }
+        if(doc == null)
+            return out;
+        int open = doc.indexOf('('), close = doc.indexOf(')', open + 1);
+        if(open < 0 || close < 0)
+            return out;
+        var params = doc.substring(open + 1, close).split(",");
+        for(int i = 0; i < out.length && i < params.length; ++i) {
+            var spec = params[i].strip().toLowerCase(java.util.Locale.ROOT);
+            int colon = spec.indexOf(':');
+            if(colon < 0)
+                continue;
+            var type = spec.substring(colon + 1).strip();
+            if(type.startsWith("boolean") && out[i] instanceof Number n)
+                out[i] = n.doubleValue() != 0;
+            else if((type.startsWith("number") || type.startsWith("int")) && out[i] instanceof Boolean b)
+                out[i] = b ? 1 : 0;
+            else if(type.startsWith("string") && out[i] instanceof Number n)
+                out[i] = com.nolanbaker.pgmodernized.device.controls.plc.NodeType.format(n.doubleValue());
+        }
+        return out;
+    }
+
+    /** Every number as a boolean, or every boolean as a number. */
+    private static Object[] flipped(Object[] args, boolean toBoolean) {
+        var out = args.clone();
+        for(int i = 0; i < out.length; ++i) {
+            if(toBoolean && out[i] instanceof Number n)
+                out[i] = n.doubleValue() != 0;
+            else if(!toBoolean && out[i] instanceof Boolean b)
+                out[i] = b ? 1 : 0;
+        }
+        return out;
     }
 
     /** The context a program's calls run in: no machine, nothing to pause, every call allowed. */

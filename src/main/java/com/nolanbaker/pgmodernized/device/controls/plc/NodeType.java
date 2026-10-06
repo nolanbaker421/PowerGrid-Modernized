@@ -35,7 +35,8 @@ public enum NodeType {
     THROTTLE("Throttle", Group.MATH, List.of(Param.number(0, "Step per tick", 1), Param.number(1, "Min", 0), Param.number(2, "Max", 100), Param.number(3, "Start", 0),
             Param.choice(4, "Count", Choices.THROTTLE_MODES), Param.choice(5, "Released", Choices.THROTTLE_RELEASE))),
     SMOOTH("Smooth", Group.MATH, List.of(Param.number(0, "Factor, 0 to 1", 0.1))),
-    CALL("Device call", Group.DEVICE, List.of(Param.device(0, "Method"), Param.count(0, "Arguments", 0, 0, 6), Param.choice(1, "Call", Choices.CALL_MODES))),
+    CALL("Device call", Group.DEVICE, List.of(Param.device(0, "Method"), Param.count(0, "Arguments", 0, 0, 6), Param.choice(1, "Call", Choices.CALL_MODES),
+            Param.choice(2, "Arguments as", Choices.ARG_TYPES))),
     LUA("Lua", Group.SCRIPT, List.of(Param.script(0, "Script", NodeType.LUA_DEFAULT), Param.count(0, "Inputs", 2, 0, 8), Param.count(1, "Outputs", 1, 0, 8))),
     RUNGS("Rungs", Group.SCRIPT, List.of(Param.script(0, "Rungs", "# one rung per line, e.g.  Y1.1 = X1.1 & !X1.2"))),
     NOTE("Note", Group.SCRIPT, List.of(Param.text(0, "Text", "note")));
@@ -45,6 +46,7 @@ public enum NodeType {
         static final String[] COMPARE_OPS = {"<", "<=", ">", ">=", "==", "!="};
         static final String[] CALL_MODES = {"every scan", "when En rises", "when an argument changes"};
         static final String[] THROTTLE_MODES = {"while held", "per press"};
+        static final String[] ARG_TYPES = {"what the method wants", "numbers", "true or false"};
         static final String[] THROTTLE_RELEASE = {"hold", "return to start"};
     }
 

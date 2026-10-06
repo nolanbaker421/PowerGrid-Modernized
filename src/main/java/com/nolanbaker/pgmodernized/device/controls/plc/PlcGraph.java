@@ -23,6 +23,8 @@ public final class PlcGraph {
         public int x, y;
         public String text;
         public double[] nums;
+        /** What the block is called on the canvas, in place of its type name; empty for none. */
+        public String name = "";
 
         public Node(int id, NodeType type, int x, int y) {
             this.id = id;
@@ -48,6 +50,7 @@ public final class PlcGraph {
         Node copy() {
             var n = new Node(id, type, x, y);
             n.text = text;
+            n.name = name;
             n.nums = nums.clone();
             return n;
         }
@@ -135,6 +138,8 @@ public final class PlcGraph {
             t.putString("Type", n.type.key());
             t.putInt("X", n.x);
             t.putInt("Y", n.y);
+            if(!n.name.isEmpty())
+                t.putString("Name", n.name);
             if(!n.text.isEmpty())
                 t.putString("Text", n.text);
             if(n.nums.length > 0) {
@@ -163,6 +168,10 @@ public final class PlcGraph {
             if(type == null)
                 continue;
             var n = new Node(t.getInt("Id"), type, t.getInt("X"), t.getInt("Y"));
+            if(t.contains("Name")) {
+                var name = t.getString("Name");
+                n.name = name.length() > 32 ? name.substring(0, 32) : name;
+            }
             if(t.contains("Text")) {
                 var text = t.getString("Text");
                 n.text = text.length() > MAX_TEXT ? text.substring(0, MAX_TEXT) : text;

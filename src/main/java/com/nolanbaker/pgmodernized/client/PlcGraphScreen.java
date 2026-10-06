@@ -307,7 +307,7 @@ public class PlcGraphScreen extends Screen {
             graphics.fill(x, y, x + w, y + HEAD, HEAD_COLORS.get(node.type.group));
             int outline = node.id == errorNode ? ERR : node.id == selected ? SEL : EDGE;
             graphics.renderOutline(x - 1, y - 1, w + 2, h + 2, outline);
-            graphics.drawString(font, font.plainSubstrByWidth(node.type.title + "  #" + node.id, w - 6), x + 3, y + 2, TEXT, false);
+            graphics.drawString(font, font.plainSubstrByWidth((node.name.isEmpty() ? node.type.title : node.name) + "  #" + node.id, w - 6), x + 3, y + 2, TEXT, false);
             var in = node.type.inputNames(node);
             for(int k = 0; k < in.length; ++k) {
                 int py = pinY(node, k);

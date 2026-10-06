@@ -480,6 +480,10 @@ public final class PlcRunner {
                         double v = args[i];
                         list.add(rv instanceof String str ? str : v == Math.rint(v) && Math.abs(v) < 1e9 ? (Object) (int) v : (Object) v);
                     }
+                    if((int) node.num(2) == 2)
+                        for(int i = 0; i < list.size(); ++i)
+                            if(list.get(i) instanceof Number n)
+                                list.set(i, n.doubleValue() != 0);
                     var result = io.call(node.text.substring(0, dot), node.text.substring(dot + 1), list);
                     o[0] = toNumber(result);
                     r[0] = result instanceof String str ? str : result instanceof byte[] bytes ? new String(bytes, java.nio.charset.StandardCharsets.UTF_8) : null;
