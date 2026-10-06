@@ -24,8 +24,10 @@ import java.util.Locale;
  * right. Apply sends the layout to the panel; nothing changes on the block until then.
  */
 public class HmiEditorScreen extends Screen {
-    private static final int PADDING = 10, TITLE = 16, PROPS_W = 190, ROW = 22, LABEL_W = 62;
+    private static final int PADDING = 10, TITLE = 16, PROPS_W = 190, LABEL_W = 62, PROP_ROWS = 16;
     private int cell = HmiScreen.MAX_CELL;
+    /** Row pitch and control height in the settings column, squeezed to fit short windows. */
+    private int ROW = 22, boxH = 18;
 
     private final BlockPos pos;
     private HmiLayout layout = new HmiLayout();
@@ -71,10 +73,12 @@ public class HmiEditorScreen extends Screen {
         }
         lines.clear();
         kindButtons.clear();
+        ROW = Math.max(13, Math.min(22, (height - 8 - PADDING * 2 - TITLE - 22 - 40) / PROP_ROWS));
+        boxH = Math.min(18, ROW - 1);
         cell = HmiScreen.cellSize(layout.cols(), layout.rows(), width, height, PADDING * 3 + PROPS_W + 8, PADDING * 2 + TITLE + 22 + 48);
         int gridW = Math.max(layout.cols() * cell, 6 * 64);
         panelW = PADDING * 3 + gridW + PROPS_W;
-        panelH = PADDING * 2 + TITLE + 22 + Math.max(layout.rows() * cell, 16 * ROW) + 40;
+        panelH = PADDING * 2 + TITLE + 22 + Math.max(layout.rows() * cell, PROP_ROWS * ROW) + 40;
         panelX = (width - panelW) / 2;
         panelY = (height - panelH) / 2;
         gridX = panelX + PADDING;
@@ -139,7 +143,7 @@ public class HmiEditorScreen extends Screen {
                     w.toggle = !w.toggle;
                     modified = true;
                     rebuildWidgets();
-                }).bounds(propsX + LABEL_W, yy, PROPS_W - LABEL_W, 18).build());
+                }).bounds(propsX + LABEL_W, yy, PROPS_W - LABEL_W, boxH).build());
                 y += ROW;
             }
             int yy = y + 4;
@@ -148,7 +152,7 @@ public class HmiEditorScreen extends Screen {
                 selected = -1;
                 modified = true;
                 rebuildWidgets();
-            }).bounds(propsX, yy, 70, 18).build());
+            }).bounds(propsX, yy, 70, boxH).build());
         } else {
             lines.add(new Line(Component.translatable(placing == null ? "powergrid.gui.hmi.hint_select" : "powergrid.gui.hmi.hint_place"), propsX, y + 5, HmiScreen.DIM));
         }
@@ -164,7 +168,7 @@ public class HmiEditorScreen extends Screen {
 
     private int textRow(int y, String key, String value, TextSink sink) {
         lines.add(new Line(Component.translatable(key), propsX, y + 5, HmiScreen.TEXT));
-        var box = new EditBox(font, propsX + LABEL_W, y, PROPS_W - LABEL_W, 18, Component.translatable(key));
+        var box = new EditBox(font, propsX + LABEL_W, y, PROPS_W - LABEL_W, boxH, Component.translatable(key));
         box.setMaxLength(HmiLayout.MAX_TEXT);
         box.setValue(value);
         box.setResponder(s -> {
@@ -177,7 +181,7 @@ public class HmiEditorScreen extends Screen {
 
     private int numberRow(int y, String key, double value, NumberSink sink) {
         lines.add(new Line(Component.translatable(key), propsX, y + 5, HmiScreen.TEXT));
-        var box = new EditBox(font, propsX + LABEL_W, y, 80, 18, Component.translatable(key));
+        var box = new EditBox(font, propsX + LABEL_W, y, 80, boxH, Component.translatable(key));
         box.setValue(value == Math.rint(value) ? Long.toString((long) value) : String.format(Locale.ROOT, "%.3f", value));
         box.setResponder(s -> {
             try {
@@ -191,8 +195,8 @@ public class HmiEditorScreen extends Screen {
 
     private int stepRow(int y, String key, Runnable minus, Runnable plus) {
         lines.add(new Line(Component.translatable(key), propsX, y + 5, HmiScreen.TEXT));
-        addRenderableWidget(Button.builder(Component.literal("-"), b -> minus.run()).bounds(propsX + LABEL_W, y, 18, 18).build());
-        addRenderableWidget(Button.builder(Component.literal("+"), b -> plus.run()).bounds(propsX + LABEL_W + 50, y, 18, 18).build());
+        addRenderableWidget(Button.builder(Component.literal("-"), b -> minus.run()).bounds(propsX + LABEL_W, y, 18, boxH).build());
+        addRenderableWidget(Button.builder(Component.literal("+"), b -> plus.run()).bounds(propsX + LABEL_W + 50, y, 18, boxH).build());
         return y + ROW;
     }
 
