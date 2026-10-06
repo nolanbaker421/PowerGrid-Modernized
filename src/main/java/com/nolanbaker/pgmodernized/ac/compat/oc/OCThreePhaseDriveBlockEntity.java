@@ -65,6 +65,23 @@ public class OCThreePhaseDriveBlockEntity extends ThreePhaseDriveBlockEntity imp
         return result();
     }
 
+    @Callback(doc = "function(volts:number, hz:number) -- Rated line-to-neutral volts and the hertz they are reached at (the volts-per-hertz point).")
+    public Object[] setRated(Context context, Arguments args) {
+        setRatings(args.checkDouble(0), args.checkDouble(1), 0);
+        return result();
+    }
+
+    @Callback(direct = true, doc = "function():number, number -- Rated volts and hertz.")
+    public Object[] getRated(Context context, Arguments args) {
+        return result((double) ratedVoltage(), (double) ratedFrequency());
+    }
+
+    @Callback(doc = "function(hzPerSecond:number) -- Ramp rate.")
+    public Object[] setRamp(Context context, Arguments args) {
+        setRatings(0, 0, args.checkDouble(0));
+        return result();
+    }
+
     @Callback(direct = true, doc = "function():number -- Commanded frequency (Hz).")
     public Object[] getFrequency(Context context, Arguments args) {
         return result((double) frequencySetpoint());

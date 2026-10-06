@@ -75,13 +75,17 @@ public class ThreePhaseDriveBlock extends Rotation4ElectricBlock implements IBE<
                 (s, c) -> JackTerminals.onWire(this, JACK, s, c, super::onWire));
     }
 
-    /** Empty hand on the body opens the splice editor for the knockouts; the value box on top is Create's. */
+    /** Empty hand on the body opens the splice editor for the knockouts; sneaking opens the ratings; the value box on top is Create's. */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(hand != InteractionHand.MAIN_HAND || player.isShiftKeyDown() || !player.getMainHandItem().isEmpty())
+        if(hand != InteractionHand.MAIN_HAND || !player.getMainHandItem().isEmpty())
             return InteractionResult.PASS;
-        if(level.isClientSide)
-            ClientHooks.openSplices(pos);
+        if(level.isClientSide) {
+            if(player.isShiftKeyDown())
+                ClientHooks.openDriveRatings(pos);
+            else
+                ClientHooks.openSplices(pos);
+        }
         return InteractionResult.SUCCESS;
     }
 

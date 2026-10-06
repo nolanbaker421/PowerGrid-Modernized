@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.ac.drive;
 
+import com.nolanbaker.pgmodernized.network.packets.DriveRatingPayload;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.network.INetworkJack;
@@ -38,7 +39,7 @@ import static com.nolanbaker.pgmodernized.ac.drive.ThreePhaseDriveBlock.*;
  * every tick, so the input sees the load and sags accordingly. The output voltage is capped at
  * what the input can supply, a third of a volt per volt of line input.
  */
-public class ThreePhaseDriveBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, INetworkJack, IDeviceSpliceHost {
+public class ThreePhaseDriveBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, INetworkJack, IDeviceSpliceHost, DriveRatingPayload.IDriveRatings {
     public static final int MAX_HZ = 30;
     public static final float MAX_VOLTS = 1400f;
     public static final float OUTPUT_R = 0.05f;
@@ -236,6 +237,44 @@ public class ThreePhaseDriveBlockEntity extends ElectricBlockEntity implements I
 
     public float ratedFrequency() {
         return ratedHz;
+    }
+
+    // ---- typed ratings, from the screen ----
+
+    @Override
+    public void setRatings(double volts, double hz, double ramp) {
+        if(volts > 0)
+            setRatedVoltage((float) volts);
+        if(hz > 0)
+            setRatedFrequency((float) hz);
+        if(ramp > 0)
+            setRampRate((float) ramp);
+        notifyUpdate();
+    }
+
+    @Override
+    public double ratedVolts() {
+        return ratedVolts;
+    }
+
+    @Override
+    public double ratedHz() {
+        return ratedHz;
+    }
+
+    @Override
+    public double rampHzPerSecond() {
+        return rampHzPerSecond;
+    }
+
+    @Override
+    public double maxHz() {
+        return MAX_HZ;
+    }
+
+    @Override
+    public double maxVolts() {
+        return MAX_VOLTS;
     }
 
     public void setRampRate(float hzPerSecond) {

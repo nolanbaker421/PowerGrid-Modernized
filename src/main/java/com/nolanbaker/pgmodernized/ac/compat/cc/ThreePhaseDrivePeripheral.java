@@ -25,6 +25,21 @@ public class ThreePhaseDrivePeripheral implements IPeripheral {
         return drive.frequencySetpoint();
     }
 
+    @LuaFunction(mainThread = true)
+    public void setRated(double volts, double hz) {
+        drive.setRatings(volts, hz, 0);
+    }
+
+    @LuaFunction
+    public Object[] getRated() {
+        return new Object[] {(double) drive.ratedVoltage(), (double) drive.ratedFrequency()};
+    }
+
+    @LuaFunction(mainThread = true)
+    public void setRamp(double hzPerSecond) {
+        drive.setRatings(0, 0, hzPerSecond);
+    }
+
     @LuaFunction
     public double getOutputFrequency() {
         return drive.outputFrequency();

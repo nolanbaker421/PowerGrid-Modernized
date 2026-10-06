@@ -498,6 +498,9 @@ knockouts and a Cat6 jack. Three-phase in on L1, L2, L3 (DC across two of them w
 phases out on U, V, W.
 
 - Set the **frequency** on the value box on top (whole hertz, 0 to 30) or from a computer.
+- Sneak-right-click the drive with an empty hand to type its **ratings**: the rated volts, the
+  hertz they are reached at, and the ramp rate; computers set them with `setRated(volts, hz)` and
+  `setRamp`, and read them with `getRated`.
 - The output holds the **rated volts per hertz** (120 V at 10 Hz by default) up to the rated
   voltage, capped at what the input can supply (about 0.58 × the input line voltage).
 - Changes **ramp** at 5 Hz/s by default. Disabling ramps to a stop.

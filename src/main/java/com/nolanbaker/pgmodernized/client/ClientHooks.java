@@ -27,6 +27,11 @@ public final class ClientHooks {
         Minecraft.getInstance().setScreen(new StationScreen(pos));
     }
 
+    /** Opens a three-phase drive's typed ratings: volts, hertz, ramp. */
+    public static void openDriveRatings(BlockPos pos) {
+        Minecraft.getInstance().setScreen(new DriveRatingScreen(pos));
+    }
+
     /** Opens an HMI panel's layout editor. */
     public static void openHmiEditor(BlockPos pos) {
         Minecraft.getInstance().setScreen(new HmiEditorScreen(pos));
