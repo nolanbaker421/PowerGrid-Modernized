@@ -1031,7 +1031,7 @@ helm; the goggles say who.
 
 A wall cabinet with a DIN rail inside and a door of six cells outside, for the operator side of a
 machine. It mounts on a wall like the CT cabinet, has twelve conduit knockouts (four top, four
-bottom, two each side) and one Cat6 jack on the right side that puts the whole cabinet on the
+bottom, two each side) and one Cat6 jack on the left side, as you face the door, that puts the whole cabinet on the
 computer network as `powergrid_controls`.
 
 - **The rail** takes six modules, fitted by right-clicking the cabinet with one: a **24 V Power
@@ -1128,7 +1128,7 @@ computer network as `powergrid_controls`.
   empty canvas to pan. Apply sends the drawing to the cabinet; the first problem comes back in
   the top bar and outlines its block in red.
 
-  **The external port.** Fitting a PLC module opens the second Cat6 jack on the left side of
+  **The external port.** Fitting a PLC module opens the second Cat6 jack on the right side of
   the cabinet, on a network of its own. A computer there sees only component `powergrid_plc`:
   `get(name)` and `set(name, value)` for every name above, `getRungs`, `setRungs`,
   `getError`, `getDevices`, and the signal `plc_bit` when the program moves a network bit. The
