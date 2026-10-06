@@ -89,8 +89,8 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
                     for(int s = 0; s <= steps; ++s) {
                         double t = (double) s / steps;
                         double angle = Math.PI - Math.PI * t;
-                        // The viewer's left is +x, so the arc runs from +x (min) over the top to -x (max).
-                        double px = cx + radius * Math.cos(angle), py = cy + radius * Math.sin(angle);
+                        // The viewer's left is +x, so min sits at +x and the arc runs over the top to -x at max.
+                        double px = cx - radius * Math.cos(angle), py = cy + radius * Math.sin(angle);
                         box(ms, consumer, px - dot, py - dot, FLAT_Z1, px + dot, py + dot, FLAT_Z2, w.bandColor(w.band(w.min + span * t)));
                     }
                     if(!Float.isNaN(v) && span > 0) {
@@ -99,7 +99,7 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
                         int needle = 8;
                         for(int s = 0; s <= needle; ++s) {
                             double d = (radius - 0.3) * s / needle;
-                            double px = cx + d * Math.cos(angle), py = cy + d * Math.sin(angle);
+                            double px = cx - d * Math.cos(angle), py = cy + d * Math.sin(angle);
                             box(ms, consumer, px - 0.08, py - 0.08, FLAT_Z2, px + 0.08, py + 0.08, FLAT_Z2 + 0.03, 0xF0F0F0);
                         }
                     }

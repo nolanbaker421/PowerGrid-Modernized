@@ -80,7 +80,7 @@ public class ControlsCabinetRenderer extends SafeBlockEntityRenderer<ControlsCab
                     box(ms, consumer, light, x - 1.2, y - 1.2, DOOR - 0.3, x + 1.2, y + 1.2, DOOR, 0x202224);
                     box(ms, consumer, light, x - 0.9, y - 0.9, DOOR - 0.7, x + 0.9, y + 0.9, DOOR - 0.3, 0x404448);
                     // The mark sweeps 270 degrees, from the viewer's lower left at 0 to lower right at 100.
-                    float angle = 135 - 270 * stateValue / 100f;
+                    float angle = 270 * stateValue / 100f - 135;   // +z rotation reads clockwise to the viewer, who looks along +z
                     ms.pushPose();
                     ms.translate(x / 16, y / 16, 0);
                     ms.mulPose(Axis.ZP.rotationDegrees(angle));

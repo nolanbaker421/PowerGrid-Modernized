@@ -40,9 +40,9 @@ public class HmiBlock extends Block implements IBE<HmiBlockEntity> {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     /** The screen surface and the jack, in 16ths of the north frame. */
     public static final double FACE_Z = 14;
-    public static final double[] JACK_BOX = {13, 0, 12.5, 15, 2, 14};
+    public static final double[] JACK_BOX = {13, 0, 14, 15, 1, 16};   // a flush socket in the bottom edge
     private static final VoxelShaper SHAPES = VoxelShaper.forHorizontal(
-            Shapes.or(box(0, 0, FACE_Z, 16, 16, 16), box(JACK_BOX[0], JACK_BOX[1], JACK_BOX[2], JACK_BOX[3], JACK_BOX[4], JACK_BOX[5])), Direction.NORTH);
+            box(0, 0, FACE_Z, 16, 16, 16), Direction.NORTH);
     /** Grid cell size on a panel, in 16ths. */
     public static final double CELL = 16.0 / HmiLayout.PANEL;
 
@@ -125,7 +125,7 @@ public class HmiBlock extends Block implements IBE<HmiBlockEntity> {
         };
     }
 
-    /** Where a Cat6 cable attaches: the jack under the viewer's right corner. */
+    /** Where a Cat6 cable attaches: the socket in the bottom edge, at the viewer's left. */
     public static Vec3 jackPosition(BlockState state, BlockPos pos) {
         var local = fromNorthFrame(state, (JACK_BOX[0] + JACK_BOX[3]) / 2, (JACK_BOX[1] + JACK_BOX[4]) / 2, (JACK_BOX[2] + JACK_BOX[5]) / 2);
         return Vec3.atLowerCornerOf(pos).add(local);
