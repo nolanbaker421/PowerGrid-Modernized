@@ -58,7 +58,7 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
             switch(w.kind) {
                 case LABEL -> text(ms, buffer, font, w.text, left - 0.3, midY, right - left + 0.6, w.h, rgb, Align.LEFT);
                 case VALUE -> {
-                    var value = HmiLayout.format(v, w.decimals);
+                    var value = be.text(i).isEmpty() ? HmiLayout.format(v, w.decimals) : be.text(i);
                     if(!w.text.isEmpty())
                         text(ms, buffer, font, w.text, left - 0.3, midY, (left - right) * 0.55, w.h, 0xA0A0A0, Align.LEFT);
                     text(ms, buffer, font, value, right + 0.3, midY, (left - right) * (w.text.isEmpty() ? 1 : 0.45), w.h, rgb, Align.RIGHT);
@@ -79,6 +79,23 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
                     if(fraction > 0)
                         box(ms, consumer, left - 0.35, bottom + 0.35, FLAT_Z1 + 0.03, left - 0.35 - ((left - right) - 0.7) * fraction, top - 0.35, FLAT_Z2, rgb);
                     text(ms, buffer, font, w.text, left - 0.5, midY, (left - right) - 1, w.h, 0xF0F0F0, Align.LEFT);
+                }
+                case LINE -> {
+                    boolean lit = w.tag.isEmpty() || on;
+                    int colour = lit ? rgb : dim(rgb, 0.35);
+                    double t = 0.35;
+                    if(w.w >= w.h)
+                        box(ms, consumer, left, midY - t / 2, FLAT_Z1, right, midY + t / 2, FLAT_Z2, colour);
+                    else
+                        box(ms, consumer, (left + right) / 2 - t / 2, bottom, FLAT_Z1, (left + right) / 2 + t / 2, top, FLAT_Z2, colour);
+                }
+                case BOX -> {
+                    double t = 0.2;
+                    box(ms, consumer, left - 0.1, top - 0.1 - t, FLAT_Z1, right + 0.1, top - 0.1, FLAT_Z2, rgb);
+                    box(ms, consumer, left - 0.1, bottom + 0.1, FLAT_Z1, right + 0.1, bottom + 0.1 + t, FLAT_Z2, rgb);
+                    box(ms, consumer, left - 0.1, bottom + 0.1, FLAT_Z1, left - 0.1 - t, top - 0.1, FLAT_Z2, rgb);
+                    box(ms, consumer, right + 0.1 + t, bottom + 0.1, FLAT_Z1, right + 0.1, top - 0.1, FLAT_Z2, rgb);
+                    text(ms, buffer, font, w.text, left - 0.5, top - C * 0.5, (left - right) - 1, 1, rgb, Align.LEFT);
                 }
                 case GAUGE -> {
                     double cx = (left + right) / 2, cy = bottom + C * 0.9;

@@ -9,7 +9,7 @@ import java.util.List;
 public enum NodeType {
     TAG("Tag", Group.IO, List.of(Param.text(0, "Tag", "X1.1"))),
     SET("Set tag", Group.IO, List.of(Param.text(0, "Tag", "Y1.1"))),
-    CONST("Constant", Group.IO, List.of(Param.number(0, "Value", 0))),
+    CONST("Constant", Group.IO, List.of(Param.number(0, "Value", 0), Param.text(0, "Text instead", ""))),
     AND("And", Group.LOGIC, List.of(Param.count(0, "Inputs", 2, 2, 8))),
     OR("Or", Group.LOGIC, List.of(Param.count(0, "Inputs", 2, 2, 8))),
     NOT("Not", Group.LOGIC, List.of()),
@@ -19,6 +19,7 @@ public enum NodeType {
     LATCH("SR latch", Group.LOGIC, List.of()),
     TOGGLE("Toggle", Group.LOGIC, List.of()),
     SELECT("Select", Group.LOGIC, List.of()),
+    HYSTERESIS("Hysteresis", Group.LOGIC, List.of(Param.number(0, "On at or above", 80), Param.number(1, "Off below", 60))),
     TON("On delay", Group.TIMER, List.of(Param.number(0, "Ticks", 20))),
     TOF("Off delay", Group.TIMER, List.of(Param.number(0, "Ticks", 20))),
     PULSE("One-shot", Group.TIMER, List.of(Param.number(0, "Ticks", 10))),
@@ -31,6 +32,9 @@ public enum NodeType {
     SCALE("Scale", Group.MATH, List.of(Param.number(0, "In min", 0), Param.number(1, "In max", 100), Param.number(2, "Out min", 0), Param.number(3, "Out max", 1))),
     CLAMP("Clamp", Group.MATH, List.of(Param.number(0, "Min", 0), Param.number(1, "Max", 100))),
     COUNTER("Counter", Group.MATH, List.of(Param.number(0, "Preset", 10))),
+    THROTTLE("Throttle", Group.MATH, List.of(Param.number(0, "Step per tick", 1), Param.number(1, "Min", 0), Param.number(2, "Max", 100), Param.number(3, "Start", 0),
+            Param.choice(4, "Count", Choices.THROTTLE_MODES), Param.choice(5, "Released", Choices.THROTTLE_RELEASE))),
+    SMOOTH("Smooth", Group.MATH, List.of(Param.number(0, "Factor, 0 to 1", 0.1))),
     CALL("Device call", Group.DEVICE, List.of(Param.device(0, "Method"), Param.count(0, "Arguments", 0, 0, 6), Param.choice(1, "Call", Choices.CALL_MODES))),
     LUA("Lua", Group.SCRIPT, List.of(Param.script(0, "Script", NodeType.LUA_DEFAULT), Param.count(0, "Inputs", 2, 0, 8), Param.count(1, "Outputs", 1, 0, 8))),
     RUNGS("Rungs", Group.SCRIPT, List.of(Param.script(0, "Rungs", "# one rung per line, e.g.  Y1.1 = X1.1 & !X1.2"))),
@@ -40,6 +44,8 @@ public enum NodeType {
     private static final class Choices {
         static final String[] COMPARE_OPS = {"<", "<=", ">", ">=", "==", "!="};
         static final String[] CALL_MODES = {"every scan", "when En rises", "when an argument changes"};
+        static final String[] THROTTLE_MODES = {"while held", "per press"};
+        static final String[] THROTTLE_RELEASE = {"hold", "return to start"};
     }
 
     public static final String[] COMPARE_OPS = Choices.COMPARE_OPS;
@@ -141,13 +147,13 @@ public enum NodeType {
     public String[] inputNames(PlcGraph.Node node) {
         return switch(this) {
             case AND, OR, ADD, MUL -> numbered("", count(node, 0, 2));
-            case NOT, RISE, FALL, TON, TOF, PULSE, SCALE, CLAMP -> new String[] {"In"};
+            case NOT, RISE, FALL, TON, TOF, PULSE, SCALE, CLAMP, HYSTERESIS, SMOOTH -> new String[] {"In"};
             case XOR, SUB, DIV, COMPARE -> new String[] {"A", "B"};
             case LATCH -> new String[] {"S", "R"};
             case TOGGLE -> new String[] {"T", "Reset"};
             case SELECT -> new String[] {"Sel", "A", "B"};
             case BLINK -> new String[] {"En"};
-            case COUNTER -> new String[] {"Up", "Down", "Reset"};
+            case COUNTER, THROTTLE -> new String[] {"Up", "Down", "Reset"};
             case SET -> new String[] {"Value"};
             case CALL -> {
                 var names = new String[1 + count(node, 0, 0)];
@@ -163,10 +169,10 @@ public enum NodeType {
 
     public String[] outputNames(PlcGraph.Node node) {
         return switch(this) {
-            case TAG, CONST -> new String[] {"Value"};
-            case AND, OR, NOT, XOR, RISE, FALL, LATCH, TOGGLE, SELECT, PULSE, BLINK, COMPARE -> new String[] {"Q"};
+            case TAG, CONST, THROTTLE -> new String[] {"Value"};
+            case AND, OR, NOT, XOR, RISE, FALL, LATCH, TOGGLE, SELECT, PULSE, BLINK, COMPARE, HYSTERESIS -> new String[] {"Q"};
             case TON, TOF -> new String[] {"Q", "Elapsed"};
-            case ADD, SUB, MUL, DIV, SCALE, CLAMP -> new String[] {"Out"};
+            case ADD, SUB, MUL, DIV, SCALE, CLAMP, SMOOTH -> new String[] {"Out"};
             case COUNTER -> new String[] {"Count", "Done"};
             case CALL -> new String[] {"Result"};
             case LUA -> numbered("Out", count(node, 1, 1));
@@ -178,13 +184,16 @@ public enum NodeType {
     public String summary(PlcGraph.Node node) {
         return switch(this) {
             case TAG, SET, NOTE -> node.text;
-            case CONST -> format(node.nums[0]);
+            case CONST -> node.text.isEmpty() ? format(node.nums[0]) : "\"" + node.text + "\"";
             case COMPARE -> "A " + COMPARE_OPS[(int) Math.max(0, Math.min(COMPARE_OPS.length - 1, node.nums[0]))] + " B";
             case TON, TOF, PULSE -> format(node.nums[0]) + " ticks";
             case BLINK -> format(node.nums[0]) + " / " + format(node.nums[1]);
             case SCALE -> format(node.nums[0]) + ".." + format(node.nums[1]) + " to " + format(node.nums[2]) + ".." + format(node.nums[3]);
             case CLAMP -> format(node.nums[0]) + ".." + format(node.nums[1]);
             case COUNTER -> "to " + format(node.nums[0]);
+            case THROTTLE -> format(node.nums[0]) + "/t  " + format(node.nums[1]) + ".." + format(node.nums[2]);
+            case HYSTERESIS -> "on " + format(node.nums[0]) + "  off " + format(node.nums[1]);
+            case SMOOTH -> "k " + format(node.nums[0]);
             case CALL -> node.text;
             case LUA -> {
                 for(var line : node.text.split("\n")) {

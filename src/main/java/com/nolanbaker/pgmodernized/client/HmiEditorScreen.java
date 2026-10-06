@@ -87,14 +87,15 @@ public class HmiEditorScreen extends Screen {
 
         // The kinds to place, across the top.
         int x = panelX + PADDING;
+        int kindW = Math.max(36, (panelW - PADDING * 2) / HmiLayout.Kind.values().length - 2);
         for(var kind : HmiLayout.Kind.values()) {
             var button = addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.hmi.kind." + kind.key()), b -> {
                 placing = placing == kind ? null : kind;
                 selected = -1;
                 rebuildWidgets();
-            }).bounds(x, panelY + PADDING + TITLE, 62, 18).build());
+            }).bounds(x, panelY + PADDING + TITLE, kindW, 18).build());
             kindButtons.add(button);
-            x += 64;
+            x += kindW + 2;
         }
 
         // The selected widget's settings.
@@ -238,7 +239,8 @@ public class HmiEditorScreen extends Screen {
         graphics.drawString(font, title, panelX + PADDING, panelY + PADDING, 0xFFFFFF);
         // Live values line up with the panel's layout only while the two agree in length.
         var values = hmi.values().length == layout.widgets.size() ? hmi.values() : new float[0];
-        HmiScreen.drawLayout(graphics, font, layout, values, gridX, gridY, cell, selected, true);
+        var texts = hmi.texts().length == layout.widgets.size() ? hmi.texts() : new String[0];
+        HmiScreen.drawLayout(graphics, font, layout, values, texts, gridX, gridY, cell, selected, true);
         for(var line : lines)
             graphics.drawString(font, line.text, line.x, line.y, line.color);
         // The values the selected widget's -/+ rows show.

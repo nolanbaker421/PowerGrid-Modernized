@@ -39,6 +39,8 @@ public class PlcGraphScreen extends Screen {
     private PlcGraph graph = new PlcGraph();
     private boolean loaded;
     private int panX = 24, panY = 24;
+    /** Canvas scale; everything is laid out in canvas space and the mouse is mapped into it. */
+    private float zoom = 1;
     private int selected = -1;
     private int dragNode = -1, dragDx, dragDy;
     private boolean panning;
@@ -84,6 +86,8 @@ public class PlcGraphScreen extends Screen {
         addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.controls.back"), b -> onClose()).bounds(x + 64, 4, 50, 18).build());
         addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.controls.plc_edit"), b -> editSelected()).bounds(x + 118, 4, 50, 18).build());
         addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.controls.plc_delete"), b -> deleteSelected()).bounds(x + 172, 4, 50, 18).build());
+        addRenderableWidget(Button.builder(Component.literal("-"), b -> setZoom(zoom / 1.25f)).bounds(x + 226, 4, 18, 18).build());
+        addRenderableWidget(Button.builder(Component.literal("+"), b -> setZoom(zoom * 1.25f)).bounds(x + 246, 4, 18, 18).build());
         paletteButtons.clear();
         for(var type : NodeType.values()) {
             var button = addRenderableWidget(Button.builder(Component.literal(type.title), b -> addNode(type)).bounds(4, 0, PALETTE_W - 8, 16).build());
@@ -105,8 +109,8 @@ public class PlcGraphScreen extends Screen {
     }
 
     private void addNode(NodeType type) {
-        int cx = (width - PALETTE_W) / 2 - panX - NODE_W / 2 + (added % 5) * 14;
-        int cy = (height - TOP) / 2 - panY - 20 + (added % 5) * 14;
+        int cx = (int) ((width - PALETTE_W) / 2 / zoom) - panX - NODE_W / 2 + (added % 5) * 14;
+        int cy = (int) ((height - TOP) / 2 / zoom) - panY - 20 + (added % 5) * 14;
         ++added;
         var node = graph.add(type, cx, cy);
         if(node == null) {
@@ -154,6 +158,18 @@ public class PlcGraphScreen extends Screen {
     private int nodeHeight(PlcGraph.Node node) {
         int rows = Math.max(1, Math.max(node.inputs(), node.outputs()));
         return HEAD + rows * PIN_ROW + (node.type.summary(node).isEmpty() ? 0 : BODY) + 2;
+    }
+
+    private void setZoom(float value) {
+        zoom = Math.max(0.3f, Math.min(2f, value));
+    }
+
+    private double canvasX(double screenX) {
+        return PALETTE_W + (screenX - PALETTE_W) / zoom;
+    }
+
+    private double canvasY(double screenY) {
+        return TOP + (screenY - TOP) / zoom;
     }
 
     private int sx(PlcGraph.Node node) {
@@ -256,8 +272,16 @@ public class PlcGraphScreen extends Screen {
 
         graphics.fill(0, 0, width, height, BG);
         graphics.enableScissor(PALETTE_W, TOP, width, height);
-        for(int gx = PALETTE_W + Math.floorMod(panX, 24); gx < width; gx += 24)
-            for(int gy = TOP + Math.floorMod(panY, 24); gy < height; gy += 24)
+        graphics.pose().pushPose();
+        graphics.pose().translate(PALETTE_W, TOP, 0);
+        graphics.pose().scale(zoom, zoom, 1);
+        graphics.pose().translate(-PALETTE_W, -TOP, 0);
+        int canvasRight = (int) canvasX(width), canvasBottom = (int) canvasY(height);
+        int mouseX0 = mouseX, mouseY0 = mouseY;
+        mouseX = (int) canvasX(mouseX0);
+        mouseY = (int) canvasY(mouseY0);
+        for(int gx = PALETTE_W + Math.floorMod(panX, 24); gx < canvasRight; gx += 24)
+            for(int gy = TOP + Math.floorMod(panY, 24); gy < canvasBottom; gy += 24)
                 graphics.fill(gx, gy, gx + 1, gy + 1, GRID);
 
         for(var link : graph.links) {
@@ -310,7 +334,10 @@ public class PlcGraphScreen extends Screen {
             if(message != null)
                 graphics.drawString(font, font.plainSubstrByWidth(message, w * 2), x, y + h + 3, node.id == errorNode ? ERR : DIM, false);
         }
+        graphics.pose().popPose();
         graphics.disableScissor();
+        mouseX = mouseX0;
+        mouseY = mouseY0;
 
         // Palette and top bar over the canvas.
         graphics.fill(0, TOP, PALETTE_W, height, PANEL);
@@ -326,7 +353,7 @@ public class PlcGraphScreen extends Screen {
                 button.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawString(font, title, 6, 9, TEXT, false);
 
-        int textX = PALETTE_W + 236;
+        int textX = PALETTE_W + 272;
         var error = cabinet.plcError();
         String line;
         int color;
@@ -358,6 +385,8 @@ public class PlcGraphScreen extends Screen {
                 return true;
             return super.mouseClicked(mx, my, button);
         }
+        mx = canvasX(mx);
+        my = canvasY(my);
         lastMx = mx;
         lastMy = my;
         var out = outputAt(mx, my);
@@ -404,6 +433,8 @@ public class PlcGraphScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
+        mx = canvasX(mx);
+        my = canvasY(my);
         if(dragNode >= 0) {
             var node = graph.node(dragNode);
             if(node != null) {
@@ -428,7 +459,7 @@ public class PlcGraphScreen extends Screen {
     @Override
     public boolean mouseReleased(double mx, double my, int button) {
         if(linkFrom >= 0) {
-            var in = inputAt(mx, my);
+            var in = inputAt(canvasX(mx), canvasY(my));
             if(in != null && graph.link(linkFrom, linkFromPin, in[0], in[1]))
                 modified = true;
             linkFrom = -1;
@@ -447,10 +478,12 @@ public class PlcGraphScreen extends Screen {
             return true;
         }
         if(inCanvas(mx, my)) {
-            if(hasShiftDown())
-                panX += (int) (scrollY * 24);
+            if(hasControlDown())
+                setZoom(scrollY > 0 ? zoom * 1.1f : zoom / 1.1f);
+            else if(hasShiftDown())
+                panX += (int) (scrollY * 24 / zoom);
             else
-                panY += (int) (scrollY * 24);
+                panY += (int) (scrollY * 24 / zoom);
             return true;
         }
         return super.mouseScrolled(mx, my, scrollX, scrollY);

@@ -38,6 +38,8 @@ public final class PlcRunner {
     private final PlcProgram.Io io;
     private final List<PlcGraph.Node> order;
     private final Map<Integer, double[]> out = new HashMap<>();
+    /** Text a block produced on a pin, beside its number: a text constant, a text tag, a call's string result. */
+    private final Map<Integer, Object[]> raw = new HashMap<>();
     private final Map<Integer, State> states = new HashMap<>();
     private final Map<Integer, PlcGraph.Link[]> feeds = new HashMap<>();
     private final Map<String, Double> bits;
@@ -105,6 +107,7 @@ public final class PlcRunner {
             var state = new State();
             runner.states.put(node.id, state);
             runner.out.put(node.id, new double[node.outputs()]);
+            runner.raw.put(node.id, new Object[node.outputs()]);
             var into = new PlcGraph.Link[node.inputs()];
             for(var link : graph.links)
                 if(link.to() == node.id && link.toPin() < into.length)
@@ -113,12 +116,12 @@ public final class PlcRunner {
             switch(node.type) {
                 case TAG -> {
                     var name = normalise(node.text);
-                    if(!isBit(name) && !io.exists(name))
+                    if(!isBit(name) && !isTextName(name) && !io.exists(name))
                         throw new CompileError(node.id, "unknown tag " + node.text);
                 }
                 case SET -> {
                     var name = normalise(node.text);
-                    if(!isNetworkOrCoil(name) && !io.write(name, Double.NaN))
+                    if(!isNetworkOrCoil(name) && !isTextName(name) && !io.write(name, Double.NaN))
                         throw new CompileError(node.id, "cannot write tag " + node.text);
                 }
                 case CALL -> {
@@ -212,18 +215,67 @@ public final class PlcRunner {
         return in(node, pin, 0);
     }
 
+    /** What feeds a pin: a String when the source produced text, otherwise its number as a Double. */
+    private Object inRaw(PlcGraph.Node node, int pin) {
+        var links = feeds.get(node.id);
+        var link = pin < links.length ? links[pin] : null;
+        if(link == null)
+            return 0.0;
+        var text = raw.get(link.from());
+        if(text != null && link.fromPin() < text.length && text[link.fromPin()] instanceof String s)
+            return s;
+        return in(node, pin);
+    }
+
+    /** S1, S2, ...: the text tags. */
+    static boolean isTextName(String name) {
+        if(name.length() < 2 || name.charAt(0) != 'S')
+            return false;
+        for(int i = 1; i < name.length(); ++i)
+            if(!Character.isDigit(name.charAt(i)))
+                return false;
+        return true;
+    }
+
+    private static String stringOf(Object v) {
+        return v instanceof String s ? s : NodeType.format(((Number) v).doubleValue());
+    }
+
     private static boolean on(double v) {
         return v != 0;
     }
 
     private void run(PlcGraph.Node node) throws Exception {
         var o = out.get(node.id);
+        var r = raw.get(node.id);
         var s = states.get(node.id);
         var m = s.mem;
         switch(node.type) {
-            case TAG -> o[0] = readTag(normalise(node.text));
-            case SET -> writeTag(normalise(node.text), in(node, 0));
-            case CONST -> o[0] = node.num(0);
+            case TAG -> {
+                var name = normalise(node.text);
+                if(isTextName(name)) {
+                    var text = io.readText(name);
+                    r[0] = text == null ? "" : text;
+                    o[0] = text == null || text.isEmpty() ? 0 : 1;
+                } else {
+                    o[0] = readTag(name);
+                }
+            }
+            case SET -> {
+                var name = normalise(node.text);
+                if(isTextName(name))
+                    io.writeText(name, stringOf(inRaw(node, 0)));
+                else
+                    writeTag(name, in(node, 0));
+            }
+            case CONST -> {
+                if(node.text.isEmpty()) {
+                    o[0] = node.num(0);
+                } else {
+                    r[0] = node.text;
+                    o[0] = toNumber(node.text);
+                }
+            }
             case AND -> {
                 boolean q = true;
                 for(int i = 0; i < node.inputs(); ++i)
@@ -323,8 +375,16 @@ public final class PlcRunner {
                 o[0] = b == 0 ? 0 : in(node, 0) / b;
             }
             case COMPARE -> {
+                var ra = inRaw(node, 0);
+                var rb = inRaw(node, 1);
+                int op = (int) node.num(0);
+                if((ra instanceof String || rb instanceof String) && (op == 4 || op == 5)) {
+                    boolean same = stringOf(ra).equals(stringOf(rb));
+                    o[0] = (op == 4) == same ? 1 : 0;
+                    break;
+                }
                 double a = in(node, 0), b = in(node, 1);
-                o[0] = switch((int) node.num(0)) {
+                o[0] = switch(op) {
                     case 0 -> a < b;
                     case 1 -> a <= b;
                     case 2 -> a > b;
@@ -339,6 +399,51 @@ public final class PlcRunner {
                 o[0] = span == 0 ? outMin : outMin + (in(node, 0) - inMin) / span * (outMax - outMin);
             }
             case CLAMP -> o[0] = Math.max(node.num(0), Math.min(node.num(1), in(node, 0)));
+            case THROTTLE -> {
+                double step = node.num(0), min = node.num(1), max = node.num(2), start = node.num(3);
+                boolean perPress = node.num(4) != 0, springReturn = node.num(5) != 0;
+                if(m[3] == 0) {
+                    m[0] = start;
+                    m[3] = 1;
+                }
+                boolean up = on(in(node, 0)), down = on(in(node, 1));
+                if(on(in(node, 2))) {
+                    m[0] = start;
+                } else {
+                    if(perPress ? up && !on(m[1]) : up)
+                        m[0] += step;
+                    if(perPress ? down && !on(m[2]) : down)
+                        m[0] -= step;
+                    if(springReturn && !up && !down) {
+                        if(m[0] > start)
+                            m[0] = Math.max(start, m[0] - step);
+                        else if(m[0] < start)
+                            m[0] = Math.min(start, m[0] + step);
+                    }
+                }
+                m[1] = up ? 1 : 0;
+                m[2] = down ? 1 : 0;
+                m[0] = Math.max(min, Math.min(max, m[0]));
+                o[0] = m[0];
+            }
+            case HYSTERESIS -> {
+                double v = in(node, 0);
+                if(v >= node.num(0))
+                    m[0] = 1;
+                else if(v < node.num(1))
+                    m[0] = 0;
+                o[0] = m[0];
+            }
+            case SMOOTH -> {
+                double k = Math.max(0, Math.min(1, node.num(0)));
+                if(m[1] == 0) {
+                    m[0] = in(node, 0);
+                    m[1] = 1;
+                } else {
+                    m[0] += (in(node, 0) - m[0]) * k;
+                }
+                o[0] = m[0];
+            }
             case COUNTER -> {
                 boolean up = on(in(node, 0)), down = on(in(node, 1));
                 if(on(in(node, 2)))
@@ -370,19 +475,31 @@ public final class PlcRunner {
                     s.lastArgs = args;
                     int dot = node.text.lastIndexOf('.');
                     var list = new ArrayList<Object>(argCount);
-                    for(double v : args)
-                        list.add(v == Math.rint(v) && Math.abs(v) < 1e9 ? (Object) (int) v : (Object) v);
+                    for(int i = 0; i < argCount; ++i) {
+                        var rv = inRaw(node, i + 1);
+                        double v = args[i];
+                        list.add(rv instanceof String str ? str : v == Math.rint(v) && Math.abs(v) < 1e9 ? (Object) (int) v : (Object) v);
+                    }
                     var result = io.call(node.text.substring(0, dot), node.text.substring(dot + 1), list);
                     o[0] = toNumber(result);
+                    r[0] = result instanceof String str ? str : result instanceof byte[] bytes ? new String(bytes, java.nio.charset.StandardCharsets.UTF_8) : null;
                     s.message = result == null ? "" : String.valueOf(result);
                 }
             }
             case LUA -> {
-                var inputs = new double[node.inputs()];
+                var inputs = new Object[node.inputs()];
                 for(int i = 0; i < inputs.length; ++i)
-                    inputs[i] = in(node, i);
+                    inputs[i] = inRaw(node, i);
                 var results = s.lua.run(inputs, node.outputs());
-                System.arraycopy(results, 0, o, 0, Math.min(results.length, o.length));
+                for(int i = 0; i < Math.min(results.length, o.length); ++i) {
+                    if(results[i] instanceof String str) {
+                        r[i] = str;
+                        o[i] = toNumber(str);
+                    } else {
+                        r[i] = null;
+                        o[i] = ((Number) results[i]).doubleValue();
+                    }
+                }
             }
             case RUNGS -> {
                 s.rungs.scan(io);

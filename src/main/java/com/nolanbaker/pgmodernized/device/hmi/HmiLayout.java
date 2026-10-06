@@ -32,7 +32,11 @@ public final class HmiLayout {
         /** A number with minus and plus that writes the tag by a step, kept between min and max. */
         SETPOINT,
         /** A needle over an arc from min to max, the arc in three coloured bands with two thresholds. */
-        GAUGE;
+        GAUGE,
+        /** A line along the widget, horizontal or vertical by its shape; with a tag it lights while nonzero. */
+        LINE,
+        /** An outlined rectangle with a title, for grouping. */
+        BOX;
 
         public String key() {
             return name().toLowerCase(Locale.ROOT);
@@ -46,7 +50,7 @@ public final class HmiLayout {
         }
 
         public boolean usesTag() {
-            return this != LABEL;
+            return this != LABEL && this != BOX;
         }
 
         public boolean writes() {
@@ -99,6 +103,10 @@ public final class HmiLayout {
             };
             if(kind == Kind.GAUGE)
                 h = 2;
+            if(kind == Kind.BOX) {
+                h = 3;
+                text = "Group";
+            }
         }
 
         /** The gauge band a value falls in: 0, 1 or 2. */

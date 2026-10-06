@@ -215,6 +215,9 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
 
         @Callback(direct = true, doc = "function(name:string):number -- Read a name the program sees: X1.1, Y1.1, R1.1, V1.run, D3, E, P, C1, T1, N1. Booleans are 0 or 1.")
         public Object[] get(Context context, Arguments args) {
+            var text = plcReadText(args.checkString(0));
+            if(text != null)
+                return result(text);
             double v = plcRead(args.checkString(0));
             if(Double.isNaN(v))
                 return result(null, "unknown name");
@@ -223,6 +226,8 @@ public class OCControlsCabinetBlockEntity extends ControlsCabinetBlockEntity imp
 
         @Callback(doc = "function(name:string, value:number|boolean):boolean -- Write a network bit N1 to N32, a coil C1 to C32, or anything the program may write.")
         public Object[] set(Context context, Arguments args) {
+            if(isTextName(args.checkString(0).toUpperCase(java.util.Locale.ROOT)))
+                return result(plcWriteText(args.checkString(0), args.isString(1) ? args.checkString(1) : String.valueOf(args.checkAny(1))));
             double v = args.isBoolean(1) ? (args.checkBoolean(1) ? 1 : 0) : args.checkDouble(1);
             return result(plcWrite(args.checkString(0), v));
         }

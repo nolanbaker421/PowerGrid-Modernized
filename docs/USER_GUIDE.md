@@ -1107,7 +1107,18 @@ computer network as `powergrid_controls`.
   - **Logic.** And, Or (2 to 8 inputs), Not, Xor, Rising edge, Falling edge, SR latch,
     Toggle, Select.
   - **Timers.** On delay, Off delay, One-shot and Blink, in ticks.
-  - **Math.** Add, Subtract, Multiply, Divide, Compare, Scale, Clamp, Counter.
+  - **Math.** Add, Subtract, Multiply, Divide, Compare, Scale, Clamp, Counter, Smooth (a
+    low-pass filter), and Throttle: Up and Down move a value by a step per tick, or per press,
+    kept between min and max, resetting to a start value, and optionally springing back to it
+    when neither is held, which makes a helm key into a throttle lever. Hysteresis turns on at
+    or above one level and off below a lower one.
+  - **Text.** A Constant with its text field filled is a text constant, for device calls that
+    take a name, `helm1.isDown` with `"w"` on its argument pin, or to compare against:
+    Compare with `==` or `!=` compares text when either side is text, so
+    `helm1.getHelmsman == "Nolan"` is a Device call, a text Constant and a Compare. The text
+    tags `S1`, `S2`, ... hold text the way `N1` holds a number: a Set tag block writes one from
+    any text pin, a Tag block reads it, an HMI Value widget shows it, and a computer reads it
+    with `get("S1")`.
   - **Device call.** Calls a method on any OpenComputers component the cabinet's internal Cat6
     reaches, picked from the devices the PLC discovered (a drive is `three_phase_drive1`, a
     rangefinder `rangefinder1`), with its arguments on pins and its first result on an output
@@ -1123,6 +1134,7 @@ computer network as `powergrid_controls`.
     Tag blocks see.
   - **Note.** Text on the canvas.
 
+  Ctrl+wheel or the - and + buttons zoom the canvas out for the whole picture and back in.
   Right-click a block to set it, drag it by its body, drag from an output pin to an input pin
   to wire, click a wired input to pull its wire off, Delete removes the selected block, drag
   empty canvas to pan. Apply sends the drawing to the cabinet; the first problem comes back in
@@ -1173,6 +1185,10 @@ computer, no program: the panel reads and writes tags directly.
   A *Gauge* is a needle over an arc from min to max, the arc coloured in three bands the way a
   SCADA gauge is: the first colour up to the first threshold, the second up to the second,
   the third above it, with the value and label under the needle. Two cells tall by default.
+  A *Line* runs along its widget, horizontal or vertical by its shape, for drawing pipes,
+  wires and flow diagrams; give it a tag and it glows while the tag is nonzero and dims
+  otherwise, so a line can show a live feeder. A *Box* is an outlined rectangle with a title
+  for grouping. A *Value* on a text tag such as `S1` shows the text.
 - **Using it.** The screen on the block shows everything live. Right-click a button on the face
   to press it, the left or right half of a setpoint to step it, and anywhere else to open the
   panel large, where the same widgets work with the mouse.

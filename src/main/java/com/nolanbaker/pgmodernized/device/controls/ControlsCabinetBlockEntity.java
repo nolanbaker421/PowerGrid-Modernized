@@ -147,6 +147,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private final PlcIo plcIo = new PlcIo();
     /** The N and C tags: the cabinet's own, shared with the program, the external port and any HMI; saved. */
     private final Map<String, Double> plcBits = new java.util.HashMap<>();
+    /** The S tags: text the program, a computer or an HMI can read; saved. */
+    private final Map<String, String> plcText = new java.util.HashMap<>();
     private boolean powered;
     private boolean estopWas;
     private float volts;
@@ -816,6 +818,33 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     /** A name the program or the external port reads: NaN when unknown. */
+    /** S1, S2, ...: the text tags. */
+    public static boolean isTextName(String name) {
+        return name.length() > 1 && name.charAt(0) == 'S' && name.substring(1).chars().allMatch(Character::isDigit);
+    }
+
+    /** A text tag's value, empty when unwritten; null for a name that is not a text tag. */
+    @Nullable
+    public String plcReadText(String name) {
+        name = name.toUpperCase(Locale.ROOT);
+        return isTextName(name) ? plcText.getOrDefault(name, "") : null;
+    }
+
+    public boolean plcWriteText(String name, String text) {
+        name = name.toUpperCase(Locale.ROOT);
+        if(!isTextName(name))
+            return false;
+        if(text == null)
+            text = "";
+        if(text.length() > 200)
+            text = text.substring(0, 200);
+        if(!text.equals(plcText.get(name))) {
+            plcText.put(name, text);
+            setChanged();
+        }
+        return true;
+    }
+
     public double plcRead(String name) {
         name = name.toUpperCase(Locale.ROOT);
         if(isBitName(name))
@@ -982,6 +1011,16 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         @Override
         public @Nullable Object call(String alias, String method, List<Object> args) throws Exception {
             return bridge == null ? null : bridge.call(alias, method, args);
+        }
+
+        @Override
+        public @Nullable String readText(String name) {
+            return plcReadText(name);
+        }
+
+        @Override
+        public boolean writeText(String name, String value) {
+            return plcWriteText(name, value);
         }
 
         @Override
@@ -1457,6 +1496,11 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 if(entry.getValue() != 0)
                     bitsTag.putDouble(entry.getKey(), entry.getValue());
             tag.put("PlcBits", bitsTag);
+            var textTag = new CompoundTag();
+            for(var entry : plcText.entrySet())
+                if(!entry.getValue().isEmpty())
+                    textTag.putString(entry.getKey(), entry.getValue());
+            tag.put("PlcText", textTag);
         }
         if(clientPacket) {
             tag.putString("PlcError", plcError);
@@ -1518,6 +1562,11 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         var aoBits = tag.getIntArray("AnalogOut");
         for(int i = 0; i < Math.min(aoBits.length, analogOut.length); ++i)
             analogOut[i] = Float.intBitsToFloat(aoBits[i]);
+        if(!clientPacket && tag.contains("PlcText")) {
+            var textTag = tag.getCompound("PlcText");
+            for(var key : textTag.getAllKeys())
+                plcText.put(key, textTag.getString(key));
+        }
         if(!clientPacket && tag.contains("PlcBits")) {
             var bitsTag = tag.getCompound("PlcBits");
             for(var key : bitsTag.getAllKeys())

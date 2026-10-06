@@ -48,6 +48,15 @@ public final class PlcProgram {
 
         /** Whether that device alias is known. */
         boolean hasDevice(String alias);
+
+        /** A text tag's value (S1, S2, ...), or null when there is no such tag. */
+        default @Nullable String readText(String name) {
+            return null;
+        }
+
+        default boolean writeText(String name, String value) {
+            return false;
+        }
     }
 
     public static final class CompileError extends Exception {

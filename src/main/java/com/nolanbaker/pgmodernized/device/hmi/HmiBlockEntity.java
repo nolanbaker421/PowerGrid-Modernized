@@ -52,6 +52,8 @@ public class HmiBlockEntity extends SmartBlockEntity implements INetworkJack, IH
     @Nullable
     private BlockPos cabinet;
     private float[] values = new float[0];
+    /** Text behind each widget whose tag is a text tag; empty otherwise. */
+    private String[] texts = new String[0];
     private final int[] pulses = new int[HmiLayout.MAX_WIDGETS];
     private boolean dirty;
     private int syncTimer, findTimer, readTimer;
@@ -110,6 +112,7 @@ public class HmiBlockEntity extends SmartBlockEntity implements INetworkJack, IH
             layout = new HmiLayout();
             layoutTag = layout.save();
             values = new float[0];
+            texts = new String[0];
             cabinet = null;
         }
         Arrays.fill(pulses, 0);
@@ -172,6 +175,16 @@ public class HmiBlockEntity extends SmartBlockEntity implements INetworkJack, IH
     public float value(int index) {
         var v = values();
         return index >= 0 && index < v.length ? v[index] : Float.NaN;
+    }
+
+    public String[] texts() {
+        var head = head();
+        return head == null || head == this ? texts : head.texts;
+    }
+
+    public String text(int index) {
+        var t = texts();
+        return index >= 0 && index < t.length ? t[index] : "";
     }
 
     @Nullable
@@ -309,12 +322,17 @@ public class HmiBlockEntity extends SmartBlockEntity implements INetworkJack, IH
     private void refreshValues() {
         var c = cabinet();
         var fresh = new float[layout.widgets.size()];
+        var freshText = new String[fresh.length];
         for(int i = 0; i < fresh.length; ++i) {
             var widget = layout.widgets.get(i);
-            fresh[i] = c == null || !widget.kind.usesTag() || widget.tag.isEmpty() ? Float.NaN : (float) c.plcRead(widget.tag);
+            boolean tagged = c != null && widget.kind.usesTag() && !widget.tag.isEmpty();
+            var text = tagged ? c.plcReadText(widget.tag) : null;
+            freshText[i] = text == null ? "" : text;
+            fresh[i] = !tagged ? Float.NaN : text != null ? (text.isEmpty() ? 0 : 1) : (float) c.plcRead(widget.tag);
         }
-        if(!Arrays.equals(fresh, values)) {
+        if(!Arrays.equals(fresh, values) || !Arrays.equals(freshText, texts)) {
             values = fresh;
+            texts = freshText;
             dirty = true;
         }
     }
@@ -406,6 +424,10 @@ public class HmiBlockEntity extends SmartBlockEntity implements INetworkJack, IH
             for(int i = 0; i < bits.length; ++i)
                 bits[i] = Float.floatToIntBits(values[i]);
             tag.putIntArray("Values", bits);
+            var textList = new net.minecraft.nbt.ListTag();
+            for(var t : texts)
+                textList.add(net.minecraft.nbt.StringTag.valueOf(t));
+            tag.put("Texts", textList);
             if(cabinet != null)
                 tag.putLong("Cabinet", cabinet.asLong());
         }
@@ -428,6 +450,10 @@ public class HmiBlockEntity extends SmartBlockEntity implements INetworkJack, IH
             values = new float[bits.length];
             for(int i = 0; i < bits.length; ++i)
                 values[i] = Float.intBitsToFloat(bits[i]);
+            var textList = tag.getList("Texts", net.minecraft.nbt.Tag.TAG_STRING);
+            texts = new String[textList.size()];
+            for(int i = 0; i < texts.length; ++i)
+                texts[i] = textList.getString(i);
             cabinet = tag.contains("Cabinet") ? BlockPos.of(tag.getLong("Cabinet")) : null;
         }
     }

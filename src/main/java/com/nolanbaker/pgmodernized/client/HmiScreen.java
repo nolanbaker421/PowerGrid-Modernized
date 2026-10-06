@@ -69,7 +69,7 @@ public class HmiScreen extends Screen {
         graphics.drawString(font, title, panelX + PADDING, panelY + PADDING, 0xFFFFFF);
         if(hmi.layout().cols() != cols || hmi.layout().rows() != rows)
             rebuildWidgets();
-        drawLayout(graphics, font, hmi.layout(), hmi.values(), gridX, gridY, cell, -1, false);
+        drawLayout(graphics, font, hmi.layout(), hmi.values(), hmi.texts(), gridX, gridY, cell, -1, false);
         graphics.drawString(font, status(hmi), panelX + PADDING, panelY + panelH - PADDING - 13, hmi.connected() ? DIM : 0xFFE06060);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
@@ -104,7 +104,7 @@ public class HmiScreen extends Screen {
     }
 
     /** The widgets on a grid of that cell size, as the block face shows them; {@code selected} gets an outline. */
-    static void drawLayout(GuiGraphics g, Font font, HmiLayout layout, float[] values, int x0, int y0, int cell, int selected, boolean gridLines) {
+    static void drawLayout(GuiGraphics g, Font font, HmiLayout layout, float[] values, String[] texts, int x0, int y0, int cell, int selected, boolean gridLines) {
         int cols = layout.cols(), rows = layout.rows();
         g.fill(x0, y0, x0 + cols * cell, y0 + rows * cell, SCREEN_BG);
         if(gridLines) {
@@ -117,13 +117,14 @@ public class HmiScreen extends Screen {
             var w = layout.widgets.get(i);
             float v = i < values.length ? values[i] : Float.NaN;
             boolean on = !Float.isNaN(v) && v != 0;
+            String text = i < texts.length ? texts[i] : "";
             int rgb = 0xFF000000 | HmiLayout.COLORS[Math.floorMod(w.color, HmiLayout.COLORS.length)];
             int x = x0 + w.col * cell, y = y0 + w.row * cell, wd = w.w * cell, ht = w.h * cell;
             int ty = y + ht / 2 - 4;
             switch(w.kind) {
                 case LABEL -> g.drawString(font, clip(font, w.text, wd - 6), x + 3, ty, rgb, false);
                 case VALUE -> {
-                    var value = HmiLayout.format(v, w.decimals);
+                    var value = text.isEmpty() ? HmiLayout.format(v, w.decimals) : clip(font, text, wd - 6 - (w.text.isEmpty() ? 0 : font.width(w.text) + 4));
                     if(!w.text.isEmpty())
                         g.drawString(font, clip(font, w.text, wd / 2), x + 3, ty, 0xFFA0A0A0, false);
                     g.drawString(font, value, x + wd - 3 - font.width(value), ty, rgb, false);
@@ -148,6 +149,20 @@ public class HmiScreen extends Screen {
                         g.fill(x + 3, y + 3, x + 3 + (int) ((wd - 6) * fraction), y + ht - 3, rgb);
                     g.renderOutline(x + 2, y + 2, wd - 4, ht - 4, 0xFF505860);
                     g.drawString(font, clip(font, w.text, wd - 8), x + 5, ty, 0xFFF0F0F0, false);
+                }
+                case LINE -> {
+                    boolean lit = w.tag.isEmpty() || on;
+                    int colour = lit ? rgb : dim(rgb, 0.35);
+                    int t = Math.max(2, cell / 6);
+                    if(wd >= ht)
+                        g.fill(x, y + ht / 2 - t / 2, x + wd, y + ht / 2 - t / 2 + t, colour);
+                    else
+                        g.fill(x + wd / 2 - t / 2, y, x + wd / 2 - t / 2 + t, y + ht, colour);
+                }
+                case BOX -> {
+                    g.renderOutline(x + 1, y + 1, wd - 2, ht - 2, rgb);
+                    if(!w.text.isEmpty())
+                        g.drawString(font, clip(font, w.text, wd - 8), x + 4, y + 3, rgb, false);
                 }
                 case GAUGE -> {
                     int cx = x + wd / 2, cy = y + ht - 10;

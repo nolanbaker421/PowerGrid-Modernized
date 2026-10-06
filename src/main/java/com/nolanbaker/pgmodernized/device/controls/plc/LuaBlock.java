@@ -138,20 +138,22 @@ public final class LuaBlock {
         chunk = globals.load(script, "lua");
     }
 
-    /** Runs the script once with those pin values and returns what it put in Out. */
-    public double[] run(double[] inputs, int outputs) throws LuaError {
+    /** Runs the script once with those pin values (numbers, or text) and returns what it put in Out, each a Double or a String. */
+    public Object[] run(Object[] inputs, int outputs) throws LuaError {
         used = 0;
         var in = new LuaTable();
         for(int i = 0; i < inputs.length; ++i)
-            in.set(i + 1, LuaValue.valueOf(inputs[i]));
+            in.set(i + 1, inputs[i] instanceof String s ? LuaValue.valueOf(s) : LuaValue.valueOf(((Number) inputs[i]).doubleValue()));
         var out = new LuaTable();
         globals.set("In", in);
         globals.set("Out", out);
         globals.set("tick", LuaValue.valueOf(tick++));
         chunk.call();
-        var result = new double[outputs];
-        for(int i = 0; i < outputs; ++i)
-            result[i] = toNumber(out.get(i + 1));
+        var result = new Object[outputs];
+        for(int i = 0; i < outputs; ++i) {
+            var v = out.get(i + 1);
+            result[i] = v.type() == LuaValue.TSTRING ? v.tojstring() : (Object) toNumber(v);
+        }
         return result;
     }
 
