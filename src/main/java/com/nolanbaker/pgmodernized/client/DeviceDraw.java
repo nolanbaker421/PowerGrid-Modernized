@@ -43,6 +43,23 @@ public final class DeviceDraw {
                 double cap = stateValue != 0 ? door - 0.5 : door - 0.9;
                 box(ms, consumer, light, x - 0.8, y - 0.8, cap, x + 0.8, y + 0.8, door - 0.3, 0x30C040);
             }
+            case UP, DOWN -> {
+                box(ms, consumer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
+                double cap = stateValue != 0 ? door - 0.5 : door - 0.9;
+                box(ms, consumer, light, x - 0.8, y - 0.8, cap, x + 0.8, y + 0.8, door - 0.3, 0x303236);
+                // The arrow: a stem and a head, white, standing just off the cap.
+                double tip = device == PanelDevice.UP ? 1 : -1;
+                box(ms, consumer, light, x - 0.12, y - 0.45, cap - 0.08, x + 0.12, y + 0.45, cap, 0xF0F0F0);
+                box(ms, consumer, light, x - 0.5, y + tip * 0.2 - 0.12, cap - 0.08, x + 0.5, y + tip * 0.2 + 0.12, cap, 0xF0F0F0);
+                box(ms, consumer, light, x - 0.3, y + tip * 0.4 - 0.12, cap - 0.08, x + 0.3, y + tip * 0.4 + 0.12, cap, 0xF0F0F0);
+            }
+            case BUZZER -> {
+                boolean on = stateValue != 0 && (System.currentTimeMillis() / 200) % 2 == 0;
+                box(ms, consumer, light, x - 1.3, y - 1.3, door - 0.5, x + 1.3, y + 1.3, door, 0x202224);
+                box(ms, consumer, light, x - 1.0, y - 1.0, door - 0.7, x + 1.0, y + 1.0, door - 0.5, 0x404448);
+                for(int i = -1; i <= 1; ++i)
+                    box(ms, consumer, on ? LightTexture.FULL_BRIGHT : light, x - 0.7, y + i * 0.55 - 0.12, door - 0.8, x + 0.7, y + i * 0.55 + 0.12, door - 0.7, on ? 0xF08030 : 0x101214);
+            }
             case SELECTOR -> {
                 box(ms, consumer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
                 box(ms, consumer, light, x - 0.9, y - 0.9, door - 0.6, x + 0.9, y + 0.9, door - 0.3, 0x404448);

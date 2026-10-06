@@ -149,7 +149,7 @@ public class ModItems {
         }
         CONTROL_MODULES = Collections.unmodifiableMap(modules);
         var devices = new EnumMap<PanelDevice, ItemEntry<PanelDevice.DeviceItem>>(PanelDevice.class);
-        String[] deviceNames = {"E-Stop Button", "Toggle Button", "Momentary Button", "Selector Switch", "Pilot Light", "Number Display", "Speed Dial"};
+        String[] deviceNames = {"E-Stop Button", "Toggle Button", "Momentary Button", "Selector Switch", "Pilot Light", "Number Display", "Speed Dial", "Up Button", "Down Button", "Buzzer"};
         for(var device : PanelDevice.values()) {
             devices.put(device, REGISTRATE.item(device.id(), p -> new PanelDevice.DeviceItem(p, device))
                     .model(NonNullBiConsumer.noop())

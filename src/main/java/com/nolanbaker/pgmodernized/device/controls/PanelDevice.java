@@ -18,7 +18,13 @@ public enum PanelDevice {
     /** Four digits the computer writes. */
     DISPLAY("number_display", false, false),
     /** A knob from 0 to 100 % in steps of ten, the speed reference of a VFD module. */
-    DIAL("speed_dial", true, false);
+    DIAL("speed_dial", true, false),
+    /** A momentary button with an up arrow on its cap. */
+    UP("up_button", true, false),
+    /** A momentary button with a down arrow on its cap. */
+    DOWN("down_button", true, false),
+    /** A horn on an output: sounds while the output is on. */
+    BUZZER("buzzer", false, true);
 
     private final String id;
     private final boolean input;

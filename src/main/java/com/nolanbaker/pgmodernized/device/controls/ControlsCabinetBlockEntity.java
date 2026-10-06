@@ -482,6 +482,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             if(pulse[cell] > 0 && --pulse[cell] == 0)
                 dirty = true;
         }
+        if(level.getGameTime() % 8 == 0)
+            for(int cell = 0; cell < MAX_CELLS; ++cell)
+                if(panel[cell] == PanelDevice.BUZZER && deviceState(cell) != 0)
+                    level.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_BIT.value(), SoundSource.BLOCKS, 0.7f, 0.55f);
         refreshInputs();
         refreshAnalog();
         scanPlc();
@@ -507,9 +511,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             return 0;
         return switch(device) {
             case E_STOP, TOGGLE -> latched[cell] ? 1 : 0;
-            case MOMENTARY -> pulse[cell] > 0 ? 1 : 0;
+            case MOMENTARY, UP, DOWN -> pulse[cell] > 0 ? 1 : 0;
             case SELECTOR -> selector[cell];
-            case LED -> powered && wire[cell] >= 0 && outputs[wire[cell]] ? 1 : 0;
+            case LED, BUZZER -> powered && wire[cell] >= 0 && outputs[wire[cell]] ? 1 : 0;
             case DISPLAY -> display[cell];
             case DIAL -> dial[cell];
         };
@@ -522,7 +526,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             return false;
         return switch(device) {
             case E_STOP, TOGGLE -> wire[cell] == channel && latched[cell];
-            case MOMENTARY -> wire[cell] == channel && pulse[cell] > 0;
+            case MOMENTARY, UP, DOWN -> wire[cell] == channel && pulse[cell] > 0;
             case SELECTOR -> (selector[cell] == 0 && wire[cell] == channel) || (selector[cell] == 2 && wire[cell] + 1 == channel && (wire[cell] % CHANNELS) < CHANNELS - 1);
             default -> false;
         };
@@ -1244,7 +1248,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 latched[cell] = !latched[cell];
                 level.playSound(null, worldPosition, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.4f, latched[cell] ? 0.7f : 0.6f);
             }
-            case MOMENTARY -> {
+            case MOMENTARY, UP, DOWN -> {
                 pulse[cell] = PULSE_TICKS;
                 level.playSound(null, worldPosition, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.4f, 1.2f);
             }

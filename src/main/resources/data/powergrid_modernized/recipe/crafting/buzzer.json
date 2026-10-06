@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": {
+      "item": "minecraft:note_block"
+    },
+    "N": {
+      "tag": "c:nuggets/iron"
+    }
+  },
+  "pattern": [
+    " O ",
+    "NNN"
+  ],
+  "result": {
+    "count": 2,
+    "id": "powergrid_modernized:buzzer"
+  }
+}

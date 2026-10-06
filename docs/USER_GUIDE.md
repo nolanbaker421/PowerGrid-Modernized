@@ -1056,9 +1056,10 @@ computer network as `powergrid_controls`.
   cutters while sneaking.
 - **The door** takes six devices, fitted by right-clicking a cell with one: **E-Stop** (press to
   latch, press again to twist out; it stays pressed with the power off), **Toggle Button**,
-  **Momentary Button** (half a second), **Selector Switch** (three positions, left, centre, right),
-  **Pilot Light** (five colours) and **Number Display** (four digits the computer writes). Devices
-  come out with Remove or with cutters on the cell.
+  **Momentary Button** (half a second), **Up Button** and **Down Button** (momentary, with an arrow
+  on the cap), **Selector Switch** (three positions, left, centre, right), **Pilot Light** (five
+  colours), **Buzzer** (a horn on an output, sounding while it is on) and **Number Display** (four
+  digits the computer writes). Devices come out with Remove or with cutters on the cell.
 - **Wiring** is done in the cabinet's screen (empty hand on the door off a device): each input
   device is wired to one channel of an input module, each light to one channel of an output
   module, with the arrow buttons; a selector takes two channels, its left position on the first,
