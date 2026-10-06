@@ -1710,7 +1710,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 .style(powered ? ChatFormatting.GREEN : ChatFormatting.RED).forGoggles(tooltip, 1);
         if(isEStopped())
             Lang.builder().translate("gui.controls.estopped").style(ChatFormatting.RED).forGoggles(tooltip, 1);
-        Lang.builder().translate("gui.controls.modules", moduleCount(), MAX_RAIL).style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.controls.modules", moduleCount(), slots()).style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         if(hasPlc())
             Lang.builder().translate(plcError.isEmpty() ? (graph.isEmpty() ? "gui.controls.plc_empty" : "gui.controls.plc_ok") : "gui.controls.plc_error_short")
                     .style(plcError.isEmpty() ? ChatFormatting.AQUA : ChatFormatting.RED).forGoggles(tooltip, 1);
