@@ -40,13 +40,14 @@ public final class PlcRunner {
     private final Map<Integer, double[]> out = new HashMap<>();
     private final Map<Integer, State> states = new HashMap<>();
     private final Map<Integer, PlcGraph.Link[]> feeds = new HashMap<>();
-    private final Map<String, Double> bits = new HashMap<>();
+    private final Map<String, Double> bits;
     private String error = "";
 
-    private PlcRunner(PlcGraph graph, PlcProgram.Io io, List<PlcGraph.Node> order) {
+    private PlcRunner(PlcGraph graph, PlcProgram.Io io, List<PlcGraph.Node> order, Map<String, Double> bits) {
         this.graph = graph;
         this.io = io;
         this.order = order;
+        this.bits = bits;
     }
 
     public Map<String, Double> bits() {
@@ -93,8 +94,13 @@ public final class PlcRunner {
     // ---- compiling ----
 
     public static PlcRunner compile(PlcGraph graph, PlcProgram.Io io, Supplier<List<List<String>>> devices) throws CompileError {
+        return compile(graph, io, devices, new HashMap<>());
+    }
+
+    /** Compiles over a shared bit table: the coils, timers and network bits live on in it between programs. */
+    public static PlcRunner compile(PlcGraph graph, PlcProgram.Io io, Supplier<List<List<String>>> devices, Map<String, Double> bits) throws CompileError {
         graph.sanitise();
-        var runner = new PlcRunner(graph, io, order(graph));
+        var runner = new PlcRunner(graph, io, order(graph), bits);
         for(var node : graph.nodes) {
             var state = new State();
             runner.states.put(node.id, state);

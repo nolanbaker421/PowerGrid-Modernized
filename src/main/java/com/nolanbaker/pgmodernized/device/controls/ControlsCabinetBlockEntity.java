@@ -145,6 +145,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private final float[] plcSpeed = new float[MAX_RAIL];
     private List<List<String>> plcDevices = new ArrayList<>();
     private final PlcIo plcIo = new PlcIo();
+    /** The N and C tags: the cabinet's own, shared with the program, the external port and any HMI; saved. */
+    private final Map<String, Double> plcBits = new java.util.HashMap<>();
     private boolean powered;
     private boolean estopWas;
     private float volts;
@@ -748,7 +750,14 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     }
 
     public Map<String, Double> plcBits() {
-        return plc == null ? Map.of() : plc.bits();
+        return plcBits;
+    }
+
+    private static boolean isBitName(String name) {
+        if(name.length() < 2)
+            return false;
+        char kind = name.charAt(0);
+        return (kind == 'C' || kind == 'N' || kind == 'T') && name.substring(1).chars().allMatch(Character::isDigit);
     }
 
     /** Server side: a new program, compiled now; the error is kept for the screen and the port. */
@@ -772,7 +781,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             return;
         }
         try {
-            plc = PlcRunner.compile(graph, plcIo, () -> plcDevices);
+            plc = PlcRunner.compile(graph, plcIo, () -> plcDevices, plcBits);
             plcError = "";
         } catch(PlcRunner.CompileError e) {
             plc = null;
@@ -809,17 +818,16 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     /** A name the program or the external port reads: NaN when unknown. */
     public double plcRead(String name) {
         name = name.toUpperCase(Locale.ROOT);
-        if(plc != null && name.length() > 1 && (name.charAt(0) == 'C' || name.charAt(0) == 'N' || name.charAt(0) == 'T') && name.substring(1).chars().allMatch(Character::isDigit))
-            return plc.bit(name);
+        if(isBitName(name))
+            return plcBits.getOrDefault(name, 0.0);
         return plcIo.read(name);
     }
 
     /** From the external port: network bits and coils go to the program, anything else to the cabinet. */
     public boolean plcWrite(String name, double value) {
         name = name.toUpperCase(Locale.ROOT);
-        if(name.length() > 1 && (name.charAt(0) == 'C' || name.charAt(0) == 'N') && name.substring(1).chars().allMatch(Character::isDigit)) {
-            if(plc != null)
-                plc.setBit(name, value);
+        if(isBitName(name) && name.charAt(0) != 'T') {
+            plcBits.put(name, value);
             return true;
         }
         return plcIo.write(name, value);
@@ -1443,6 +1451,13 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             aoBits[i] = Float.floatToIntBits(analogOut[i]);
         tag.putIntArray("AnalogOut", aoBits);
         tag.put("Graph", graphTag.copy());
+        if(!clientPacket) {
+            var bitsTag = new CompoundTag();
+            for(var entry : plcBits.entrySet())
+                if(entry.getValue() != 0)
+                    bitsTag.putDouble(entry.getKey(), entry.getValue());
+            tag.put("PlcBits", bitsTag);
+        }
         if(clientPacket) {
             tag.putString("PlcError", plcError);
             var valueBits = new int[plcValues.length];
@@ -1503,6 +1518,11 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         var aoBits = tag.getIntArray("AnalogOut");
         for(int i = 0; i < Math.min(aoBits.length, analogOut.length); ++i)
             analogOut[i] = Float.intBitsToFloat(aoBits[i]);
+        if(!clientPacket && tag.contains("PlcBits")) {
+            var bitsTag = tag.getCompound("PlcBits");
+            for(var key : bitsTag.getAllKeys())
+                plcBits.put(key, bitsTag.getDouble(key));
+        }
         if(tag.contains("Graph")) {
             var newGraph = tag.getCompound("Graph");
             if(!newGraph.equals(graphTag)) {
