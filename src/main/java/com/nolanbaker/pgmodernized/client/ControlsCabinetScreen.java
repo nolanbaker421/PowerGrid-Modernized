@@ -73,6 +73,8 @@ public class ControlsCabinetScreen extends Screen {
             k = k * 9 + (cabinet.device(cell) == null ? 0 : cabinet.device(cell).ordinal() + 1);
             k = k * 67 + cabinet.wireOf(cell) + 2;
             k = k * 11 + cabinet.colorOf(cell);
+            k = k * 67 + cabinet.backlightOf(cell) + 2;
+            k = k * 31 + cabinet.labelOf(cell).hashCode();
         }
         for(var drive : cabinet.drives())
             k = k * 31 + drive.asLong();
@@ -89,6 +91,23 @@ public class ControlsCabinetScreen extends Screen {
     private static net.minecraft.network.chat.MutableComponent cellName(int cell) {
         var name = Component.translatable("powergrid.gui.controls." + CELL_KEYS[cell % CELLS]);
         return cell < CELLS ? name : Component.translatable("powergrid.gui.controls.ext_cell", cell / CELLS, name);
+    }
+
+    /** Devices with a cap that can be lit from an output. */
+    static boolean isButton(PanelDevice device) {
+        return device == PanelDevice.MOMENTARY || device == PanelDevice.UP || device == PanelDevice.DOWN || device == PanelDevice.TOGGLE;
+    }
+
+    static Component backlightName(ControlsCabinetBlockEntity cabinet, int target) {
+        return target < 0 ? Component.translatable("powergrid.gui.controls.no_backlight")
+                : Component.translatable("powergrid.gui.controls.backlight", wireNameFor(cabinet, PanelDevice.LED, target));
+    }
+
+    private void stepBacklight(ControlsCabinetBlockEntity cabinet, int cell, int direction) {
+        var targets = targetsFor(cabinet, PanelDevice.LED);
+        int at = targets.indexOf(cabinet.backlightOf(cell));
+        int next = Math.floorMod((at < 0 ? targets.size() - 1 : at) + direction, targets.size());
+        PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.BACKLIGHT, cell, targets.get(next)));
     }
 
     private static Component deviceName(PanelDevice device) {
@@ -219,7 +238,12 @@ public class ControlsCabinetScreen extends Screen {
                     ++plcs;
             }
         }
-        int rows = 2 + (cabinet == null ? RAIL : cabinet.slots()) + vfds * 2 + plcs + 1 + (cabinet == null ? CELLS : cabinet.cells());
+        int fitted = 0;
+        if(cabinet != null)
+            for(int cell = 0; cell < cabinet.cells(); ++cell)
+                if(cabinet.device(cell) != null)
+                    ++fitted;
+        int rows = 2 + (cabinet == null ? RAIL : cabinet.slots()) + vfds * 2 + plcs + 1 + (cabinet == null ? CELLS : cabinet.cells()) + fitted;
         contentFull = rows * ROW;
         panelH = Math.min(height - 8, PADDING * 2 + HEADER + contentFull + FOOTER);
         contentH = panelH - PADDING * 2 - HEADER - FOOTER;
@@ -292,12 +316,22 @@ public class ControlsCabinetScreen extends Screen {
                 } else {
                     lines.add(new Line(wireName(cabinet, cell), x + 18, y + 6, DIM));
                 }
-                if(device == PanelDevice.LED) {
-                    button(Component.translatable("powergrid.gui.controls.colour"), right - 108, y, 44,
-                            b -> PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.COLOR, c, cabinet.colorOf(c) + 1)));
-                }
                 button(Component.translatable("powergrid.gui.controls.remove"), right - 60, y, 60,
                         b -> PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.REMOVE_DEVICE, c, 0)));
+                // The second row: label, colour, and for buttons the output that lights their cap.
+                y += ROW;
+                var label = cabinet.labelOf(cell);
+                lines.add(new Line(Component.translatable("powergrid.gui.controls.label_is", label.isEmpty() ? "-" : label), left + 12, y + 6, DIM));
+                button(Component.translatable("powergrid.gui.controls.label"), left + 110, y, 44,
+                        b -> Minecraft.getInstance().setScreen(new CellLabelScreen(pos, c, cabinet.labelOf(c), false)));
+                if(device != PanelDevice.DISPLAY)
+                    button(Component.translatable("powergrid.gui.controls.colour"), left + 158, y, 44,
+                            b -> PacketDistributor.sendToServer(new ControlsPayload(pos, ControlsPayload.COLOR, c, cabinet.colorOf(c) + 1)));
+                if(isButton(device)) {
+                    button(Component.literal("<"), right - 150, y, 14, b -> stepBacklight(cabinet, c, -1));
+                    lines.add(new Line(backlightName(cabinet, cabinet.backlightOf(cell)), right - 132, y + 6, cabinet.backlightOf(cell) < 0 ? DIM : WIRE));
+                    button(Component.literal(">"), right - 14, y, 14, b -> stepBacklight(cabinet, c, 1));
+                }
             }
             y += ROW;
         }

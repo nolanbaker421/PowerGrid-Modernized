@@ -1059,7 +1059,11 @@ computer network as `powergrid_controls`.
   **Momentary Button** (half a second), **Up Button** and **Down Button** (momentary, with an arrow
   on the cap), **Selector Switch** (three positions, left, centre, right), **Pilot Light** (five
   colours), **Buzzer** (a horn on an output, sounding while it is on) and **Number Display** (four
-  digits the computer writes). Devices come out with Remove or with cutters on the cell.
+  digits the computer writes). Devices come out with Remove or with cutters on the cell. Every
+  device can carry a **label**, typed in the cabinet screen and drawn under it on the door, and a
+  **colour** from the pilot light's five, which colours a button's cap or a toggle's rocker. A
+  button can be **backlit**: pick an output channel on its second row and its cap glows while that
+  output is on, dims while it is off, so a start button can show the machine running.
 - **Wiring** is done in the cabinet's screen (empty hand on the door off a device): each input
   device is wired to one channel of an input module, each light to one channel of an output
   module, with the arrow buttons; a selector takes two channels, its left position on the first,

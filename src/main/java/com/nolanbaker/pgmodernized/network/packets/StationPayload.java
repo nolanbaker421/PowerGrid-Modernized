@@ -17,7 +17,7 @@ import static com.nolanbaker.pgmodernized.PowerGridModernized.asResource;
  *               {@link #NUMBER} sets the station number to {@code a}.
  */
 public record StationPayload(BlockPos pos, int action, int a, int b) implements CustomPacketPayload {
-    public static final int WIRE = 0, COLOR = 1, REMOVE_DEVICE = 2, NUMBER = 3;
+    public static final int WIRE = 0, COLOR = 1, REMOVE_DEVICE = 2, NUMBER = 3, BACKLIGHT = 4;
     public static final Type<StationPayload> TYPE = new Type<>(asResource("station"));
     public static final StreamCodec<RegistryFriendlyByteBuf, StationPayload> STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, StationPayload::pos,
@@ -43,6 +43,7 @@ public record StationPayload(BlockPos pos, int action, int a, int b) implements 
             case COLOR -> station.setColor(payload.a, payload.b);
             case REMOVE_DEVICE -> station.removeDevice(payload.a, player);
             case NUMBER -> station.setStation(payload.a);
+            case BACKLIGHT -> station.setBacklight(payload.a, payload.b);
             default -> {}
         }
     }

@@ -104,6 +104,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private final PanelDevice[] panel = new PanelDevice[MAX_CELLS];
     private final int[] wire = new int[MAX_CELLS];
     private final int[] color = new int[MAX_CELLS];
+    /** Text under each device, and the output channel index (slot * 8 + channel) that lights a button's cap, or -1. */
+    private final String[] labels = new String[MAX_CELLS];
+    private final int[] backlight = new int[MAX_CELLS];
     private final boolean[] latched = new boolean[MAX_CELLS];
     private final int[] selector = new int[MAX_CELLS];
     private final int[] pulse = new int[MAX_CELLS];
@@ -167,6 +170,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         Arrays.fill(vfdMax, 30);
         Arrays.fill(lastCommand, Integer.MIN_VALUE);
         Arrays.fill(plcSpeed, -1);
+        Arrays.fill(labels, "");
+        Arrays.fill(backlight, -1);
         setLazyTickRate(10);
     }
 
@@ -1143,6 +1148,40 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         return wire[cell];
     }
 
+    public String labelOf(int cell) {
+        return cell >= 0 && cell < MAX_CELLS ? labels[cell] : "";
+    }
+
+    public int backlightOf(int cell) {
+        return cell >= 0 && cell < MAX_CELLS ? backlight[cell] : -1;
+    }
+
+    /** -1 with no backlight wired, else 0 or 1 for the wired output's state. */
+    public int backlitState(int cell) {
+        int target = backlightOf(cell);
+        return target < 0 ? -1 : powered && outputs[target] ? 1 : 0;
+    }
+
+    /** Server side, from the screen. */
+    public void setLabel(int cell, String text) {
+        if(cell < 0 || cell >= MAX_CELLS)
+            return;
+        labels[cell] = text == null ? "" : text;
+        dirty = true;
+        syncTimer = 2;
+        setChanged();
+    }
+
+    /** Server side, from the screen: light a button's cap from an output channel, or -1 for none. */
+    public void setBacklight(int cell, int target) {
+        if(cell < 0 || cell >= MAX_CELLS || (target >= 0 && !canWireDevice(PanelDevice.LED, target)))
+            return;
+        backlight[cell] = target;
+        dirty = true;
+        syncTimer = 2;
+        setChanged();
+    }
+
     public int colorOf(int cell) {
         return color[cell];
     }
@@ -1279,6 +1318,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         panel[cell] = device;
         wire[cell] = -1;
         color[cell] = 0;
+        labels[cell] = "";
+        backlight[cell] = -1;
         latched[cell] = false;
         selector[cell] = 1;
         pulse[cell] = 0;
@@ -1395,6 +1436,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             return;
         drop(ModItems.PANEL_DEVICES.get(panel[cell]).asStack());
         panel[cell] = null;
+        labels[cell] = "";
+        backlight[cell] = -1;
         wire[cell] = -1;
         latched[cell] = false;
         pulse[cell] = 0;
@@ -1425,9 +1468,12 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         rebuildCircuit();
         vfdTarget[slot] = null;
         vfdRun[slot] = false;
-        for(int cell = 0; cell < MAX_CELLS; ++cell)
+        for(int cell = 0; cell < MAX_CELLS; ++cell) {
+            if(backlight[cell] >= 0 && backlight[cell] / CHANNELS == slot)
+                backlight[cell] = -1;
             if(wire[cell] >= 0 && wire[cell] / CHANNELS == slot)
                 wire[cell] = -1;
+        }
         for(int ch = 0; ch < CHANNELS; ++ch)
             outputs[slot * CHANNELS + ch] = false;
         for(int ch = 0; ch < RELAY_CHANNELS; ++ch)
@@ -1560,6 +1606,11 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         tag.putIntArray("Panel", panelTag);
         tag.putIntArray("Wire", wire);
         tag.putIntArray("Color", color);
+        tag.putIntArray("Backlight", backlight);
+        var labelList = new net.minecraft.nbt.ListTag();
+        for(var label : labels)
+            labelList.add(net.minecraft.nbt.StringTag.valueOf(label));
+        tag.put("Labels", labelList);
         tag.putByteArray("Latched", bytes(latched));
         tag.putIntArray("Selector", selector);
         tag.putIntArray("Display", display);
@@ -1632,6 +1683,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             panel[i] = i < panelTag.length ? PanelDevice.fromOrdinal(panelTag[i]) : null;
         fill(wire, tag.getIntArray("Wire"), -1);
         fill(color, tag.getIntArray("Color"), 0);
+        fill(backlight, tag.getIntArray("Backlight"), -1);
+        var labelList = tag.getList("Labels", net.minecraft.nbt.Tag.TAG_STRING);
+        for(int i = 0; i < MAX_CELLS; ++i)
+            labels[i] = i < labelList.size() ? labelList.getString(i) : "";
         fill(latched, tag.getByteArray("Latched"));
         fill(selector, tag.getIntArray("Selector"), 1);
         fill(display, tag.getIntArray("Display"), 0);

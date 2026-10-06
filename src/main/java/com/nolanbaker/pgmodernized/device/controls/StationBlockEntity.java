@@ -42,6 +42,8 @@ public class StationBlockEntity extends SmartBlockEntity implements INetworkJack
     private final PanelDevice[] panel = new PanelDevice[CELLS];
     private final int[] wire = new int[CELLS];
     private final int[] color = new int[CELLS];
+    private final String[] labels = new String[CELLS];
+    private final int[] backlight = new int[CELLS];
     private final boolean[] latched = new boolean[CELLS];
     private final int[] selector = new int[CELLS];
     private final int[] pulse = new int[CELLS];
@@ -56,6 +58,8 @@ public class StationBlockEntity extends SmartBlockEntity implements INetworkJack
     public StationBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         java.util.Arrays.fill(wire, -1);
+        java.util.Arrays.fill(labels, "");
+        java.util.Arrays.fill(backlight, -1);
     }
 
     @Override
@@ -74,6 +78,42 @@ public class StationBlockEntity extends SmartBlockEntity implements INetworkJack
 
     public int wireOf(int cell) {
         return cell >= 0 && cell < CELLS ? wire[cell] : -1;
+    }
+
+    public String labelOf(int cell) {
+        return cell >= 0 && cell < CELLS ? labels[cell] : "";
+    }
+
+    public int backlightOf(int cell) {
+        return cell >= 0 && cell < CELLS ? backlight[cell] : -1;
+    }
+
+    /** -1 with no backlight wired, else 0 or 1 for the cabinet output's state. */
+    public int backlitState(int cell) {
+        int target = backlightOf(cell);
+        if(target < 0)
+            return -1;
+        var c = cabinet();
+        return c != null && c.isPowered() && c.output(target / CHANNELS, target % CHANNELS) ? 1 : 0;
+    }
+
+    public void setLabel(int cell, String text) {
+        if(cell < 0 || cell >= CELLS)
+            return;
+        labels[cell] = text == null ? "" : text;
+        dirty = true;
+        syncTimer = 2;
+        setChanged();
+    }
+
+    public void setBacklight(int cell, int target) {
+        var c = cabinet();
+        if(cell < 0 || cell >= CELLS || (target >= 0 && (c == null || !c.canWireDevice(PanelDevice.LED, target))))
+            return;
+        backlight[cell] = target;
+        dirty = true;
+        syncTimer = 2;
+        setChanged();
     }
 
     public int colorOf(int cell) {
@@ -189,6 +229,8 @@ public class StationBlockEntity extends SmartBlockEntity implements INetworkJack
         }
         panel[cell] = device;
         color[cell] = 0;
+        labels[cell] = "";
+        backlight[cell] = -1;
         latched[cell] = false;
         selector[cell] = 1;
         pulse[cell] = 0;
@@ -208,6 +250,8 @@ public class StationBlockEntity extends SmartBlockEntity implements INetworkJack
         drop(ModItems.PANEL_DEVICES.get(panel[cell]).asStack());
         panel[cell] = null;
         wire[cell] = -1;
+        labels[cell] = "";
+        backlight[cell] = -1;
         latched[cell] = false;
         pulse[cell] = 0;
         dirty = true;
@@ -342,6 +386,11 @@ public class StationBlockEntity extends SmartBlockEntity implements INetworkJack
         tag.putIntArray("Panel", panelTag);
         tag.putIntArray("Wire", wire);
         tag.putIntArray("Color", color);
+        tag.putIntArray("Backlight", backlight);
+        var labelList = new net.minecraft.nbt.ListTag();
+        for(var label : labels)
+            labelList.add(net.minecraft.nbt.StringTag.valueOf(label));
+        tag.put("Labels", labelList);
         var latchedTag = new byte[CELLS];
         for(int i = 0; i < CELLS; ++i)
             latchedTag[i] = (byte) (latched[i] ? 1 : 0);
@@ -365,6 +414,10 @@ public class StationBlockEntity extends SmartBlockEntity implements INetworkJack
             panel[i] = i < panelTag.length ? PanelDevice.fromOrdinal(panelTag[i]) : null;
         fill(wire, tag.getIntArray("Wire"), -1);
         fill(color, tag.getIntArray("Color"), 0);
+        fill(backlight, tag.getIntArray("Backlight"), -1);
+        var labelList = tag.getList("Labels", net.minecraft.nbt.Tag.TAG_STRING);
+        for(int i = 0; i < CELLS; ++i)
+            labels[i] = i < labelList.size() ? labelList.getString(i) : "";
         var latchedTag = tag.getByteArray("Latched");
         for(int i = 0; i < CELLS; ++i)
             latched[i] = i < latchedTag.length && latchedTag[i] != 0;

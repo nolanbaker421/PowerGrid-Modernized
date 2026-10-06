@@ -25,8 +25,18 @@ public final class DeviceDraw {
      * @param y      centre in 16ths
      * @param door   the face the device stands on, in 16ths of z; the device is drawn towards -z
      */
+    /**
+     * @param backlit -1 for a device with no backlight wired, else 0 or 1 for the wired output's state
+     * @param label   text drawn under the device, empty for none, clipped to {@code labelWidth} 16ths
+     */
     public static void device(PoseStack ms, MultiBufferSource buffer, VertexConsumer consumer, int light,
-                              PanelDevice device, int stateValue, int colorIndex, boolean powered, double x, double y, double door) {
+                              PanelDevice device, int stateValue, int colorIndex, boolean powered, int backlit, String label, double labelWidth,
+                              double x, double y, double door) {
+        int rgb = ControlsCabinetBlockEntity.LED_COLORS[Math.floorMod(colorIndex, ControlsCabinetBlockEntity.LED_COLORS.length)];
+        int capLight = backlit == 1 ? LightTexture.FULL_BRIGHT : light;
+        int capColor = backlit == 0 ? dim(rgb) : rgb;
+        if(!label.isEmpty())
+            labelText(ms, buffer, label, x, y - 1.95, labelWidth, door);
         switch(device) {
             case E_STOP -> {
                 box(ms, consumer, light, x - 1.4, y - 1.4, door - 0.4, x + 1.4, y + 1.4, door, 0xE8D020);
@@ -36,17 +46,17 @@ public final class DeviceDraw {
             case TOGGLE -> {
                 box(ms, consumer, light, x - 1.3, y - 1.3, door - 0.3, x + 1.3, y + 1.3, door, 0x303236);
                 double off = stateValue != 0 ? 0.5 : -0.5;
-                box(ms, consumer, light, x - 0.8, y + off - 0.5, door - 0.7, x + 0.8, y + off + 0.5, door - 0.3, stateValue != 0 ? 0x40D050 : 0x808488);
+                box(ms, consumer, capLight, x - 0.8, y + off - 0.5, door - 0.7, x + 0.8, y + off + 0.5, door - 0.3, stateValue != 0 ? capColor : backlit == 1 ? capColor : 0x808488);
             }
             case MOMENTARY -> {
                 box(ms, consumer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
                 double cap = stateValue != 0 ? door - 0.5 : door - 0.9;
-                box(ms, consumer, light, x - 0.8, y - 0.8, cap, x + 0.8, y + 0.8, door - 0.3, 0x30C040);
+                box(ms, consumer, capLight, x - 0.8, y - 0.8, cap, x + 0.8, y + 0.8, door - 0.3, capColor);
             }
             case UP, DOWN -> {
                 box(ms, consumer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
                 double cap = stateValue != 0 ? door - 0.5 : door - 0.9;
-                box(ms, consumer, light, x - 0.8, y - 0.8, cap, x + 0.8, y + 0.8, door - 0.3, 0x303236);
+                box(ms, consumer, capLight, x - 0.8, y - 0.8, cap, x + 0.8, y + 0.8, door - 0.3, backlit < 0 ? 0x303236 : capColor);
                 // The arrow: a stem and a head, white, standing just off the cap.
                 double tip = device == PanelDevice.UP ? 1 : -1;
                 box(ms, consumer, light, x - 0.12, y - 0.45, cap - 0.08, x + 0.12, y + 0.45, cap, 0xF0F0F0);
@@ -68,7 +78,6 @@ public final class DeviceDraw {
             }
             case LED -> {
                 boolean lit = stateValue != 0;
-                int rgb = ControlsCabinetBlockEntity.LED_COLORS[Math.floorMod(colorIndex, ControlsCabinetBlockEntity.LED_COLORS.length)];
                 box(ms, consumer, light, x - 1.0, y - 1.0, door - 0.3, x + 1.0, y + 1.0, door, 0x202224);
                 box(ms, consumer, lit ? LightTexture.FULL_BRIGHT : light, x - 0.6, y - 0.6, door - 0.6, x + 0.6, y + 0.6, door - 0.3, lit ? rgb : dim(rgb));
             }
@@ -89,6 +98,18 @@ public final class DeviceDraw {
                     digits(ms, buffer, x, y, stateValue, door);
             }
         }
+    }
+
+    /** A label under a device: tiny white text, centred, clipped to the cell. */
+    private static void labelText(PoseStack ms, MultiBufferSource buffer, String label, double x, double y, double width, double door) {
+        Font font = Minecraft.getInstance().font;
+        float s = 1 / 192f;
+        String text = font.plainSubstrByWidth(label, Math.max(1, (int) (width / 16 / s)));
+        ms.pushPose();
+        ms.translate(x / 16, y / 16, (door - 0.05) / 16);
+        ms.scale(-s, -s, s);
+        font.drawInBatch(text, -font.width(text) / 2f, -4.5f, 0xF0F0F0, false, ms.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
+        ms.popPose();
     }
 
     private static int dim(int rgb) {

@@ -34,7 +34,7 @@ public class StationRenderer extends SafeBlockEntityRenderer<StationBlockEntity>
             if(device == null)
                 continue;
             var c = StationBlock.cellCenter(cell);
-            DeviceDraw.device(ms, buffer, consumer, light, device, be.deviceState(cell), be.colorOf(cell), powered, c.x, c.y, StationBlock.FACE_Z);
+            DeviceDraw.device(ms, buffer, consumer, light, device, be.deviceState(cell), be.colorOf(cell), powered, be.backlitState(cell), be.labelOf(cell), 4, c.x, c.y, StationBlock.FACE_Z);
         }
         ms.popPose();
     }

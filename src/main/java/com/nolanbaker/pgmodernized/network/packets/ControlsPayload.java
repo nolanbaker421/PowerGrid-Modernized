@@ -18,7 +18,7 @@ import static com.nolanbaker.pgmodernized.PowerGridModernized.asResource;
  *               {@link #REMOVE_MODULE} takes the module off rail slot {@code a}.
  */
 public record ControlsPayload(BlockPos pos, int action, int a, int b) implements CustomPacketPayload {
-    public static final int WIRE = 0, COLOR = 1, REMOVE_DEVICE = 2, REMOVE_MODULE = 3;
+    public static final int WIRE = 0, COLOR = 1, REMOVE_DEVICE = 2, REMOVE_MODULE = 3, BACKLIGHT = 4;
     public static final Type<ControlsPayload> TYPE = new Type<>(asResource("controls"));
     public static final StreamCodec<RegistryFriendlyByteBuf, ControlsPayload> STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, ControlsPayload::pos,
@@ -44,6 +44,7 @@ public record ControlsPayload(BlockPos pos, int action, int a, int b) implements
             case COLOR -> cabinet.setColor(payload.a, payload.b);
             case REMOVE_DEVICE -> cabinet.removeDevice(payload.a, player);
             case REMOVE_MODULE -> cabinet.removeModule(payload.a, player);
+            case BACKLIGHT -> cabinet.setBacklight(payload.a, payload.b);
             default -> {}
         }
     }

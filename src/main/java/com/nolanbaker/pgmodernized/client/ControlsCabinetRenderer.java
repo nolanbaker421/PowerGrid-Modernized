@@ -38,7 +38,8 @@ public class ControlsCabinetRenderer extends SafeBlockEntityRenderer<ControlsCab
             if(device == null)
                 continue;
             var c = ControlsCabinetBlock.cellCenter(cell % CELLS);
-            DeviceDraw.device(ms, buffer, consumer, light, device, be.deviceState(cell), be.colorOf(cell), be.isPowered(), c.x, c.y - 16 * (cell / CELLS), DOOR);
+            DeviceDraw.device(ms, buffer, consumer, light, device, be.deviceState(cell), be.colorOf(cell), be.isPowered(), be.backlitState(cell), be.labelOf(cell),
+                    ControlsCabinetBlock.CELL_W, c.x, c.y - 16 * (cell / CELLS), DOOR);
         }
         ms.popPose();
     }

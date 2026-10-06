@@ -61,6 +61,8 @@ public class StationScreen extends Screen {
             k = k * 9 + (station.device(cell) == null ? 0 : station.device(cell).ordinal() + 1);
             k = k * 67 + station.wireOf(cell) + 2;
             k = k * 11 + station.colorOf(cell);
+            k = k * 67 + station.backlightOf(cell) + 2;
+            k = k * 31 + station.labelOf(cell).hashCode();
         }
         return k;
     }
@@ -77,6 +79,13 @@ public class StationScreen extends Screen {
         PacketDistributor.sendToServer(new StationPayload(pos, StationPayload.WIRE, cell, targets.get(next)));
     }
 
+    private void stepBacklight(StationBlockEntity station, ControlsCabinetBlockEntity cabinet, int cell, int direction) {
+        var targets = ControlsCabinetScreen.targetsFor(cabinet, PanelDevice.LED);
+        int at = targets.indexOf(station.backlightOf(cell));
+        int next = Math.floorMod((at < 0 ? targets.size() - 1 : at) + direction, targets.size());
+        PacketDistributor.sendToServer(new StationPayload(pos, StationPayload.BACKLIGHT, cell, targets.get(next)));
+    }
+
     private Button button(Component label, int x, int y, int w, Button.OnPress press) {
         return addRenderableWidget(Button.builder(label, press).bounds(x, y, w, 18).build());
     }
@@ -85,7 +94,13 @@ public class StationScreen extends Screen {
     protected void init() {
         super.init();
         lines.clear();
-        int rows = 3 + StationBlockEntity.CELLS;
+        var fittedStation = station();
+        int fitted = 0;
+        if(fittedStation != null)
+            for(int cell = 0; cell < StationBlockEntity.CELLS; ++cell)
+                if(fittedStation.device(cell) != null)
+                    ++fitted;
+        int rows = 3 + StationBlockEntity.CELLS + fitted;
         panelH = PADDING * 2 + 14 + rows * ROW + 10;
         panelX = (width - PANEL_W) / 2;
         panelY = (height - panelH) / 2;
@@ -135,12 +150,21 @@ public class StationScreen extends Screen {
                 } else {
                     lines.add(new Line(Component.translatable("powergrid.gui.station.no_wiring"), x + 18, y + 6, DIM));
                 }
-                if(device == PanelDevice.LED) {
-                    button(Component.translatable("powergrid.gui.controls.colour"), right - 108, y, 44,
-                            b -> PacketDistributor.sendToServer(new StationPayload(pos, StationPayload.COLOR, c, station.colorOf(c) + 1)));
-                }
                 button(Component.translatable("powergrid.gui.controls.remove"), right - 60, y, 60,
                         b -> PacketDistributor.sendToServer(new StationPayload(pos, StationPayload.REMOVE_DEVICE, c, 0)));
+                y += ROW;
+                var label = station.labelOf(cell);
+                lines.add(new Line(Component.translatable("powergrid.gui.controls.label_is", label.isEmpty() ? "-" : label), left + 12, y + 6, DIM));
+                button(Component.translatable("powergrid.gui.controls.label"), left + 110, y, 44,
+                        b -> Minecraft.getInstance().setScreen(new CellLabelScreen(pos, c, station.labelOf(c), true)));
+                if(device != PanelDevice.DISPLAY)
+                    button(Component.translatable("powergrid.gui.controls.colour"), left + 158, y, 44,
+                            b -> PacketDistributor.sendToServer(new StationPayload(pos, StationPayload.COLOR, c, station.colorOf(c) + 1)));
+                if(ControlsCabinetScreen.isButton(device) && cabinet != null) {
+                    button(Component.literal("<"), right - 150, y, 14, b -> stepBacklight(station, cabinet, c, -1));
+                    lines.add(new Line(ControlsCabinetScreen.backlightName(cabinet, station.backlightOf(cell)), right - 132, y + 6, station.backlightOf(cell) < 0 ? DIM : WIRE));
+                    button(Component.literal(">"), right - 14, y, 14, b -> stepBacklight(station, cabinet, c, 1));
+                }
             }
             y += ROW;
         }
