@@ -171,7 +171,7 @@ TEX = {
     "fin": "%s:block/transformer_fin" % MOD, "skid": "%s:block/transformer_skid" % MOD, "lid": "%s:block/transformer_lid" % MOD,
     "can": "%s:block/transformer_can" % MOD, "canlid": "%s:block/transformer_can_lid" % MOD,
     "bushing": "%s:block/transformer_bushing" % MOD, "cap": "%s:block/transformer_cap" % MOD,
-    "terminal": "%s:block/panel_terminal" % MOD,
+    "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_one_half" % MOD,
     "jack": "%s:block/jack_pin" % MOD,
 }
 
@@ -193,7 +193,7 @@ def unit_elements(size, phases, hung):
             els.append(element(4, 17, 3.75, 12, 18, 4, "#cap"))
         for u in HUB_U:
             x = 16 - u
-            els.append(element(x - 1, 0, 9, x + 1, 1, 11, "#terminal"))
+            els.append(element(x - 1, 0, 9, x + 1, 1, 11, "#knockout"))
             els.append(element(x - 1, 3, 3, x + 1, 5, 4, "#terminal"))
         return els
     is_pole = size in POLES

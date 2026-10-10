@@ -116,6 +116,11 @@ public class ModBlockEntities {
                     .validBlock(ModBlocks.CONDUIT_SWITCH)
                     .register();
 
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.conduit.SafetySwitchBlockEntity> SAFETY_SWITCH =
+            REGISTRATE.blockEntity("safety_switch", com.nolanbaker.pgmodernized.conduit.SafetySwitchBlockEntity::new)
+                    .validBlock(ModBlocks.SAFETY_SWITCH)
+                    .register();
+
     public static final BlockEntityEntry<ControlsExtensionBlockEntity> CONTROLS_EXTENSION =
             REGISTRATE.blockEntity("controls_extension", ControlsExtensionBlockEntity::new)
                     .validBlock(ModBlocks.CONTROLS_EXTENSION)

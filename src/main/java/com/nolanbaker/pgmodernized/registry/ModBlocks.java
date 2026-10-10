@@ -20,6 +20,7 @@ import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlock;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlock;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlock;
+import com.nolanbaker.pgmodernized.conduit.SafetySwitchBlock;
 import com.nolanbaker.pgmodernized.conduit.CeilingConduitBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitSocketBlock;
@@ -478,6 +479,18 @@ public class ModBlocks {
             .properties(p -> p.noOcclusion())
             .transform(pickaxeOnly())
             .lang("Conduit Switch")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** A three-pole disconnect with a lockable handle, fed by conduit or hanging wire. */
+    public static final BlockEntry<SafetySwitchBlock> SAFETY_SWITCH = REGISTRATE.block("safety_switch", SafetySwitchBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Safety Switch")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

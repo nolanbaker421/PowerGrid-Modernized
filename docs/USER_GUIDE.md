@@ -72,7 +72,7 @@ Conduit is laid like Power Grid block wire and is empty when placed. You pull re
 afterwards, so it works with any Power Grid wire, including wires from other addons, and each pulled
 wire keeps its own gauge (resistance and ampacity). Nine EMT trade sizes:
 
-| Conduit | Band | Area (sq in) | Slots | Tube |
+| Conduit | Knockout colour | Area (sq in) | Slots | Tube |
 | --- | --- | --- | --- | --- |
 | 1/2" | white | 0.304 | 4 | 1.5 px |
 | 3/4" | yellow | 0.533 | 8 | 2 px |
@@ -84,9 +84,11 @@ wire keeps its own gauge (resistance and ampacity). Nine EMT trade sizes:
 | 3" | brown | 8.846 | 12 | 5.5 px |
 | 4" | black | 14.753 | 12 | 6.5 px |
 
-Every size wears two bands of its colour per metre of tube, and the same band marks the item,
-so a run's size reads from across the room. Goggles on any fitting say the largest size its
-knockouts take, in that size's colour.
+The tube itself is plain steel in every size. The **knockouts** are painted: each fitting's
+knockouts wear the colour of the largest size they take, so a 4" run is never offered to a
+green knockout. Red is 1" (socket, switch, controls cabinet), green 1-1/2" (conduit box and most
+devices), orange 2" (breaker panel, safety switch), black 4" (switchgear, pull box, cam-lock box,
+rail and chain boxes, load bank, FE inverter). Goggles say the same in words.
 
 ### Laying a run
 
@@ -221,6 +223,24 @@ state. Like the socket it has a second knockout on the opposite edge, so it can 
 and sneak-clicking it opens the splice editor for both runs: put the switch in the hot and splice the
 neutral straight through. Place and wrench it like the socket. It is a plain contact between the two wires, so put it in
 the hot conductor of a lighting circuit and give the light its own conduit run back to a box.
+
+### Safety Switch
+
+The heavy-duty disconnect: a grey wall box, 10 x 14 pixels, with a red handle on its right
+side. Three poles, each a contact between a **Line** lug on the top edge and a **Load** lug on
+the bottom edge; the handle throws all three at once. Handle up is closed (on), down is open.
+
+- Two knockouts on the top edge and two on the bottom take conduit up to 2"; shift-right-click
+  the switch with an empty hand to open the splice editor and land the run's conductors on the
+  lugs, as in a panel. A neutral is spliced straight from one run to the other.
+- Hanging wire lands directly on the six lugs, so it works without conduit too.
+- Right-click with an empty hand to throw the handle.
+- **Lockout**: right-click an open switch with a Breaker Lockout to padlock the handle; it will
+  not move until someone shift-clicks the switch to take the lock off (the lock comes back).
+  A closed switch cannot be locked.
+
+Goggles show open or closed, the lockout, and the conduit on the knockouts. Placed like a
+breaker panel: back on the wall you click, or facing you on a floor or ceiling.
 
 ---
 
@@ -712,6 +732,7 @@ adapter placed next to them:
 | Node Cover Plate | a blank cover plate and pins, shapeless |
 | Pull Box | ring of eight iron plates |
 | Conduit Switch (2) | iron nugget, lever, iron nugget over an iron nugget |
+| Safety Switch | iron plates around a lever, a copper ingot below it |
 | Conduit Socket (2) | iron nugget, copper nugget, iron nugget over an iron nugget |
 | Breaker Panel 200 A | iron plates and copper plates around a conductive casing, heavy wire connector at the bottom |
 | Breaker Panel 400 A / 800 A | the smaller panel surrounded by copper and brass plates / brass and iron |

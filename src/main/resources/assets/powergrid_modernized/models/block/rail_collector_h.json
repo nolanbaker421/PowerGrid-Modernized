@@ -5,6 +5,7 @@
     "bracket": "powergrid_modernized:block/rail_bracket",
     "box": "powergrid_modernized:block/rail_box",
     "stud": "powergrid_modernized:block/panel_terminal",
+    "knockout": "powergrid_modernized:block/knockout_four",
     "jack": "powergrid_modernized:block/jack_pin",
     "shoe": "powergrid_modernized:block/rail_shoe",
     "particle": "powergrid_modernized:block/rail_box"
@@ -97,7 +98,7 @@
             16,
             7
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         },
         "up": {
           "uv": [
@@ -106,7 +107,7 @@
             16,
             7
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         },
         "north": {
           "uv": [
@@ -115,7 +116,7 @@
             16,
             2
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         },
         "south": {
           "uv": [
@@ -124,7 +125,7 @@
             16,
             2
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         },
         "west": {
           "uv": [
@@ -133,7 +134,7 @@
             7,
             2
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         },
         "east": {
           "uv": [
@@ -142,7 +143,7 @@
             7,
             2
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         }
       }
     },

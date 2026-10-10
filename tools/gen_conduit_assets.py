@@ -12,7 +12,7 @@ import os
 
 from gen_breaker_panel_assets import ASSETS, DATA, MOD, canvas, dump, element, fill, shade, write_png
 
-# id suffix, conductors, tube thickness (blocks), band colour (mirrored in ConduitSize.java)
+# id suffix, conductors, tube thickness (blocks), knockout colour (mirrored in ConduitSize.java)
 SIZES = [
     ("half", 4, 0.09, 0xF2F2F2),
     ("three_quarter", 8, 0.125, 0xE8C800),
@@ -81,17 +81,8 @@ def textures():
     write_png(os.path.join(ASSETS, "textures", "special", "conduit.png"), tube)
 
     item = os.path.join(ASSETS, "textures", "item")
-    for i, (sid, _conductors, _thickness, band) in enumerate(SIZES):
-        # Each size's tube: the plain tube with two bands of the size's colour every metre.
-        sized = canvas(16, 16, steel + (255,))
-        for y in range(0, 16, 4):
-            fill(sized, 0, y, 16, y + 1, shade(steel, 1.1))
-            fill(sized, 0, y + 2, 16, y + 3, shade(steel, 0.88))
-        for y in (2, 10):
-            fill(sized, 0, y, 16, y + 2, rgb(band))
-            fill(sized, 0, y, 16, y + 1, shade(rgb(band), 1.12))
-        write_png(os.path.join(ASSETS, "textures", "special", "conduit_%s.png" % sid), sized)
-        # Conduit item: a straight stick of tube, thicker for bigger sizes, with a band at the coupling.
+    for i, (sid, _conductors, _thickness, _band) in enumerate(SIZES):
+        # Conduit item: a straight stick of tube, thicker for bigger sizes, with a coupling.
         img = canvas(16, 16)
         t = min(2 + i, 9)
         y0 = 8 - t // 2
@@ -99,15 +90,21 @@ def textures():
             fill(img, x, y0, x + 1, y0 + t, steel)
             fill(img, x, y0, x + 1, y0 + 1, shade(steel, 1.25))
             fill(img, x, y0 + t - 1, x + 1, y0 + t, shade(steel, 0.7))
-        fill(img, 6, y0 - 1, 10, y0 + t + 1, rgb(band))
-        fill(img, 6, y0 - 1, 10, y0, shade(rgb(band), 1.15))
-        fill(img, 6, y0 + t, 10, y0 + t + 1, shade(rgb(band), 0.7))
+        fill(img, 7, y0 - 1, 9, y0 + t + 1, shade(steel, 0.8))
         write_png(os.path.join(item, "conduit_%s.png" % sid), img)
+    # Knockout sheets: one flat colour per trade size, worn by every knockout that takes up to
+    # that size. A knockout is a tiny element sampling a few pixels, so the colour fills the sheet.
+    for sid, _conductors, _thickness, band in SIZES:
+        ko = canvas(16, 16, rgb(band) + (255,))
+        fill(ko, 0, 15, 16, 16, shade(rgb(band), 0.6))
+        fill(ko, 0, 0, 1, 16, shade(rgb(band), 0.85))
+        fill(ko, 15, 0, 16, 16, shade(rgb(band), 0.7))
+        write_png(os.path.join(ASSETS, "textures", "block", "knockout_%s.png" % sid), ko)
 
 
 def box_model():
     tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD,
-           "open": "%s:block/conduit_box_open" % MOD, "particle": "%s:block/conduit_box" % MOD}
+           "open": "%s:block/conduit_box_open" % MOD, "knockout": "%s:block/knockout_one_half" % MOD, "particle": "%s:block/conduit_box" % MOD}
     for cover in ("open", "blank", "node"):
         if cover == "open":
             # No front: the body is set back and its open face shows the interior.
@@ -117,7 +114,7 @@ def box_model():
         else:
             elements = [element(*BODY, "#box", cull_south=True)]
         for hub in HUBS:
-            elements.append(element(*hub, "#terminal"))
+            elements.append(element(*hub, "#knockout"))
         if cover == "node":
             for k in range(12):
                 x = 16 - COLUMNS_U[k % 4]
@@ -181,7 +178,8 @@ def on_tile(box):
 def ceiling_box_models():
     """The box on a ceiling tile: the tile, then the box in the tile frame, one model per cover."""
     tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD,
-           "open": "%s:block/conduit_box_open" % MOD, "tile": TILE_TEXTURE, "particle": "%s:block/conduit_box" % MOD}
+           "open": "%s:block/conduit_box_open" % MOD, "tile": TILE_TEXTURE, "knockout": "%s:block/knockout_one_half" % MOD,
+           "particle": "%s:block/conduit_box" % MOD}
     for cover in ("open", "blank", "node"):
         elements = [dict(e) for e in TILE_ELEMENTS]
         if cover == "open":
@@ -192,7 +190,7 @@ def ceiling_box_models():
             body = element(*on_tile(BODY), "#box")
         elements.append(body)
         for hub in HUBS:
-            elements.append(element(*on_tile(hub), "#terminal"))
+            elements.append(element(*on_tile(hub), "#knockout"))
         if cover == "node":
             for k in range(12):
                 x = 16 - COLUMNS_U[k % 4]
@@ -216,8 +214,8 @@ def ceiling_box_models():
 
 
 def socket_model():
-    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/conduit_box" % MOD}
-    boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#terminal"), (SOCKET_HUB2, "#terminal"), (SOCKET_FACE, "#terminal")]
+    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_one" % MOD, "particle": "%s:block/conduit_box" % MOD}
+    boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#knockout"), (SOCKET_HUB2, "#knockout"), (SOCKET_FACE, "#terminal")]
     for suffix, transform in (("v", lambda b: b), ("h", to_h)):
         elements = [element(*transform(box), texture) for box, texture in boxes]
         dump(os.path.join(ASSETS, "models", "block", "conduit_socket", "block_%s.json" % suffix),
@@ -237,9 +235,9 @@ SWITCH_TOGGLE = {False: (7, 3.5, 8.5, 9, 5.5, 10), True: (7, 3.5, 6, 9, 5.5, 7.5
 
 def switch_model():
     """The conduit switch: the socket's body and knockout with a toggle plate on top; the toggle leans back when off, forward when on."""
-    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/conduit_box" % MOD}
+    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_one" % MOD, "particle": "%s:block/conduit_box" % MOD}
     for on in (False, True):
-        boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#terminal"), (SOCKET_HUB2, "#terminal"), (SWITCH_PLATE, "#box"), (SWITCH_TOGGLE[on], "#terminal")]
+        boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#knockout"), (SOCKET_HUB2, "#knockout"), (SWITCH_PLATE, "#box"), (SWITCH_TOGGLE[on], "#terminal")]
         for suffix, transform in (("v", lambda b: b), ("h", to_h)):
             elements = [element(*transform(box), texture) for box, texture in boxes]
             dump(os.path.join(ASSETS, "models", "block", "conduit_switch", "block_%s_%s.json" % (suffix, "on" if on else "off")),
@@ -305,11 +303,11 @@ def pull_box_assets():
     for u in (3.5, 6.5, 9.5, 12.5):
         x = 16 - u
         for y in (11.5, 8, 4.5):
-            elements.append(element(x - 1, y - 1, -1, x + 1, y + 1, 0, "#terminal"))
+            elements.append(element(x - 1, y - 1, -1, x + 1, y + 1, 0, "#knockout"))
     dump(os.path.join(ASSETS, "models", "block", "terminal_cabinet.json"), {
         "parent": "block/block",
         "textures": {"front": "%s:block/pull_box_front" % MOD, "side": side_h, "side_v": side_v,
-                     "terminal": "%s:block/panel_terminal" % MOD, "particle": side_h},
+                     "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_four" % MOD, "particle": side_h},
         "elements": elements,
     })
     dump(os.path.join(ASSETS, "models", "item", "terminal_cabinet.json"), {"parent": "%s:block/terminal_cabinet" % MOD})
@@ -390,7 +388,7 @@ def wire_types():
         dump(os.path.join(DATA, "powergrid", "wire_types", "conduit_%s.json" % sid), {
             "colorable": True, "cord": False, "horizontalCoefficient": 1.0, "insulated": True,
             "itemsPerMeter": 1.0, "maximumCurrent": 1.0, "maximumLength": 64.0,
-            "resistancePerItem": 0.001, "texture": "%s:textures/special/conduit_%s.png" % (MOD, sid),
+            "resistancePerItem": 0.001, "texture": "%s:textures/special/conduit.png" % MOD,
             "thermalMass": 1.0, "verticalCoefficient": 1.0, "wireThickness": thickness,
         })
 

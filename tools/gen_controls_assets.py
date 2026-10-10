@@ -47,16 +47,16 @@ def textures():
 
 def model():
     tex = {"front": "%s:block/%s_front" % (MOD, NAME), "side": "%s:block/%s_side" % (MOD, NAME),
-           "terminal": "%s:block/panel_terminal" % MOD, "jack": "%s:block/jack_pin" % MOD, "particle": "%s:block/%s_side" % (MOD, NAME)}
+           "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_one" % MOD, "jack": "%s:block/jack_pin" % MOD, "particle": "%s:block/%s_side" % (MOD, NAME)}
     elements = [element(*BODY, "#side", cull_south=True)]
     elements[0]["faces"]["north"]["texture"] = "#front"
     for u in HUB_U:
         x = 16 - u
-        elements.append(element(x - 1, 15, HUB_Z1, x + 1, 16, HUB_Z2, "#terminal"))
-        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#terminal"))
+        elements.append(element(x - 1, 15, HUB_Z1, x + 1, 16, HUB_Z2, "#knockout"))
+        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#knockout"))
     for y in (3, 11):
-        elements.append(element(14, y, HUB_Z1, 15, y + 2, HUB_Z2, "#terminal"))
-        elements.append(element(1, y, HUB_Z1, 2, y + 2, HUB_Z2, "#terminal"))
+        elements.append(element(14, y, HUB_Z1, 15, y + 2, HUB_Z2, "#knockout"))
+        elements.append(element(1, y, HUB_Z1, 2, y + 2, HUB_Z2, "#knockout"))
     elements.append(element(*JACK, "#jack"))
     elements.append(element(1, 7, 12.5, 2, 9, 14.5, "#jack"))   # the PLC's external port
     dump(os.path.join(ASSETS, "models", "block", NAME + ".json"), {"parent": "block/block", "textures": tex, "elements": elements})
@@ -75,17 +75,17 @@ def extension_assets():
     """The extension block: the enclosure with a door of six cells, knockouts along the bottom and sides only."""
     name = "controls_extension"
     tex = {"front": "%s:block/%s_front" % (MOD, NAME), "side": "%s:block/%s_side" % (MOD, NAME),
-           "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/%s_side" % (MOD, NAME)}
+           "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_one" % MOD, "particle": "%s:block/%s_side" % (MOD, NAME)}
     # The body reaches a pixel into the head block above, closing the seam and covering the head's bottom knockouts.
     x1, y1, z1, x2, y2, z2 = BODY
     elements = [element(x1, y1, z1, x2, 17, z2, "#side", cull_south=True)]
     elements[0]["faces"]["north"]["texture"] = "#front"
     for u in HUB_U:
         x = 16 - u
-        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#terminal"))
+        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#knockout"))
     for y in (3, 11):
-        elements.append(element(14, y, HUB_Z1, 15, y + 2, HUB_Z2, "#terminal"))
-        elements.append(element(1, y, HUB_Z1, 2, y + 2, HUB_Z2, "#terminal"))
+        elements.append(element(14, y, HUB_Z1, 15, y + 2, HUB_Z2, "#knockout"))
+        elements.append(element(1, y, HUB_Z1, 2, y + 2, HUB_Z2, "#knockout"))
     dump(os.path.join(ASSETS, "models", "block", name + ".json"), {"parent": "block/block", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s" % (MOD, name)})
     dump(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": {

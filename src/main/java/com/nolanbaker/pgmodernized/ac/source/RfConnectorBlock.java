@@ -60,7 +60,7 @@ public class RfConnectorBlock extends Rotation4ElectricBlock implements IBE<RfCo
         var terminals = new TerminalBoundingBox[TERMINAL_COUNT];
         terminals[TERMINAL_LINE] = terminal(name("rf_connector.line", ChatFormatting.RED), HIDDEN).withColor(IDecoratedTerminal.RED);
         terminals[TERMINAL_NEUTRAL] = terminal(name("rf_connector.neutral", ChatFormatting.BLUE), HIDDEN).withColor(IDecoratedTerminal.BLUE);
-        terminals[TERMINAL_HUB] = terminal(name("conduit_socket.hub", ChatFormatting.AQUA), HUB).withColor(0x2FB8D6);
+        terminals[TERMINAL_HUB] = terminal(name("conduit_socket.hub", ChatFormatting.AQUA), HUB).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.ONE.bandColor());
         for(int k = 0; k < ConductorColors.COUNT; ++k)
             terminals[CONDUCTOR_BASE + k] = terminal(ConductorColors.name(k), HIDDEN).withColor(ConductorColors.rgb(k));
         return terminals;

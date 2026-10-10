@@ -110,7 +110,7 @@ public final class ConduitBoxGeometry {
         for(int k = 0; k < FRONT_COUNT; ++k)
             terminals[k] = terminal(ConductorColors.name(k), frame.apply(frontNub(k))).withColor(ConductorColors.rgb(k));
         for(int h = 0; h < HUB_COUNT; ++h) {
-            terminals[hubTerminal(h)] = terminal(hubName(h), frame.apply(HUBS[h])).withColor(0x2FB8D6);
+            terminals[hubTerminal(h)] = terminal(hubName(h), frame.apply(HUBS[h])).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.ONE_HALF.bandColor());
             for(int k = 0; k < ConductorColors.COUNT; ++k) {
                 var name = Lang.builder().add(hubName(h)).text(" ").add(ConductorColors.name(k)).component();
                 terminals[conductorTerminal(h, k)] = terminal(name, frame.apply(HIDDEN)).withColor(ConductorColors.rgb(k));

@@ -49,17 +49,17 @@ def bars(z1, z2):
 
 def models():
     common = {"bar": "%s:block/rail_bar" % MOD, "bracket": "%s:block/rail_bracket" % MOD, "box": "%s:block/rail_box" % MOD,
-              "stud": "%s:block/panel_terminal" % MOD, "jack": "%s:block/jack_pin" % MOD, "shoe": "%s:block/rail_shoe" % MOD}
+              "stud": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_four" % MOD, "jack": "%s:block/jack_pin" % MOD, "shoe": "%s:block/rail_shoe" % MOD}
     rail = [element(6, 0, 0, 10, 2, 16, "#bracket"), element(0, 0, 7, 16, 2, 9, "#bracket")] + bars(0, 16)
     rotation4_models("conductor_rail", rail, dict(common, particle=common["bracket"]))
-    feed = [element(2, 0, 2, 14, 6, 14, "#box"), element(14, 0, 3, 16, 2, 7, "#stud"), element(14, 0, 9, 16, 2, 11, "#jack")]
+    feed = [element(2, 0, 2, 14, 6, 14, "#box"), element(14, 0, 3, 16, 2, 7, "#knockout"), element(14, 0, 9, 16, 2, 11, "#jack")]
     feed += bars(0, 2) + bars(14, 16)
     for x1, x2 in ((3, 5), (6, 8), (9, 11), (12, 14)):
         feed.append(element(x1, 6, 3, x2, 8, 5, "#stud"))
     rotation4_models("rail_feed", feed, dict(common, particle=common["box"]))
     # The arm and shoes are drawn by RailCollectorRenderer out to whatever block the collector found;
     # the model only has the box, its studs, the jack, the knockout and a stub of the arm.
-    collector = [element(2, 0, 2, 14, 6, 14, "#box"), element(14, 0, 3, 16, 2, 7, "#stud"), element(14, 0, 9, 16, 2, 11, "#jack"),
+    collector = [element(2, 0, 2, 14, 6, 14, "#box"), element(14, 0, 3, 16, 2, 7, "#knockout"), element(14, 0, 9, 16, 2, 11, "#jack"),
                  element(6, 2, 0, 10, 5, 2, "#bracket")]
     for x1, x2 in ((3, 5), (6, 8), (9, 11), (12, 14)):
         collector.append(element(x1, 6, 9, x2, 8, 11, "#stud"))

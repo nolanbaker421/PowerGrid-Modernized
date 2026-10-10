@@ -101,7 +101,7 @@ public final class PullBoxGeometry {
         if(lugs) for(int k = 0; k < FRONT_COUNT; ++k)
             terminals[FRONT_BASE + k] = terminal(ConductorColors.name(k), frontLug(k)).withColor(ConductorColors.rgb(k));
         for(int h = 0; h < HUB_COUNT; ++h) {
-            terminals[hubTerminal(h)] = terminal(hubName(h), HUBS[h]).withColor(0x2FB8D6);
+            terminals[hubTerminal(h)] = terminal(hubName(h), HUBS[h]).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.FOUR.bandColor());
             for(int k = 0; k < ConductorColors.COUNT; ++k) {
                 var name = Lang.builder().add(hubName(h)).text(" ").add(ConductorColors.name(k)).component();
                 terminals[conductorTerminal(h, k)] = terminal(name, HIDDEN).withColor(ConductorColors.rgb(k));

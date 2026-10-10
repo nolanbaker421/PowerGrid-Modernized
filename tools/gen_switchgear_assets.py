@@ -61,13 +61,13 @@ def model():
     elements[0]["faces"]["up"]["texture"] = "#top"
     for u in HUB_U:
         x = 16 - u
-        elements.append(element(x - 1, 15, 8, x + 1, 16, 10, "#terminal"))
-        elements.append(element(x - 1, 0, 8, x + 1, 1, 10, "#terminal"))
+        elements.append(element(x - 1, 15, 8, x + 1, 16, 10, "#knockout"))
+        elements.append(element(x - 1, 0, 8, x + 1, 1, 10, "#knockout"))
     tex = {
         "front": "%s:block/%s_front" % (MOD, NAME),
         "side": "%s:block/%s_side" % (MOD, NAME),
         "top": "%s:block/%s_top" % (MOD, NAME),
-        "terminal": "%s:block/panel_terminal" % MOD,
+        "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_four" % MOD,
         "particle": "%s:block/%s_side" % (MOD, NAME),
     }
     dump(os.path.join(ASSETS, "models", "block", NAME + ".json"), {"parent": "block/block", "textures": tex, "elements": elements})

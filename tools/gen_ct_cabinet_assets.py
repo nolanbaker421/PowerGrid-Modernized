@@ -49,7 +49,7 @@ def model():
     tex = {
         "front": "%s:block/%s_front" % (MOD, NAME),
         "side": "%s:block/%s_side" % (MOD, NAME),
-        "terminal": "%s:block/panel_terminal" % MOD,
+        "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_one_half" % MOD,
         "jack": "%s:block/jack_pin" % MOD,
         "particle": "%s:block/%s_side" % (MOD, NAME),
     }
@@ -57,8 +57,8 @@ def model():
     elements[0]["faces"]["north"]["texture"] = "#front"
     for u in HUB_U:
         x = 16 - u
-        elements.append(element(x - 1, 15, HUB_Z1, x + 1, 16, HUB_Z2, "#terminal"))
-        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#terminal"))
+        elements.append(element(x - 1, 15, HUB_Z1, x + 1, 16, HUB_Z2, "#knockout"))
+        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#knockout"))
     elements.append(element(*JACK, "#jack"))
     dump(os.path.join(ASSETS, "models", "block", NAME + ".json"), {"parent": "block/block", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "models", "item", NAME + ".json"), {"parent": "%s:block/%s" % (MOD, NAME)})

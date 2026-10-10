@@ -31,7 +31,7 @@ def textures():
 
 def models():
     for name in BOXES:
-        textures_ = {"box": "%s:block/%s" % (MOD, name), "hub": "%s:block/panel_terminal" % MOD, "particle": "%s:block/%s" % (MOD, name)}
+        textures_ = {"box": "%s:block/%s" % (MOD, name), "hub": "%s:block/knockout_four" % MOD, "particle": "%s:block/%s" % (MOD, name)}
         for k in range(5):
             textures_["pole%d" % k] = "%s:block/cam_lock_pole_%d" % (MOD, k)
         elements = [element(1, 0, 1, 15, 8, 15, "#box"), element(0, 1, 5, 1, 4, 8, "#hub"), element(15, 1, 5, 16, 4, 8, "#hub")]

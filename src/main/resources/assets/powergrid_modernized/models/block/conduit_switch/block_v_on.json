@@ -3,6 +3,7 @@
   "textures": {
     "box": "powergrid_modernized:block/conduit_box",
     "terminal": "powergrid_modernized:block/panel_terminal",
+    "knockout": "powergrid_modernized:block/knockout_one",
     "particle": "powergrid_modernized:block/conduit_box"
   },
   "elements": [
@@ -93,7 +94,7 @@
             9,
             15.5
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "south": {
           "uv": [
@@ -102,7 +103,7 @@
             9,
             15.5
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "east": {
           "uv": [
@@ -111,7 +112,7 @@
             12,
             15.5
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "west": {
           "uv": [
@@ -120,7 +121,7 @@
             5,
             15.5
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "up": {
           "uv": [
@@ -129,7 +130,7 @@
             9,
             5
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "down": {
           "uv": [
@@ -138,7 +139,7 @@
             9,
             12
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         }
       }
     },
@@ -161,7 +162,7 @@
             9,
             15.5
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "south": {
           "uv": [
@@ -170,7 +171,7 @@
             9,
             15.5
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "east": {
           "uv": [
@@ -179,7 +180,7 @@
             5,
             15.5
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "west": {
           "uv": [
@@ -188,7 +189,7 @@
             12,
             15.5
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "up": {
           "uv": [
@@ -197,7 +198,7 @@
             9,
             12
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "down": {
           "uv": [
@@ -206,7 +207,7 @@
             9,
             5
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         }
       }
     },

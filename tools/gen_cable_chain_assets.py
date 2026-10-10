@@ -97,13 +97,13 @@ def models():
         element(5, 2, 2, 11, 8, 6, "#post"),
         element(4, 4, 6, 12, 6, 7, "#post"),            # the saddle the chain lies on
         element(14, 0, 7, 16, 2, 9, "#jack"),
-        element(0, 0, 6, 2, 2, 10, "#stud"),            # the conduit knockout
+        element(0, 0, 6, 2, 2, 10, "#knockout"),        # the conduit knockout
     ]
     for x in (2, 5, 9, 12):
         elements.append(element(x, 2, 11, x + 2, 4, 13, "#stud"))
     rotation4_models("cable_chain_anchor", elements, {
         "plate": "%s:block/cable_chain_anchor" % MOD, "post": "%s:block/cable_chain_post" % MOD,
-        "stud": "%s:block/panel_terminal" % MOD, "jack": "%s:block/jack_pin" % MOD,
+        "stud": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_four" % MOD, "jack": "%s:block/jack_pin" % MOD,
         "particle": "%s:block/cable_chain_anchor" % MOD})
     dump(os.path.join(ASSETS, "models", "item", "cable_chain.json"),
          {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/cable_chain" % MOD}})

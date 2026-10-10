@@ -2,7 +2,7 @@
   "parent": "block/block",
   "textures": {
     "box": "powergrid_modernized:block/cam_lock_box_400",
-    "hub": "powergrid_modernized:block/panel_terminal",
+    "hub": "powergrid_modernized:block/knockout_four",
     "particle": "powergrid_modernized:block/cam_lock_box_400",
     "pole0": "powergrid_modernized:block/cam_lock_pole_0",
     "pole1": "powergrid_modernized:block/cam_lock_pole_1",

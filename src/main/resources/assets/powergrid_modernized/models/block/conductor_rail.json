@@ -5,6 +5,7 @@
     "bracket": "powergrid_modernized:block/rail_bracket",
     "box": "powergrid_modernized:block/rail_box",
     "stud": "powergrid_modernized:block/panel_terminal",
+    "knockout": "powergrid_modernized:block/knockout_four",
     "jack": "powergrid_modernized:block/jack_pin",
     "shoe": "powergrid_modernized:block/rail_shoe",
     "particle": "powergrid_modernized:block/rail_bracket"

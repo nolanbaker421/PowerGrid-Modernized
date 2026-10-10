@@ -4,6 +4,7 @@
     "plate": "powergrid_modernized:block/cable_chain_anchor",
     "post": "powergrid_modernized:block/cable_chain_post",
     "stud": "powergrid_modernized:block/panel_terminal",
+    "knockout": "powergrid_modernized:block/knockout_four",
     "jack": "powergrid_modernized:block/jack_pin",
     "particle": "powergrid_modernized:block/cable_chain_anchor"
   },
@@ -299,7 +300,7 @@
             16,
             10
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         },
         "up": {
           "uv": [
@@ -308,7 +309,7 @@
             16,
             10
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         },
         "north": {
           "uv": [
@@ -317,7 +318,7 @@
             16,
             16
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         },
         "south": {
           "uv": [
@@ -326,7 +327,7 @@
             16,
             16
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         },
         "west": {
           "uv": [
@@ -335,7 +336,7 @@
             10,
             16
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         },
         "east": {
           "uv": [
@@ -344,7 +345,7 @@
             10,
             16
           ],
-          "texture": "#stud"
+          "texture": "#knockout"
         }
       }
     },

@@ -58,8 +58,8 @@ public enum ConduitSize {
     }
 
     /**
-     * The colour band painted on this size's tube and item, so sizes tell apart at a glance; the
-     * same colour labels the size in tooltips. Mirrored in tools/gen_conduit_assets.py.
+     * The colour of every knockout that takes conduit up to this size (the knockout sheets from
+     * tools/gen_conduit_assets.py and the terminal highlight), and of the size's label in tooltips.
      */
     public int bandColor() {
         return bandColor;

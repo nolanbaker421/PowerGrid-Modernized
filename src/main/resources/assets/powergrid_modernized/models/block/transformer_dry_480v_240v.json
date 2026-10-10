@@ -13,6 +13,7 @@
     "bushing": "powergrid_modernized:block/transformer_bushing",
     "cap": "powergrid_modernized:block/transformer_cap",
     "terminal": "powergrid_modernized:block/panel_terminal",
+    "knockout": "powergrid_modernized:block/knockout_one_half",
     "jack": "powergrid_modernized:block/jack_pin",
     "particle": "powergrid_modernized:block/transformer_tank"
   },
@@ -241,7 +242,7 @@
             4.5,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "south": {
           "uv": [
@@ -250,7 +251,7 @@
             13.5,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "east": {
           "uv": [
@@ -259,7 +260,7 @@
             7,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "west": {
           "uv": [
@@ -268,7 +269,7 @@
             11,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "up": {
           "uv": [
@@ -277,7 +278,7 @@
             13.5,
             11
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "down": {
           "uv": [
@@ -286,7 +287,7 @@
             13.5,
             7
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         }
       }
     },
@@ -377,7 +378,7 @@
             7.5,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "south": {
           "uv": [
@@ -386,7 +387,7 @@
             10.5,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "east": {
           "uv": [
@@ -395,7 +396,7 @@
             7,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "west": {
           "uv": [
@@ -404,7 +405,7 @@
             11,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "up": {
           "uv": [
@@ -413,7 +414,7 @@
             10.5,
             11
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "down": {
           "uv": [
@@ -422,7 +423,7 @@
             10.5,
             7
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         }
       }
     },
@@ -513,7 +514,7 @@
             10.5,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "south": {
           "uv": [
@@ -522,7 +523,7 @@
             7.5,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "east": {
           "uv": [
@@ -531,7 +532,7 @@
             7,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "west": {
           "uv": [
@@ -540,7 +541,7 @@
             11,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "up": {
           "uv": [
@@ -549,7 +550,7 @@
             7.5,
             11
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "down": {
           "uv": [
@@ -558,7 +559,7 @@
             7.5,
             7
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         }
       }
     },
@@ -649,7 +650,7 @@
             13.5,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "south": {
           "uv": [
@@ -658,7 +659,7 @@
             4.5,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "east": {
           "uv": [
@@ -667,7 +668,7 @@
             7,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "west": {
           "uv": [
@@ -676,7 +677,7 @@
             11,
             16
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "up": {
           "uv": [
@@ -685,7 +686,7 @@
             4.5,
             11
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         },
         "down": {
           "uv": [
@@ -694,7 +695,7 @@
             4.5,
             7
           ],
-          "texture": "#terminal"
+          "texture": "#knockout"
         }
       }
     },

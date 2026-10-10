@@ -74,14 +74,15 @@ def motor():
         element(3.5, 13.5, 14, 5.5, 14.5, 16, "#terminal"),
         element(7, 13.5, 14, 9, 14.5, 16, "#terminal"),
         element(10.5, 13.5, 14, 12.5, 14.5, 16, "#terminal"),
-        element(1.5, 6.5, 12, 2.5, 9.5, 14, "#box"),      # conduit knockouts
-        element(13.5, 6.5, 12, 14.5, 9.5, 14, "#box"),
+        element(1.5, 6.5, 12, 2.5, 9.5, 14, "#knockout"),      # conduit knockouts
+        element(13.5, 6.5, 12, 14.5, 9.5, 14, "#knockout"),
     ]
     tex = {
         "body": "%s:block/%s_body" % (MOD, MOTOR),
         "box": "%s:block/%s_box" % (MOD, MOTOR),
         "foot": "%s:block/%s_foot" % (MOD, MOTOR),
         "terminal": "%s:block/panel_terminal" % MOD,
+        "knockout": "%s:block/knockout_one_half" % MOD,
         "particle": "%s:block/%s_body" % (MOD, MOTOR),
     }
     dump(os.path.join(ASSETS, "models", "block", MOTOR + ".json"), {"parent": "block/block", "textures": tex, "elements": elements})
@@ -125,7 +126,7 @@ def drive():
         "top": "%s:block/%s_top" % (MOD, DRIVE),
         "terminal": "%s:block/panel_terminal" % MOD,
         "jack": "%s:block/jack_pin" % MOD,
-        "hub": "%s:block/panel_terminal" % MOD,
+        "hub": "%s:block/knockout_one_half" % MOD,
         "particle": "%s:block/%s_side" % (MOD, DRIVE),
     }
     vertical = []
@@ -260,12 +261,12 @@ def cabinet_model(name, front, side, extras):
     for x1, x2 in ((11.5, 13.5), (8.5, 10.5), (5.5, 7.5), (2.5, 4.5)):
         elements.append(element(x1, 2, 9, x2, 4, 10, "#terminal"))
     for x1, x2 in ((4, 6), (10, 12)):
-        elements.append(element(x1, 15, 12.5, x2, 16, 14.5, "#terminal"))
-        elements.append(element(x1, 0, 12.5, x2, 1, 14.5, "#terminal"))
+        elements.append(element(x1, 15, 12.5, x2, 16, 14.5, "#knockout"))
+        elements.append(element(x1, 0, 12.5, x2, 1, 14.5, "#knockout"))
     dump(os.path.join(ASSETS, "models", "block", name + ".json"), {
         "parent": "block/block",
         "textures": {"front": front, "side": side, "fin": "%s:block/transformer_fin" % MOD, "cap": "%s:block/transformer_cap" % MOD,
-                     "terminal": "%s:block/panel_terminal" % MOD, "particle": side},
+                     "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_four" % MOD, "particle": side},
         "elements": elements,
     })
     dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s" % (MOD, name)})
@@ -284,13 +285,13 @@ def fe_inverter():
     body["faces"]["north"]["texture"] = "#front"
     elements = [body, element(3, 20, 3.75, 13, 27, 4, "#fin"), element(4, 17, 3.75, 12, 18, 4, "#cap")]
     for x in (12.5, 9.5, 6.5, 3.5):
-        elements.append(element(x - 1, 0, 9, x + 1, 1, 11, "#terminal"))
+        elements.append(element(x - 1, 0, 9, x + 1, 1, 11, "#knockout"))
         elements.append(element(x - 1, 3, 3, x + 1, 5, 4, "#terminal"))
     dump(os.path.join(ASSETS, "models", "block", INVERTER + ".json"), {
         "parent": "block/block",
         "textures": {"front": "%s:block/transformer_dry_front" % MOD, "side": "%s:block/transformer_dry_side" % MOD,
                      "fin": "%s:block/transformer_fin" % MOD, "cap": "%s:block/transformer_cap" % MOD,
-                     "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/transformer_dry_side" % MOD},
+                     "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_four" % MOD, "particle": "%s:block/transformer_dry_side" % MOD},
         "elements": elements,
     })
     dump(os.path.join(ASSETS, "models", "item", INVERTER + ".json"), {"parent": "%s:block/%s" % (MOD, INVERTER)})

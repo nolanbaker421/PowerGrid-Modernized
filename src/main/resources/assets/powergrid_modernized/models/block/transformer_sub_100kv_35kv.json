@@ -13,6 +13,7 @@
     "bushing": "powergrid_modernized:block/transformer_bushing",
     "cap": "powergrid_modernized:block/transformer_cap",
     "terminal": "powergrid_modernized:block/panel_terminal",
+    "knockout": "powergrid_modernized:block/knockout_one_half",
     "jack": "powergrid_modernized:block/jack_pin",
     "particle": "powergrid_modernized:block/transformer_tank"
   },

@@ -272,18 +272,18 @@ def panel_model(name, slots):
     # Conduit knockouts: four across the top edge, four across the bottom.
     for u in HUB_U:
         x = 16 - u
-        elements.append(element(x - 1, 15, HUB_Z1, x + 1, 16, HUB_Z2, "#terminal"))
-        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#terminal"))
+        elements.append(element(x - 1, 15, HUB_Z1, x + 1, 16, HUB_Z2, "#knockout"))
+        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#knockout"))
     # Two more on each side (viewer's left is +x).
     for y in SIDE_HUB_Y:
-        elements.append(element(15, y, HUB_Z1, 16, y + 2, HUB_Z2, "#terminal"))
-        elements.append(element(0, y, HUB_Z1, 1, y + 2, HUB_Z2, "#terminal"))
+        elements.append(element(15, y, HUB_Z1, 16, y + 2, HUB_Z2, "#knockout"))
+        elements.append(element(0, y, HUB_Z1, 1, y + 2, HUB_Z2, "#knockout"))
     model = {
         "parent": "block/block",
         "textures": {
             "front": "%s:block/%s_front" % (MOD, name),
             "side": "%s:block/%s_side" % (MOD, name),
-            "terminal": "%s:block/panel_terminal" % MOD,
+            "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_two" % MOD,
             "particle": "%s:block/%s_side" % (MOD, name),
         },
         "elements": elements,
@@ -522,14 +522,14 @@ def extension_assets():
     elements[0]["faces"]["north"]["texture"] = "#front"
     for u in HUB_U:
         x = 16 - u
-        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#terminal"))
+        elements.append(element(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2, "#knockout"))
     for y in SIDE_HUB_Y:
-        elements.append(element(15, y, HUB_Z1, 16, y + 2, HUB_Z2, "#terminal"))
-        elements.append(element(0, y, HUB_Z1, 1, y + 2, HUB_Z2, "#terminal"))
+        elements.append(element(15, y, HUB_Z1, 16, y + 2, HUB_Z2, "#knockout"))
+        elements.append(element(0, y, HUB_Z1, 1, y + 2, HUB_Z2, "#knockout"))
     dump(os.path.join(ASSETS, "models", "block", name + ".json"), {
         "parent": "block/block",
         "textures": {"front": "%s:block/%s_front" % (MOD, name), "side": "%s:block/%s_side" % (MOD, name),
-                     "terminal": "%s:block/panel_terminal" % MOD, "particle": "%s:block/%s_side" % (MOD, name)},
+                     "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_two" % MOD, "particle": "%s:block/%s_side" % (MOD, name)},
         "elements": elements,
     })
     dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s" % (MOD, name)})

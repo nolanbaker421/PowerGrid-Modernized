@@ -5,7 +5,7 @@
     "top": "powergrid_modernized:block/three_phase_drive_top",
     "terminal": "powergrid_modernized:block/panel_terminal",
     "jack": "powergrid_modernized:block/jack_pin",
-    "hub": "powergrid_modernized:block/panel_terminal",
+    "hub": "powergrid_modernized:block/knockout_one_half",
     "particle": "powergrid_modernized:block/three_phase_drive_side"
   },
   "elements": [

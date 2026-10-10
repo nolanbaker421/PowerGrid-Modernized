@@ -203,7 +203,7 @@ public final class CabinetLayout {
             var hubs = extHubs(-16 * section);
             for(int h = 0; h < EXT_HUBS; ++h) {
                 int hub = HUB_COUNT + (section - 1) * EXT_HUBS + h;
-                terminals[start + EXT_HUB_OFF + h] = terminal(DeviceHubs.hubName(hub), hubs[h]).withColor(0x2FB8D6);
+                terminals[start + EXT_HUB_OFF + h] = terminal(DeviceHubs.hubName(hub), hubs[h]).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.ONE.bandColor());
                 for(int k = 0; k < PER_HUB; ++k) {
                     var name = Lang.builder().add(DeviceHubs.hubName(hub)).text(" ").add(ConductorColors.name(k)).component();
                     terminals[start + EXT_LANDING_OFF + h * PER_HUB + k] = terminal(name, HIDDEN).withColor(ConductorColors.rgb(k));

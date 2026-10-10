@@ -373,7 +373,7 @@ public final class PanelLayout {
             terminals[branchTerminal(spec, slot)] = terminal(label, hidden).withColor(IDecoratedTerminal.GRAY);
         }
         for(int h = 0; h < maxHubs(); ++h) {
-            terminals[hubTerminal(spec, h)] = terminal(hubName(h), hub(h)).withColor(0x2FB8D6);
+            terminals[hubTerminal(spec, h)] = terminal(hubName(h), hub(h)).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.TWO.bandColor());
             var hidden = HIDDEN.move(0, -16 * sectionOfHub(h), 0);
             for(int k = 0; k < PER_HUB; ++k) {
                 var label = Lang.builder().add(hubName(h)).text(" ").add(ConductorColors.name(k)).component();

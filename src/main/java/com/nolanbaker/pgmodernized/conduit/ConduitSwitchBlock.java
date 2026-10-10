@@ -71,10 +71,10 @@ public class ConduitSwitchBlock extends Rotation4ElectricBlock implements IBE<Co
         var terminals = new TerminalBoundingBox[TERMINAL_COUNT];
         terminals[TERMINAL_POLE_A] = terminal(name("conduit_switch.line", ChatFormatting.RED), HIDDEN).withColor(IDecoratedTerminal.RED);
         terminals[TERMINAL_POLE_B] = terminal(name("conduit_switch.load", ChatFormatting.BLUE), HIDDEN).withColor(IDecoratedTerminal.BLUE);
-        terminals[TERMINAL_HUB] = terminal(name("conduit_socket.hub", ChatFormatting.AQUA), HUB).withColor(0x2FB8D6);
+        terminals[TERMINAL_HUB] = terminal(name("conduit_socket.hub", ChatFormatting.AQUA), HUB).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.ONE.bandColor());
         for(int k = 0; k < ConductorColors.COUNT; ++k)
             terminals[CONDUCTOR_BASE + k] = terminal(ConductorColors.name(k), HIDDEN).withColor(ConductorColors.rgb(k));
-        terminals[TERMINAL_HUB2] = terminal(name("conduit_socket.hub2", ChatFormatting.AQUA), HUB2).withColor(0x2FB8D6);
+        terminals[TERMINAL_HUB2] = terminal(name("conduit_socket.hub2", ChatFormatting.AQUA), HUB2).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.ONE.bandColor());
         for(int k = 0; k < ConductorColors.COUNT; ++k)
             terminals[CONDUCTOR2_BASE + k] = terminal(ConductorColors.name(k), HIDDEN).withColor(ConductorColors.rgb(k));
         return terminals;

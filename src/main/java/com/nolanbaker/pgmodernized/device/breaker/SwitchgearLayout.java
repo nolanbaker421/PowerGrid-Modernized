@@ -136,7 +136,7 @@ public final class SwitchgearLayout {
             terminals[COUPLER_RIGHT + k] = terminal(busName(k), coupler(false, k)).withColor(phaseRgb(k));
         }
         for(int h = 0; h < HUB_COUNT; ++h) {
-            terminals[hubTerminal(h)] = terminal(hubName(h), hub(h)).withColor(0x2FB8D6);
+            terminals[hubTerminal(h)] = terminal(hubName(h), hub(h)).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.FOUR.bandColor());
             for(int k = 0; k < PER_HUB; ++k) {
                 var label = Lang.builder().add(hubName(h)).text(" ").add(ConductorColors.name(k)).component();
                 terminals[conductorTerminal(h, k)] = terminal(label, HIDDEN).withColor(ConductorColors.rgb(k));
