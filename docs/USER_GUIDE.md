@@ -1224,7 +1224,11 @@ computer network as `powergrid_controls`.
   to wire, click a wired input to pull its wire off, Delete removes the selected block, drag
   empty canvas to pan. A wire routes itself straight between its pins; drag the wire to put a
   bend in it and steer it around blocks, drag a bend to move it, right-click a bend to take it
-  out (up to sixteen bends a wire). Apply sends the drawing to the cabinet; the first problem comes back in
+  out (up to sixteen bends a wire). **Files** saves the drawing under a name on your own
+  computer (`powergrid_modernized/plc/` in the game folder) and loads one back into the editor,
+  in any world or on any server; Copy text and Paste text move the whole program through the
+  clipboard, so a program is shared as a block of text. A loaded program is not running until
+  you Apply it. Apply sends the drawing to the cabinet; the first problem comes back in
   the top bar and outlines its block in red.
 
   **The external port.** Fitting a PLC module opens the second Cat6 jack on the right side of

@@ -71,6 +71,18 @@ public class PlcGraphScreen extends Screen {
         return graph;
     }
 
+    /** A program loaded from a file or the clipboard takes the place of the drawing; Apply still sends it. */
+    public void replaceGraph(PlcGraph loaded) {
+        loaded.sanitise();
+        graph = loaded;
+        selected = -1;
+        linkFrom = -1;
+        dragNode = -1;
+        dragLink = null;
+        modified = true;
+        status = "";
+    }
+
     /** The properties dialog changed a block. */
     public void edited() {
         graph.prune();
@@ -92,6 +104,7 @@ public class PlcGraphScreen extends Screen {
         addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.controls.plc_delete"), b -> deleteSelected()).bounds(x + 172, 4, 50, 18).build());
         addRenderableWidget(Button.builder(Component.literal("-"), b -> setZoom(zoom / 1.25f)).bounds(x + 226, 4, 18, 18).build());
         addRenderableWidget(Button.builder(Component.literal("+"), b -> setZoom(zoom * 1.25f)).bounds(x + 246, 4, 18, 18).build());
+        addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.controls.plc_files"), b -> Minecraft.getInstance().setScreen(new PlcFileScreen(this))).bounds(x + 268, 4, 44, 18).build());
         paletteButtons.clear();
         for(var type : NodeType.values()) {
             var button = addRenderableWidget(Button.builder(Component.literal(type.title), b -> addNode(type)).bounds(4, 0, PALETTE_W - 8, 16).build());
@@ -417,7 +430,7 @@ public class PlcGraphScreen extends Screen {
                 button.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawString(font, title, 6, 9, TEXT, false);
 
-        int textX = PALETTE_W + 272;
+        int textX = PALETTE_W + 320;
         var error = cabinet.plcError();
         String line;
         int color;
