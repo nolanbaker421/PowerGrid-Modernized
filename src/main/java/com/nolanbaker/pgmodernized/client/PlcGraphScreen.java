@@ -22,7 +22,8 @@ import java.util.Map;
 /**
  * The PLC's program as a canvas of blocks and wires. The palette on the left adds blocks; drag a
  * block by its body, drag from an output pin to an input pin to wire them, right-click a block to
- * set it, Delete removes the selected block, drag empty canvas to pan. Live values from the
+ * set it, Delete removes the selected block, drag empty canvas to pan. Drag a wire to put a bend
+ * in it and route it around blocks; drag a bend to move it, right-click a bend to take it out. Live values from the
  * running program show beside each output pin. Apply sends the drawing to the cabinet, which
  * compiles it; the first problem comes back in the top bar and outlines the block in red.
  */
@@ -46,6 +47,9 @@ public class PlcGraphScreen extends Screen {
     private boolean panning;
     private double lastMx, lastMy;
     private int linkFrom = -1, linkFromPin;
+    /** The wire bend being dragged: the link and the index into its bends, or null. */
+    private PlcGraph.Link dragLink;
+    private int dragBend;
     private int paletteScroll;
     private final List<Button> paletteButtons = new ArrayList<>();
     private boolean modified;
@@ -223,10 +227,70 @@ public class PlcGraphScreen extends Screen {
     // ---- drawing ----
 
     private static void wire(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
-        int mid = x2 >= x1 + 16 ? (x1 + x2) / 2 : x1 + 10;
+        int mid = wireMid(x1, x2);
         graphics.fill(Math.min(x1, mid), y1, Math.max(x1, mid) + 2, y1 + 2, color);
         graphics.fill(mid, Math.min(y1, y2), mid + 2, Math.max(y1, y2) + 2, color);
         graphics.fill(Math.min(mid, x2), y2, Math.max(mid, x2) + 2, y2 + 2, color);
+    }
+
+    private static int wireMid(int x1, int x2) {
+        return x2 >= x1 + 16 ? (x1 + x2) / 2 : x1 + 10;
+    }
+
+    /** The points a wire runs through, screen space: output pin, each bend, input pin. */
+    private int @Nullable [][] wirePoints(PlcGraph.Link link) {
+        var a = graph.node(link.from());
+        var b = graph.node(link.to());
+        if(a == null || b == null)
+            return null;
+        var pts = new int[link.bends.size() + 2][];
+        pts[0] = new int[] {sx(a) + nodeWidth(a), pinY(a, link.fromPin()) - 1};
+        for(int i = 0; i < link.bends.size(); ++i)
+            pts[i + 1] = new int[] {PALETTE_W + panX + link.bends.get(i)[0], TOP + panY + link.bends.get(i)[1]};
+        pts[pts.length - 1] = new int[] {sx(b), pinY(b, link.toPin()) - 1};
+        return pts;
+    }
+
+    private void wire(GuiGraphics graphics, PlcGraph.Link link, int color) {
+        var pts = wirePoints(link);
+        if(pts == null)
+            return;
+        for(int i = 0; i + 1 < pts.length; ++i)
+            wire(graphics, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], color);
+        for(int i = 1; i + 1 < pts.length; ++i)
+            graphics.fill(pts[i][0] - 2, pts[i][1] - 2, pts[i][0] + 4, pts[i][1] + 4, color);
+    }
+
+    private static boolean nearSegment(double mx, double my, int x1, int y1, int x2, int y2) {
+        return mx >= Math.min(x1, x2) - 3 && mx <= Math.max(x1, x2) + 4 && my >= Math.min(y1, y2) - 3 && my <= Math.max(y1, y2) + 4;
+    }
+
+    /** {link, bend index} of the bend under the mouse, or null. */
+    @Nullable
+    private Object[] bendAt(double mx, double my) {
+        for(var link : graph.links)
+            for(int i = 0; i < link.bends.size(); ++i) {
+                int x = PALETTE_W + panX + link.bends.get(i)[0], y = TOP + panY + link.bends.get(i)[1];
+                if(Math.abs(mx - x) <= 4 && Math.abs(my - y) <= 4)
+                    return new Object[] {link, i};
+            }
+        return null;
+    }
+
+    /** {link, index of the run under the mouse}: a new bend there goes in at that index. */
+    @Nullable
+    private Object[] wireAt(double mx, double my) {
+        for(var link : graph.links) {
+            var pts = wirePoints(link);
+            if(pts == null)
+                continue;
+            for(int i = 0; i + 1 < pts.length; ++i) {
+                int x1 = pts[i][0], y1 = pts[i][1], x2 = pts[i + 1][0], y2 = pts[i + 1][1], mid = wireMid(x1, x2);
+                if(nearSegment(mx, my, x1, y1, mid, y1) || nearSegment(mx, my, mid, y1, mid, y2) || nearSegment(mx, my, mid, y2, x2, y2))
+                    return new Object[] {link, i};
+            }
+        }
+        return null;
     }
 
     private int errorNode(ControlsCabinetBlockEntity cabinet) {
@@ -291,7 +355,7 @@ public class PlcGraphScreen extends Screen {
                 continue;
             var v = values.get(a.id);
             boolean on = v != null && link.fromPin() < v.length && v[link.fromPin()] != 0;
-            wire(graphics, sx(a) + nodeWidth(a), pinY(a, link.fromPin()) - 1, sx(b), pinY(b, link.toPin()) - 1, on ? WIRE_ON : WIRE_OFF);
+            wire(graphics, link, on ? WIRE_ON : WIRE_OFF);
         }
         if(linkFrom >= 0) {
             var a = graph.node(linkFrom);
@@ -425,6 +489,29 @@ public class PlcGraphScreen extends Screen {
             }
             return true;
         }
+        var bend = bendAt(mx, my);
+        if(bend != null) {
+            var link = (PlcGraph.Link) bend[0];
+            if(button == 1) {
+                link.bends.remove((int) bend[1]);
+                modified = true;
+            } else {
+                dragLink = link;
+                dragBend = (int) bend[1];
+            }
+            return true;
+        }
+        var run = wireAt(mx, my);
+        if(run != null && button == 0) {
+            var link = (PlcGraph.Link) run[0];
+            if(link.bends.size() < PlcGraph.Link.MAX_BENDS) {
+                link.bends.add((int) run[1], new int[] {(int) mx - PALETTE_W - panX, (int) my - TOP - panY});
+                dragLink = link;
+                dragBend = (int) run[1];
+                modified = true;
+            }
+            return true;
+        }
         if(button == 0)
             panning = true;
         selected = -1;
@@ -440,6 +527,13 @@ public class PlcGraphScreen extends Screen {
             if(node != null) {
                 node.x = (int) mx - PALETTE_W - panX - dragDx;
                 node.y = (int) my - TOP - panY - dragDy;
+                modified = true;
+            }
+            return true;
+        }
+        if(dragLink != null) {
+            if(dragBend < dragLink.bends.size()) {
+                dragLink.bends.set(dragBend, new int[] {(int) mx - PALETTE_W - panX, (int) my - TOP - panY});
                 modified = true;
             }
             return true;
@@ -465,8 +559,9 @@ public class PlcGraphScreen extends Screen {
             linkFrom = -1;
             return true;
         }
-        boolean was = dragNode >= 0 || panning;
+        boolean was = dragNode >= 0 || panning || dragLink != null;
         dragNode = -1;
+        dragLink = null;
         panning = false;
         return was || super.mouseReleased(mx, my, button);
     }

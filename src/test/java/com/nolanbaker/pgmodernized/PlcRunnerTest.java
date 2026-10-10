@@ -257,9 +257,14 @@ class PlcRunnerTest {
         lua.text = "Out[1] = In[1]\n";
         lua.nums[0] = 3;
         g.link(x.id, 0, lua.id, 2);
+        g.links.get(0).bends.add(new int[] {40, -12});
+        g.links.get(0).bends.add(new int[] {60, 30});
         var copy = PlcGraph.load(g.save());
         assertEquals(2, copy.nodes.size());
         assertEquals(1, copy.links.size());
+        assertEquals(2, copy.links.get(0).bends.size());
+        assertEquals(-12, copy.links.get(0).bends.get(0)[1]);
+        assertEquals(2, g.copy().links.get(0).bends.size());
         assertEquals(3, copy.node(lua.id).inputs());
         assertEquals(lua.text, copy.node(lua.id).text);
         assertEquals(g, copy);

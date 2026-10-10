@@ -56,7 +56,47 @@ public final class PlcGraph {
         }
     }
 
-    public record Link(int from, int fromPin, int to, int toPin) {}
+    /**
+     * A wire from an output pin to an input pin. Its bends are canvas points, in the same space as
+     * a block's x and y, that the wire is routed through in order so it can be steered around
+     * blocks; none means the straight run the editor draws by itself.
+     */
+    public static final class Link {
+        public static final int MAX_BENDS = 16;
+
+        private final int from, fromPin, to, toPin;
+        public final List<int[]> bends = new ArrayList<>();
+
+        public Link(int from, int fromPin, int to, int toPin) {
+            this.from = from;
+            this.fromPin = fromPin;
+            this.to = to;
+            this.toPin = toPin;
+        }
+
+        public int from() {
+            return from;
+        }
+
+        public int fromPin() {
+            return fromPin;
+        }
+
+        public int to() {
+            return to;
+        }
+
+        public int toPin() {
+            return toPin;
+        }
+
+        Link copy() {
+            var l = new Link(from, fromPin, to, toPin);
+            for(var b : bends)
+                l.bends.add(b.clone());
+            return l;
+        }
+    }
 
     public final List<Node> nodes = new ArrayList<>();
     public final List<Link> links = new ArrayList<>();
@@ -85,7 +125,7 @@ public final class PlcGraph {
 
     public void remove(int id) {
         nodes.removeIf(n -> n.id == id);
-        links.removeIf(l -> l.from == id || l.to == id);
+        links.removeIf(l -> l.from() == id || l.to() == id);
     }
 
     /** Wires an output to an input, replacing whatever fed that input. */
@@ -100,13 +140,13 @@ public final class PlcGraph {
     }
 
     public void unlinkInput(int to, int toPin) {
-        links.removeIf(l -> l.to == to && l.toPin == toPin);
+        links.removeIf(l -> l.to() == to && l.toPin() == toPin);
     }
 
     @Nullable
     public Link linkInto(int to, int toPin) {
         for(var l : links)
-            if(l.to == to && l.toPin == toPin)
+            if(l.to() == to && l.toPin() == toPin)
                 return l;
         return null;
     }
@@ -114,9 +154,9 @@ public final class PlcGraph {
     /** Drops wires to pins that no longer exist, after a block's pin count changed. */
     public void prune() {
         links.removeIf(l -> {
-            var a = node(l.from);
-            var b = node(l.to);
-            return a == null || b == null || l.fromPin >= a.outputs() || l.toPin >= b.inputs();
+            var a = node(l.from());
+            var b = node(l.to());
+            return a == null || b == null || l.fromPin() >= a.outputs() || l.toPin() >= b.inputs();
         });
     }
 
@@ -124,7 +164,8 @@ public final class PlcGraph {
         var g = new PlcGraph();
         for(var n : nodes)
             g.nodes.add(n.copy());
-        g.links.addAll(links);
+        for(var l : links)
+            g.links.add(l.copy());
         g.nextId = nextId;
         return g;
     }
@@ -152,8 +193,19 @@ public final class PlcGraph {
         }
         tag.put("Nodes", nodeList);
         var linkList = new ListTag();
-        for(var l : links)
-            linkList.add(new net.minecraft.nbt.IntArrayTag(new int[] {l.from, l.fromPin, l.to, l.toPin}));
+        for(var l : links) {
+            // Four ints for the pins, then an x, y pair per bend.
+            var a = new int[4 + 2 * l.bends.size()];
+            a[0] = l.from();
+            a[1] = l.fromPin();
+            a[2] = l.to();
+            a[3] = l.toPin();
+            for(int i = 0; i < l.bends.size(); ++i) {
+                a[4 + 2 * i] = l.bends.get(i)[0];
+                a[5 + 2 * i] = l.bends.get(i)[1];
+            }
+            linkList.add(new net.minecraft.nbt.IntArrayTag(a));
+        }
         tag.put("Links", linkList);
         tag.putInt("Next", nextId);
         return tag;
@@ -187,8 +239,11 @@ public final class PlcGraph {
         var linkList = tag.getList("Links", Tag.TAG_INT_ARRAY);
         for(int i = 0; i < linkList.size(); ++i) {
             var a = linkList.getIntArray(i);
-            if(a.length == 4)
-                g.link(a[0], a[1], a[2], a[3]);
+            if(a.length >= 4 && a.length % 2 == 0 && g.link(a[0], a[1], a[2], a[3])) {
+                var l = g.links.get(g.links.size() - 1);
+                for(int k = 4; k + 1 < a.length && l.bends.size() < Link.MAX_BENDS; k += 2)
+                    l.bends.add(new int[] {a[k], a[k + 1]});
+            }
         }
         int next = tag.getInt("Next");
         for(var n : g.nodes)
@@ -209,6 +264,9 @@ public final class PlcGraph {
             if(n.text.length() > MAX_TEXT)
                 n.text = n.text.substring(0, MAX_TEXT);
         }
+        for(var l : links)
+            while(l.bends.size() > Link.MAX_BENDS)
+                l.bends.remove(l.bends.size() - 1);
         prune();
     }
 

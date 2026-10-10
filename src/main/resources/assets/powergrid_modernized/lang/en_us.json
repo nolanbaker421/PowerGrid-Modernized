@@ -483,7 +483,7 @@
   "powergrid.gui.controls.plc_edit": "Edit",
   "powergrid.gui.controls.plc_delete": "Delete",
   "powergrid.gui.controls.plc_modified": "Unsaved changes: press Apply",
-  "powergrid.gui.controls.plc_canvas_hint": "Pick blocks on the left; drag an output pin onto an input; right-click a block to set it; Ctrl+wheel zooms",
+  "powergrid.gui.controls.plc_canvas_hint": "Pick blocks on the left; drag an output pin onto an input; drag a wire to bend it; right-click a block to set it; Ctrl+wheel zooms",
   "powergrid.gui.controls.plc_ok_btn": "OK",
   "powergrid.gui.controls.plc_block_name": "Name",
   "powergrid.gui.controls.plc_cancel": "Cancel",
