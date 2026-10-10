@@ -22,7 +22,6 @@ public class StationRenderer extends SafeBlockEntityRenderer<StationBlockEntity>
         if(!(state.getBlock() instanceof StationBlock))
             return;
         var facing = StationBlock.facing(state);
-        var consumer = buffer.getBuffer(RenderType.entitySolid(WHITE));
         var cabinet = be.cabinet();
         boolean powered = cabinet != null && cabinet.isPowered();
         ms.pushPose();
@@ -34,7 +33,7 @@ public class StationRenderer extends SafeBlockEntityRenderer<StationBlockEntity>
             if(device == null)
                 continue;
             var c = StationBlock.cellCenter(cell);
-            DeviceDraw.device(ms, buffer, consumer, light, device, be.deviceState(cell), be.colorOf(cell), powered, be.backlitState(cell), be.labelOf(cell), 4, c.x, c.y, StationBlock.FACE_Z);
+            DeviceDraw.device(ms, buffer, light, device, be.deviceState(cell), be.colorOf(cell), powered, be.backlitState(cell), be.labelOf(cell), 4, c.x, c.y, StationBlock.FACE_Z);
         }
         ms.popPose();
     }

@@ -28,7 +28,6 @@ public class ControlsCabinetRenderer extends SafeBlockEntityRenderer<ControlsCab
         if(!(state.getBlock() instanceof ControlsCabinetBlock))
             return;
         var facing = ControlsCabinetBlock.facing(state);
-        var consumer = buffer.getBuffer(RenderType.entitySolid(WHITE));
         ms.pushPose();
         ms.translate(0.5, 0.5, 0.5);
         ms.mulPose(Axis.YP.rotationDegrees(-(facing.toYRot() + 180)));
@@ -38,7 +37,7 @@ public class ControlsCabinetRenderer extends SafeBlockEntityRenderer<ControlsCab
             if(device == null)
                 continue;
             var c = ControlsCabinetBlock.cellCenter(cell % CELLS);
-            DeviceDraw.device(ms, buffer, consumer, light, device, be.deviceState(cell), be.colorOf(cell), be.isPowered(), be.backlitState(cell), be.labelOf(cell),
+            DeviceDraw.device(ms, buffer, light, device, be.deviceState(cell), be.colorOf(cell), be.isPowered(), be.backlitState(cell), be.labelOf(cell),
                     ControlsCabinetBlock.CELL_W, c.x, c.y - 16 * (cell / CELLS), DOOR);
         }
         ms.popPose();

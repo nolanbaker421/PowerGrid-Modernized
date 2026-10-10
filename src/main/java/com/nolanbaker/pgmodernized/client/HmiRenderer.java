@@ -37,7 +37,6 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
         if(!be.isOrigin())
             return;
         var facing = HmiBlock.facing(state);
-        var consumer = buffer.getBuffer(RenderType.entitySolid(WHITE));
         var font = Minecraft.getInstance().font;
         var layout = be.layout();
         // The screen spans this panel and those to the viewer's right (-x here) and above it.
@@ -65,19 +64,19 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
                 }
                 case INDICATOR -> {
                     double lamp = C * 0.6;
-                    box(ms, consumer, left - 0.35, midY - lamp / 2, FLAT_Z1, left - 0.35 - lamp, midY + lamp / 2, FLAT_Z2, on ? rgb : dim(rgb, 0.3));
+                    box(ms, buffer, left - 0.35, midY - lamp / 2, FLAT_Z1, left - 0.35 - lamp, midY + lamp / 2, FLAT_Z2, on ? rgb : dim(rgb, 0.3));
                     text(ms, buffer, font, w.text, left - 0.5 - lamp, midY, (left - right) - lamp - 0.8, w.h, 0xE0E0E0, Align.LEFT);
                 }
                 case BUTTON -> {
-                    box(ms, consumer, left - 0.25, bottom + 0.25, FLAT_Z1, right + 0.25, top - 0.25, on ? FLAT_Z2 : FLAT_Z2 - 0.04, on ? rgb : dim(rgb, 0.55));
+                    box(ms, buffer, left - 0.25, bottom + 0.25, FLAT_Z1, right + 0.25, top - 0.25, on ? FLAT_Z2 : FLAT_Z2 - 0.04, on ? rgb : dim(rgb, 0.55));
                     text(ms, buffer, font, w.text, (left + right) / 2, midY, (left - right) - 0.8, w.h, on ? 0x101010 : 0xF0F0F0, Align.CENTER);
                 }
                 case BAR -> {
-                    box(ms, consumer, left - 0.25, bottom + 0.25, FLAT_Z1, right + 0.25, top - 0.25, FLAT_Z1 + 0.03, 0x202428);
+                    box(ms, buffer, left - 0.25, bottom + 0.25, FLAT_Z1, right + 0.25, top - 0.25, FLAT_Z1 + 0.03, 0x202428);
                     double span = w.max - w.min;
                     double fraction = Float.isNaN(v) || span <= 0 ? 0 : Math.max(0, Math.min(1, (v - w.min) / span));
                     if(fraction > 0)
-                        box(ms, consumer, left - 0.35, bottom + 0.35, FLAT_Z1 + 0.03, left - 0.35 - ((left - right) - 0.7) * fraction, top - 0.35, FLAT_Z2, rgb);
+                        box(ms, buffer, left - 0.35, bottom + 0.35, FLAT_Z1 + 0.03, left - 0.35 - ((left - right) - 0.7) * fraction, top - 0.35, FLAT_Z2, rgb);
                     text(ms, buffer, font, w.text, left - 0.5, midY, (left - right) - 1, w.h, 0xF0F0F0, Align.LEFT);
                 }
                 case LINE -> {
@@ -85,16 +84,16 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
                     int colour = lit ? rgb : dim(rgb, 0.35);
                     double t = 0.35;
                     if(w.w >= w.h)
-                        box(ms, consumer, left, midY - t / 2, FLAT_Z1, right, midY + t / 2, FLAT_Z2, colour);
+                        box(ms, buffer, left, midY - t / 2, FLAT_Z1, right, midY + t / 2, FLAT_Z2, colour);
                     else
-                        box(ms, consumer, (left + right) / 2 - t / 2, bottom, FLAT_Z1, (left + right) / 2 + t / 2, top, FLAT_Z2, colour);
+                        box(ms, buffer, (left + right) / 2 - t / 2, bottom, FLAT_Z1, (left + right) / 2 + t / 2, top, FLAT_Z2, colour);
                 }
                 case BOX -> {
                     double t = 0.2;
-                    box(ms, consumer, left - 0.1, top - 0.1 - t, FLAT_Z1, right + 0.1, top - 0.1, FLAT_Z2, rgb);
-                    box(ms, consumer, left - 0.1, bottom + 0.1, FLAT_Z1, right + 0.1, bottom + 0.1 + t, FLAT_Z2, rgb);
-                    box(ms, consumer, left - 0.1, bottom + 0.1, FLAT_Z1, left - 0.1 - t, top - 0.1, FLAT_Z2, rgb);
-                    box(ms, consumer, right + 0.1 + t, bottom + 0.1, FLAT_Z1, right + 0.1, top - 0.1, FLAT_Z2, rgb);
+                    box(ms, buffer, left - 0.1, top - 0.1 - t, FLAT_Z1, right + 0.1, top - 0.1, FLAT_Z2, rgb);
+                    box(ms, buffer, left - 0.1, bottom + 0.1, FLAT_Z1, right + 0.1, bottom + 0.1 + t, FLAT_Z2, rgb);
+                    box(ms, buffer, left - 0.1, bottom + 0.1, FLAT_Z1, left - 0.1 - t, top - 0.1, FLAT_Z2, rgb);
+                    box(ms, buffer, right + 0.1 + t, bottom + 0.1, FLAT_Z1, right + 0.1, top - 0.1, FLAT_Z2, rgb);
                     text(ms, buffer, font, w.text, left - 0.5, top - C * 0.5, (left - right) - 1, 1, rgb, Align.LEFT);
                 }
                 case GAUGE -> {
@@ -108,7 +107,7 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
                         double angle = Math.PI - Math.PI * t;
                         // The viewer's left is +x, so min sits at +x and the arc runs over the top to -x at max.
                         double px = cx - radius * Math.cos(angle), py = cy + radius * Math.sin(angle);
-                        box(ms, consumer, px - dot, py - dot, FLAT_Z1, px + dot, py + dot, FLAT_Z2, w.bandColor(w.band(w.min + span * t)));
+                        box(ms, buffer, px - dot, py - dot, FLAT_Z1, px + dot, py + dot, FLAT_Z2, w.bandColor(w.band(w.min + span * t)));
                     }
                     if(!Float.isNaN(v) && span > 0) {
                         double t = Math.max(0, Math.min(1, (v - w.min) / span));
@@ -117,7 +116,7 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
                         for(int s = 0; s <= needle; ++s) {
                             double d = (radius - 0.3) * s / needle;
                             double px = cx - d * Math.cos(angle), py = cy + d * Math.sin(angle);
-                            box(ms, consumer, px - 0.08, py - 0.08, FLAT_Z2, px + 0.08, py + 0.08, FLAT_Z2 + 0.03, 0xF0F0F0);
+                            box(ms, buffer, px - 0.08, py - 0.08, FLAT_Z2, px + 0.08, py + 0.08, FLAT_Z2 + 0.03, 0xF0F0F0);
                         }
                     }
                     var shown = (w.text.isEmpty() ? "" : w.text + " ") + HmiLayout.format(v, w.decimals);
@@ -125,8 +124,8 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
                 }
                 case SETPOINT -> {
                     double key = Math.min(C * 0.9, (left - right) / 4);
-                    box(ms, consumer, left - 0.25, bottom + 0.25, FLAT_Z1, left - 0.25 - key, top - 0.25, FLAT_Z2, 0x383C42);
-                    box(ms, consumer, right + 0.25 + key, bottom + 0.25, FLAT_Z1, right + 0.25, top - 0.25, FLAT_Z2, 0x383C42);
+                    box(ms, buffer, left - 0.25, bottom + 0.25, FLAT_Z1, left - 0.25 - key, top - 0.25, FLAT_Z2, 0x383C42);
+                    box(ms, buffer, right + 0.25 + key, bottom + 0.25, FLAT_Z1, right + 0.25, top - 0.25, FLAT_Z2, 0x383C42);
                     text(ms, buffer, font, "-", left - 0.25 - key / 2, midY, key, w.h, 0xF0F0F0, Align.CENTER);
                     text(ms, buffer, font, "+", right + 0.25 + key / 2, midY, key, w.h, 0xF0F0F0, Align.CENTER);
                     var value = HmiLayout.format(v, w.decimals);
@@ -171,7 +170,8 @@ public class HmiRenderer extends SafeBlockEntityRenderer<HmiBlockEntity> {
     }
 
     /** A box in 16ths of the north frame, every face lit flat in one colour; corners may come in any order. */
-    private static void box(PoseStack ms, VertexConsumer c, double x1, double y1, double z1, double x2, double y2, double z2, int rgb) {
+    private static void box(PoseStack ms, MultiBufferSource buffer, double x1, double y1, double z1, double x2, double y2, double z2, int rgb) {
+        VertexConsumer c = buffer.getBuffer(RenderType.entitySolid(WHITE));
         float ax = (float) (Math.min(x1, x2) / 16), ay = (float) (Math.min(y1, y2) / 16), az = (float) (Math.min(z1, z2) / 16);
         float bx = (float) (Math.max(x1, x2) / 16), by = (float) (Math.max(y1, y2) / 16), bz = (float) (Math.max(z1, z2) / 16);
         var pose = ms.last();

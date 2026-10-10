@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'dev.architectury.loom' version '1.13+'
     id 'maven-publish'
+    id 'com.gradleup.shadow' version '8.3.6'
 }
 
 base.archivesName = project.archives_base_name
@@ -53,6 +54,12 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    // Bundled by relocation, not jar-in-jar: another mod ships its own LuaJ (TaCZ bundles the Figura
+    // fork as module luaj.jse.figura) and two modules exporting org.luaj.vm2 cannot both load.
+    shade
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings(loom.layered {
@@ -91,7 +98,7 @@ dependencies {
 
     // LuaJ, bundled: the controls cabinet's PLC runs Lua blocks on it
     implementation("org.luaj:luaj-jse:3.0.1")
-    include("org.luaj:luaj-jse:3.0.1")
+    shade("org.luaj:luaj-jse:3.0.1")
 
     // OpenComputers: Rebooted (optional at runtime)
     modCompileOnly("curse.maven:opencomputers-rebooted-1634364:${project.opencomputers_cursemaven_fileid}")
@@ -141,6 +148,20 @@ if(project.hasProperty("stockCompat")) {
 
 tasks.jar {
     from("LICENSE") { rename { "${it}_${project.archives_base_name}" } }
+}
+
+shadowJar {
+    configurations = [project.configurations.shade]
+    archiveClassifier = 'dev-shadow'
+    relocate 'org.luaj', 'com.nolanbaker.pgmodernized.shaded.luaj'
+    // LuaJ registers a javax.script engine by its original class name; nothing here uses it.
+    exclude 'META-INF/services/javax.script.ScriptEngineFactory'
+    from("LICENSE") { rename { "${it}_${project.archives_base_name}" } }
+}
+
+remapJar {
+    inputFile = shadowJar.archiveFile
+    dependsOn shadowJar
 }
 
 test {

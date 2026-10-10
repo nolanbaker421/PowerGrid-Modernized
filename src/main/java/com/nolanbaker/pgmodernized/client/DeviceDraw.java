@@ -29,7 +29,7 @@ public final class DeviceDraw {
      * @param backlit -1 for a device with no backlight wired, else 0 or 1 for the wired output's state
      * @param label   text drawn under the device, empty for none, clipped to {@code labelWidth} 16ths
      */
-    public static void device(PoseStack ms, MultiBufferSource buffer, VertexConsumer consumer, int light,
+    public static void device(PoseStack ms, MultiBufferSource buffer, int light,
                               PanelDevice device, int stateValue, int colorIndex, boolean powered, int backlit, String label, double labelWidth,
                               double x, double y, double door) {
         int rgb = ControlsCabinetBlockEntity.LED_COLORS[Math.floorMod(colorIndex, ControlsCabinetBlockEntity.LED_COLORS.length)];
@@ -39,61 +39,61 @@ public final class DeviceDraw {
             labelText(ms, buffer, label, x, y - 1.95, labelWidth, door);
         switch(device) {
             case E_STOP -> {
-                box(ms, consumer, light, x - 1.4, y - 1.4, door - 0.4, x + 1.4, y + 1.4, door, 0xE8D020);
+                box(ms, buffer, light, x - 1.4, y - 1.4, door - 0.4, x + 1.4, y + 1.4, door, 0xE8D020);
                 double head = stateValue != 0 ? door - 0.7 : door - 1.1;
-                box(ms, consumer, light, x - 0.9, y - 0.9, head, x + 0.9, y + 0.9, door - 0.4, 0xD02020);
+                box(ms, buffer, light, x - 0.9, y - 0.9, head, x + 0.9, y + 0.9, door - 0.4, 0xD02020);
             }
             case TOGGLE -> {
-                box(ms, consumer, light, x - 1.3, y - 1.3, door - 0.3, x + 1.3, y + 1.3, door, 0x303236);
+                box(ms, buffer, light, x - 1.3, y - 1.3, door - 0.3, x + 1.3, y + 1.3, door, 0x303236);
                 double off = stateValue != 0 ? 0.5 : -0.5;
-                box(ms, consumer, capLight, x - 0.8, y + off - 0.5, door - 0.7, x + 0.8, y + off + 0.5, door - 0.3, stateValue != 0 ? capColor : backlit == 1 ? capColor : 0x808488);
+                box(ms, buffer, capLight, x - 0.8, y + off - 0.5, door - 0.7, x + 0.8, y + off + 0.5, door - 0.3, stateValue != 0 ? capColor : backlit == 1 ? capColor : 0x808488);
             }
             case MOMENTARY -> {
-                box(ms, consumer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
+                box(ms, buffer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
                 double cap = stateValue != 0 ? door - 0.5 : door - 0.9;
-                box(ms, consumer, capLight, x - 0.8, y - 0.8, cap, x + 0.8, y + 0.8, door - 0.3, capColor);
+                box(ms, buffer, capLight, x - 0.8, y - 0.8, cap, x + 0.8, y + 0.8, door - 0.3, capColor);
             }
             case UP, DOWN -> {
-                box(ms, consumer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
+                box(ms, buffer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
                 double cap = stateValue != 0 ? door - 0.5 : door - 0.9;
-                box(ms, consumer, capLight, x - 0.8, y - 0.8, cap, x + 0.8, y + 0.8, door - 0.3, backlit < 0 ? 0x303236 : capColor);
+                box(ms, buffer, capLight, x - 0.8, y - 0.8, cap, x + 0.8, y + 0.8, door - 0.3, backlit < 0 ? 0x303236 : capColor);
                 // The arrow: a stem and a head, white, standing just off the cap.
                 double tip = device == PanelDevice.UP ? 1 : -1;
-                box(ms, consumer, light, x - 0.12, y - 0.45, cap - 0.08, x + 0.12, y + 0.45, cap, 0xF0F0F0);
-                box(ms, consumer, light, x - 0.5, y + tip * 0.2 - 0.12, cap - 0.08, x + 0.5, y + tip * 0.2 + 0.12, cap, 0xF0F0F0);
-                box(ms, consumer, light, x - 0.3, y + tip * 0.4 - 0.12, cap - 0.08, x + 0.3, y + tip * 0.4 + 0.12, cap, 0xF0F0F0);
+                box(ms, buffer, light, x - 0.12, y - 0.45, cap - 0.08, x + 0.12, y + 0.45, cap, 0xF0F0F0);
+                box(ms, buffer, light, x - 0.5, y + tip * 0.2 - 0.12, cap - 0.08, x + 0.5, y + tip * 0.2 + 0.12, cap, 0xF0F0F0);
+                box(ms, buffer, light, x - 0.3, y + tip * 0.4 - 0.12, cap - 0.08, x + 0.3, y + tip * 0.4 + 0.12, cap, 0xF0F0F0);
             }
             case BUZZER -> {
                 boolean on = stateValue != 0 && (System.currentTimeMillis() / 200) % 2 == 0;
-                box(ms, consumer, light, x - 1.3, y - 1.3, door - 0.5, x + 1.3, y + 1.3, door, 0x202224);
-                box(ms, consumer, light, x - 1.0, y - 1.0, door - 0.7, x + 1.0, y + 1.0, door - 0.5, 0x404448);
+                box(ms, buffer, light, x - 1.3, y - 1.3, door - 0.5, x + 1.3, y + 1.3, door, 0x202224);
+                box(ms, buffer, light, x - 1.0, y - 1.0, door - 0.7, x + 1.0, y + 1.0, door - 0.5, 0x404448);
                 for(int i = -1; i <= 1; ++i)
-                    box(ms, consumer, on ? LightTexture.FULL_BRIGHT : light, x - 0.7, y + i * 0.55 - 0.12, door - 0.8, x + 0.7, y + i * 0.55 + 0.12, door - 0.7, on ? 0xF08030 : 0x101214);
+                    box(ms, buffer, on ? LightTexture.FULL_BRIGHT : light, x - 0.7, y + i * 0.55 - 0.12, door - 0.8, x + 0.7, y + i * 0.55 + 0.12, door - 0.7, on ? 0xF08030 : 0x101214);
             }
             case SELECTOR -> {
-                box(ms, consumer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
-                box(ms, consumer, light, x - 0.9, y - 0.9, door - 0.6, x + 0.9, y + 0.9, door - 0.3, 0x404448);
+                box(ms, buffer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
+                box(ms, buffer, light, x - 0.9, y - 0.9, door - 0.6, x + 0.9, y + 0.9, door - 0.3, 0x404448);
                 double bar = (1 - stateValue) * 0.6;   // left position is the viewer's left, which is +x here
-                box(ms, consumer, light, x + bar - 0.25, y - 0.8, door - 0.9, x + bar + 0.25, y + 0.8, door - 0.6, 0xF0F0F0);
+                box(ms, buffer, light, x + bar - 0.25, y - 0.8, door - 0.9, x + bar + 0.25, y + 0.8, door - 0.6, 0xF0F0F0);
             }
             case LED -> {
                 boolean lit = stateValue != 0;
-                box(ms, consumer, light, x - 1.0, y - 1.0, door - 0.3, x + 1.0, y + 1.0, door, 0x202224);
-                box(ms, consumer, lit ? LightTexture.FULL_BRIGHT : light, x - 0.6, y - 0.6, door - 0.6, x + 0.6, y + 0.6, door - 0.3, lit ? rgb : dim(rgb));
+                box(ms, buffer, light, x - 1.0, y - 1.0, door - 0.3, x + 1.0, y + 1.0, door, 0x202224);
+                box(ms, buffer, lit ? LightTexture.FULL_BRIGHT : light, x - 0.6, y - 0.6, door - 0.6, x + 0.6, y + 0.6, door - 0.3, lit ? rgb : dim(rgb));
             }
             case DIAL -> {
-                box(ms, consumer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
-                box(ms, consumer, light, x - 0.9, y - 0.9, door - 0.7, x + 0.9, y + 0.9, door - 0.3, 0x404448);
+                box(ms, buffer, light, x - 1.2, y - 1.2, door - 0.3, x + 1.2, y + 1.2, door, 0x202224);
+                box(ms, buffer, light, x - 0.9, y - 0.9, door - 0.7, x + 0.9, y + 0.9, door - 0.3, 0x404448);
                 // The mark sweeps 270 degrees, from the viewer's lower left at 0 to lower right at 100.
                 float angle = 270 * stateValue / 100f - 135;   // +z rotation reads clockwise to the viewer, who looks along +z
                 ms.pushPose();
                 ms.translate(x / 16, y / 16, 0);
                 ms.mulPose(Axis.ZP.rotationDegrees(angle));
-                box(ms, consumer, light, -0.2, 0.25, door - 1.0, 0.2, 0.9, door - 0.7, 0xF0F0F0);
+                box(ms, buffer, light, -0.2, 0.25, door - 1.0, 0.2, 0.9, door - 0.7, 0xF0F0F0);
                 ms.popPose();
             }
             case DISPLAY -> {
-                box(ms, consumer, light, x - 1.45, y - 1.0, door - 0.3, x + 1.45, y + 1.0, door, 0x101214);
+                box(ms, buffer, light, x - 1.45, y - 1.0, door - 0.3, x + 1.45, y + 1.0, door, 0x101214);
                 if(powered)
                     digits(ms, buffer, x, y, stateValue, door);
             }
@@ -128,8 +128,15 @@ public final class DeviceDraw {
         ms.popPose();
     }
 
-    /** A box in 16ths of the north frame, every face lit flat in one colour. */
-    public static void box(PoseStack ms, VertexConsumer c, int light, double x1, double y1, double z1, double x2, double y2, double z2, int rgb) {
+    private static final net.minecraft.resources.ResourceLocation WHITE = net.minecraft.resources.ResourceLocation.withDefaultNamespace("textures/misc/white.png");
+
+    /**
+     * A box in 16ths of the north frame, every face lit flat in one colour. The buffer is fetched
+     * for every box: a text draw in between switches the immediate buffer source to another render
+     * type, and a consumer held across that is no longer building.
+     */
+    public static void box(PoseStack ms, MultiBufferSource buffer, int light, double x1, double y1, double z1, double x2, double y2, double z2, int rgb) {
+        VertexConsumer c = buffer.getBuffer(net.minecraft.client.renderer.RenderType.entitySolid(WHITE));
         float ax = (float) (x1 / 16), ay = (float) (y1 / 16), az = (float) (z1 / 16);
         float bx = (float) (x2 / 16), by = (float) (y2 / 16), bz = (float) (z2 / 16);
         var pose = ms.last();
