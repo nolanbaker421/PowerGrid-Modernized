@@ -234,7 +234,7 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         Lang.builder().translate("gui.ct_cabinet.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
         for(var line : readings())
             Lang.builder().add(line).forGoggles(tooltip, 1);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 

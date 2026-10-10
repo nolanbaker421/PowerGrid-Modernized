@@ -446,7 +446,7 @@ public class VfdBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
                 Lang.builder().translate("gui.vfd.braking", String.format("%.2f", brakeCurrent), String.format("%.0f", brakeCurrent * brakeCurrent * brakeResistance))
                         .style(ChatFormatting.YELLOW).forGoggles(tooltip, 1);
         }
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 

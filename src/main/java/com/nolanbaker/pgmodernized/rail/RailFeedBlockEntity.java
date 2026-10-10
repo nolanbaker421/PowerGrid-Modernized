@@ -116,7 +116,7 @@ public class RailFeedBlockEntity extends ElectricBlockEntity implements IDeviceS
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate("gui.rail_feed.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

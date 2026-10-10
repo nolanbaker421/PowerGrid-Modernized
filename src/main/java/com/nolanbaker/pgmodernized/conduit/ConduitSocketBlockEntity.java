@@ -163,7 +163,7 @@ public class ConduitSocketBlockEntity extends ElectricBlockEntity implements ISp
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate("gui.conduit_socket.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
-        splices().addGoggleLines(tooltip);
+        splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

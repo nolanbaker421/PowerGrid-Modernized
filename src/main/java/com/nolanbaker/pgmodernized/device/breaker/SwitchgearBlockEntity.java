@@ -453,7 +453,7 @@ public class SwitchgearBlockEntity extends ElectricBlockEntity implements IHaveG
                 line.text("  ").add(Lang.builder().translate("gui.breaker_panel.locked").style(ChatFormatting.RED));
         }
         line.forGoggles(tooltip, 1);
-        splices().addGoggleLines(tooltip);
+        splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 

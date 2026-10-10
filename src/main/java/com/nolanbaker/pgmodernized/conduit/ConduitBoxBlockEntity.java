@@ -165,7 +165,7 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate("gui.conduit_box.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
-        splices().addGoggleLines(tooltip);
+        splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

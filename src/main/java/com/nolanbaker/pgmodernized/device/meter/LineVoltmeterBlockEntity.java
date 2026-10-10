@@ -132,7 +132,7 @@ public class LineVoltmeterBlockEntity extends ElectricBlockEntity implements IHa
         Lang.builder().translate("gui.line_voltmeter.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
         String text = Math.abs(voltage) >= 1000 ? String.format("%.2f k", voltage / 1000) : String.format("%.2f ", voltage);
         Lang.builder().text(text).add(Unit.VOLTAGE.get()).style(ChatFormatting.GOLD).forGoggles(tooltip, 1);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

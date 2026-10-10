@@ -72,17 +72,21 @@ Conduit is laid like Power Grid block wire and is empty when placed. You pull re
 afterwards, so it works with any Power Grid wire, including wires from other addons, and each pulled
 wire keeps its own gauge (resistance and ampacity). Nine EMT trade sizes:
 
-| Conduit | Area (sq in) | Slots | Tube |
-| --- | --- | --- | --- |
-| 1/2" | 0.304 | 4 | 1.5 px |
-| 3/4" | 0.533 | 8 | 2 px |
-| 1" | 0.864 | 12 | 2.5 px |
-| 1-1/4" | 1.496 | 12 | 3 px |
-| 1-1/2" | 2.036 | 12 | 3.5 px |
-| 2" | 3.356 | 12 | 4 px |
-| 2-1/2" | 5.858 | 12 | 5 px |
-| 3" | 8.846 | 12 | 5.5 px |
-| 4" | 14.753 | 12 | 6.5 px |
+| Conduit | Band | Area (sq in) | Slots | Tube |
+| --- | --- | --- | --- | --- |
+| 1/2" | white | 0.304 | 4 | 1.5 px |
+| 3/4" | yellow | 0.533 | 8 | 2 px |
+| 1" | red | 0.864 | 12 | 2.5 px |
+| 1-1/4" | blue | 1.496 | 12 | 3 px |
+| 1-1/2" | green | 2.036 | 12 | 3.5 px |
+| 2" | orange | 3.356 | 12 | 4 px |
+| 2-1/2" | purple | 5.858 | 12 | 5 px |
+| 3" | brown | 8.846 | 12 | 5.5 px |
+| 4" | black | 14.753 | 12 | 6.5 px |
+
+Every size wears two bands of its colour per metre of tube, and the same band marks the item,
+so a run's size reads from across the room. Goggles on any fitting say the largest size its
+knockouts take, in that size's colour.
 
 ### Laying a run
 
@@ -170,7 +174,14 @@ Right-click the box with an empty hand to open the **splice editor**:
 A splice is a near-zero-ohm connection. A conductor spliced to two others makes a three-way group.
 Splices to a wire that is pulled out go away by themselves.
 
-Goggles on a box show each run and a splice count; open the editor to see the splices.
+Goggles on a box show how many runs land on it and a splice count; sneak to list every run with
+its size and fill. Open the editor to see the splices.
+
+**On a ceiling tile.** Right-click a Power Grid Ceiling Tile with a conduit box and the box sits
+on top of the tile, in the plenum above the ceiling, the way a tile takes a Wire Connector or a
+Cord Junction. It is the same box: twelve hubs, cover plates, the splice editor. Conduit runs
+across the tiles from box to box without a wall in sight. A wrench takes the box (and its
+plate) off and leaves the tile; breaking it drops both.
 
 ### Conduit Socket
 

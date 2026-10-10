@@ -84,7 +84,7 @@ public final class DeviceSpliceHost {
         splices.read(tag);
     }
 
-    public void addGoggleLines(List<Component> tooltip) {
-        splices.addGoggleLines(tooltip);
+    public void addGoggleLines(List<Component> tooltip, boolean detail) {
+        splices.addGoggleLines(tooltip, detail);
     }
 }

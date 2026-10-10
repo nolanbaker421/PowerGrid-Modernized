@@ -513,7 +513,7 @@ public class TransformerBlockEntity extends ElectricBlockEntity implements IHave
                     .forGoggles(tooltip, 1);
         }
         if(spec.size().hasHubs())
-            deviceHubs().addGoggleLines(tooltip);
+            deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

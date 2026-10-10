@@ -167,18 +167,30 @@ public final class SpliceSupport {
         return Component.literal("#" + terminal);
     }
 
-    public void addGoggleLines(List<Component> tooltip) {
+    /**
+     * The conduit on the knockouts and the splice count. Without {@code detail} the runs are one
+     * line, so a panel's overlay does not bury the panel; sneaking lists every run.
+     */
+    public void addGoggleLines(List<Component> tooltip, boolean detail) {
+        int runs = 0;
         for(int h = 0; h < host.hubCount(); ++h) {
             var run = host.hubRun(h);
             if(run == null)
                 continue;
+            ++runs;
+            if(!detail)
+                continue;
             var pulled = run.conductors();
             double used = ConduitFill.used(be.getLevel(), pulled);
             Lang.builder().add(host.hubName(h)).text(": ")
-                    .add(Lang.builder().translate("gui.conduit.pulled", run.size().label(), pulled.size(), run.size().conductors(),
+                    .add(run.size().coloredLabel()).text(" ")
+                    .add(Lang.builder().translate("gui.conduit.pulled_wires", pulled.size(), run.size().conductors(),
                             ConduitFill.percent(run.size(), used), ConduitFill.percentLimit(Math.max(1, pulled.size()))).style(ChatFormatting.WHITE))
                     .forGoggles(tooltip, 1);
         }
+        if(runs > 0 && !detail)
+            Lang.builder().translate("gui.conduit.runs", runs).style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.conduit.max_size").style(ChatFormatting.DARK_GRAY).text(" ").add(host.maxConduit().coloredLabel()).forGoggles(tooltip, 1);
         if(splices.isEmpty())
             Lang.builder().translate("gui.splice.none").style(ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
         else

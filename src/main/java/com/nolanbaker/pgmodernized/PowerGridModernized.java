@@ -93,6 +93,7 @@ public class PowerGridModernized {
         SableHooks.install();
         NeoForge.EVENT_BUS.register(WireGuard.class);
         NeoForge.EVENT_BUS.register(Inspections.class);
+        NeoForge.EVENT_BUS.register(com.nolanbaker.pgmodernized.conduit.CeilingTileHook.class);
         NeoForge.EVENT_BUS.register(VillageInjector.class);
         if(FMLEnvironment.dist.isClient()) {
             NeoForge.EVENT_BUS.register(Cat6Preview.class);

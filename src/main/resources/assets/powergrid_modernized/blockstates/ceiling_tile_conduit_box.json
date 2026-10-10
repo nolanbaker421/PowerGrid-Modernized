@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "cover=open": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_open"
+    },
+    "cover=blank": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_blank"
+    },
+    "cover=node": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_node"
+    }
+  }
+}

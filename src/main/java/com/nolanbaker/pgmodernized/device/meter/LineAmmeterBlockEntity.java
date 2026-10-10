@@ -143,7 +143,7 @@ public class LineAmmeterBlockEntity extends ElectricBlockEntity implements IHave
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate("gui.line_ammeter.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
         Lang.builder().text(String.format("%.3f ", current)).add(Unit.CURRENT.get()).style(ChatFormatting.GOLD).forGoggles(tooltip, 1);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

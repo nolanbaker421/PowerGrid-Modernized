@@ -9,6 +9,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
 
+import java.util.function.UnaryOperator;
+
 /**
  * The conduit box in its north frame, in pixels: an 8 x 8 x 3 box against the wall at z = 16 with
  * its cover facing north. A viewer at the front has +x on their left.
@@ -99,14 +101,19 @@ public final class ConduitBoxGeometry {
     }
 
     public static TerminalBoundingBox[] terminals() {
+        return terminals(UnaryOperator.identity());
+    }
+
+    /** The terminals with every box put through {@code frame}, for a box drawn in another frame than north. */
+    public static TerminalBoundingBox[] terminals(UnaryOperator<AABB> frame) {
         var terminals = new TerminalBoundingBox[TERMINAL_COUNT];
         for(int k = 0; k < FRONT_COUNT; ++k)
-            terminals[k] = terminal(ConductorColors.name(k), frontNub(k)).withColor(ConductorColors.rgb(k));
+            terminals[k] = terminal(ConductorColors.name(k), frame.apply(frontNub(k))).withColor(ConductorColors.rgb(k));
         for(int h = 0; h < HUB_COUNT; ++h) {
-            terminals[hubTerminal(h)] = terminal(hubName(h), HUBS[h]).withColor(0x2FB8D6);
+            terminals[hubTerminal(h)] = terminal(hubName(h), frame.apply(HUBS[h])).withColor(0x2FB8D6);
             for(int k = 0; k < ConductorColors.COUNT; ++k) {
                 var name = Lang.builder().add(hubName(h)).text(" ").add(ConductorColors.name(k)).component();
-                terminals[conductorTerminal(h, k)] = terminal(name, HIDDEN).withColor(ConductorColors.rgb(k));
+                terminals[conductorTerminal(h, k)] = terminal(name, frame.apply(HIDDEN)).withColor(ConductorColors.rgb(k));
             }
         }
         return terminals;
@@ -118,11 +125,15 @@ public final class ConduitBoxGeometry {
 
     /** @param nubs with the twelve cover terminals of a node plate */
     public static VoxelShape shape(boolean nubs) {
-        var shape = box(BODY);
+        return shape(nubs, UnaryOperator.identity());
+    }
+
+    public static VoxelShape shape(boolean nubs, UnaryOperator<AABB> frame) {
+        var shape = box(frame.apply(BODY));
         if(nubs) for(int k = 0; k < FRONT_COUNT; ++k)
-            shape = Shapes.or(shape, box(frontNub(k)));
+            shape = Shapes.or(shape, box(frame.apply(frontNub(k))));
         for(var hub : HUBS)
-            shape = Shapes.or(shape, box(hub));
+            shape = Shapes.or(shape, box(frame.apply(hub)));
         return shape;
     }
 

@@ -20,6 +20,7 @@ import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlock;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlock;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlock;
+import com.nolanbaker.pgmodernized.conduit.CeilingConduitBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitSocketBlock;
 import com.nolanbaker.pgmodernized.device.analogio.AnalogIOBlock;
@@ -424,6 +425,15 @@ public class ModBlocks {
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()
+            .register();
+
+    /** The box fitted on a Power Grid ceiling tile; no item, a tile takes the ordinary box. */
+    public static final BlockEntry<CeilingConduitBoxBlock> CEILING_TILE_CONDUIT_BOX = REGISTRATE.block("ceiling_tile_conduit_box", CeilingConduitBoxBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Ceiling Tile Conduit Box")
             .register();
 
     /** Ends one run in a cord socket; the equipment end of a run. */

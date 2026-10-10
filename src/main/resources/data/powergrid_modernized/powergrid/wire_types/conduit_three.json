@@ -7,7 +7,7 @@
   "maximumCurrent": 1.0,
   "maximumLength": 64.0,
   "resistancePerItem": 0.001,
-  "texture": "powergrid_modernized:textures/special/conduit.png",
+  "texture": "powergrid_modernized:textures/special/conduit_three.png",
   "thermalMass": 1.0,
   "verticalCoefficient": 1.0,
   "wireThickness": 0.28

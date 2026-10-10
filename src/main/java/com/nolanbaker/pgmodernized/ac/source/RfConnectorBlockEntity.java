@@ -309,7 +309,7 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
                 .style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.rf_connector.buffer", String.format("%,d", energy.getEnergyStored()), String.format("%,d", energy.getMaxEnergyStored()))
                 .style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
-        splices().addGoggleLines(tooltip);
+        splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

@@ -98,7 +98,7 @@ public class ModBlockEntities {
 
     public static final BlockEntityEntry<ConduitBoxBlockEntity> CONDUIT_BOX =
             REGISTRATE.blockEntity("conduit_box", ConduitBoxBlockEntity::new)
-                    .validBlock(ModBlocks.CONDUIT_BOX)
+                    .validBlocks(ModBlocks.CONDUIT_BOX, ModBlocks.CEILING_TILE_CONDUIT_BOX)
                     .register();
 
     public static final BlockEntityEntry<ConduitSocketBlockEntity> CONDUIT_SOCKET =

@@ -325,7 +325,7 @@ public class FeInverterBlockEntity extends ElectricBlockEntity implements IHaveG
         if(brownout)
             Lang.builder().translate("gui.fe_inverter.brownout", String.format("%,d", energy.getEnergyStored()), String.format("%,d", reserve()))
                     .style(ChatFormatting.RED).forGoggles(tooltip, 1);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

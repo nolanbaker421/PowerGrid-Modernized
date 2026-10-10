@@ -221,7 +221,7 @@ public class AnalogIOBlockEntity extends ElectricBlockEntity implements IHaveGog
         Lang.builder().translate("gui.analog_io.inputs").style(ChatFormatting.GRAY).forGoggles(tooltip);
         for(int i = 0; i < CHANNELS; ++i)
             channelLine(tooltip, i, inputs[i], ChatFormatting.DARK_GREEN);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 

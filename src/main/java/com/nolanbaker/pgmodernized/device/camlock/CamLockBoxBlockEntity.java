@@ -135,7 +135,7 @@ public class CamLockBoxBlockEntity extends ElectricBlockEntity implements IDevic
         }
         if(worst > rated)
             Lang.builder().translate("gui.cam_lock.overload", rated).style(ChatFormatting.RED).forGoggles(tooltip, 1);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

@@ -761,7 +761,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             if(!branches[i].isCovered())
                 goggleLine(tooltip, i);
         }
-        splices().addGoggleLines(tooltip);
+        splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 

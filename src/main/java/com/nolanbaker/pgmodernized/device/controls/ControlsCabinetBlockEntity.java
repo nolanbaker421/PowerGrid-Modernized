@@ -1778,7 +1778,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 Lang.builder().translate(vfdRun[slot] ? "gui.controls.vfd_running" : "gui.controls.vfd_stopped", slot + 1)
                         .style(vfdRun[slot] ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
         }
-        splices().addGoggleLines(tooltip);
+        splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

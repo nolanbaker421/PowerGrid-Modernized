@@ -12,18 +12,31 @@ import os
 
 from gen_breaker_panel_assets import ASSETS, DATA, MOD, canvas, dump, element, fill, shade, write_png
 
-# id suffix, conductors, tube thickness (blocks)
+# id suffix, conductors, tube thickness (blocks), band colour (mirrored in ConduitSize.java)
 SIZES = [
-    ("half", 4, 0.09),
-    ("three_quarter", 8, 0.125),
-    ("one", 12, 0.16),
-    ("one_quarter", 12, 0.17),
-    ("one_half", 12, 0.19),
-    ("two", 12, 0.22),
-    ("two_half", 12, 0.25),
-    ("three", 12, 0.28),
-    ("four", 12, 0.32),
+    ("half", 4, 0.09, 0xF2F2F2),
+    ("three_quarter", 8, 0.125, 0xE8C800),
+    ("one", 12, 0.16, 0xD03030),
+    ("one_quarter", 12, 0.17, 0x2F6FD6),
+    ("one_half", 12, 0.19, 0x3AA048),
+    ("two", 12, 0.22, 0xF08020),
+    ("two_half", 12, 0.25, 0x9050C0),
+    ("three", 12, 0.28, 0x7A4A24),
+    ("four", 12, 0.32, 0x202020),
 ]
+# The ceiling tile Power Grid draws, copied from its model so the box on a tile matches the tiles beside it.
+TILE_TEXTURE = "powergrid:block/ceiling_tile/ceiling_tile"
+TILE_ELEMENTS = [
+    {"from": [0, 0, 0], "to": [16, 2, 16], "faces": {
+        "north": {"uv": [8, 0, 16, 1], "texture": "#tile"}, "east": {"uv": [8, 1, 16, 2], "texture": "#tile"},
+        "south": {"uv": [8, 2, 16, 3], "texture": "#tile"}, "west": {"uv": [8, 3, 16, 4], "texture": "#tile"},
+        "up": {"uv": [8, 8, 0, 0], "texture": "#tile"}, "down": {"uv": [8, 8, 0, 16], "texture": "#tile"}}},
+    {"from": [1, 1, 1], "to": [15, 0, 15], "faces": {
+        "north": {"uv": [8, 0, 15, 0.5], "texture": "#tile"}, "east": {"uv": [8, 0, 15, 0.5], "texture": "#tile"},
+        "south": {"uv": [8, 0, 15, 0.5], "texture": "#tile"}, "west": {"uv": [8, 0, 15, 0.5], "texture": "#tile"},
+        "up": {"uv": [8.5, 8.5, 15.5, 15.5], "texture": "#tile"}, "down": {"uv": [8.5, 8.5, 15.5, 15.5], "texture": "#tile"}}},
+]
+TILE_LIFT = 2
 COLORS = [0x1a1a1a, 0xc62828, 0x1e5bc6, 0xf0f0f0, 0x2e8b3a, 0xf07f1a,
           0x6b3f1f, 0xe8c800, 0x8a8a8a, 0x7b3fa0, 0xf08fb0, 0xc9a97a]
 
@@ -68,8 +81,17 @@ def textures():
     write_png(os.path.join(ASSETS, "textures", "special", "conduit.png"), tube)
 
     item = os.path.join(ASSETS, "textures", "item")
-    for i, (sid, _conductors, _thickness) in enumerate(SIZES):
-        # Conduit item: a straight stick of tube, thicker for bigger sizes, with a coupling.
+    for i, (sid, _conductors, _thickness, band) in enumerate(SIZES):
+        # Each size's tube: the plain tube with two bands of the size's colour every metre.
+        sized = canvas(16, 16, steel + (255,))
+        for y in range(0, 16, 4):
+            fill(sized, 0, y, 16, y + 1, shade(steel, 1.1))
+            fill(sized, 0, y + 2, 16, y + 3, shade(steel, 0.88))
+        for y in (2, 10):
+            fill(sized, 0, y, 16, y + 2, rgb(band))
+            fill(sized, 0, y, 16, y + 1, shade(rgb(band), 1.12))
+        write_png(os.path.join(ASSETS, "textures", "special", "conduit_%s.png" % sid), sized)
+        # Conduit item: a straight stick of tube, thicker for bigger sizes, with a band at the coupling.
         img = canvas(16, 16)
         t = min(2 + i, 9)
         y0 = 8 - t // 2
@@ -77,7 +99,9 @@ def textures():
             fill(img, x, y0, x + 1, y0 + t, steel)
             fill(img, x, y0, x + 1, y0 + 1, shade(steel, 1.25))
             fill(img, x, y0 + t - 1, x + 1, y0 + t, shade(steel, 0.7))
-        fill(img, 7, y0 - 1, 9, y0 + t + 1, shade(steel, 0.8))
+        fill(img, 6, y0 - 1, 10, y0 + t + 1, rgb(band))
+        fill(img, 6, y0 - 1, 10, y0, shade(rgb(band), 1.15))
+        fill(img, 6, y0 + t, 10, y0 + t + 1, shade(rgb(band), 0.7))
         write_png(os.path.join(item, "conduit_%s.png" % sid), img)
 
 
@@ -101,6 +125,7 @@ def box_model():
                 elements.append(element(x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2, "#terminal"))
         dump(os.path.join(ASSETS, "models", "block", "conduit_box_%s.json" % cover), {"parent": "block/block", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "models", "item", "conduit_box.json"), {"parent": "%s:block/conduit_box_open" % MOD})
+    ceiling_box_models()
     variants = {}
     for key, rot in DIRECTIONAL.items():
         for cover in ("open", "blank", "node"):
@@ -145,6 +170,49 @@ ROTATION4 = {k: ("v" if v["model"] == "v" else "h", {a: v[a] for a in ("x", "y")
 def to_h(box):
     x1, y1, z1, x2, y2, z2 = box
     return (16 - y2, x1, z1, 16 - y1, x2, z2)
+
+
+def on_tile(box):
+    """North frame to the tile frame, as CeilingConduitBoxBlock.ON_TILE: the back wall becomes the tile's top."""
+    x1, y1, z1, x2, y2, z2 = box
+    return (x1, 16 + TILE_LIFT - z2, y1, x2, 16 + TILE_LIFT - z1, y2)
+
+
+def ceiling_box_models():
+    """The box on a ceiling tile: the tile, then the box in the tile frame, one model per cover."""
+    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD,
+           "open": "%s:block/conduit_box_open" % MOD, "tile": TILE_TEXTURE, "particle": "%s:block/conduit_box" % MOD}
+    for cover in ("open", "blank", "node"):
+        elements = [dict(e) for e in TILE_ELEMENTS]
+        if cover == "open":
+            x1, y1, z1, x2, y2, z2 = BODY
+            body = element(*on_tile((x1, y1, z1 + 0.5, x2, y2, z2)), "#box")
+            body["faces"]["up"]["texture"] = "#open"
+        else:
+            body = element(*on_tile(BODY), "#box")
+        elements.append(body)
+        for hub in HUBS:
+            elements.append(element(*on_tile(hub), "#terminal"))
+        if cover == "node":
+            for k in range(12):
+                x = 16 - COLUMNS_U[k % 4]
+                y = ROWS_Y[k // 4]
+                elements.append(element(*on_tile((x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2)), "#terminal"))
+        dump(os.path.join(ASSETS, "models", "block", "ceiling_tile_conduit_box_%s.json" % cover),
+             {"parent": "block/block", "textures": tex, "elements": elements})
+    dump(os.path.join(ASSETS, "blockstates", "ceiling_tile_conduit_box.json"),
+         {"variants": {"cover=%s" % cover: {"model": "%s:block/ceiling_tile_conduit_box_%s" % (MOD, cover)} for cover in ("open", "blank", "node")}})
+    # Breaking it drops the tile and the box.
+    dump(os.path.join(DATA, "loot_table", "blocks", "ceiling_tile_conduit_box.json"), {
+        "type": "minecraft:block",
+        "pools": [{
+            "bonus_rolls": 0.0,
+            "conditions": [{"condition": "minecraft:survives_explosion"}],
+            "entries": [{"type": "minecraft:item", "name": "powergrid:ceiling_tile"}, {"type": "minecraft:item", "name": "%s:conduit_box" % MOD}],
+            "rolls": 1.0,
+        }],
+        "random_sequence": "%s:blocks/ceiling_tile_conduit_box" % MOD,
+    })
 
 
 def socket_model():
@@ -318,11 +386,11 @@ def recipes():
 
 
 def wire_types():
-    for sid, _conductors, thickness in SIZES:
+    for sid, _conductors, thickness, _band in SIZES:
         dump(os.path.join(DATA, "powergrid", "wire_types", "conduit_%s.json" % sid), {
             "colorable": True, "cord": False, "horizontalCoefficient": 1.0, "insulated": True,
             "itemsPerMeter": 1.0, "maximumCurrent": 1.0, "maximumLength": 64.0,
-            "resistancePerItem": 0.001, "texture": "%s:textures/special/conduit.png" % MOD,
+            "resistancePerItem": 0.001, "texture": "%s:textures/special/conduit_%s.png" % (MOD, sid),
             "thermalMass": 1.0, "verticalCoefficient": 1.0, "wireThickness": thickness,
         })
 

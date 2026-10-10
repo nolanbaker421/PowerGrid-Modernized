@@ -375,7 +375,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
                 .style(excitation >= 0.95f ? ChatFormatting.GREEN : excitation >= MIN_EXCITATION ? ChatFormatting.GOLD : ChatFormatting.RED).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.three_phase_motor.carrying", String.format("%.0f", carriedStress), String.format("%.0f", demandWatts))
                 .style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 

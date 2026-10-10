@@ -422,7 +422,7 @@ public class ThreePhaseDriveBlockEntity extends ElectricBlockEntity implements I
         Lang.builder().translate("gui.three_phase_drive.input").style(ChatFormatting.GRAY).forGoggles(tooltip);
         Lang.builder().text(String.format("%.1f ", inputVolts)).add(Unit.VOLTAGE.get()).text(String.format("  %.2f ", inputAmps)).add(Unit.CURRENT.get())
                 .text(String.format("  %.0f ", power)).add(Unit.POWER.get()).style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

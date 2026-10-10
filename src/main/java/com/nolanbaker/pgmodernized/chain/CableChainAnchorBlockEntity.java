@@ -164,7 +164,7 @@ public class CableChainAnchorBlockEntity extends ElectricBlockEntity implements 
             Lang.builder().translate("gui.cable_chain.free").style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
         else
             Lang.builder().translate("gui.cable_chain.chained", String.format("%.0f", chain.travelLimit())).style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

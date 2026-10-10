@@ -341,7 +341,7 @@ public class RailCollectorBlockEntity extends ElectricBlockEntity implements IDe
             Lang.builder().translate("gui.rail_collector.off_rail").style(ChatFormatting.RED).forGoggles(tooltip, 1);
         else
             Lang.builder().translate("gui.rail_collector.on_rail", feed.getX(), feed.getY(), feed.getZ()).style(ChatFormatting.GREEN).forGoggles(tooltip, 1);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

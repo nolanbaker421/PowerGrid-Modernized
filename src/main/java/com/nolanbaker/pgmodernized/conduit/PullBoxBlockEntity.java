@@ -211,7 +211,7 @@ public class PullBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate(hasLugs() ? "gui.terminal_cabinet.title" : "gui.pull_box.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
-        splices().addGoggleLines(tooltip);
+        splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }

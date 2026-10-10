@@ -214,7 +214,7 @@ public class LoadBankBlockEntity extends ElectricBlockEntity implements IHaveGog
             Lang.builder().translate("gui.load_bank.typed").style(ChatFormatting.GOLD).forGoggles(tooltip, 1);
         Lang.builder().translate("gui.load_bank.drawing", String.format("%.1f", watts / 1000), String.format("%.0f", volts), String.format("%.1f", amps))
                 .style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
-        deviceHubs().addGoggleLines(tooltip);
+        deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
 }
