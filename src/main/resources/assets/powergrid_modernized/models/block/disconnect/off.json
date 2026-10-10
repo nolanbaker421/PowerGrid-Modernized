@@ -1,13 +1,13 @@
 {
   "parent": "block/block",
   "textures": {
-    "body": "powergrid_modernized:block/safety_switch",
-    "front": "powergrid_modernized:block/safety_switch_front",
-    "handle": "powergrid_modernized:block/safety_switch_handle",
-    "lock": "powergrid_modernized:block/safety_switch_lock",
+    "body": "powergrid_modernized:block/disconnect",
+    "front": "powergrid_modernized:block/disconnect_front",
+    "handle": "powergrid_modernized:block/disconnect_handle",
+    "lock": "powergrid_modernized:block/disconnect_lock",
     "terminal": "powergrid_modernized:block/panel_terminal",
     "knockout": "powergrid_modernized:block/knockout_two",
-    "particle": "powergrid_modernized:block/safety_switch"
+    "particle": "powergrid_modernized:block/disconnect"
   },
   "elements": [
     {
@@ -830,48 +830,48 @@
     {
       "from": [
         1.5,
-        8,
+        4,
         12
       ],
       "to": [
         3,
-        13,
+        9,
         13.5
       ],
       "faces": {
         "north": {
           "uv": [
             13,
-            3,
+            7,
             14.5,
-            8
+            12
           ],
           "texture": "#handle"
         },
         "south": {
           "uv": [
             1.5,
+            7,
             3,
-            3,
-            8
+            12
           ],
           "texture": "#handle"
         },
         "east": {
           "uv": [
             2.5,
-            3,
+            7,
             4,
-            8
+            12
           ],
           "texture": "#handle"
         },
         "west": {
           "uv": [
             12,
-            3,
+            7,
             13.5,
-            8
+            12
           ],
           "texture": "#handle"
         },

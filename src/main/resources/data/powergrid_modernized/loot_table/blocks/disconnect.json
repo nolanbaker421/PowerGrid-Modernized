@@ -11,11 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "powergrid_modernized:safety_switch"
+          "name": "powergrid_modernized:disconnect"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "powergrid_modernized:blocks/safety_switch"
+  "random_sequence": "powergrid_modernized:blocks/disconnect"
 }

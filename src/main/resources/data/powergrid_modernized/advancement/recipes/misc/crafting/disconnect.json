@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "powergrid_modernized:crafting/safety_switch"
+        "recipe": "powergrid_modernized:crafting/disconnect"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "powergrid_modernized:crafting/safety_switch"
+      "powergrid_modernized:crafting/disconnect"
     ]
   }
 }

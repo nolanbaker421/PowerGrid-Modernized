@@ -121,9 +121,9 @@ public class ModBlockEntities {
                     .validBlock(ModBlocks.CONDUIT_SWITCH)
                     .register();
 
-    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.conduit.SafetySwitchBlockEntity> SAFETY_SWITCH =
-            REGISTRATE.blockEntity("safety_switch", com.nolanbaker.pgmodernized.conduit.SafetySwitchBlockEntity::new)
-                    .validBlock(ModBlocks.SAFETY_SWITCH)
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.conduit.DisconnectBlockEntity> DISCONNECT =
+            REGISTRATE.blockEntity("disconnect", com.nolanbaker.pgmodernized.conduit.DisconnectBlockEntity::new)
+                    .validBlock(ModBlocks.DISCONNECT)
                     .register();
 
     public static final BlockEntityEntry<ControlsExtensionBlockEntity> CONTROLS_EXTENSION =

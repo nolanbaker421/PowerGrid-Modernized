@@ -27,16 +27,17 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.nolanbaker.pgmodernized.conduit.SafetySwitchBlock.*;
+import static com.nolanbaker.pgmodernized.conduit.DisconnectBlock.*;
 
 /** Three contacts thrown together by one handle, four knockouts spliced to the lugs in the editor. */
-public class SafetySwitchBlockEntity extends ElectricBlockEntity implements ISpliceHost, IHaveGoggleInformation {
+public class DisconnectBlockEntity extends ElectricBlockEntity implements ISpliceHost, IHaveGoggleInformation {
     private SpliceSupport splices;
     private List<SplicePoint> points;
-    private final SwitchedWire[] contacts = new SwitchedWire[POLES];
+    /** Made in buildCircuit, which Power Grid calls from the super constructor before field initialisers run. */
+    private SwitchedWire[] contacts;
     private boolean on, locked;
 
-    public SafetySwitchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    public DisconnectBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         setLazyTickRate(20);
     }
@@ -52,6 +53,7 @@ public class SafetySwitchBlockEntity extends ElectricBlockEntity implements ISpl
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(TERMINAL_COUNT);
         splices().buildCircuit(builder);
+        contacts = new SwitchedWire[POLES];
         for(int k = 0; k < POLES; ++k)
             contacts[k] = builder.connectSwitch(resistance("contact"), builder.terminalNode(LINE_BASE + k), builder.terminalNode(LOAD_BASE + k), on);
     }
@@ -59,6 +61,14 @@ public class SafetySwitchBlockEntity extends ElectricBlockEntity implements ISpl
     @Override
     public boolean isNoisy() {
         return false;
+    }
+
+    private void setContacts() {
+        if(contacts == null)
+            return;
+        for(var contact : contacts)
+            if(contact != null)
+                contact.setState(on);
     }
 
     public boolean isOn() {
@@ -77,7 +87,7 @@ public class SafetySwitchBlockEntity extends ElectricBlockEntity implements ISpl
         if(level == null)
             return;
         var state = getBlockState();
-        if(state.getBlock() instanceof SafetySwitchBlock)
+        if(state.getBlock() instanceof DisconnectBlock)
             level.setBlock(worldPosition, state.setValue(ON, on).setValue(LOCKED, locked), Block.UPDATE_ALL);
         setChanged();
         sendData();
@@ -86,13 +96,11 @@ public class SafetySwitchBlockEntity extends ElectricBlockEntity implements ISpl
     /** Server side: throws the handle unless it is locked out. */
     public void toggle(Player player) {
         if(locked) {
-            message(player, Lang.builder().translate("message.safety_switch.locked").style(ChatFormatting.RED).component());
+            message(player, Lang.builder().translate("message.disconnect.locked").style(ChatFormatting.RED).component());
             return;
         }
         on = !on;
-        for(var contact : contacts)
-            if(contact != null)
-                contact.setState(on);
+        setContacts();
         if(level != null)
             level.playSound(null, worldPosition, on ? SoundEvents.IRON_TRAPDOOR_CLOSE : SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.BLOCKS, 0.8f, on ? 0.7f : 0.6f);
         syncState();
@@ -101,11 +109,11 @@ public class SafetySwitchBlockEntity extends ElectricBlockEntity implements ISpl
     /** A lockout hasp goes on an open switch only; the item is used up until the lock comes off. */
     public boolean lock(Player player, ItemStack stack) {
         if(locked) {
-            message(player, Lang.builder().translate("message.safety_switch.already_locked").style(ChatFormatting.RED).component());
+            message(player, Lang.builder().translate("message.disconnect.already_locked").style(ChatFormatting.RED).component());
             return false;
         }
         if(on) {
-            message(player, Lang.builder().translate("message.safety_switch.lock_open").style(ChatFormatting.RED).component());
+            message(player, Lang.builder().translate("message.disconnect.lock_open").style(ChatFormatting.RED).component());
             return false;
         }
         if(level == null || level.isClientSide)
@@ -114,7 +122,7 @@ public class SafetySwitchBlockEntity extends ElectricBlockEntity implements ISpl
         if(!player.isCreative())
             stack.shrink(1);
         level.playSound(null, worldPosition, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 0.6f, 1.0f);
-        message(player, Lang.builder().translate("message.safety_switch.locked_on").style(ChatFormatting.GRAY).component());
+        message(player, Lang.builder().translate("message.disconnect.locked_on").style(ChatFormatting.GRAY).component());
         syncState();
         return true;
     }
@@ -128,7 +136,7 @@ public class SafetySwitchBlockEntity extends ElectricBlockEntity implements ISpl
         if(!player.isCreative() && !player.getInventory().add(hasp))
             Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, hasp);
         level.playSound(null, worldPosition, SoundEvents.CHAIN_BREAK, SoundSource.BLOCKS, 0.6f, 1.0f);
-        message(player, Lang.builder().translate("message.safety_switch.unlocked").style(ChatFormatting.GRAY).component());
+        message(player, Lang.builder().translate("message.disconnect.unlocked").style(ChatFormatting.GRAY).component());
         syncState();
     }
 
@@ -171,7 +179,7 @@ public class SafetySwitchBlockEntity extends ElectricBlockEntity implements ISpl
 
     @Override
     public Component hubName(int hub) {
-        return SafetySwitchBlock.hubName(hub);
+        return DisconnectBlock.hubName(hub);
     }
 
     @Override
@@ -228,17 +236,15 @@ public class SafetySwitchBlockEntity extends ElectricBlockEntity implements ISpl
         splices().read(tag);
         on = tag.getBoolean("On");
         locked = tag.getBoolean("Locked");
-        for(var contact : contacts)
-            if(contact != null)
-                contact.setState(on);
+        setContacts();
     }
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        Lang.builder().translate("gui.safety_switch.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
-        Lang.builder().translate(on ? "gui.safety_switch.on" : "gui.safety_switch.off").style(on ? ChatFormatting.GREEN : ChatFormatting.RED).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.disconnect.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
+        Lang.builder().translate(on ? "gui.disconnect.on" : "gui.disconnect.off").style(on ? ChatFormatting.GREEN : ChatFormatting.RED).forGoggles(tooltip, 1);
         if(locked)
-            Lang.builder().translate("gui.safety_switch.locked").style(ChatFormatting.RED).forGoggles(tooltip, 1);
+            Lang.builder().translate("gui.disconnect.locked").style(ChatFormatting.RED).forGoggles(tooltip, 1);
         splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }

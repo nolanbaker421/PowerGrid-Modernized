@@ -87,7 +87,7 @@ wire keeps its own gauge (resistance and ampacity). Nine EMT trade sizes:
 The tube itself is plain steel in every size. The **knockouts** are painted: each fitting's
 knockouts wear the colour of the largest size they take, so a 4" run is never offered to a
 green knockout. Red is 1" (socket, switch, controls cabinet), green 1-1/2" (conduit box and most
-devices), orange 2" (breaker panel, safety switch), black 4" (switchgear, pull box, cam-lock box,
+devices), orange 2" (breaker panel, disconnect), black 4" (switchgear, pull box, cam-lock box,
 rail and chain boxes, load bank, FE inverter). Goggles say the same in words.
 
 ### Laying a run
@@ -224,7 +224,7 @@ and sneak-clicking it opens the splice editor for both runs: put the switch in t
 neutral straight through. Place and wrench it like the socket. It is a plain contact between the two wires, so put it in
 the hot conductor of a lighting circuit and give the light its own conduit run back to a box.
 
-### Safety Switch
+### Disconnect
 
 The heavy-duty disconnect: a grey wall box, 10 x 14 pixels, with a red handle on its right
 side. Three poles, each a contact between a **Line** lug on the top edge and a **Load** lug on
@@ -734,7 +734,7 @@ adapter placed next to them:
 | Node Cover Plate | a blank cover plate and pins, shapeless |
 | Pull Box | ring of eight iron plates |
 | Conduit Switch (2) | iron nugget, lever, iron nugget over an iron nugget |
-| Safety Switch | iron plates around a lever, a copper ingot below it |
+| Disconnect | iron plates around a lever, a copper ingot below it |
 | Conduit Socket (2) | iron nugget, copper nugget, iron nugget over an iron nugget |
 | Breaker Panel 200 A | iron plates and copper plates around a conductive casing, heavy wire connector at the bottom |
 | Breaker Panel 400 A / 800 A | the smaller panel surrounded by copper and brass plates / brass and iron |

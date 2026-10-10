@@ -34,16 +34,16 @@ import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.utility.Lang;
 
 /**
- * A heavy-duty safety switch: the grey wall box with the red handle on its right that isolates a
+ * A heavy-duty disconnect: the grey wall box with the red handle on its right that isolates a
  * load. Three poles, each a contact between a Line lug on the top edge and a Load lug on the bottom
  * edge; the handle throws all three. Wire reaches it either as conduit on the two knockouts top
  * and bottom (spliced to the lugs in the editor, like a panel) or hung straight on the lugs. A
  * breaker lockout on an open switch freezes the handle until it is taken off again.
  * <p>
  * North frame, pixels, the back against the wall at z = 16: a viewer at the front has +x on their
- * left, so the handle at x = 1.5..3 is on their right. Mirrored by {@code tools/gen_safety_switch_assets.py}.
+ * left, so the handle at x = 1.5..3 is on their right. Mirrored by {@code tools/gen_disconnect_assets.py}.
  */
-public class SafetySwitchBlock extends HorizontalElectricBlock implements IBE<SafetySwitchBlockEntity> {
+public class DisconnectBlock extends HorizontalElectricBlock implements IBE<DisconnectBlockEntity> {
     public static final BooleanProperty ON = BooleanProperty.create("on");
     public static final BooleanProperty LOCKED = BooleanProperty.create("locked");
 
@@ -62,7 +62,7 @@ public class SafetySwitchBlock extends HorizontalElectricBlock implements IBE<Sa
     };
     private static final double[] LUG_X = {5.5, 8, 10.5};
 
-    public SafetySwitchBlock(Properties properties) {
+    public DisconnectBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState().setValue(ON, false).setValue(LOCKED, false));
         var shape = Shapes.or(box(BODY), box(HANDLE_SWEEP));
@@ -82,15 +82,15 @@ public class SafetySwitchBlock extends HorizontalElectricBlock implements IBE<Sa
     }
 
     public static Component lineName(int k) {
-        return Lang.builder().translate("safety_switch.line", k + 1).style(ChatFormatting.RED).component();
+        return Lang.builder().translate("disconnect.line", k + 1).style(ChatFormatting.RED).component();
     }
 
     public static Component loadName(int k) {
-        return Lang.builder().translate("safety_switch.load", k + 1).style(ChatFormatting.BLUE).component();
+        return Lang.builder().translate("disconnect.load", k + 1).style(ChatFormatting.BLUE).component();
     }
 
     public static Component hubName(int hub) {
-        return Lang.builder().translate(hub < 2 ? "safety_switch.hub.top" : "safety_switch.hub.bottom", hub % 2 + 1).style(ChatFormatting.AQUA).component();
+        return Lang.builder().translate(hub < 2 ? "disconnect.hub.top" : "disconnect.hub.bottom", hub % 2 + 1).style(ChatFormatting.AQUA).component();
     }
 
     private static TerminalBoundingBox[] terminals() {
@@ -199,12 +199,12 @@ public class SafetySwitchBlock extends HorizontalElectricBlock implements IBE<Sa
     }
 
     @Override
-    public Class<SafetySwitchBlockEntity> getBlockEntityClass() {
-        return SafetySwitchBlockEntity.class;
+    public Class<DisconnectBlockEntity> getBlockEntityClass() {
+        return DisconnectBlockEntity.class;
     }
 
     @Override
-    public BlockEntityType<? extends SafetySwitchBlockEntity> getBlockEntityType() {
-        return ModBlockEntities.SAFETY_SWITCH.get();
+    public BlockEntityType<? extends DisconnectBlockEntity> getBlockEntityType() {
+        return ModBlockEntities.DISCONNECT.get();
     }
 }

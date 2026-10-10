@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Generates the safety switch (disconnect) resources: textures, block and item models, blockstate,
+"""Generates the disconnect (disconnect) resources: textures, block and item models, blockstate,
 loot table and recipe.
 
-Run from the repository root:  python tools/gen_safety_switch_assets.py
+Run from the repository root:  python tools/gen_disconnect_assets.py
 
-Geometry mirrors SafetySwitchBlock.java; change both. North frame: the box is against the wall at
+Geometry mirrors DisconnectBlock.java; change both. North frame: the box is against the wall at
 z = 16 with the door facing north; a viewer at the front has +x on their left, so the handle at
 x = 1.5..3 is on their right.
 """
@@ -29,7 +29,7 @@ def textures():
     fill(body, 0, 15, 16, 16, shade(grey, 0.62))
     fill(body, 0, 0, 1, 16, shade(grey, 0.85))
     fill(body, 15, 0, 16, 16, shade(grey, 0.7))
-    write_png(os.path.join(BLOCK_TEX, "safety_switch.png"), body)
+    write_png(os.path.join(BLOCK_TEX, "disconnect.png"), body)
 
     # The door, drawn where the front face samples it: block x 3..13 maps to u 3..13, block y 1..15
     # to v 1..15 (v runs down). Hinge seam on the viewer's left (u 3), latch on the right.
@@ -49,26 +49,26 @@ def textures():
     fill(front, 5, 9, 11, 10, (0xc0, 0x28, 0x28))
     # Latch at the lower right.
     fill(front, 11, 12, 12, 13, shade(grey, 0.45))
-    write_png(os.path.join(BLOCK_TEX, "safety_switch_front.png"), front)
+    write_png(os.path.join(BLOCK_TEX, "disconnect_front.png"), front)
 
     red = (0xc8, 0x22, 0x22)
     handle = canvas(16, 16, red + (255,))
     for y in range(0, 16, 4):
         fill(handle, 0, y, 16, y + 1, shade(red, 1.2))
         fill(handle, 0, y + 3, 16, y + 4, shade(red, 0.75))
-    write_png(os.path.join(BLOCK_TEX, "safety_switch_handle.png"), handle)
+    write_png(os.path.join(BLOCK_TEX, "disconnect_handle.png"), handle)
 
     lock = canvas(16, 16, (0x30, 0x30, 0x34, 255))
     fill(lock, 0, 0, 16, 2, (0x90, 0x90, 0x98))
     fill(lock, 4, 6, 12, 10, (0xd0, 0xb0, 0x20))
-    write_png(os.path.join(BLOCK_TEX, "safety_switch_lock.png"), lock)
+    write_png(os.path.join(BLOCK_TEX, "disconnect_lock.png"), lock)
 
 
 def models():
-    tex = {"body": "%s:block/safety_switch" % MOD, "front": "%s:block/safety_switch_front" % MOD,
-           "handle": "%s:block/safety_switch_handle" % MOD, "lock": "%s:block/safety_switch_lock" % MOD,
+    tex = {"body": "%s:block/disconnect" % MOD, "front": "%s:block/disconnect_front" % MOD,
+           "handle": "%s:block/disconnect_handle" % MOD, "lock": "%s:block/disconnect_lock" % MOD,
            "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_two" % MOD,
-           "particle": "%s:block/safety_switch" % MOD}
+           "particle": "%s:block/disconnect" % MOD}
     for name, on, locked in (("off", False, False), ("on", True, False), ("off_locked", False, True)):
         body = element(*BODY, "#body", cull_south=True)
         body["faces"]["north"]["texture"] = "#front"
@@ -82,23 +82,23 @@ def models():
         elements.append(element(*HANDLE[on], "#handle"))
         if locked:
             elements.append(element(*LOCK, "#lock"))
-        dump(os.path.join(ASSETS, "models", "block", "safety_switch", name + ".json"),
+        dump(os.path.join(ASSETS, "models", "block", "disconnect", name + ".json"),
              {"parent": "block/block", "textures": tex, "elements": elements})
-    dump(os.path.join(ASSETS, "models", "item", "safety_switch.json"), {"parent": "%s:block/safety_switch/off" % MOD})
+    dump(os.path.join(ASSETS, "models", "item", "disconnect.json"), {"parent": "%s:block/disconnect/off" % MOD})
     variants = {}
     for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
         for on in (False, True):
             for locked in (False, True):
                 name = "on" if on else ("off_locked" if locked else "off")
-                v = {"model": "%s:block/safety_switch/%s" % (MOD, name)}
+                v = {"model": "%s:block/disconnect/%s" % (MOD, name)}
                 v.update(rot)
                 variants["facing=%s,locked=%s,on=%s" % (facing, str(locked).lower(), str(on).lower())] = v
-    dump(os.path.join(ASSETS, "blockstates", "safety_switch.json"), {"variants": variants})
+    dump(os.path.join(ASSETS, "blockstates", "disconnect.json"), {"variants": variants})
 
 
 def data():
-    loot_table("safety_switch")
-    recipe("safety_switch", ["PPP", "PLP", "PCP"],
+    loot_table("disconnect")
+    recipe("disconnect", ["PPP", "PLP", "PCP"],
            {"P": {"tag": "c:plates/iron"}, "L": {"item": "minecraft:lever"}, "C": {"tag": "c:ingots/copper"}},
            1, {"items": "minecraft:lever"})
 
@@ -107,7 +107,7 @@ def main():
     textures()
     models()
     data()
-    print("safety switch assets written")
+    print("disconnect assets written")
 
 
 if __name__ == "__main__":
