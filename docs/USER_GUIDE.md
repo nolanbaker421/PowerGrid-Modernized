@@ -591,6 +591,8 @@ It is placed with two clicks like any wire and only connects **network jacks**:
 - The **Network Switch** has eight numbered ports and behaves like the jack otherwise. On a floor it
   faces you, on a wall it mounts as a plate, on a ceiling it hangs. A port lights up while a cable is
   plugged in.
+- The **Redstone Port** is a jack that puts out a redstone level 0 to 15, set by the controls
+  cabinet on its Cat6 through the tag `RS<number>` (section 20).
 
 Jack to jack hangs a cable; clicking blocks in between lays it along their surfaces. Every port takes
 one cable, so fanning out means going through a switch. Cables re-link themselves once a second, so
@@ -1148,6 +1150,13 @@ computer network as `powergrid_controls`.
   Each station has a number, set in its screen, and the PLC reads its cells directly as
   `B1.1` to `B1.4` for station 1. An elevator is a station per floor with an up and a down
   button and a lamp each, all on one chain back to the cabinet.
+- **Redstone Port.** A network jack that puts out redstone. Mount it like a jack, cable it to
+  the cabinet (or a switch on the way), and the PLC writes its level with a Set tag on `RS1`
+  (0 to 15; the number is the port's, counted up by clicking it with an empty hand and down by
+  sneaking). It powers its neighbours and the block it sits on like a lever, so a ship's
+  wheel, a redstone-driven device or a comparator chain can be run from the program, the HMI
+  or a computer through the cabinet. Reading `RS1` gives the level it is putting out. The
+  lamp on the plate lights while the level is above zero.
 - **Wiring the modules.** Relay modules put a COM and an NO terminal per channel in the splice
   screen (sneak-click the cabinet). Digital In and Digital Out modules put one terminal per
   channel there too, but only for channels that no door device is wired to: wire a button to
@@ -1172,7 +1181,7 @@ computer network as `powergrid_controls`.
   - **Tag / Set tag / Constant.** A Tag block reads any cabinet name: `X1.1` an input (slot 1,
     channel 1), `Y1.1` an output, `R1.1` a relay, `V1.run` / `V1.start` / `V1.stop` /
     `V1.reverse` / `V1.speed` a VFD module, `D3` the device in door cell 3, `E` the E-stop,
-    `P` the power, `C1` a coil, `N1` a network bit. Set tag writes one.
+    `P` the power, `C1` a coil, `N1` a network bit, `RS1` a redstone port's level. Set tag writes one.
   - **Logic.** And, Or (2 to 8 inputs), Not, Xor, Rising edge, Falling edge, SR latch,
     Toggle, Select.
   - **Timers.** On delay, Off delay, One-shot and Blink, in ticks.

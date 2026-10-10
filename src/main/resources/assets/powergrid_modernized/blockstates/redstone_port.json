@@ -1,0 +1,56 @@
+{
+  "variants": {
+    "facing=up,lit=false": {
+      "model": "powergrid_modernized:block/redstone_port/off"
+    },
+    "facing=up,lit=true": {
+      "model": "powergrid_modernized:block/redstone_port/on"
+    },
+    "facing=down,lit=false": {
+      "model": "powergrid_modernized:block/redstone_port/off",
+      "x": 180
+    },
+    "facing=down,lit=true": {
+      "model": "powergrid_modernized:block/redstone_port/on",
+      "x": 180
+    },
+    "facing=north,lit=false": {
+      "model": "powergrid_modernized:block/redstone_port/off",
+      "x": 90
+    },
+    "facing=north,lit=true": {
+      "model": "powergrid_modernized:block/redstone_port/on",
+      "x": 90
+    },
+    "facing=east,lit=false": {
+      "model": "powergrid_modernized:block/redstone_port/off",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,lit=true": {
+      "model": "powergrid_modernized:block/redstone_port/on",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,lit=false": {
+      "model": "powergrid_modernized:block/redstone_port/off",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,lit=true": {
+      "model": "powergrid_modernized:block/redstone_port/on",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,lit=false": {
+      "model": "powergrid_modernized:block/redstone_port/off",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,lit=true": {
+      "model": "powergrid_modernized:block/redstone_port/on",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

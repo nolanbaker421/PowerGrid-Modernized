@@ -133,6 +133,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private List<BlockPos> drives = new ArrayList<>();
     /** Control stations found over the Cat6, by position; their devices count like door devices. */
     private List<BlockPos> stations = new ArrayList<>();
+    /** Redstone ports found over the Cat6, by position; the PLC writes their levels as RS<n>. */
+    private List<BlockPos> ports = new ArrayList<>();
     private boolean[] drivesHertz = new boolean[0];
     // The PLC: its program, the compiled form, what it told the VFD modules, and the devices it can see.
     private PlcGraph graph = new PlcGraph();
@@ -692,6 +694,37 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         return null;
     }
 
+    /** The redstone ports found over the Cat6 that are loaded right now. */
+    public List<RedstonePortBlockEntity> portEntities() {
+        var list = new ArrayList<RedstonePortBlockEntity>(ports.size());
+        if(level == null)
+            return list;
+        for(var at : ports)
+            if(level.isLoaded(at) && level.getBlockEntity(at) instanceof RedstonePortBlockEntity port)
+                list.add(port);
+        return list;
+    }
+
+    @Nullable
+    public RedstonePortBlockEntity portNumber(int number) {
+        for(var port : portEntities())
+            if(port.number() == number)
+                return port;
+        return null;
+    }
+
+    /** The port a tag RS<n> names, or null: no such port on this Cat6, or not a port name. */
+    @Nullable
+    private RedstonePortBlockEntity portOf(String name) {
+        if(!name.startsWith("RS") || name.length() < 3 || ports.isEmpty())
+            return null;
+        try {
+            return portNumber(Integer.parseInt(name.substring(2)));
+        } catch(NumberFormatException e) {
+            return null;
+        }
+    }
+
     /** Whether a device of that kind may be wired to slot * CHANNELS + channel, for stations as for door cells. */
     public boolean canWireDevice(PanelDevice device, int target) {
         if(target < 0)
@@ -966,6 +999,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         public double read(String name) {
             if(name.equals("E"))
                 return isEStopped() ? 1 : 0;
+            if(name.startsWith("RS")) {
+                var port = portOf(name);
+                return port == null ? Double.NaN : port.output();
+            }
             if(name.startsWith("B") && name.indexOf('.') > 1) {
                 int dot = name.indexOf('.');
                 try {
@@ -1037,6 +1074,14 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         @Override
         public boolean write(String name, double value) {
             boolean probe = Double.isNaN(value);
+            if(name.startsWith("RS")) {
+                var port = portOf(name);
+                if(port == null)
+                    return false;
+                if(!probe)
+                    port.setOutput((int) Math.round(value));
+                return true;
+            }
             if(name.startsWith("AO")) {
                 int i = analogIndex(name);
                 if(i < 0 || rail[i / ANALOG_CHANNELS] != ControlModule.ANALOG_OUT)
@@ -1515,6 +1560,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         var foundStations = DriveLink.discoverAll(level, jack, StationBlockEntity.class);
         if(!foundStations.equals(stations))
             stations = foundStations;
+        var foundPorts = DriveLink.discoverAll(level, jack, RedstonePortBlockEntity.class);
+        if(!foundPorts.equals(ports))
+            ports = foundPorts;
         if(hasPlc() || !plcDevices.isEmpty())
             refreshPlcDevices();
     }

@@ -185,6 +185,19 @@ public class ModBlocks {
                 .build()
             .register();
 
+    /** A jack that puts out the redstone level a controls cabinet writes to it. */
+    public static final BlockEntry<com.nolanbaker.pgmodernized.device.controls.RedstonePortBlock> REDSTONE_PORT =
+            REGISTRATE.block("redstone_port", com.nolanbaker.pgmodernized.device.controls.RedstonePortBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Redstone Port")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
     public static final BlockEntry<NetworkSwitchBlock> NETWORK_SWITCH = REGISTRATE.block("network_switch", NetworkSwitchBlock::new)
             .blockstate(NonNullBiConsumer.noop())
             .initialProperties(SharedProperties::softMetal)

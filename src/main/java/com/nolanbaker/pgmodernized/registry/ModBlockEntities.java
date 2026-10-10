@@ -77,6 +77,11 @@ public class ModBlockEntities {
                     .validBlock(ModBlocks.NETWORK_JACK)
                     .register();
 
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.device.controls.RedstonePortBlockEntity> REDSTONE_PORT =
+            REGISTRATE.blockEntity("redstone_port", com.nolanbaker.pgmodernized.device.controls.RedstonePortBlockEntity::new)
+                    .validBlock(ModBlocks.REDSTONE_PORT)
+                    .register();
+
     public static final BlockEntityEntry<NetworkSwitchBlockEntity> NETWORK_SWITCH =
             REGISTRATE.blockEntity("network_switch", ComputerBlockEntityFactories.networkSwitch())
                     .validBlock(ModBlocks.NETWORK_SWITCH)
