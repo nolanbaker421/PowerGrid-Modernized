@@ -5,7 +5,10 @@
     "terminal": "powergrid_modernized:block/panel_terminal",
     "open": "powergrid_modernized:block/conduit_box_open",
     "knockout": "powergrid_modernized:block/knockout_one_half",
-    "particle": "powergrid_modernized:block/conduit_box"
+    "particle": "powergrid_modernized:block/conduit_box",
+    "lamp_off": "powergrid_modernized:block/lamp_off",
+    "lamp_on": "powergrid_modernized:block/lamp_on",
+    "receptacle": "powergrid_modernized:block/receptacle"
   },
   "elements": [
     {

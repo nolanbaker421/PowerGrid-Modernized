@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -67,6 +68,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     public static final float SENSE = 1_000_000f;
     public static final float OPEN = 1_000_000f;
     public static final float MIN_VOLTS = 50;
+    /** The control bus the digital outputs switch onto their terminals, stepped down from Line; an input turns on above this. */
+    public static final float CONTROL_VOLTS = 24, LINE_VOLTS = 120, INPUT_VOLTS = 12;
+    private static final float CONTROL_WINDING = 0.02f;
     public static final int PULSE_TICKS = 10;
     public static final int DIAL_STEP = 10;
     public static final int[] LED_COLORS = {0x30E040, 0xE03030, 0xF0B020, 0x3070F0, 0xF0F0F0};
@@ -358,11 +362,21 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         var neutral = builder.terminalNode(TERMINAL_NEUTRAL);
         sense = builder.connect(SENSE, line, neutral);
         psuLoad = builder.connect(OPEN, line, neutral);
+        var modules = rail == null ? new ControlModule[MAX_RAIL] : rail;
+        // The 24 V control bus: an ideal step-down from Line to Neutral, there while an output module is.
+        IElectricNode control = null;
+        for(var module : modules) {
+            if(module != ControlModule.DIGITAL_OUT)
+                continue;
+            control = builder.addInternalNode();
+            builder.couple(CONTROL_VOLTS / LINE_VOLTS, CONTROL_WINDING, line, neutral, control, neutral);
+            builder.connect(SENSE, control, neutral);
+            break;
+        }
         // Only a fitted module puts wires in the circuit: a slot's contacts, channel senses and
         // output contacts exist while its module does, and the circuit is rebuilt when the rail
         // changes. (Wiring every possible slot made some four hundred wires, and the client's
         // network builder froze the game over them.) The rail is still null from the constructor.
-        var modules = rail == null ? new ControlModule[MAX_RAIL] : rail;
         contacts = new SwitchedWire[MAX_RAIL * RELAY_CHANNELS];
         ioSense = new ElectricWire[MAX_RAIL * CHANNELS];
         ioOut = new SwitchedWire[MAX_RAIL * CHANNELS];
@@ -384,7 +398,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 }
             } else if(module == ControlModule.DIGITAL_OUT) {
                 for(int ch = 0; ch < CHANNELS; ++ch)
-                    ioOut[slot * CHANNELS + ch] = builder.connectSwitch(resistance("contact"), line, builder.terminalNode(CabinetLayout.ioTerminal(slot, ch)), false);
+                    ioOut[slot * CHANNELS + ch] = builder.connectSwitch(resistance("contact"), control, builder.terminalNode(CabinetLayout.ioTerminal(slot, ch)), false);
             } else if(module == ControlModule.ANALOG_IN) {
                 for(int ch = 0; ch < ANALOG_CHANNELS; ++ch) {
                     int i = slot * ANALOG_CHANNELS + ch;
@@ -449,7 +463,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                 if(contacts[i] != null)
                     contacts[i].setState(powered && relay && relays[i]);
             }
-            // Output terminals source line while their channel is on; input terminals read against neutral.
+            // Output terminals source the 24 V control bus while their channel is on; input terminals read against neutral.
             boolean in = rail[slot] == ControlModule.DIGITAL_IN, out = rail[slot] == ControlModule.DIGITAL_OUT;
             for(int ch = 0; ch < CHANNELS; ++ch) {
                 int i = slot * CHANNELS + ch;
@@ -457,7 +471,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
                     ioOut[i].setState(powered && out && outputs[i]);
                 if(in && powered && ioSense[i] != null) {
                     ioReading[i].sample(ioSense[i]);
-                    external[i] = ioReading[i].rmsVoltage() >= MIN_VOLTS;
+                    external[i] = ioReading[i].rmsVoltage() >= INPUT_VOLTS;
                 } else {
                     external[i] = false;
                 }

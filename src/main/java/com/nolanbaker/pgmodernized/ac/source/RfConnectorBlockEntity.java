@@ -22,13 +22,13 @@ import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
 import static com.nolanbaker.pgmodernized.ac.source.RfConnectorBlock.*;
+import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 
 /**
  * Power Grid's Device Connector for Power Grid's AC, single phase. One load from line to neutral
@@ -207,8 +207,8 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
     public List<SplicePoint> points() {
         if(points == null) {
             points = List.of(
-                    new SplicePoint(TERMINAL_LINE, Lang.builder().translate("rf_connector.line").style(ChatFormatting.RED).component(), IDecoratedTerminal.RED),
-                    new SplicePoint(TERMINAL_NEUTRAL, Lang.builder().translate("rf_connector.neutral").style(ChatFormatting.BLUE).component(), IDecoratedTerminal.BLUE));
+                    new SplicePoint(TERMINAL_LINE, ConductorColors.hotLabel("rf_connector.line", 0), ConductorColors.hotRgb(0)),
+                    new SplicePoint(TERMINAL_NEUTRAL, ConductorColors.neutralLabel("rf_connector.neutral"), ConductorColors.neutralRgb()));
         }
         return points;
     }

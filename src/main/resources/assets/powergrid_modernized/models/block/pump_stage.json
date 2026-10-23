@@ -1,0 +1,150 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "body": "powergrid_modernized:block/three_phase_motor_body",
+    "arrow": "powergrid_modernized:block/three_phase_pump_body",
+    "box": "powergrid_modernized:block/three_phase_motor_box",
+    "stub": "powergrid_modernized:block/three_phase_motor_foot",
+    "terminal": "powergrid_modernized:block/panel_terminal",
+    "knockout": "powergrid_modernized:block/knockout_one_half",
+    "particle": "powergrid_modernized:block/three_phase_motor_body"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        1,
+        2
+      ],
+      "to": [
+        15,
+        15,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#body"
+        },
+        "south": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#body"
+        },
+        "east": {
+          "uv": [
+            2,
+            1,
+            14,
+            15
+          ],
+          "texture": "#body"
+        },
+        "west": {
+          "uv": [
+            2,
+            1,
+            14,
+            15
+          ],
+          "texture": "#body"
+        },
+        "up": {
+          "uv": [
+            1,
+            2,
+            15,
+            14
+          ],
+          "texture": "#body"
+        },
+        "down": {
+          "uv": [
+            1,
+            2,
+            15,
+            14
+          ],
+          "texture": "#body"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        5,
+        0
+      ],
+      "to": [
+        11,
+        11,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            5,
+            11,
+            11
+          ],
+          "texture": "#stub"
+        },
+        "south": {
+          "uv": [
+            5,
+            5,
+            11,
+            11
+          ],
+          "texture": "#stub"
+        },
+        "east": {
+          "uv": [
+            0,
+            5,
+            16,
+            11
+          ],
+          "texture": "#stub"
+        },
+        "west": {
+          "uv": [
+            0,
+            5,
+            16,
+            11
+          ],
+          "texture": "#stub"
+        },
+        "up": {
+          "uv": [
+            5,
+            0,
+            11,
+            16
+          ],
+          "texture": "#stub"
+        },
+        "down": {
+          "uv": [
+            5,
+            0,
+            11,
+            16
+          ],
+          "texture": "#stub"
+        }
+      }
+    }
+  ]
+}

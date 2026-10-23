@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "c:plates/iron"
+    },
+    "B": {
+      "item": "powergrid_modernized:bus_bar"
+    },
+    "G": {
+      "item": "minecraft:iron_bars"
+    }
+  },
+  "pattern": [
+    "PBP",
+    "PGP",
+    "PBP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:gear_cell"
+  }
+}

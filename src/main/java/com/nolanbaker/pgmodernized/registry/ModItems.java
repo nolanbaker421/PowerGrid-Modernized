@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.device.gear.GearComponentItem;
+import com.nolanbaker.pgmodernized.device.gear.GearKind;
 import com.nolanbaker.pgmodernized.device.helm.RadioRemoteItem;
 import com.nolanbaker.pgmodernized.rail.RailShoeItem;
 import com.nolanbaker.pgmodernized.chain.CableChainItem;
@@ -66,6 +68,11 @@ public class ModItems {
     public static final Map<Integer, Map<BreakerFrame, ItemEntry<BreakerItem>>> BREAKERS;
 
     /** Blank filler plate for an unused space. */
+    /** A single-pole 1-50 A breaker that also trips on ground-fault current. */
+    public static final ItemEntry<BreakerItem> BREAKER_GFCI = REGISTRATE.item("breaker_50a_gfci", p -> new BreakerItem(p, BreakerFrame.F50, 1, true))
+            .model(NonNullBiConsumer.noop())
+            .lang("1-50 A GFCI Breaker")
+            .register();
     public static final ItemEntry<BreakerItem> BREAKER_BLANK = REGISTRATE.item("breaker_blank", BreakerItem::new)
             .model(NonNullBiConsumer.noop())
             .lang("Breaker Blank")
@@ -83,6 +90,33 @@ public class ModItems {
             .lang("Copper Bus Bar")
             .register();
 
+    /** What goes into a switchgear cell besides bus bars and 3-pole breakers. Fuse sets per rating in {@link #GEAR_FUSES}. */
+    public static final ItemEntry<GearComponentItem> NEUTRAL_BAR = gearComponent("neutral_bar", "Neutral Bar", GearKind.NEUTRAL_BAR, 0);
+    public static final ItemEntry<GearComponentItem> GEAR_LUGS = gearComponent("gear_lugs", "Lug Block", GearKind.LUGS, 0);
+    public static final ItemEntry<GearComponentItem> GEAR_SWITCH = gearComponent("gear_switch", "Switch Unit", GearKind.SWITCH, 0);
+    public static final ItemEntry<GearComponentItem> GEAR_CONTACTOR = gearComponent("gear_contactor", "Contactor", GearKind.CONTACTOR, 0);
+    public static final ItemEntry<GearComponentItem> GROUND_BAR = gearComponent("ground_bar", "Ground Bar", GearKind.GROUND_BAR, 0);
+    public static final ItemEntry<GearComponentItem> GEAR_STARTER = gearComponent("gear_starter", "Combination Starter", GearKind.STARTER, 0);
+    public static final ItemEntry<GearComponentItem> GEAR_METER = gearComponent("gear_meter", "Metering Unit", GearKind.METER, 0);
+    public static final int[] FUSE_RATINGS = {100, 200, 400, 800};
+    public static final Map<Integer, ItemEntry<GearComponentItem>> GEAR_FUSES;
+
+    private static ItemEntry<GearComponentItem> gearComponent(String id, String name, GearKind kind, int rating) {
+        return REGISTRATE.item(id, p -> new GearComponentItem(p, kind, rating))
+                .model(NonNullBiConsumer.noop())
+                .lang(name)
+                .register();
+    }
+
+    /** A fuse set of that rating, or the nearest rating at or above it. */
+    public static ItemStack fuse(int rating) {
+        for(int r : FUSE_RATINGS) {
+            if(r >= rating)
+                return GEAR_FUSES.get(r).asStack();
+        }
+        return GEAR_FUSES.get(FUSE_RATINGS[FUSE_RATINGS.length - 1]).asStack();
+    }
+
     /** Cover plates for the conduit box: a blank, and the node plate with twelve terminals. */
     public static final ItemEntry<ConduitCoverItem> CONDUIT_COVER_BLANK = REGISTRATE.item("conduit_cover_blank", p -> new ConduitCoverItem(p, ConduitCover.BLANK))
             .model(NonNullBiConsumer.noop())
@@ -91,6 +125,30 @@ public class ModItems {
     public static final ItemEntry<ConduitCoverItem> CONDUIT_COVER_NODE = REGISTRATE.item("conduit_cover_node", p -> new ConduitCoverItem(p, ConduitCover.NODE))
             .model(NonNullBiConsumer.noop())
             .lang("Node Cover Plate")
+            .register();
+    public static final ItemEntry<ConduitCoverItem> CONDUIT_COVER_LIGHT = REGISTRATE.item("conduit_cover_light", p -> new ConduitCoverItem(p, ConduitCover.LIGHT_OFF))
+            .model(NonNullBiConsumer.noop())
+            .lang("Light Socket Cover")
+            .register();
+    public static final ItemEntry<ConduitCoverItem> CONDUIT_COVER_RECEPTACLE = REGISTRATE.item("conduit_cover_receptacle", p -> new ConduitCoverItem(p, ConduitCover.RECEPTACLE))
+            .model(NonNullBiConsumer.noop())
+            .lang("Receptacle Cover")
+            .register();
+
+    /** The plate item that comes off a box with that cover. */
+    public static ItemStack coverPlate(ConduitCover cover) {
+        return switch(cover.itemCover()) {
+            case NODE -> CONDUIT_COVER_NODE.asStack();
+            case LIGHT_OFF -> CONDUIT_COVER_LIGHT.asStack();
+            case RECEPTACLE -> CONDUIT_COVER_RECEPTACLE.asStack();
+            default -> CONDUIT_COVER_BLANK.asStack();
+        };
+    }
+
+    /** A door for a breaker panel that hides its breakers. */
+    public static final ItemEntry<Item> PANEL_COVER = REGISTRATE.item("panel_cover", Item::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Panel Cover")
             .register();
 
     /** Conduit per trade size, laid like block wire. Wire stats in wire_types/conduit_<size>.json. */
@@ -106,6 +164,10 @@ public class ModItems {
     public static final Map<WireGauge, ItemEntry<BuildingWireItem>> BUILDING_WIRE;
 
     static {
+        var fuses = new LinkedHashMap<Integer, ItemEntry<GearComponentItem>>();
+        for(int rating : FUSE_RATINGS)
+            fuses.put(rating, gearComponent("gear_fuse_" + rating, rating + " A Fuse Set", GearKind.FUSE, rating));
+        GEAR_FUSES = Collections.unmodifiableMap(fuses);
         var breakers = new LinkedHashMap<Integer, Map<BreakerFrame, ItemEntry<BreakerItem>>>();
         for(int poles = 1; poles <= 3; ++poles) {
             var byFrame = new EnumMap<BreakerFrame, ItemEntry<BreakerItem>>(BreakerFrame.class);

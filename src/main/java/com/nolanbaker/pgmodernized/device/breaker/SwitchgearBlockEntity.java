@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.device.breaker;
 
+import com.nolanbaker.pgmodernized.bus.BusLinks;
+import com.nolanbaker.pgmodernized.bus.IBusJoin;
+import com.nolanbaker.pgmodernized.bus.IBusLinkHost;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
@@ -46,7 +49,7 @@ import static com.nolanbaker.pgmodernized.device.breaker.SwitchgearLayout.*;
  * way (the neighbour on the left does the same towards this one), so a row of sections shares one
  * bus. The breaker is one of the panel's records, restricted to three poles.
  */
-public class SwitchgearBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, ISpliceHost {
+public class SwitchgearBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, ISpliceHost, IBusJoin, IBusLinkHost {
     private static final float COUPLER_R = 0.0001f;
 
     private BreakerPanelBlockEntity.Breaker breaker;
@@ -194,6 +197,21 @@ public class SwitchgearBlockEntity extends ElectricBlockEntity implements IHaveG
             var theirs = new BlockWireEndpoint(other.worldPosition, COUPLER_LEFT + k);
             server.addFreshEntity(BusLinkEntity.create(level, mine, theirs));
         }
+    }
+
+    /** A bus duct standing on the section joins its bus; the couplers only ever join the next section. */
+    @Override
+    public int busJoin(net.minecraft.core.Direction side, int k) {
+        return side == net.minecraft.core.Direction.UP && k >= 0 && k < COUPLERS ? BUS_L1 + k : -1;
+    }
+
+    @Override
+    public boolean busLinkValid(int terminal, BlockPos other, int otherTerminal) {
+        if(level == null)
+            return false;
+        if(isCoupler(terminal))
+            return linked(level, worldPosition, other);
+        return BusLinks.joinValid(level, worldPosition, terminal, other, otherTerminal);
     }
 
     /** Sections in this lineup, counted along the row. */

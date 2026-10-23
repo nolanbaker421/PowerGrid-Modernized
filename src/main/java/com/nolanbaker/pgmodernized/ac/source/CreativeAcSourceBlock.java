@@ -20,7 +20,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 /**
@@ -47,10 +46,10 @@ public class CreativeAcSourceBlock extends HorizontalElectricBlock implements IB
 
     private static TerminalBoundingBox[] terminals() {
         return new TerminalBoundingBox[] {
-                terminal("creative_ac_source.l1", LUGS[L1], ConductorColors.rgb(0), ConductorColors.textRgb(0)),
-                terminal("creative_ac_source.l2", LUGS[L2], ConductorColors.rgb(2), ConductorColors.textRgb(2)),
-                terminal("creative_ac_source.l3", LUGS[L3], ConductorColors.rgb(3), ConductorColors.textRgb(3)),
-                terminal("creative_ac_source.n", LUGS[N], IDecoratedTerminal.BLUE, IDecoratedTerminal.BLUE),
+                terminal("creative_ac_source.l1", LUGS[L1], ConductorColors.hotRgb(0), ConductorColors.hotTextRgb(0)),
+                terminal("creative_ac_source.l2", LUGS[L2], ConductorColors.hotRgb(1), ConductorColors.hotTextRgb(1)),
+                terminal("creative_ac_source.l3", LUGS[L3], ConductorColors.hotRgb(2), ConductorColors.hotTextRgb(2)),
+                terminal("creative_ac_source.n", LUGS[N], ConductorColors.neutralRgb(), ConductorColors.neutralTextRgb()),
         };
     }
 

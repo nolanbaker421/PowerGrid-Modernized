@@ -444,6 +444,37 @@ public final class PlcRunner {
                 }
                 o[0] = m[0];
             }
+            case PID -> {
+                // Gains in engineering units per second; the scan is a twentieth of one. The
+                // integral holds still while the output is pinned at a limit in the error's
+                // direction (anti-windup), and the derivative is taken on the error from the
+                // second scan on so switching on does not kick it. En low (when it is wired)
+                // zeroes the output and the integral.
+                double pv = in(node, 0), sp = in(node, 1);
+                double kp = node.num(0), ki = node.num(1), kd = node.num(2), lo = node.num(3), hi = node.num(4);
+                double err = sp - pv;
+                if(!on(in(node, 2, 1))) {
+                    m[0] = 0;
+                    m[1] = err;
+                    m[2] = 0;
+                    o[0] = 0;
+                    o[1] = err;
+                    break;
+                }
+                double p = kp * err;
+                double d = m[2] == 0 ? 0 : kd * (err - m[1]) * 20;
+                m[2] = 1;
+                double integral = m[0] + ki * err / 20;
+                double out = p + integral + d;
+                if((out > hi && err > 0) || (out < lo && err < 0)) {
+                    integral = m[0];
+                    out = p + integral + d;
+                }
+                m[0] = integral;
+                m[1] = err;
+                o[0] = Math.max(lo, Math.min(hi, out));
+                o[1] = err;
+            }
             case COUNTER -> {
                 boolean up = on(in(node, 0)), down = on(in(node, 1));
                 if(on(in(node, 2)))

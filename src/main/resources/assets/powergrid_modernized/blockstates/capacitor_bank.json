@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,on=false": {
+      "model": "powergrid_modernized:block/capacitor_bank/off"
+    },
+    "facing=north,on=true": {
+      "model": "powergrid_modernized:block/capacitor_bank/on"
+    },
+    "facing=east,on=false": {
+      "model": "powergrid_modernized:block/capacitor_bank/off",
+      "y": 90
+    },
+    "facing=east,on=true": {
+      "model": "powergrid_modernized:block/capacitor_bank/on",
+      "y": 90
+    },
+    "facing=south,on=false": {
+      "model": "powergrid_modernized:block/capacitor_bank/off",
+      "y": 180
+    },
+    "facing=south,on=true": {
+      "model": "powergrid_modernized:block/capacitor_bank/on",
+      "y": 180
+    },
+    "facing=west,on=false": {
+      "model": "powergrid_modernized:block/capacitor_bank/off",
+      "y": 270
+    },
+    "facing=west,on=true": {
+      "model": "powergrid_modernized:block/capacitor_bank/on",
+      "y": 270
+    }
+  }
+}

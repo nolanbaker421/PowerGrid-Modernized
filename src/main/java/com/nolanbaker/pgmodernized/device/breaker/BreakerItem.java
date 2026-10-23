@@ -22,6 +22,7 @@ public class BreakerItem extends Item {
     @Nullable
     private final BreakerFrame frame;
     private final int poles;
+    private final boolean gfci;
 
     /** A blank. */
     public BreakerItem(Properties properties) {
@@ -29,9 +30,19 @@ public class BreakerItem extends Item {
     }
 
     public BreakerItem(Properties properties, @Nullable BreakerFrame frame, int poles) {
+        this(properties, frame, poles, false);
+    }
+
+    public BreakerItem(Properties properties, @Nullable BreakerFrame frame, int poles, boolean gfci) {
         super(properties);
         this.frame = frame;
         this.poles = poles;
+        this.gfci = gfci;
+    }
+
+    /** Trips as well when current comes home on the panel's ground instead of its neutral. */
+    public boolean gfci() {
+        return gfci;
     }
 
     /** The frame, or null for a blank. */
@@ -62,6 +73,8 @@ public class BreakerItem extends Item {
             return;
         }
         tooltip.add(Lang.builder().translate("breaker.frame", frame.min(), frame.max()).style(ChatFormatting.GRAY).component());
+        if(gfci)
+            tooltip.add(Lang.builder().translate("breaker.gfci", BreakerPanelBlockEntity.GFCI_TRIP_MILLIAMPS).style(ChatFormatting.GRAY).component());
         if(poles > 1)
             tooltip.add(Lang.builder().translate("breaker.poles", poles, poles * frame.rows()).style(ChatFormatting.GRAY).component());
         else if(frame.rows() > 1)

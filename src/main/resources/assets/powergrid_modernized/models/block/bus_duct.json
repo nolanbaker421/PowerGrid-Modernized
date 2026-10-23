@@ -1,0 +1,214 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "housing": "powergrid_modernized:block/bus_duct",
+    "flange": "powergrid_modernized:block/bus_duct_flange",
+    "particle": "powergrid_modernized:block/bus_duct"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        4,
+        0
+      ],
+      "to": [
+        13,
+        12,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            4,
+            13,
+            12
+          ],
+          "texture": "#housing"
+        },
+        "south": {
+          "uv": [
+            3,
+            4,
+            13,
+            12
+          ],
+          "texture": "#housing"
+        },
+        "east": {
+          "uv": [
+            0,
+            4,
+            16,
+            12
+          ],
+          "texture": "#housing"
+        },
+        "west": {
+          "uv": [
+            0,
+            4,
+            16,
+            12
+          ],
+          "texture": "#housing"
+        },
+        "up": {
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ],
+          "texture": "#housing"
+        },
+        "down": {
+          "uv": [
+            3,
+            0,
+            13,
+            16
+          ],
+          "texture": "#housing"
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        3.5,
+        0
+      ],
+      "to": [
+        13.5,
+        12.5,
+        1
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2.5,
+            3.5,
+            13.5,
+            12.5
+          ],
+          "texture": "#flange"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            3.5,
+            13.5,
+            12.5
+          ],
+          "texture": "#flange"
+        },
+        "east": {
+          "uv": [
+            15,
+            3.5,
+            16,
+            12.5
+          ],
+          "texture": "#flange"
+        },
+        "west": {
+          "uv": [
+            0,
+            3.5,
+            1,
+            12.5
+          ],
+          "texture": "#flange"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            13.5,
+            1
+          ],
+          "texture": "#flange"
+        },
+        "down": {
+          "uv": [
+            2.5,
+            15,
+            13.5,
+            16
+          ],
+          "texture": "#flange"
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        3.5,
+        15
+      ],
+      "to": [
+        13.5,
+        12.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2.5,
+            3.5,
+            13.5,
+            12.5
+          ],
+          "texture": "#flange"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            3.5,
+            13.5,
+            12.5
+          ],
+          "texture": "#flange"
+        },
+        "east": {
+          "uv": [
+            0,
+            3.5,
+            1,
+            12.5
+          ],
+          "texture": "#flange"
+        },
+        "west": {
+          "uv": [
+            15,
+            3.5,
+            16,
+            12.5
+          ],
+          "texture": "#flange"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            15,
+            13.5,
+            16
+          ],
+          "texture": "#flange"
+        },
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            13.5,
+            1
+          ],
+          "texture": "#flange"
+        }
+      }
+    }
+  ]
+}

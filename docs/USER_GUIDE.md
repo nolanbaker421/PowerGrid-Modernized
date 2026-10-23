@@ -23,8 +23,9 @@ Optional, picked up automatically if present: **CC: Tweaked** (peripherals) and 
 **The AC fork.** DaRealML's powergrid-ac is a replacement for the Power Grid jar, not an addon.
 This mod is one jar for both: with stock Power Grid every meter reads instantaneous values; with
 the fork installed the mod notices at startup, meters read RMS and real power, and the three-phase
-motor and drive, the synchroscope and the creative AC source appear in the creative tab. Swapping
-Power Grid jars on an existing world keeps everything except those four blocks.
+blocks (motor, drive, pump and pump stage, synchroscope, creative AC source, FE inverter, load bank,
+RF connector) appear in the creative tab. Swapping Power Grid jars on an existing world keeps
+everything except those blocks.
 
 Everything is in its own creative tab, "PowerGrid: Modernized". All blocks are mined with a pickaxe.
 
@@ -53,9 +54,17 @@ regular build.
 | Breakers 1-50, 51-200, 201-400, 401-800 A | Plug-on breaker frames; the trip rating is set with a wrench once installed |
 | Breaker Blank | Filler plate for an unused space |
 | Breaker Lockout | Hasp that freezes a breaker handle |
+| 1-50 A GFCI Breaker | Single-pole breaker that also trips on 50 mA of ground current |
+| Rectifier | Six-pulse diode bridge: three-phase (or single-phase) AC in, smoothed DC out |
+| Capacitor Bank | Three capacitors in delta on a handle, for power factor correction |
+| Three-Phase Pump, Pump Stage | Power Grid's pump on a three-phase motor; stages bolt on for more reach (AC build) |
 | Conduit 1/2", 3/4", 1" | Empty raceway, laid along surfaces, that wire is pulled through |
-| Conduit Box | Small wall box: ends and splices conduit runs; takes a blank or node cover plate |
+| Conduit Box | Small wall box: ends and splices conduit runs; takes a blank, node, light socket or receptacle cover plate |
 | Conduit Socket | Tiny fitting that turns the end of a conduit into a cord socket |
+| Blank, Node, Light Socket, Receptacle Cover | Cover plates for a conduit box: closed, twelve terminals, a lamp, a cord socket |
+| Panel Cover | A door for any breaker panel |
+| Switchgear Cell | Cabinet with a 3 x 3 grid of slots for bus bars, neutral and ground bars, lug blocks, breakers, fuse sets, switch units, contactors, combination starters and metering units |
+| Bus Duct, End Feed, Plug-In Disconnect, Plug-In Breaker | Three phases and a neutral from block to block at 2000 A, with the boxes that feed and tap it |
 | Digital Voltage Regulator (2 kV, 8 kV) | Computer-controlled voltage/current source |
 | Analog I/O Module | Four analog outputs and four analog inputs for computers |
 | CT Cabinet | Four-channel power meter: volts, amps, watts and energy per feeder |
@@ -118,6 +127,15 @@ white, red, blue. If a run needs another neutral, or you keep your own colour co
 wire's pin in the splice editor** to step it through the twelve colours; the colour follows the wire
 everywhere it is named. A run itself takes dye like any Power Grid wire, so conduit can be painted.
 
+Hardware lugs wear the same code, so a wire lands on a lug of its own colour: **L1 black, L2 red,
+L3 blue, neutral white, ground green** on panels, switchgear, disconnects, cam-lock boxes, rail
+feeds, cable chains, motors and drives, and a single-pole switch is black on its line and red on its
+load. A transformer colours each winding by its nameplate: black, red, blue with a white neutral at
+120/208/240 V, and **brown, orange, yellow with a gray neutral** at 277/480 V, the usual second set
+where two voltage systems share a building (NEC 210.5(C)). The NEC gives no colour above 600 V, so
+medium-voltage bushings borrow that higher set. Only white or gray for the grounded conductor (200.6)
+and green for ground (250.119) are actually required; the line colours are trade practice.
+
 **Conduit fill** is figured by the book (NEC Chapter 9, Table 1): the pulled conductors' total
 cross-section may take 53% of the conduit's internal area with one wire in it, 31% with two, and
 40% with three or more. A wire that would go past that is refused, and the message tells you the
@@ -152,15 +170,24 @@ Power Grid's 80 A copper wire takes the room of 4 AWG and its 160 A iron wire th
 ### Conduit Box
 
 An 8 x 8 pixel wall box with **three hubs on each of its four edges** (twelve runs). It is placed
-open, and takes one of two cover plates:
+open, and takes a cover plate:
 
 - **Blank Cover Plate**: a closed pull box. Runs land on it and are spliced to each other inside;
   nothing is exposed. This is the fitting for turning corners and joining runs.
+- **Light Socket Cover**: closes the box with a lamp holder on it. The editor offers **Lamp
+  line** and **Lamp neutral**; splice a hot and a neutral to them and the 60 W lamp lights the
+  room from ten watts up (goggles read its power). Crafted from a blank plate, a copper nugget
+  and a glass pane. Works on a ceiling tile box too.
+- **Receptacle Cover**: closes the box with a receptacle on it. The editor offers **Receptacle
+  line** and **Receptacle neutral**; splice a hot and a neutral to them and Power Grid's power
+  cords plug into the face, exactly as on a Conduit Socket, and come out again with an empty
+  hand. Crafted from a blank plate and two copper nuggets.
 - **Node Cover Plate**: closes the box with **twelve colour-coded terminals** on the cover that
   ordinary wires land on, and that the splice editor offers as points.
 
 Right-click an open box with a plate to fit it; shift-right-click the box with an empty hand to
-take the plate off (a node plate will not come off while wires hang on its terminals).
+take the plate off (a node plate will not come off while wires hang on its terminals, nor a
+receptacle cover with a cord in it).
 
 Right-click the box with an empty hand to open the **splice editor**:
 
@@ -289,6 +316,14 @@ spaces it spans, "Circuit 1/3", and each space is still its own circuit point in
   panel, a 3-pole main in a three-phase one.
 - With a breaker in hand only the spaces it would fit are outlined.
 
+### Panel cover
+
+A **Panel Cover** (four iron plates) is a door for any panel: right-click the front with it to fit
+it, and it closes over the head and every extension, hiding the breakers. Click the closed door to
+open it; with it open the breakers work as usual, and a sneak-click on the frame or on any empty
+space closes it again (a sneak-click on a breaker still pulls the breaker). Sneak-click the closed door to take the cover off. Nothing goes into or out of a panel
+while the door is shut.
+
 ### Panel extensions
 
 A panel is one block, six rows a column, and a 3-pole 800 A breaker alone takes nine. The **Panel
@@ -348,6 +383,24 @@ the breaker sound.
   goggles, in messages and in the splice editor ("Circuit 3 (Kitchen)"). A plain name tag clears
   the label. Tags are used up.
 
+### Ground and GFCI
+
+Every panel has a **Ground** point in its splice editor beside Line and Neutral, bonded to the
+neutral inside the panel (the main bonding jumper). Splice the green conductor of the feeder and
+of every branch run to it, the way you splice the neutrals, and run grounds out to the equipment:
+a load that faults from a hot to its ground then comes home through the panel's ground, and
+goggles on the panel show how many milliamps are doing so.
+
+The **1-50 A GFCI Breaker** (a 1-50 A breaker, redstone and a copper nugget) is a single-pole
+breaker that also trips, on top of its overcurrent curve, whenever 50 mA or more comes home on the
+panel's ground while it is on. Every GFCI breaker in the panel sees the same ground, so a fault on
+any circuit trips all of them; that is the price of one bonding jumper, and the reason to keep the
+circuits that need one on their own panel.
+
+The electrical inspector reads the code as well as your license: a panel with nothing on its
+ground point, or a lug block in a switchgear cell with no ground bar bonded to it, fails the
+inspection (see below).
+
 ### Wiring a panel
 
 Panels have no exposed terminals. Wiring comes in through **conduit knockouts**: four across the top
@@ -381,6 +434,128 @@ how many sections share it.
 - Any 3-pole frame goes in the door; set its rating with a wrench, flip it, lock it and label it
   exactly like a panel breaker. Blanks fit too.
 - The bus bars between sections carry 2000 A and burn out like any wire past that.
+- A **Bus Duct** standing on a section joins its bus (see below).
+
+### Bus duct
+
+Bus duct carries L1, L2, L3 and a neutral through a steel housing from block to block, 2000 A,
+without conduit or wire.
+
+- **Bus Duct**: one block of duct. Placed, it runs the way you look (up and down included);
+  clicking the end of a duct continues the run; sneak to lay it along the face you click. Segments
+  join end to end by themselves wherever a segment's axis points at another, so a corner is just a
+  segment turned the other way. Nothing lands on a duct.
+- **Bus Duct End Feed**: a box with four lugs on its front (L1, L2, L3, N) and a knockout top and
+  bottom. Feed it by hanging wire on the lugs or by conduit spliced to them in the editor (bare
+  hand on the front). A duct pointing at any face but the front joins the lugs.
+- **Bus Duct Plug-In Disconnect**: snaps onto any face of a duct (it will not place anywhere else)
+  and comes off with the duct. Three contacts from the duct to three load lugs, the neutral
+  straight through to a fourth, a red handle that throws the three, two knockouts for the load's
+  conduit, and a lockout like the disconnect's. Hanging wire lands on the four lugs too.
+- **Bus Duct Plug-In Breaker**: the same unit with a 3-pole breaker for a handle (crafted with a
+  401-800 A 3-pole breaker in place of the lever). Set its trip rating, 10 to 800 A, with a
+  wrench on the top of the unit; it trips on the panel's curve, the handle drops half way, and a
+  bare hand resets it to off before it will go on again.
+- A duct pointing down onto a **Switchgear Section** joins its bus, and one pointing down onto (or
+  up into) a **Switchgear Cell** joins the middle port of that cell's top (or bottom) edge.
+
+Goggles on a duct show each line's voltage to the neutral.
+
+### Custom switchgear
+
+A **Switchgear Cell** is a cabinet, open at the front, with a 3 x 3 grid of slots behind the
+opening. Cells placed next to each other, facing the same way, are one lineup, in any shape:
+a slot's ports on a cell's edge join the matching ports of the next cell through hidden bus bars
+(2000 A). You wire a lineup by what you put next to what, like real draw-out gear: two slots
+connect across their shared edge where both offer the same conductor there.
+
+What goes in a slot (right-click the slot with the item; sneak-click with a bare hand takes it
+out; a wrench turns it a quarter turn; a name tag labels it):
+
+| Item | Offers | Where |
+| --- | --- | --- |
+| **Copper Bus Bar** | L1, L2, L3 | every side |
+| **Neutral Bar** | N | every side |
+| **Ground Bar** | G | every side |
+| **Lug Block** | L1, L2, L3, N, G on five lugs | fed from above and from either side; nothing below |
+| any **3-pole breaker** | L1, L2, L3 switched | lines above, loads below; rating by wrench, handle, lockout, label as in a panel |
+| **Fuse Set** (100, 200, 400, 800 A) | L1, L2, L3 fused | lines above, loads below; a blown set is scrap, take it out and fit a new one |
+| **Switch Unit** | L1, L2, L3 switched | lines above, loads below; bare hand throws it, lockout on an open switch |
+| **Contactor** | L1, L2, L3 switched | lines above, loads below; closed while the cell has a redstone signal |
+| **Combination Starter** | L1, L2, L3 switched | lines above, loads below; a 1-50 A breaker, a redstone contactor and an overload relay in one, see below |
+| **Metering Unit** | L1, L2, L3, N straight through | lines above, loads below; goggles and computers read volts, amps and watts per phase |
+
+The usual layout is a row of bus bars across the top of the lineup (with a neutral bar beside
+them where the loads need one), breakers in the middle row under the bus, and lug blocks in the
+bottom row under the breakers. Feed the lineup through a lug block (conduit on a knockout, spliced
+in the editor, or hanging wire on its lugs) that sits under a bar, or drop a **Bus Duct** onto the
+middle of a cell's top edge where a bar waits for it. Each cell has three knockouts on top, three
+underneath and two on each side, all 4"; the splice editor (bare hand on the frame) lists the lugs
+of every lug block in that cell.
+
+Goggles on a cell list what is in each slot with its state and current. A contactor's coil is the
+cell's redstone signal: power the block any way redstone reaches it.
+
+The **Combination Starter** (a 1-50 A 3-pole breaker, a contactor and an iron plate) is a motor
+starter in one slot. Its one setting, the wrench value box, is the motor's full-load amps: the
+breaker part trips instantly at eight times it (a short), the overload relay trips on the thermal
+curve at anything over it (a stalled motor), and the contactor part follows the cell's redstone
+signal between them. An overload trip shows red on the unit and in goggles; a bare hand resets the
+relay, and only then does the handle throw again. A breaker trip resets like any breaker's.
+
+The bars are rated like the hidden bus bars between cells: 2000 A through a copper, neutral or
+ground bar burns it out, with sparks and a bang, and the slot is empty afterwards. Fit the lineup
+with a breaker or fuses on the incoming side if the source could deliver that.
+
+**Ground.** A lug block has a fifth, green lug for the ground, and the **Ground Bar** carries it
+across the lineup the way the neutral bar carries the neutral; the inspector wants a ground bar
+bonded to every lug block (see the inspector). Put the ground bar beside or over the lug blocks,
+or run one along the bottom of the lineup under them.
+
+**Computers.** A cell is a ComputerCraft peripheral and an OpenComputers component,
+`powergrid_gear_cell`: `getSlots()` describes every slot (kind, label, state, closed, current,
+rating, and a metering unit's voltage, phase current and power tables), with `getSlot(n)`,
+`getKind(n)`, `getState(n)`, `getCurrent(n)`, `getRating(n)`, `getVoltage(n, phase)`,
+`getPhaseCurrent(n, phase)`, `getPower(n, phase)` and `isPowered()` for the pieces. The PLC
+reaches the same methods through a Device call on `powergrid_gear_cell1`.
+
+### Rectifier
+
+A six-pulse diode bridge in the load bank's wall cabinet: L1, L2, L3 low on the door, **DC +**
+and **DC -** high on it, four conduit knockouts, and a value box on the door for the smoothing
+capacitor (0 to 500 mF, wrench). It bridges the AC side to everything that only understands direct
+current: a bus duct feeds a rectifier, the rectifier feeds Power Grid's DC pump, batteries,
+regulators or anything else that reads a polarity.
+
+- On three phases the output is about 1.35 times the line-to-line voltage (280 V from a 120 V
+  per phase supply), six-pulse, with the ripple the capacitor leaves. Feed any two of the AC lugs
+  for a single-phase full-wave bridge; the ripple is deeper and the capacitor matters more.
+- On a direct-current feed it simply passes it, less two diode drops of about a volt each.
+- The diodes are real: a microamp of leakage, two milliohms of silicon, a kilovolt before they
+  break over, and their loss (about two volts times the current) heats the cabinet, which goggles
+  show along with the DC volts, amps and watts out.
+- Recipe: redstone across the middle of an iron and copper plate frame.
+
+### Capacitor Bank
+
+Three capacitors in delta between L1, L2 and L3, in the same cabinet, behind a handle on the door
+that puts the bank on the line or takes it off (bare hand; sneak-click opens the splice editor).
+The value box on the door sets each capacitor, 10 to 5000 µF (wrench).
+
+- On an alternating line the bank draws a leading current, which cancels the lagging current of
+  the motors and transformers upstream of where it hangs. That is power factor correction: with
+  the bank in, the CT cabinet metering the feeder reads less current and a power factor nearer
+  one for the same real power. The motor and transformer models have real inductance, so this is
+  the solver doing it, not a number.
+- Goggles show whether it is in, the capacitance, the line-to-line voltage, the frequency, the
+  current per capacitor and the reactive power it supplies in kvar (V × I of a capacitor is all
+  reactive). Switch banks in until the feeder's power factor stops climbing; past that it goes
+  leading, which the meter also shows. 1000 µF per capacitor is about 0.9 kvar per phase at 120 V
+  and 10 Hz, roughly what one loaded Three-Phase Motor wants.
+- A Contactor slot in a switchgear cell, or a plug-in disconnect, switches a bank by redstone or
+  by hand like any other load; several banks are steps.
+- On direct current the capacitors charge once and then sit there.
+- Recipe: paper and copper plates in an iron plate frame.
 
 ### Transformers
 
@@ -525,6 +700,29 @@ box at the back and the shaft out of the front. Feed it three phases (from three
   no field (a twentieth of the ratio) does it stop. The goggles show the excitation.
 - Loaded windings draw more current, as Power Grid's motor does. It heats and can burn out.
 - Goggles show frequency, sequence, phase voltage and current, pole pairs and synchronous speed.
+
+### Three-Phase Pump and Pump Stage (AC build)
+
+Power Grid's Electric Pump does not take to alternating current: it reads the instantaneous
+power of its one resistor every tick, so on AC its speed flickers with the waveform and the
+pipe network never settles. The **Three-Phase Pump** is the same pump (same pipe connections,
+same placement, same `electricPumpPower` and range config) driven by three star-connected
+windings, with a terminal box on top carrying U, V, W and a conduit knockout each side.
+
+- Flow follows the real power the windings take, read as RMS, so it is steady. The **phase
+  sequence** sets the direction: U-V-W pushes out of the front, U-W-V pulls into it. With one
+  phase missing or on DC it does not pump.
+- **Pump Stages** bolt onto the pump's sides: place them in a straight line out of any face square
+  to the pump's axis (they take the axis from the pump) and the pump counts them, up to six. Each
+  stage puts another winding set in parallel and adds the pump's pressure range again: a pump with
+  two stages draws three times the power at the same voltage, pumps the same flow, and pushes it
+  three times as far up the pipe. The goggles show the stage count and the range.
+- It heats like the motor and can burn out. The windings are 360 ohms a phase, so at 120 V per
+  phase a one-stage pump draws 120 W and sits at Power Grid's pump speed limit (256, config
+  `electricPumpMaxSpeed`, reached at 120 W by `electricPumpPower`); each stage draws another 120 W
+  at that voltage. Below 120 V the speed falls with the square of the voltage.
+- Recipe: a Three-Phase Motor and a Create fluid pipe, shapeless. A stage is iron plates around a
+  copper ingot (makes two).
 
 ### Three-Phase Drive (AC build)
 
@@ -768,6 +966,11 @@ your **Electrical License**. Having it in your inventory is not enough; he has t
   drop the card, run more than thirty blocks, or kill him.
 - **Bribe**: right-click him with eight emeralds while he is asking or stabbing and he pockets them
   and leaves.
+- **The code**: a license is not the end of it. While he reads the card he looks over the blocks
+  around the one you were working on, and a breaker panel with nothing spliced or wired to its
+  Ground point, or a switchgear lug block with no ground bar bonded to it, fails: he says what is
+  wrong, hands the card back and leaves without the "All in order". No knife for that; just bond
+  the ground before he comes round again.
 
 He is never sent after creative or spectator players and never within ten minutes of the last
 visit, and he gives up if he cannot reach you in four minutes. But an inspector who is already
@@ -1161,10 +1364,12 @@ computer network as `powergrid_controls`.
   screen (sneak-click the cabinet). Digital In and Digital Out modules put one terminal per
   channel there too, but only for channels that no door device is wired to: wire a button to
   input 1.3 in the cabinet screen and terminal I/O 1.3 disappears from the splices, pull the
-  wire off and it is back. An input channel turns on when its terminal sees at least 50 V
-  against Neutral, so a contact anywhere that feeds Line to it through conduit closes the
-  input. An output channel's terminal sources Line while the channel is on, enough to drive a
-  lamp, a contactor coil or another cabinet's input. Terminals exist only while the module is
+  wire off and it is back. An input channel turns on when its terminal sees at least 12 V
+  against Neutral, so a contact that feeds it either Line or the 24 V control bus closes the
+  input. An output channel's terminal puts the cabinet's **24 V DC control power** on it while
+  the channel is on (stepped down from Line by the supply module), enough to drive a
+  contactor coil, a pilot lamp or another cabinet's input; off, the terminal floats. For your
+  own control supply use a Relay module's dry COM and NO contacts instead. Terminals exist only while the module is
   in the slot.
 - **Analog Input Module.** Four channels. Each has a terminal in the splices that reads its
   volts against Neutral, or takes a Speed Dial wired to it in the cabinet screen, which then
@@ -1189,7 +1394,12 @@ computer network as `powergrid_controls`.
     low-pass filter), and Throttle: Up and Down move a value by a step per tick, or per press,
     kept between min and max, resetting to a start value, and optionally springing back to it
     when neither is held, which makes a helm key into a throttle lever. Hysteresis turns on at
-    or above one level and off below a lower one.
+    or above one level and off below a lower one. **PID** is a controller: PV is what you measure,
+    SP what you want, Out what to drive (a VFD's speed, a regulator's voltage, a valve), kept
+    between Out min and Out max. Kp acts on the error now, Ki (per second) on how long it has
+    lasted, Kd (per second) on how fast it is changing; start with Kp alone, add Ki to close the
+    last gap, keep Kd small or zero. The integral stops winding while the output sits at a limit,
+    and En low holds the output at zero with the integral cleared.
   - **Text.** A Constant with its text field filled is a text constant, for device calls that
     take a name, `helm1.isDown` with `"w"` on its argument pin, or to compare against:
     Compare with `==` or `!=` compares text when either side is text, so

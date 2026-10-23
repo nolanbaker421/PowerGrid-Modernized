@@ -130,6 +130,37 @@ class PlcRunnerTest {
     }
 
     @Test
+    void pidIntegratesTowardsTheSetpointAndStopsWindingAtTheLimit() throws Exception {
+        var io = new FakeIo();
+        var g = new PlcGraph();
+        var pv = tag(g, NodeType.TAG, "X1.1");
+        var sp = g.add(NodeType.CONST, 0, 0);
+        sp.nums[0] = 50;
+        var pid = g.add(NodeType.PID, 0, 0);
+        pid.nums[0] = 1;      // Kp
+        pid.nums[1] = 20;     // Ki per second: the whole error once per scan
+        pid.nums[2] = 0;
+        pid.nums[3] = -100;
+        pid.nums[4] = 100;
+        var y = tag(g, NodeType.SET, "Y1.1");
+        g.link(pv.id, 0, pid.id, 0);
+        g.link(sp.id, 0, pid.id, 1);
+        g.link(pid.id, 0, y.id, 0);
+        var runner = PlcRunner.compile(g, io, () -> DEVICES);
+        io.values.put("X1.1", 20.0);
+        runner.scan();
+        assertEquals(60, io.values.get("Y1.1"), 1e-9, "P 30 plus one scan of I 30");
+        runner.scan();
+        assertEquals(90, io.values.get("Y1.1"), 1e-9);
+        runner.scan();
+        assertEquals(90, io.values.get("Y1.1"), 1e-9, "the next scan would pass 100: the integral holds");
+        io.values.put("X1.1", 50.0);
+        runner.scan();
+        assertEquals(60, io.values.get("Y1.1"), 1e-9, "on setpoint only the integral is left");
+        assertEquals("", runner.lastError());
+    }
+
+    @Test
     void latchAndNetworkBitsShareOneTable() throws Exception {
         var io = new FakeIo();
         var g = new PlcGraph();

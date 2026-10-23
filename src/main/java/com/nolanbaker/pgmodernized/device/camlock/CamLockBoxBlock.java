@@ -6,9 +6,7 @@ import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
 import com.nolanbaker.pgmodernized.util.Rotation4Shapes;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -24,7 +22,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-import org.patryk3211.powergrid.utility.Lang;
+import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 
 /**
  * A cam-lock connector box: five receptacles, L1, L2, L3, N and G, that take ordinary wire, and
@@ -72,21 +70,19 @@ public class CamLockBoxBlock extends Rotation4ElectricBlock implements IBE<CamLo
 
     private static TerminalBoundingBox[] terminals() {
         var names = new String[] {"cam_lock.l1", "cam_lock.l2", "cam_lock.l3", "cam_lock.n", "cam_lock.g"};
-        var styles = new ChatFormatting[] {ChatFormatting.RED, ChatFormatting.GOLD, ChatFormatting.BLUE, ChatFormatting.WHITE, ChatFormatting.GREEN};
-        var colours = new int[] {0xD03030, 0xE0A020, 0x3060D0, 0xE8E8E8, 0x30B040};
+        // The US generator cam-lock code: L1 black, L2 red, L3 blue, neutral white, ground green.
+        var colours = new int[] {ConductorColors.hot(0), ConductorColors.hot(1), ConductorColors.hot(2), ConductorColors.NEUTRAL, ConductorColors.GROUND};
         var all = new TerminalBoundingBox[10];
         for(int k = 0; k < 5; ++k) {
             var r = RECEPTACLES[k];
-            all[k] = new TerminalBoundingBox(name(names[k], styles[k]), r.minX, r.minY, r.minZ, r.maxX, r.maxY, r.maxZ).withColor(colours[k]);
+            var name = ConductorColors.label(names[k], colours[k]);
+            int rgb = ConductorColors.rgb(colours[k]);
+            all[k] = new TerminalBoundingBox(name, r.minX, r.minY, r.minZ, r.maxX, r.maxY, r.maxZ).withColor(rgb);
             // The inner end: a speck deep inside the body no click can reach; the splice editor names it like its pole.
             double x = 3 + 2 * k;
-            all[INNER + k] = new TerminalBoundingBox(name(names[k], styles[k]), x, 3, 9, x + 0.5, 3.5, 9.5).withColor(colours[k]);
+            all[INNER + k] = new TerminalBoundingBox(name, x, 3, 9, x + 0.5, 3.5, 9.5).withColor(rgb);
         }
         return all;
-    }
-
-    private static Component name(String key, ChatFormatting style) {
-        return Lang.builder().translate(key).style(style).component();
     }
 
     /** The receptacles take any real conductor, THHN included. */

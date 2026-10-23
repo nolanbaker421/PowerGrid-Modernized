@@ -8,6 +8,9 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import com.nolanbaker.pgmodernized.ac.source.FeInverterBlockEntity;
 import com.nolanbaker.pgmodernized.ac.source.FeInverterBlock;
+import com.nolanbaker.pgmodernized.ac.pump.PumpStageBlock;
+import com.nolanbaker.pgmodernized.ac.pump.ThreePhasePumpBlock;
+import com.nolanbaker.pgmodernized.ac.pump.ThreePhasePumpBlockEntity;
 import com.nolanbaker.pgmodernized.ac.client.SynchroscopeRenderer;
 import com.nolanbaker.pgmodernized.ac.drive.ThreePhaseDriveBlock;
 import com.nolanbaker.pgmodernized.ac.drive.ThreePhaseDriveBlockEntity;
@@ -43,6 +46,7 @@ public final class AcContent {
     public static BlockEntityFactory<ThreePhaseDriveBlockEntity> DRIVE_FACTORY = ThreePhaseDriveBlockEntity::new;
     public static BlockEntityFactory<SynchroscopeBlockEntity> SYNCHROSCOPE_FACTORY = SynchroscopeBlockEntity::new;
     public static BlockEntityFactory<FeInverterBlockEntity> INVERTER_FACTORY = FeInverterBlockEntity::new;
+    public static BlockEntityFactory<ThreePhasePumpBlockEntity> PUMP_FACTORY = ThreePhasePumpBlockEntity::new;
 
     public static BlockEntry<ThreePhaseMotorBlock> THREE_PHASE_MOTOR;
     public static BlockEntry<ThreePhaseDriveBlock> THREE_PHASE_DRIVE;
@@ -51,6 +55,8 @@ public final class AcContent {
     public static BlockEntry<FeInverterBlock> FE_INVERTER;
     public static BlockEntry<LoadBankBlock> LOAD_BANK;
     public static BlockEntry<RfConnectorBlock> RF_CONNECTOR;
+    public static BlockEntry<ThreePhasePumpBlock> THREE_PHASE_PUMP;
+    public static BlockEntry<PumpStageBlock> PUMP_STAGE;
 
     public static BlockEntityEntry<ThreePhaseMotorBlockEntity> THREE_PHASE_MOTOR_BE;
     public static BlockEntityEntry<ThreePhaseDriveBlockEntity> THREE_PHASE_DRIVE_BE;
@@ -59,6 +65,7 @@ public final class AcContent {
     public static BlockEntityEntry<FeInverterBlockEntity> FE_INVERTER_BE;
     public static BlockEntityEntry<LoadBankBlockEntity> LOAD_BANK_BE;
     public static BlockEntityEntry<RfConnectorBlockEntity> RF_CONNECTOR_BE;
+    public static BlockEntityEntry<ThreePhasePumpBlockEntity> THREE_PHASE_PUMP_BE;
 
     private AcContent() {}
 
@@ -178,6 +185,33 @@ public final class AcContent {
 
         RF_CONNECTOR_BE = REGISTRATE.blockEntity("rf_connector", RfConnectorBlockEntity::new)
                 .validBlock(RF_CONNECTOR)
+                .register();
+
+        /* Power Grid's pump with a three-phase motor on it, and the stages that bolt onto its sides. */
+        THREE_PHASE_PUMP = REGISTRATE.block("three_phase_pump", ThreePhasePumpBlock::new)
+                .blockstate(NonNullBiConsumer.noop())
+                .initialProperties(SharedProperties::softMetal)
+                .properties(p -> p.noOcclusion())
+                .transform(pickaxeOnly())
+                .lang("Three-Phase Pump")
+                .item()
+                    .model(NonNullBiConsumer.noop())
+                    .build()
+                .register();
+
+        PUMP_STAGE = REGISTRATE.block("pump_stage", PumpStageBlock::new)
+                .blockstate(NonNullBiConsumer.noop())
+                .initialProperties(SharedProperties::softMetal)
+                .properties(p -> p.noOcclusion())
+                .transform(pickaxeOnly())
+                .lang("Pump Stage")
+                .item()
+                    .model(NonNullBiConsumer.noop())
+                    .build()
+                .register();
+
+        THREE_PHASE_PUMP_BE = REGISTRATE.blockEntity("three_phase_pump", (BlockEntityFactory<ThreePhasePumpBlockEntity>) (type, pos, state) -> PUMP_FACTORY.create(type, pos, state))
+                .validBlock(THREE_PHASE_PUMP)
                 .register();
     }
 

@@ -4,13 +4,11 @@ import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -85,7 +83,12 @@ public final class PanelLayout {
 
     /** Section a terminal belongs to. */
     public static int sectionOf(PanelSpec spec, int terminal) {
-        return terminal < extBase(spec) ? 0 : Math.min(MAX_EXT, 1 + (terminal - extBase(spec)) / extSize(spec));
+        return terminal < extBase(spec) || terminal >= groundTerminal(spec) ? 0 : Math.min(MAX_EXT, 1 + (terminal - extBase(spec)) / extSize(spec));
+    }
+
+    /** The panel's ground point, bonded to its neutral: the last terminal, added after the extensions' so saved panels keep their indices. */
+    public static int groundTerminal(PanelSpec spec) {
+        return extBase(spec) + MAX_EXT * extSize(spec);
     }
 
     /** The head's bottom knockouts, which an extension covers. */
@@ -127,7 +130,7 @@ public final class PanelLayout {
 
     /** Offset of a terminal inside its extension section, or -1 for a head terminal. */
     private static int extLocal(PanelSpec spec, int terminal) {
-        if(terminal < extBase(spec) || terminal >= terminalCount(spec))
+        if(terminal < extBase(spec) || terminal >= groundTerminal(spec))
             return -1;
         return (terminal - extBase(spec)) % extSize(spec);
     }
@@ -207,11 +210,11 @@ public final class PanelLayout {
     }
 
     public static int terminalCount(PanelSpec spec) {
-        return extBase(spec) + MAX_EXT * extSize(spec);
+        return groundTerminal(spec) + 1;
     }
 
     public static boolean isPoint(PanelSpec spec, int terminal) {
-        return (terminal >= 0 && terminal < hubBase(spec)) || branchSlot(spec, terminal) >= 0;
+        return (terminal >= 0 && terminal < hubBase(spec)) || branchSlot(spec, terminal) >= 0 || terminal == groundTerminal(spec);
     }
 
     /**
@@ -246,15 +249,24 @@ public final class PanelLayout {
 
     // ---- lines ----
 
-    /** "Line" on a one-lug panel; L1, L2, L3 in the US conductor colours on the others. */
+    /** "Line" on a one-lug panel; L1, L2, L3 on the others, in the line colours: black, red, blue. */
     public static Component lineName(PanelSpec spec, int lug) {
         if(spec.lugs() == 1)
-            return name("breaker_panel.line", ChatFormatting.RED);
-        return Component.translatable("powergrid.breaker_panel.leg", lug + 1).withStyle(Style.EMPTY.withColor(ConductorColors.textRgb(lug)));
+            return ConductorColors.hotLabel("breaker_panel.line", 0);
+        return ConductorColors.hotLabel("breaker_panel.leg", lug, lug + 1);
     }
 
     public static int lineRgb(PanelSpec spec, int lug) {
-        return spec.lugs() == 1 ? IDecoratedTerminal.RED : ConductorColors.rgb(lug);
+        return ConductorColors.hotRgb(lug);
+    }
+
+    /** A branch space in its row's line colour; a pole row's real lug is only known to the block entity. */
+    public static Component branchName(PanelSpec spec, int slot) {
+        return ConductorColors.hotLabel("breaker_panel.branch", spec.leg(slot), slot + 1);
+    }
+
+    public static int branchRgb(PanelSpec spec, int slot) {
+        return ConductorColors.hotRgb(spec.leg(slot));
     }
 
     // ---- breaker spaces ----
@@ -366,11 +378,11 @@ public final class PanelLayout {
         var terminals = new TerminalBoundingBox[terminalCount(spec)];
         for(int lug = 0; lug < spec.lugs(); ++lug)
             terminals[spec.lineTerminal(lug)] = terminal(lineName(spec, lug), HIDDEN).withColor(lineRgb(spec, lug));
-        terminals[spec.neutralTerminal()] = terminal(name("breaker_panel.neutral", ChatFormatting.BLUE), HIDDEN).withColor(IDecoratedTerminal.BLUE);
+        terminals[spec.neutralTerminal()] = terminal(ConductorColors.neutralLabel("breaker_panel.neutral"), HIDDEN).withColor(ConductorColors.neutralRgb());
+        terminals[groundTerminal(spec)] = terminal(ConductorColors.groundLabel("breaker_panel.ground"), HIDDEN).withColor(ConductorColors.groundRgb());
         for(int slot = 0; slot < maxSlots(spec); ++slot) {
-            var label = Lang.builder().translate("breaker_panel.branch", slot + 1).style(ChatFormatting.GRAY).component();
             var hidden = HIDDEN.move(0, -16 * sectionOfSlot(spec, slot), 0);
-            terminals[branchTerminal(spec, slot)] = terminal(label, hidden).withColor(IDecoratedTerminal.GRAY);
+            terminals[branchTerminal(spec, slot)] = terminal(branchName(spec, slot), hidden).withColor(branchRgb(spec, slot));
         }
         for(int h = 0; h < maxHubs(); ++h) {
             terminals[hubTerminal(spec, h)] = terminal(hubName(h), hub(h)).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.TWO.bandColor());
@@ -385,10 +397,6 @@ public final class PanelLayout {
 
     private static TerminalBoundingBox terminal(Component name, AABB px) {
         return new TerminalBoundingBox(name, px.minX, px.minY, px.minZ, px.maxX, px.maxY, px.maxZ);
-    }
-
-    private static Component name(String key, ChatFormatting style) {
-        return Lang.builder().translate(key).style(style).component();
     }
 
     // ---- clicks ----

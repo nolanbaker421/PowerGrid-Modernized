@@ -1,0 +1,26 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powergrid_modernized:block/bus_duct"
+    },
+    "facing=south": {
+      "model": "powergrid_modernized:block/bus_duct"
+    },
+    "facing=east": {
+      "model": "powergrid_modernized:block/bus_duct",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "powergrid_modernized:block/bus_duct",
+      "y": 90
+    },
+    "facing=up": {
+      "model": "powergrid_modernized:block/bus_duct",
+      "x": 90
+    },
+    "facing=down": {
+      "model": "powergrid_modernized:block/bus_duct",
+      "x": 90
+    }
+  }
+}

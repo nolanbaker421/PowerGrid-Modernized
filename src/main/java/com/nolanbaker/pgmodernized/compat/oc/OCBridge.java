@@ -52,6 +52,7 @@ public class OCBridge {
         ComputerBlockEntityFactories.LINE_AMMETER = OCLineAmmeterBlockEntity::new;
         ComputerBlockEntityFactories.CT_CABINET = OCCtCabinetBlockEntity::new;
         ComputerBlockEntityFactories.TRANSFORMER = OCTransformerBlockEntity::new;
+        ComputerBlockEntityFactories.GEAR_CELL = OCGearCellBlockEntity::new;
         ForkHooks.get().swapOCFactories();
         RangefinderBlockEntity.FACTORY = OCRangefinderBlockEntity::new;
         HelmBlockEntity.FACTORY = OCHelmBlockEntity::new;

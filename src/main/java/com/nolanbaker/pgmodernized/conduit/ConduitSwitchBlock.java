@@ -23,7 +23,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
@@ -69,8 +68,8 @@ public class ConduitSwitchBlock extends Rotation4ElectricBlock implements IBE<Co
 
     private static TerminalBoundingBox[] terminals() {
         var terminals = new TerminalBoundingBox[TERMINAL_COUNT];
-        terminals[TERMINAL_POLE_A] = terminal(name("conduit_switch.line", ChatFormatting.RED), HIDDEN).withColor(IDecoratedTerminal.RED);
-        terminals[TERMINAL_POLE_B] = terminal(name("conduit_switch.load", ChatFormatting.BLUE), HIDDEN).withColor(IDecoratedTerminal.BLUE);
+        terminals[TERMINAL_POLE_A] = terminal(ConductorColors.hotLabel("conduit_switch.line", 0), HIDDEN).withColor(ConductorColors.hotRgb(0));
+        terminals[TERMINAL_POLE_B] = terminal(ConductorColors.hotLabel("conduit_switch.load", 1), HIDDEN).withColor(ConductorColors.hotRgb(1));
         terminals[TERMINAL_HUB] = terminal(name("conduit_socket.hub", ChatFormatting.AQUA), HUB).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.ONE.bandColor());
         for(int k = 0; k < ConductorColors.COUNT; ++k)
             terminals[CONDUCTOR_BASE + k] = terminal(ConductorColors.name(k), HIDDEN).withColor(ConductorColors.rgb(k));

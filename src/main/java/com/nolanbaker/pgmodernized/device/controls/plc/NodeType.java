@@ -35,6 +35,8 @@ public enum NodeType {
     THROTTLE("Throttle", Group.MATH, List.of(Param.number(0, "Step per tick", 1), Param.number(1, "Min", 0), Param.number(2, "Max", 100), Param.number(3, "Start", 0),
             Param.choice(4, "Count", Choices.THROTTLE_MODES), Param.choice(5, "Released", Choices.THROTTLE_RELEASE))),
     SMOOTH("Smooth", Group.MATH, List.of(Param.number(0, "Factor, 0 to 1", 0.1))),
+    PID("PID", Group.MATH, List.of(Param.number(0, "Kp", 1), Param.number(1, "Ki, per second", 0), Param.number(2, "Kd, per second", 0),
+            Param.number(3, "Out min", 0), Param.number(4, "Out max", 100))),
     CALL("Device call", Group.DEVICE, List.of(Param.device(0, "Method"), Param.count(0, "Arguments", 0, 0, 6), Param.choice(1, "Call", Choices.CALL_MODES),
             Param.choice(2, "Arguments as", Choices.ARG_TYPES))),
     LUA("Lua", Group.SCRIPT, List.of(Param.script(0, "Script", NodeType.LUA_DEFAULT), Param.count(0, "Inputs", 2, 0, 8), Param.count(1, "Outputs", 1, 0, 8))),
@@ -156,6 +158,7 @@ public enum NodeType {
             case SELECT -> new String[] {"Sel", "A", "B"};
             case BLINK -> new String[] {"En"};
             case COUNTER, THROTTLE -> new String[] {"Up", "Down", "Reset"};
+            case PID -> new String[] {"PV", "SP", "En"};
             case SET -> new String[] {"Value"};
             case CALL -> {
                 var names = new String[1 + count(node, 0, 0)];
@@ -176,6 +179,7 @@ public enum NodeType {
             case TON, TOF -> new String[] {"Q", "Elapsed"};
             case ADD, SUB, MUL, DIV, SCALE, CLAMP, SMOOTH -> new String[] {"Out"};
             case COUNTER -> new String[] {"Count", "Done"};
+            case PID -> new String[] {"Out", "Err"};
             case CALL -> new String[] {"Result"};
             case LUA -> numbered("Out", count(node, 1, 1));
             default -> new String[0];
@@ -196,6 +200,7 @@ public enum NodeType {
             case THROTTLE -> format(node.nums[0]) + "/t  " + format(node.nums[1]) + ".." + format(node.nums[2]);
             case HYSTERESIS -> "on " + format(node.nums[0]) + "  off " + format(node.nums[1]);
             case SMOOTH -> "k " + format(node.nums[0]);
+            case PID -> "P " + format(node.nums[0]) + "  I " + format(node.nums[1]) + "  D " + format(node.nums[2]);
             case CALL -> node.text;
             case LUA -> {
                 for(var line : node.text.split("\n")) {

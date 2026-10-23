@@ -12,7 +12,11 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
-/** A sagging square tube from one end of a flexible conduit to the other, in the conduit texture. */
+/**
+ * A sagging square tube from one end of a flexible conduit to the other, in the conduit texture.
+ * The texture's stripes run across each face, so they ring the tube like corrugations rather
+ * than running its length.
+ */
 public class FlexConduitRenderer extends EntityRenderer<FlexConduitEntity> {
     private static final ResourceLocation TEXTURE = PowerGridModernized.asResource("textures/special/conduit.png");
 
@@ -60,9 +64,9 @@ public class FlexConduitRenderer extends EntityRenderer<FlexConduitEntity> {
                 var c1 = corners[(k + 1) % 4];
                 var normal = c0.add(c1).normalize();
                 vertex(pose, consumer, prev.add(c1).subtract(a), 0, 0, normal, light);
-                vertex(pose, consumer, prev.add(c0).subtract(a), 0, 1, normal, light);
+                vertex(pose, consumer, prev.add(c0).subtract(a), 1, 0, normal, light);
                 vertex(pose, consumer, next.add(c0).subtract(a), 1, 1, normal, light);
-                vertex(pose, consumer, next.add(c1).subtract(a), 1, 0, normal, light);
+                vertex(pose, consumer, next.add(c1).subtract(a), 0, 1, normal, light);
             }
             prev = next;
         }

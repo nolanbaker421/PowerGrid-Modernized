@@ -18,8 +18,8 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 
 /**
  * A synchroscope: a wall meter that compares the running bus with an incoming machine before the
@@ -58,9 +58,9 @@ public class SynchroscopeBlock extends HorizontalElectricBlock implements IBE<Sy
     private static TerminalBoundingBox[] terminals() {
         return new TerminalBoundingBox[] {
                 terminal("synchroscope.bus", LUGS[BUS], 0xC62828),
-                terminal("synchroscope.bus_n", LUGS[BUS_N], IDecoratedTerminal.BLUE),
+                terminal("synchroscope.bus_n", LUGS[BUS_N], ConductorColors.neutralRgb()),
                 terminal("synchroscope.incoming", LUGS[INCOMING], 0xF07F1A),
-                terminal("synchroscope.incoming_n", LUGS[INCOMING_N], IDecoratedTerminal.BLUE),
+                terminal("synchroscope.incoming_n", LUGS[INCOMING_N], ConductorColors.neutralRgb()),
         };
     }
 

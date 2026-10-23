@@ -203,8 +203,15 @@ public class ElectricalInspectorEntity extends PathfinderMob {
             case READ -> {
                 getLookControl().setLookAt(target, 30f, 30f);
                 if(--timer <= 0) {
-                    say(target, "message.inspector.pass");
-                    playSound(SoundEvents.VILLAGER_YES, 1f, 1f);
+                    // The card is in order; the work had better be too.
+                    String violation = work != null && level() instanceof ServerLevel server ? Inspections.codeViolation(server, work) : null;
+                    if(violation != null) {
+                        say(target, violation);
+                        playSound(SoundEvents.VILLAGER_NO, 1f, 0.9f);
+                    } else {
+                        say(target, "message.inspector.pass");
+                        playSound(SoundEvents.VILLAGER_YES, 1f, 1f);
+                    }
                     returnCard(target);
                     leave();
                 }

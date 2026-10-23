@@ -32,7 +32,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
@@ -81,10 +80,10 @@ public class FeInverterBlock extends HorizontalElectricBlock implements IBE<FeIn
     /** The four points live inside the cabinet, reached only through the splice editor. */
     private static TerminalBoundingBox[] terminals() {
         return new TerminalBoundingBox[] {
-                terminal("fe_inverter.l1", HIDDEN, ConductorColors.rgb(0), ConductorColors.textRgb(0)),
-                terminal("fe_inverter.l2", HIDDEN, ConductorColors.rgb(2), ConductorColors.textRgb(2)),
-                terminal("fe_inverter.l3", HIDDEN, ConductorColors.rgb(3), ConductorColors.textRgb(3)),
-                terminal("fe_inverter.n", HIDDEN, IDecoratedTerminal.BLUE, IDecoratedTerminal.BLUE),
+                terminal("fe_inverter.l1", HIDDEN, ConductorColors.hotRgb(0), ConductorColors.hotTextRgb(0)),
+                terminal("fe_inverter.l2", HIDDEN, ConductorColors.hotRgb(1), ConductorColors.hotTextRgb(1)),
+                terminal("fe_inverter.l3", HIDDEN, ConductorColors.hotRgb(2), ConductorColors.hotTextRgb(2)),
+                terminal("fe_inverter.n", HIDDEN, ConductorColors.neutralRgb(), ConductorColors.neutralTextRgb()),
         };
     }
 

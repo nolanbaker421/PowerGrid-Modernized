@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": {
+      "tag": "c:nuggets/copper"
+    },
+    "G": {
+      "tag": "c:glass_panes"
+    }
+  },
+  "pattern": [
+    "LGL",
+    "LGL",
+    "LGL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:gear_fuse_100"
+  }
+}

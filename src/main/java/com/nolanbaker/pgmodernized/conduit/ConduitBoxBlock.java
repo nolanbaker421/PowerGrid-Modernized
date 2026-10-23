@@ -27,13 +27,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.base.ISocketElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.SocketEndpoint;
 import org.patryk3211.powergrid.utility.Lang;
 
 /**
@@ -41,15 +44,30 @@ import org.patryk3211.powergrid.utility.Lang;
  * to each other in the editor. Placed open; a blank cover plate closes it, a node plate closes it
  * with twelve cover terminals that ordinary wires land on and that the editor offers as points.
  */
-public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<ConduitBoxBlockEntity> {
+public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<ConduitBoxBlockEntity>, ISocketElectric {
     public static final EnumProperty<ConduitCover> COVER = EnumProperty.create("cover", ConduitCover.class);
+    /** Where a cord would go on a box that has no receptacle: nowhere. */
+    private static final ITerminalPlacement NO_SOCKET = new ITerminalPlacement() {
+        @Override
+        public boolean check(Vec3 pos) {
+            return false;
+        }
+
+        @Override
+        public Vec3 getOrigin() {
+            return Vec3.ZERO;
+        }
+    };
 
     public ConduitBoxBlock(Properties properties) {
         super(properties);
         // Boxes saved before cover plates existed keep their terminals: the default is the node plate.
         registerDefaultState(defaultBlockState().setValue(COVER, ConduitCover.NODE));
-        var plain = VoxelShaper.forDirectional(ConduitBoxGeometry.shape(false), Direction.NORTH).withVerticalShapes(ShapeRotation.northToUp(ConduitBoxGeometry.shape(false)));
-        var node = VoxelShaper.forDirectional(ConduitBoxGeometry.shape(true), Direction.NORTH).withVerticalShapes(ShapeRotation.northToUp(ConduitBoxGeometry.shape(true)));
+        var shapes = new java.util.EnumMap<ConduitCover, VoxelShaper>(ConduitCover.class);
+        for(var cover : ConduitCover.values()) {
+            var shape = ConduitBoxGeometry.shape(cover, java.util.function.UnaryOperator.identity());
+            shapes.put(cover, VoxelShaper.forDirectional(shape, Direction.NORTH).withVerticalShapes(ShapeRotation.northToUp(shape)));
+        }
         var terminals = ConduitBoxGeometry.terminals();
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
                 .forAllStates(state -> BlockStateTerminalCollection.each(terminals, terminal -> switch(state.getValue(FACING)) {
@@ -60,8 +78,24 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
                     case UP -> terminal.rotateAroundX(-90);
                     case DOWN -> terminal.rotateAroundX(90);
                 }))
-                .withShapeMapper(state -> (cover(state).hasTerminals() ? node : plain).get(state.getValue(FACING)))
+                .withShapeMapper(state -> shapes.get(cover(state)).get(state.getValue(FACING)))
                 .build());
+    }
+
+    /** The receptacle's face, when the cover has one; a cord plugged there lands on cover terminals 0 and 1. */
+    @Override
+    public ITerminalPlacement socket(BlockState state) {
+        if(cover(state) != ConduitCover.RECEPTACLE)
+            return NO_SOCKET;
+        var placement = super.terminal(state, ConduitBoxGeometry.TERMINAL_RECEPTACLE);
+        return placement == null ? NO_SOCKET : placement;
+    }
+
+    /** The receptacle is never a wire terminal: Power Grid's cord looks for a clicked terminal before it looks for a socket. */
+    @Override
+    public int terminalIndexAt(BlockState state, Vec3 pos) {
+        int terminal = super.terminalIndexAt(state, pos);
+        return terminal == ConduitBoxGeometry.TERMINAL_RECEPTACLE ? -1 : terminal;
     }
 
     @Override
@@ -74,6 +108,11 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
         return state.getValue(COVER);
     }
 
+    /** A lit light socket lights the room. */
+    public static int lightOf(BlockState state) {
+        return state.hasProperty(COVER) && state.getValue(COVER) == ConduitCover.LIGHT_ON ? 15 : 0;
+    }
+
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         var facing = ctx.getClickedFace();
@@ -82,10 +121,12 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
         return defaultBlockState().setValue(FACING, facing).setValue(COVER, ConduitCover.OPEN);
     }
 
-    /** The cover terminals only exist under a node plate. */
+    /** The cover terminals only exist on a plate that exposes them: all twelve on a node plate, two on a light socket or a receptacle. */
     @Override
     public ITerminalPlacement terminal(BlockState state, int index) {
-        if(ConduitBoxGeometry.isFront(index) && !cover(state).hasTerminals())
+        if(ConduitBoxGeometry.isFront(index) && !cover(state).exposes(index))
+            return null;
+        if(index == ConduitBoxGeometry.TERMINAL_RECEPTACLE && cover(state) != ConduitCover.RECEPTACLE)
             return null;
         return super.terminal(state, index);
     }
@@ -132,7 +173,7 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
                 return ItemInteractionResult.FAIL;
             }
             if(!level.isClientSide) {
-                level.setBlock(pos, state.setValue(COVER, plate.cover()), Block.UPDATE_ALL);
+                level.setBlock(pos, state.setValue(COVER, plate.cover().itemCover()), Block.UPDATE_ALL);
                 level.playSound(null, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.2f);
                 if(!player.isCreative())
                     stack.shrink(1);
@@ -155,12 +196,27 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
                 player.displayClientMessage(Lang.builder().translate("message.conduit_box.wires_attached").style(ChatFormatting.RED).component(), true);
                 return InteractionResult.FAIL;
             }
+            if(cover == ConduitCover.RECEPTACLE && new SocketEndpoint(pos).hasConnection(level)) {
+                player.displayClientMessage(Lang.builder().translate("message.conduit_box.cord_attached").style(ChatFormatting.RED).component(), true);
+                return InteractionResult.FAIL;
+            }
             level.setBlock(pos, state.setValue(COVER, ConduitCover.OPEN), Block.UPDATE_ALL);
-            var plate = cover == ConduitCover.NODE ? ModItems.CONDUIT_COVER_NODE.asStack() : ModItems.CONDUIT_COVER_BLANK.asStack();
+            var plate = ModItems.coverPlate(cover);
             if(!player.getInventory().add(plate))
                 Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, plate);
             level.playSound(null, pos, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.6f, 1.2f);
             return InteractionResult.SUCCESS;
+        }
+        // A cord in the receptacle comes out in the hand, as on Power Grid's own socket.
+        if(cover(state) == ConduitCover.RECEPTACLE && hand == InteractionHand.MAIN_HAND && player.getMainHandItem().isEmpty()) {
+            var endpoint = new SocketEndpoint(pos);
+            var cord = endpoint.getConnection(level);
+            if(cord != null) {
+                if(cord.getEndpoint1().equals(endpoint))
+                    return cord.cordDetach(player, false) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+                if(cord.getEndpoint2().equals(endpoint))
+                    return cord.cordDetach(player, true) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+            }
         }
         if(level.isClientSide)
             ClientHooks.openSplices(pos);

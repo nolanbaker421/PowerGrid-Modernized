@@ -370,6 +370,28 @@ def blank_and_lock():
     recipe("breaker_lock", [" N ", "NIN", "NNN"], {"N": {"tag": "c:nuggets/iron"}, "I": {"tag": "c:ingots/iron"}}, 1, {"items": "minecraft:iron_ingot"})
 
 
+def gfci_assets():
+    """The single-pole GFCI breaker: the 50 A breaker with a yellow test button, and its recipe."""
+    img = canvas(16, 16)
+    black = (0x1c, 0x1c, 0x1c)
+    fill(img, 0, 3, 16, 13, black)
+    fill(img, 0, 3, 16, 4, shade(black, 1.8))
+    fill(img, 0, 12, 16, 13, shade(black, 0.5))
+    fill(img, 1, 5, 15, 11, (0x2e, 0x2e, 0x2e))
+    fill(img, 11, 4, 15, 12, (0x11, 0x11, 0x11))
+    fill(img, 12, 6, 14, 10, (0x3c, 0x3c, 0x3c))
+    fill(img, 12, 7, 13, 9, (0xe8, 0xe8, 0xe8))
+    text(img, 1, 6, "50", (0xe8, 0xe8, 0xe8))
+    fill(img, 8, 6, 10, 10, (0xe8, 0xd0, 0x20))                 # the test button
+    write_png(os.path.join(ASSETS, "textures", "item", "breaker_50a_gfci.png"), img)
+    dump(os.path.join(ASSETS, "models", "item", "breaker_50a_gfci.json"), {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "%s:item/breaker_50a_gfci" % MOD},
+    })
+    recipe_shapeless("breaker_50a_gfci", [{"item": "%s:breaker_50a" % MOD}, {"tag": "c:dusts/redstone"}, {"tag": "c:nuggets/copper"}], 1,
+                     {"items": "%s:breaker_50a" % MOD})
+
+
 def breaker_item_models():
     names = ["breaker_%da" % rating for rating in BREAKERS]
     names += ["breaker_%da_%dp" % (rating, poles) for poles in MULTI_POLES for rating in BREAKERS]
@@ -544,6 +566,21 @@ def extension_assets():
            {"items": "%s:breaker_panel_200" % MOD})
 
 
+def panel_cover_assets():
+    """The panel cover: a door item for any breaker panel, drawn over the front by the renderer."""
+    grey = (0x7a, 0x7e, 0x86)
+    img = canvas(16, 16)
+    fill(img, 1, 1, 15, 15, grey)
+    fill(img, 1, 1, 15, 2, shade(grey, 1.2))
+    fill(img, 1, 14, 15, 15, shade(grey, 0.6))
+    fill(img, 1, 1, 2, 15, shade(grey, 0.85))
+    fill(img, 14, 1, 15, 15, shade(grey, 0.7))
+    fill(img, 12, 6, 13, 10, (0xc8, 0xcc, 0xd0))
+    write_png(os.path.join(ASSETS, "textures", "item", "panel_cover.png"), img)
+    dump(os.path.join(ASSETS, "models", "item", "panel_cover.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/panel_cover" % MOD}})
+    recipe("panel_cover", ["PP", "PP"], {"P": {"tag": "c:plates/iron"}}, 1, {"items": "%s:breaker_panel_200" % MOD})
+
+
 def main():
     shared_textures()
     breaker_models()
@@ -558,7 +595,9 @@ def main():
         panel_model(name, slots)
         loot_table(name)
     recipes()
+    gfci_assets()
     extension_assets()
+    panel_cover_assets()
     print("breaker panel assets written under", os.path.abspath(ROOT))
 
 

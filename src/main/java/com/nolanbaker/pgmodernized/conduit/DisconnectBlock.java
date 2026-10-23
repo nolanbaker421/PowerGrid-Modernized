@@ -27,7 +27,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
@@ -81,12 +80,13 @@ public class DisconnectBlock extends HorizontalElectricBlock implements IBE<Disc
         return new AABB(LUG_X[k] - 0.5, 0.2, 11.5, LUG_X[k] + 0.5, 1, 12.5);
     }
 
+    /** Pole k's line and load both wear line k's colour: black, red, blue. */
     public static Component lineName(int k) {
-        return Lang.builder().translate("disconnect.line", k + 1).style(ChatFormatting.RED).component();
+        return ConductorColors.hotLabel("disconnect.line", k, k + 1);
     }
 
     public static Component loadName(int k) {
-        return Lang.builder().translate("disconnect.load", k + 1).style(ChatFormatting.BLUE).component();
+        return ConductorColors.hotLabel("disconnect.load", k, k + 1);
     }
 
     public static Component hubName(int hub) {
@@ -96,8 +96,8 @@ public class DisconnectBlock extends HorizontalElectricBlock implements IBE<Disc
     private static TerminalBoundingBox[] terminals() {
         var terminals = new TerminalBoundingBox[TERMINAL_COUNT];
         for(int k = 0; k < POLES; ++k) {
-            terminals[LINE_BASE + k] = terminal(lineName(k), lineLug(k)).withColor(IDecoratedTerminal.RED);
-            terminals[LOAD_BASE + k] = terminal(loadName(k), loadLug(k)).withColor(IDecoratedTerminal.BLUE);
+            terminals[LINE_BASE + k] = terminal(lineName(k), lineLug(k)).withColor(ConductorColors.hotRgb(k));
+            terminals[LOAD_BASE + k] = terminal(loadName(k), loadLug(k)).withColor(ConductorColors.hotRgb(k));
         }
         for(int h = 0; h < HUBS; ++h) {
             terminals[HUB_BASE + h] = terminal(hubName(h), HUB_BOXES[h]).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.TWO.bandColor());

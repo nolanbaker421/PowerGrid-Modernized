@@ -2,6 +2,8 @@ package com.nolanbaker.pgmodernized.inspector;
 
 import com.nolanbaker.pgmodernized.PgmConfig;
 import com.nolanbaker.pgmodernized.PowerGridModernized;
+import com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlockEntity;
+import com.nolanbaker.pgmodernized.device.gear.GearCellBlockEntity;
 import com.nolanbaker.pgmodernized.registry.ModEntities;
 import com.nolanbaker.pgmodernized.registry.ModItems;
 import net.minecraft.core.BlockPos;
@@ -21,6 +23,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.village.VillagerTradesEvent;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 
 import java.util.HashMap;
@@ -58,6 +61,23 @@ public final class Inspections {
         var inspector = nearby.get(0);
         inspector.assign(player, pos);
         active.put(player.getUUID(), inspector.getUUID());
+    }
+
+    /**
+     * The code: a breaker panel must have something on its ground point, and a lug block in a
+     * switchgear cell must have a ground bar bonded to it. Looks around the block that was worked
+     * on and returns the message key of the first violation, or null when all is in order.
+     */
+    @Nullable
+    public static String codeViolation(ServerLevel level, BlockPos work) {
+        for(var pos : BlockPos.betweenClosed(work.offset(-4, -3, -4), work.offset(4, 3, 4))) {
+            var be = level.getBlockEntity(pos);
+            if(be instanceof BreakerPanelBlockEntity panel && !panel.groundBonded())
+                return "message.inspector.code_panel_ground";
+            if(be instanceof GearCellBlockEntity cell && cell.hasUngroundedLugs())
+                return "message.inspector.code_cell_ground";
+        }
+        return null;
     }
 
     public static boolean isElectrical(BlockState state) {

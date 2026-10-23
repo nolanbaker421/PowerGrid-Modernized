@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
+import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 
 /**
  * A wall cabinet with four current transformers. Each channel is a pass-through: the feeder goes in
@@ -88,7 +89,7 @@ public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCab
 
     private static TerminalBoundingBox[] terminals() {
         var terminals = new TerminalBoundingBox[BASE_COUNT];
-        terminals[TERMINAL_REFERENCE] = terminal(name("ct_cabinet.reference", ChatFormatting.BLUE), HIDDEN).withColor(IDecoratedTerminal.BLUE);
+        terminals[TERMINAL_REFERENCE] = terminal(ConductorColors.neutralLabel("ct_cabinet.reference"), HIDDEN).withColor(ConductorColors.neutralRgb());
         for(int n = 0; n < CHANNELS; ++n) {
             terminals[inTerminal(n)] = terminal(Lang.builder().translate("ct_cabinet.in", n + 1).style(ChatFormatting.RED).component(), HIDDEN)
                     .withColor(IDecoratedTerminal.RED);
@@ -101,10 +102,6 @@ public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCab
 
     private static TerminalBoundingBox terminal(Component name, AABB px) {
         return new TerminalBoundingBox(name, px.minX, px.minY, px.minZ, px.maxX, px.maxY, px.maxZ);
-    }
-
-    private static Component name(String key, ChatFormatting style) {
-        return Lang.builder().translate(key).style(style).component();
     }
 
     @Override

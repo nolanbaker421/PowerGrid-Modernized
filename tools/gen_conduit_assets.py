@@ -10,7 +10,7 @@ at z = 16 with its cover facing north; a viewer at the front has +x on their lef
 import math
 import os
 
-from gen_breaker_panel_assets import ASSETS, DATA, MOD, canvas, dump, element, fill, shade, write_png
+from gen_breaker_panel_assets import ASSETS, DATA, MOD, canvas, dump, element, fill, recipe_shapeless, shade, write_png
 
 # id suffix, conductors, tube thickness (blocks), knockout colour (mirrored in ConduitSize.java)
 SIZES = [
@@ -48,6 +48,12 @@ for _a in HUB_ALONG:
     HUBS += [(_x - 1, 12, 13.5, _x + 1, 13, 15.5), (3, _x - 1, 13.5, 4, _x + 1, 15.5),
              (_x - 1, 3, 13.5, _x + 1, 4, 15.5), (12, _x - 1, 13.5, 13, _x + 1, 15.5)]
 COLUMNS_U = [5, 7, 9, 11]
+# Every cover state, and the cover terminals each shows as nubs; the light socket's lamp holder and bulb (ConduitBoxGeometry).
+COVERS = ("open", "blank", "node", "light_off", "light_on", "receptacle")
+NUBS = {"open": 0, "blank": 0, "node": 12, "light_off": 2, "light_on": 2, "receptacle": 2}
+LAMP_HOLDER = (6.5, 6.5, 11, 9.5, 9.5, 13)
+BULB = (6, 6, 8.5, 10, 10, 11)
+RECEPTACLE_FACE = (6.5, 6, 11.5, 9.5, 10, 13)
 ROWS_Y = [10, 8, 6]
 NUB, NUB_Z1, NUB_Z2 = 0.6, 12.4, 13
 DIRECTIONAL = {
@@ -80,6 +86,14 @@ def textures():
         fill(tube, 0, y + 2, 16, y + 3, shade(steel, 0.88))
     write_png(os.path.join(ASSETS, "textures", "special", "conduit.png"), tube)
 
+    # The bulb of a light socket cover, dark and lit.
+    for name, glass, core in (("lamp_off", (0xd8, 0xd6, 0xcc), (0xb0, 0xae, 0xa4)), ("lamp_on", (0xff, 0xf2, 0xb8), (0xff, 0xff, 0xe0))):
+        bulb = canvas(16, 16, glass + (255,))
+        fill(bulb, 4, 4, 12, 12, core)
+        fill(bulb, 0, 0, 16, 1, shade(glass, 0.8))
+        fill(bulb, 0, 15, 16, 16, shade(glass, 0.7))
+        write_png(os.path.join(block, name + ".png"), bulb)
+
     item = os.path.join(ASSETS, "textures", "item")
     for i, (sid, _conductors, _thickness, _band) in enumerate(SIZES):
         # Conduit item: a straight stick of tube, thicker for bigger sizes, with a coupling.
@@ -104,8 +118,9 @@ def textures():
 
 def box_model():
     tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD,
-           "open": "%s:block/conduit_box_open" % MOD, "knockout": "%s:block/knockout_one_half" % MOD, "particle": "%s:block/conduit_box" % MOD}
-    for cover in ("open", "blank", "node"):
+           "open": "%s:block/conduit_box_open" % MOD, "knockout": "%s:block/knockout_one_half" % MOD, "particle": "%s:block/conduit_box" % MOD,
+           "lamp_off": "%s:block/lamp_off" % MOD, "lamp_on": "%s:block/lamp_on" % MOD, "receptacle": "%s:block/receptacle" % MOD}
+    for cover in COVERS:
         if cover == "open":
             # No front: the body is set back and its open face shows the interior.
             x1, y1, z1, x2, y2, z2 = BODY
@@ -115,17 +130,21 @@ def box_model():
             elements = [element(*BODY, "#box", cull_south=True)]
         for hub in HUBS:
             elements.append(element(*hub, "#knockout"))
-        if cover == "node":
-            for k in range(12):
-                x = 16 - COLUMNS_U[k % 4]
-                y = ROWS_Y[k // 4]
-                elements.append(element(x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2, "#terminal"))
+        for k in range(NUBS[cover]):
+            x = 16 - COLUMNS_U[k % 4]
+            y = ROWS_Y[k // 4]
+            elements.append(element(x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2, "#terminal"))
+        if cover.startswith("light"):
+            elements.append(element(*LAMP_HOLDER, "#box"))
+            elements.append(element(*BULB, "#" + cover.replace("light", "lamp")))
+        if cover == "receptacle":
+            elements.append(receptacle_face(RECEPTACLE_FACE))
         dump(os.path.join(ASSETS, "models", "block", "conduit_box_%s.json" % cover), {"parent": "block/block", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "models", "item", "conduit_box.json"), {"parent": "%s:block/conduit_box_open" % MOD})
     ceiling_box_models()
     variants = {}
     for key, rot in DIRECTIONAL.items():
-        for cover in ("open", "blank", "node"):
+        for cover in COVERS:
             v = {"model": "%s:block/conduit_box_%s" % (MOD, cover)}
             v.update(rot)
             variants["%s,cover=%s" % (key, cover)] = v
@@ -133,9 +152,17 @@ def box_model():
     # Cover plate items.
     item = os.path.join(ASSETS, "textures", "item")
     plate = (0x86, 0x8a, 0x8e)
-    for name, nubs in (("conduit_cover_blank", False), ("conduit_cover_node", True)):
+    for name, nubs in (("conduit_cover_blank", False), ("conduit_cover_node", True), ("conduit_cover_light", False), ("conduit_cover_receptacle", False)):
         img = canvas(16, 16)
         fill(img, 2, 2, 14, 14, plate)
+        if name.endswith("light"):
+            fill(img, 6, 4, 10, 9, (0xff, 0xf2, 0xb8))
+            fill(img, 7, 9, 9, 12, shade(plate, 0.5))
+        if name.endswith("receptacle"):
+            fill(img, 5, 4, 11, 12, (0xe8, 0xe6, 0xdc))
+            fill(img, 6, 6, 7, 9, (0x22, 0x22, 0x26))
+            fill(img, 9, 6, 10, 9, (0x22, 0x22, 0x26))
+            fill(img, 7, 10, 9, 11, (0x22, 0x22, 0x26))
         fill(img, 2, 2, 14, 3, shade(plate, 1.2))
         fill(img, 2, 13, 14, 14, shade(plate, 0.6))
         fill(img, 3, 3, 4, 4, shade(plate, 0.5))
@@ -151,6 +178,21 @@ def box_model():
     fill(open_tex, 0, 0, 16, 1, shade(plate, 0.7))
     fill(open_tex, 0, 15, 16, 16, shade(plate, 0.3))
     write_png(os.path.join(ASSETS, "textures", "block", "conduit_box_open.png"), open_tex)
+    # The receptacle's face: an ivory block with two slots and a ground hole, drawn over the whole 16 px.
+    face = canvas(16, 16, (0xe8, 0xe6, 0xdc, 255))
+    fill(face, 0, 0, 16, 1, (0xf4, 0xf2, 0xea))
+    fill(face, 0, 15, 16, 16, (0xb8, 0xb6, 0xac))
+    fill(face, 4, 3, 6, 9, (0x22, 0x22, 0x26))
+    fill(face, 10, 3, 12, 9, (0x22, 0x22, 0x26))
+    fill(face, 7, 10, 9, 13, (0x22, 0x22, 0x26))
+    write_png(os.path.join(ASSETS, "textures", "block", "receptacle.png"), face)
+
+
+def receptacle_face(box):
+    """The face element, textured with the receptacle on its front and the plate colour elsewhere."""
+    e = element(*box, "#box")
+    e["faces"]["north"] = {"uv": [0, 0, 16, 16], "texture": "#receptacle"}
+    return e
 
 
 # Floor frame (FACING = down): body on the floor, socket face up, knockout on the north edge.
@@ -179,8 +221,9 @@ def ceiling_box_models():
     """The box on a ceiling tile: the tile, then the box in the tile frame, one model per cover."""
     tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD,
            "open": "%s:block/conduit_box_open" % MOD, "tile": TILE_TEXTURE, "knockout": "%s:block/knockout_one_half" % MOD,
-           "particle": "%s:block/conduit_box" % MOD}
-    for cover in ("open", "blank", "node"):
+           "particle": "%s:block/conduit_box" % MOD, "lamp_off": "%s:block/lamp_off" % MOD, "lamp_on": "%s:block/lamp_on" % MOD,
+           "receptacle": "%s:block/receptacle" % MOD}
+    for cover in COVERS:
         elements = [dict(e) for e in TILE_ELEMENTS]
         if cover == "open":
             x1, y1, z1, x2, y2, z2 = BODY
@@ -191,15 +234,21 @@ def ceiling_box_models():
         elements.append(body)
         for hub in HUBS:
             elements.append(element(*on_tile(hub), "#knockout"))
-        if cover == "node":
-            for k in range(12):
-                x = 16 - COLUMNS_U[k % 4]
-                y = ROWS_Y[k // 4]
-                elements.append(element(*on_tile((x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2)), "#terminal"))
+        for k in range(NUBS[cover]):
+            x = 16 - COLUMNS_U[k % 4]
+            y = ROWS_Y[k // 4]
+            elements.append(element(*on_tile((x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2)), "#terminal"))
+        if cover.startswith("light"):
+            elements.append(element(*on_tile(LAMP_HOLDER), "#box"))
+            elements.append(element(*on_tile(BULB), "#" + cover.replace("light", "lamp")))
+        if cover == "receptacle":
+            e = element(*on_tile(RECEPTACLE_FACE), "#box")
+            e["faces"]["up"] = {"uv": [0, 0, 16, 16], "texture": "#receptacle"}
+            elements.append(e)
         dump(os.path.join(ASSETS, "models", "block", "ceiling_tile_conduit_box_%s.json" % cover),
              {"parent": "block/block", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "blockstates", "ceiling_tile_conduit_box.json"),
-         {"variants": {"cover=%s" % cover: {"model": "%s:block/ceiling_tile_conduit_box_%s" % (MOD, cover)} for cover in ("open", "blank", "node")}})
+         {"variants": {"cover=%s" % cover: {"model": "%s:block/ceiling_tile_conduit_box_%s" % (MOD, cover)} for cover in COVERS}})
     # Breaking it drops the tile and the box.
     dump(os.path.join(DATA, "loot_table", "blocks", "ceiling_tile_conduit_box.json"), {
         "type": "minecraft:block",
@@ -381,6 +430,10 @@ def recipes():
     shaped("pull_box", ["PPP", "P P", "PPP"], {"P": {"tag": "c:plates/iron"}}, 1, {"items": "powergrid:wire"})
     shaped("terminal_cabinet", ["NNN", "NBN", "NNN"], {"N": {"tag": "c:nuggets/copper"}, "B": {"item": "%s:pull_box" % MOD}}, 1,
            {"items": "%s:pull_box" % MOD})
+    recipe_shapeless("conduit_cover_light", [{"item": "%s:conduit_cover_blank" % MOD}, {"tag": "c:nuggets/copper"}, {"item": "minecraft:glass_pane"}], 1,
+                     {"items": "%s:conduit_cover_blank" % MOD})
+    recipe_shapeless("conduit_cover_receptacle", [{"item": "%s:conduit_cover_blank" % MOD}, {"tag": "c:nuggets/copper"}, {"tag": "c:nuggets/copper"}], 1,
+                     {"items": "%s:conduit_cover_blank" % MOD})
 
 
 def wire_types():

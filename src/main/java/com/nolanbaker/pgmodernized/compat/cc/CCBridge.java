@@ -59,6 +59,8 @@ public class CCBridge {
                 (be, direction) -> new CtCabinetPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.TRANSFORMER.get(),
                 (be, direction) -> new TransformerPeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.GEAR_CELL.get(),
+                (be, direction) -> new GearCellPeripheral(be));
         ForkHooks.get().registerCC(event);
 
         // The standalone jack behaves like a piece of CC cable towards its neighbours.

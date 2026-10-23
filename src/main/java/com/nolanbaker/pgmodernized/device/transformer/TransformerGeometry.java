@@ -292,11 +292,11 @@ public final class TransformerGeometry {
         var terminals = new TerminalBoundingBox[kind.pointCount()];
         for(int k = 0; k < kind.primaries(); ++k) {
             var box = size.hasHubs() ? hidden() : shift(cap(hvBushing(size, k, kind.primaries()), size.isPole() ? 1 : 2), by);
-            terminals[kind.primaryTerminal(k)] = terminal(name(kind.primaryKey(k), TransformerKind.PRIMARY_RGB), box).withColor(TransformerKind.PRIMARY_RGB);
+            terminals[kind.primaryTerminal(k)] = terminal(name(kind.primaryKey(k), kind.primaryTextRgb(k, spec.hv())), box).withColor(kind.primaryRgb(k, spec.hv()));
         }
         for(int j = 0; j < kind.secondaries(); ++j) {
             var box = size.hasHubs() ? hidden() : shift(size.isPole() ? lvBushing(size, j, kind.secondaries()) : cap(lvBushing(size, j, kind.secondaries()), 1.5), by);
-            terminals[kind.secondaryTerminal(j)] = terminal(name(kind.secondaryKey(j), kind.secondaryTextRgb(j)), box).withColor(kind.secondaryRgb(j));
+            terminals[kind.secondaryTerminal(j)] = terminal(name(kind.secondaryKey(j), kind.secondaryTextRgb(j, spec.lv())), box).withColor(kind.secondaryRgb(j, spec.lv()));
         }
         return terminals;
     }

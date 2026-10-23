@@ -8,6 +8,15 @@
     },
     "cover=node": {
       "model": "powergrid_modernized:block/ceiling_tile_conduit_box_node"
+    },
+    "cover=light_off": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_light_off"
+    },
+    "cover=light_on": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_light_on"
+    },
+    "cover=receptacle": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_receptacle"
     }
   }
 }

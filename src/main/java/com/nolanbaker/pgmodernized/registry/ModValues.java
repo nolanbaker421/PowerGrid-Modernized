@@ -40,10 +40,23 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         // Breaker panels: contact resistance of the main and of each branch breaker. No thermal
         // model; the breakers themselves are the overcurrent protection.
         for(var spec : PanelSpec.values())
-            resistance(spec.id(), "main", 0.002, "branch", 0.005);
+            resistance(spec.id(), "main", 0.002, "branch", 0.005, "bond", 0.001);
         resistance("switchgear", "pole", 0.0005);
+        // Switchgear cells: contact resistance of each pole of a breaker, fuse, switch or contactor in a slot.
+        resistance("gear_cell", "pole", 0.0005);
         resistance("conduit_switch", "contact", 0.001);
         resistance("disconnect", "contact", 0.0005);
+        // Conduit boxes: the lamp of a light socket cover, sixty watts at 120 V.
+        resistance("conduit_box", "lamp", 240);
+        resistance("ceiling_tile_conduit_box", "lamp", 240);
+        // Bus duct plug-in: one contact per pole and the neutral through-path.
+        resistance("bus_duct_plug_in", "contact", 0.0005);
+        resistance("bus_duct_plug_in_breaker", "contact", 0.0005);
+        // Rectifier: the rails out to the DC lugs. Capacitor bank: the contact in front of each capacitor.
+        resistance("rectifier", "output", 0.002);
+        resistance("capacitor_bank", "contact", 0.002);
+        // Three-phase pump: one winding set; each stage puts another in parallel.
+        resistance("three_phase_pump", "winding", 360.0);
         // Three-phase motor: one winding per phase, star connected; thermal limits are its own.
         resistance("three_phase_motor", "winding", 8.0);
         resistance("three_phase_drive", "output", 0.05);

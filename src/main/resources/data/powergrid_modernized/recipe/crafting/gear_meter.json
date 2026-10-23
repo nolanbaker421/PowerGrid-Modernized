@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "c:plates/iron"
+    },
+    "G": {
+      "tag": "c:glass_panes"
+    },
+    "C": {
+      "tag": "c:ingots/copper"
+    }
+  },
+  "pattern": [
+    "PGP",
+    "CCC",
+    "PPP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:gear_meter"
+  }
+}

@@ -40,7 +40,12 @@ public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBl
         ms.translate(0.5, 0.5, 0.5);
         ms.mulPose(Axis.YP.rotationDegrees(-(facing.toYRot() + 180)));
         ms.translate(-0.5, -0.5, -0.5);
-
+        if(be.hasCover())
+            cover(be, ms, buffer, light);
+        if(be.coverClosed()) {
+            ms.popPose();
+            return;
+        }
         for(int slot = BreakerPanelBlockEntity.MAIN; slot < be.slotCount(); ++slot) {
             var breaker = be.breaker(slot);
             if(!breaker.installed() || breaker.isCovered())
@@ -55,6 +60,25 @@ public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBl
             if(breaker.locked())
                 draw(ms, consumer, renderer, BreakerPanelModels.get(BreakerPanelModels.LOCK), box, roll, light, overlay);
         }
+        ms.popPose();
+    }
+
+    private static final int DOOR = 0x7A7E86, DOOR_EDGE = 0x5A5E66, HANDLE = 0xC8CCD0;
+
+    /** The door over the front of the head and its extensions, in the north frame: closed flat on the front, or swung open on a hinge at the viewer's left. */
+    private static void cover(BreakerPanelBlockEntity be, PoseStack ms, MultiBufferSource buffer, int light) {
+        double bottom = 1 - 16 * (be.sections() - 1);
+        double front = PanelLayout.FRONT_Z;
+        ms.pushPose();
+        if(be.coverOpen()) {
+            ms.translate(15 / 16.0, 0, front / 16);
+            ms.mulPose(Axis.YP.rotationDegrees(-110));
+            ms.translate(-15 / 16.0, 0, -front / 16);
+        }
+        DeviceDraw.box(ms, buffer, light, 1, bottom, front - 0.6, 15, 15, front, DOOR);
+        DeviceDraw.box(ms, buffer, light, 1, bottom, front - 0.7, 15, bottom + 0.4, front, DOOR_EDGE);
+        DeviceDraw.box(ms, buffer, light, 1, 14.6, front - 0.7, 15, 15, front, DOOR_EDGE);
+        DeviceDraw.box(ms, buffer, light, 2.2, 6.5, front - 1.2, 3.2, 9.5, front - 0.6, HANDLE);
         ms.popPose();
     }
 

@@ -13,7 +13,6 @@ import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -29,6 +28,7 @@ import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
+import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 
 /**
  * One end of a cable chain: a small pull box. A 4" conduit knockout on one side, the chain post on
@@ -61,16 +61,12 @@ public class CableChainAnchorBlock extends Rotation4ElectricBlock implements IBE
 
     private static TerminalBoundingBox[] terminals() {
         return new TerminalBoundingBox[] {
-                new TerminalBoundingBox(name("cable_chain.l1", ChatFormatting.RED), 2, 2, 11, 4, 4, 13).withColor(0xD03030),
-                new TerminalBoundingBox(name("cable_chain.l2", ChatFormatting.GOLD), 5, 2, 11, 7, 4, 13).withColor(0xE0A020),
-                new TerminalBoundingBox(name("cable_chain.l3", ChatFormatting.BLUE), 9, 2, 11, 11, 4, 13).withColor(0x3060D0),
-                new TerminalBoundingBox(name("cable_chain.n", ChatFormatting.WHITE), 12, 2, 11, 14, 4, 13).withColor(0xE8E8E8),
+                new TerminalBoundingBox(ConductorColors.hotLabel("cable_chain.l1", 0), 2, 2, 11, 4, 4, 13).withColor(ConductorColors.hotRgb(0)),
+                new TerminalBoundingBox(ConductorColors.hotLabel("cable_chain.l2", 1), 5, 2, 11, 7, 4, 13).withColor(ConductorColors.hotRgb(1)),
+                new TerminalBoundingBox(ConductorColors.hotLabel("cable_chain.l3", 2), 9, 2, 11, 11, 4, 13).withColor(ConductorColors.hotRgb(2)),
+                new TerminalBoundingBox(ConductorColors.neutralLabel("cable_chain.n"), 12, 2, 11, 14, 4, 13).withColor(ConductorColors.neutralRgb()),
                 JackTerminals.jack(14, 0, 7, 16, 2, 9)
         };
-    }
-
-    private static Component name(String key, ChatFormatting style) {
-        return Lang.builder().translate(key).style(style).component();
     }
 
     public static int chainHubTerminal() {

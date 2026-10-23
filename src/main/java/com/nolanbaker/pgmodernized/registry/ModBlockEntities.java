@@ -1,5 +1,13 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.client.GearCellRenderer;
+import com.nolanbaker.pgmodernized.device.gear.GearCellBlockEntity;
+import com.nolanbaker.pgmodernized.device.busduct.BusDuctBlockEntity;
+import com.nolanbaker.pgmodernized.device.busduct.BusDuctFeedBlockEntity;
+import com.nolanbaker.pgmodernized.device.busduct.BusDuctPlugInBlockEntity;
+import com.nolanbaker.pgmodernized.device.busduct.BusDuctPlugInBreakerBlockEntity;
+import com.nolanbaker.pgmodernized.device.capacitor.CapacitorBankBlockEntity;
+import com.nolanbaker.pgmodernized.device.rectifier.RectifierBlockEntity;
 import com.nolanbaker.pgmodernized.device.helm.RadioBaseBlockEntity;
 import com.nolanbaker.pgmodernized.client.StationRenderer;
 import com.nolanbaker.pgmodernized.device.controls.StationBlockEntity;
@@ -217,6 +225,42 @@ public class ModBlockEntities {
             REGISTRATE.blockEntity("rail_collector", ComputerBlockEntityFactories.railCollector())
                     .validBlock(ModBlocks.RAIL_COLLECTOR)
                     .renderer(() -> RailCollectorRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<BusDuctBlockEntity> BUS_DUCT =
+            REGISTRATE.blockEntity("bus_duct", BusDuctBlockEntity::new)
+                    .validBlock(ModBlocks.BUS_DUCT)
+                    .register();
+
+    public static final BlockEntityEntry<BusDuctFeedBlockEntity> BUS_DUCT_FEED =
+            REGISTRATE.blockEntity("bus_duct_feed", BusDuctFeedBlockEntity::new)
+                    .validBlock(ModBlocks.BUS_DUCT_FEED)
+                    .register();
+
+    public static final BlockEntityEntry<BusDuctPlugInBlockEntity> BUS_DUCT_PLUG_IN =
+            REGISTRATE.blockEntity("bus_duct_plug_in", BusDuctPlugInBlockEntity::new)
+                    .validBlock(ModBlocks.BUS_DUCT_PLUG_IN)
+                    .register();
+
+    public static final BlockEntityEntry<BusDuctPlugInBreakerBlockEntity> BUS_DUCT_PLUG_IN_BREAKER =
+            REGISTRATE.blockEntity("bus_duct_plug_in_breaker", BusDuctPlugInBreakerBlockEntity::new)
+                    .validBlock(ModBlocks.BUS_DUCT_PLUG_IN_BREAKER)
+                    .register();
+
+    public static final BlockEntityEntry<RectifierBlockEntity> RECTIFIER =
+            REGISTRATE.blockEntity("rectifier", RectifierBlockEntity::new)
+                    .validBlock(ModBlocks.RECTIFIER)
+                    .register();
+
+    public static final BlockEntityEntry<CapacitorBankBlockEntity> CAPACITOR_BANK =
+            REGISTRATE.blockEntity("capacitor_bank", CapacitorBankBlockEntity::new)
+                    .validBlock(ModBlocks.CAPACITOR_BANK)
+                    .register();
+
+    public static final BlockEntityEntry<GearCellBlockEntity> GEAR_CELL =
+            REGISTRATE.blockEntity("gear_cell", ComputerBlockEntityFactories.gearCell())
+                    .validBlock(ModBlocks.GEAR_CELL)
+                    .renderer(() -> GearCellRenderer::new)
                     .register();
 
     public static void register() {}

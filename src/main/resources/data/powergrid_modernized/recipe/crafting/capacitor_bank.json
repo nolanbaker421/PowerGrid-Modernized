@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "C": {
+      "tag": "c:plates/copper"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "PCP",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:capacitor_bank"
+  }
+}

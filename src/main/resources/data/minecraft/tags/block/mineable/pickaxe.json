@@ -81,6 +81,21 @@
     {
       "id": "powergrid_modernized:rf_connector",
       "required": false
+    },
+    "powergrid_modernized:bus_duct",
+    "powergrid_modernized:bus_duct_feed",
+    "powergrid_modernized:bus_duct_plug_in",
+    "powergrid_modernized:bus_duct_plug_in_breaker",
+    "powergrid_modernized:gear_cell",
+    "powergrid_modernized:rectifier",
+    "powergrid_modernized:capacitor_bank",
+    {
+      "id": "powergrid_modernized:three_phase_pump",
+      "required": false
+    },
+    {
+      "id": "powergrid_modernized:pump_stage",
+      "required": false
     }
   ]
 }

@@ -62,7 +62,7 @@ public final class Rotation4Shapes {
     }
 
     /** The terminal transform Rotation4ElectricBlock applies for a state, from the floor frame. */
-    static double[] transform(Direction facing, int r, double[] p) {
+    public static double[] transform(Direction facing, int r, double[] p) {
         return switch(facing) {
             case DOWN -> rot('y', 90 * r - 90, p);
             case UP -> rot('y', 90 * r - 90, rot('x', 180, p));

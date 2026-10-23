@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "C": {
+      "tag": "c:ingots/copper"
+    }
+  },
+  "pattern": [
+    " I ",
+    "ICI",
+    " I "
+  ],
+  "result": {
+    "count": 2,
+    "id": "powergrid_modernized:pump_stage"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "powergrid_modernized:ac_fork"
+    }
+  ]
+}

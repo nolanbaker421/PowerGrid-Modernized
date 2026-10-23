@@ -1,0 +1,50 @@
+{
+  "variants": {
+    "facing=north,reversed=false": {
+      "model": "powergrid_modernized:block/three_phase_pump"
+    },
+    "facing=north,reversed=true": {
+      "model": "powergrid_modernized:block/three_phase_pump_reversed"
+    },
+    "facing=east,reversed=false": {
+      "model": "powergrid_modernized:block/three_phase_pump",
+      "y": 90
+    },
+    "facing=east,reversed=true": {
+      "model": "powergrid_modernized:block/three_phase_pump_reversed",
+      "y": 90
+    },
+    "facing=south,reversed=false": {
+      "model": "powergrid_modernized:block/three_phase_pump",
+      "y": 180
+    },
+    "facing=south,reversed=true": {
+      "model": "powergrid_modernized:block/three_phase_pump_reversed",
+      "y": 180
+    },
+    "facing=west,reversed=false": {
+      "model": "powergrid_modernized:block/three_phase_pump",
+      "y": 270
+    },
+    "facing=west,reversed=true": {
+      "model": "powergrid_modernized:block/three_phase_pump_reversed",
+      "y": 270
+    },
+    "facing=up,reversed=false": {
+      "model": "powergrid_modernized:block/three_phase_pump",
+      "x": 270
+    },
+    "facing=up,reversed=true": {
+      "model": "powergrid_modernized:block/three_phase_pump_reversed",
+      "x": 270
+    },
+    "facing=down,reversed=false": {
+      "model": "powergrid_modernized:block/three_phase_pump",
+      "x": 90
+    },
+    "facing=down,reversed=true": {
+      "model": "powergrid_modernized:block/three_phase_pump_reversed",
+      "x": 90
+    }
+  }
+}

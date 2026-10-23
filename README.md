@@ -81,6 +81,39 @@ and the breaker's load side (Load L1..L3). Land the feed on any section's bus, o
 load side to make that section's breaker the main. Any 3-pole frame fits, and its rating is set
 with a wrench like a panel breaker. The bus bars carry 2000 A and burn like any wire beyond it.
 
+## Bus duct and custom switchgear
+
+**Bus duct** moves L1, L2, L3 and a neutral from block to block at 2000 A without conduit: lay
+segments and they join end to end by themselves (any segment whose axis points at a neighbour
+joins it, so corners need no special piece), feed a run through a **Bus Duct End Feed** with four
+lugs and two knockouts, and tap it anywhere with a **Bus Duct Plug-In Disconnect** that snaps onto
+a face of the duct: three contacts and a neutral through to four load lugs, a handle, a lockout,
+two knockouts. A duct dropped onto a switchgear section or a switchgear cell joins its bus.
+
+**Custom switchgear** is built from **Switchgear Cells**: cabinets with a 3 x 3 grid of slots that
+take copper bus bars, neutral bars, ground bars, lug blocks, any 3-pole breaker, fuse sets (100 to
+800 A, scrap when blown), switch units, redstone-driven contactors, combination starters (breaker,
+contactor and overload relay on one full-load-amps setting) and metering units (volts, amps and
+watts per phase, for goggles and for computers: a cell is a `powergrid_gear_cell` peripheral and
+component). Slots connect where both offer the same conductor across their shared edge, and the
+edges of a cell join the next cell facing the same way through hidden bus bars, so a lineup of any
+shape is wired by what sits next to what. Lug blocks are the splice points for the cell's ten
+knockouts and take hanging wire; bars burn out past 2000 A. A **Bus Duct Plug-In Breaker** is the
+plug-in disconnect with a wrench-set 3-pole breaker for a handle. See the user guide.
+
+**Ground and GFCI.** Every breaker panel has a Ground point bonded to its neutral, so a fault from
+a hot to a grounded load comes home through the panel, where goggles show it and a **1-50 A GFCI
+Breaker** trips on 50 mA of it. A **Receptacle Cover** turns a conduit box into a socket for power
+cords. The electrical inspector now checks the code as well as the license: an unbonded panel
+ground or a switchgear lug block without a ground bar fails the visit. The PLC has a **PID** block.
+
+**Rectifier and capacitor bank.** The **Rectifier** is a six-pulse diode bridge in a wall cabinet
+(L1, L2, L3 in, DC + and DC - out, a wrench-set smoothing capacitor) built from Power Grid's own
+diode and capacitor elements, so the AC side can feed anything that only takes direct current. The
+**Capacitor Bank** is three capacitors in delta behind a handle, 10 to 5000 µF each: on the fork's
+AC it supplies real reactive power, so a bank beside a motor load raises the power factor the CT
+cabinet reads, and too much of it goes leading.
+
 ## Transformers
 
 Fourteen nameplates, sized after Create: PowerPlantGrid, each one block whose model spills into the
@@ -253,6 +286,9 @@ which it found) and, with it:
   feed it behaves as a variable transformer.
 - The split-phase and three-phase transformers carry the phases (a delta-star bank shifts 30°), and
   their goggle readings are RMS.
+- **Three-Phase Pump** and **Pump Stage** appear: Power Grid's pump on three windings, steady on AC,
+  reversed by the phase sequence, and reaching further with every stage bolted onto its sides (each
+  stage draws the pump's power again and adds its range again, for the same flow).
 - **Three-Phase Motor** and **Three-Phase Drive** appear. The motor is a Create generator with U, V,
   W terminals: its speed is the synchronous speed for its pole-pair setting (value box on the
   terminal box) at the supply frequency, less a little slip under load, in the direction the phase

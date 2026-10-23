@@ -48,11 +48,12 @@ public class CeilingConduitBoxBlock extends ConduitBoxBlock implements CeilingBl
         super(properties);
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(COVER, ConduitCover.OPEN));
         var terminals = ConduitBoxGeometry.terminals(ON_TILE);
-        var plain = Shapes.or(TILE, ConduitBoxGeometry.shape(false, ON_TILE));
-        var node = Shapes.or(TILE, ConduitBoxGeometry.shape(true, ON_TILE));
+        var shapes = new java.util.EnumMap<ConduitCover, VoxelShape>(ConduitCover.class);
+        for(var cover : ConduitCover.values())
+            shapes.put(cover, Shapes.or(TILE, ConduitBoxGeometry.shape(cover, ON_TILE)));
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
                 .forAllStates(state -> terminals)
-                .withShapeMapper(state -> cover(state).hasTerminals() ? node : plain)
+                .withShapeMapper(state -> shapes.get(cover(state)))
                 .build());
     }
 
@@ -75,7 +76,7 @@ public class CeilingConduitBoxBlock extends ConduitBoxBlock implements CeilingBl
         var cover = cover(state);
         var player = context.getPlayer();
         if(cover.isPlate() && player != null && !player.isCreative())
-            player.addItem(cover == ConduitCover.NODE ? ModItems.CONDUIT_COVER_NODE.asStack() : ModItems.CONDUIT_COVER_BLANK.asStack());
+            player.addItem(ModItems.coverPlate(cover));
         return removeCeilingAttachment(context, ModBlocks.CONDUIT_BOX.asStack());
     }
 

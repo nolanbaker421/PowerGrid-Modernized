@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "c:plates/iron"
+    },
+    "B": {
+      "item": "powergrid_modernized:bus_bar"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "BBB",
+    "PPP"
+  ],
+  "result": {
+    "count": 4,
+    "id": "powergrid_modernized:bus_duct"
+  }
+}

@@ -101,26 +101,48 @@ public enum TransformerKind {
         return j == neutralIndex;
     }
 
-    /** Legs in the US conductor colours (black, red, blue); the neutral white. */
-    public int secondaryRgb(int j) {
-        if(isNeutral(j))
-            return 0xF0F0F0;
+    /** Which leg a secondary index is, or -1 for the neutral. */
+    private int legOf(int j) {
         for(int i = 0; i < legs.length; ++i) {
             if(legs[i] == j)
-                return ConductorColors.rgb(i);
+                return i;
         }
-        return 0xAAAAAA;
+        return -1;
     }
 
-    public int secondaryTextRgb(int j) {
+    /**
+     * A secondary's conductor colour for a winding at {@code volts} line-to-line: the legs black,
+     * red, blue on a 120/208/240 V winding and brown, orange, yellow on a 277/480 V one, the
+     * neutral white or gray to match (NEC 200.6, 210.5(C)).
+     */
+    public int secondaryColor(int j, float volts) {
         if(isNeutral(j))
-            return 0xF0F0F0;
-        for(int i = 0; i < legs.length; ++i) {
-            if(legs[i] == j)
-                return ConductorColors.textRgb(i);
-        }
-        return 0xAAAAAA;
+            return ConductorColors.neutral(volts);
+        int leg = legOf(j);
+        return leg >= 0 ? ConductorColors.hot(leg, volts) : ConductorColors.GRAY;
     }
 
-    public static final int PRIMARY_RGB = 0xE0A030;
+    public int secondaryRgb(int j, float volts) {
+        return ConductorColors.rgb(secondaryColor(j, volts));
+    }
+
+    public int secondaryTextRgb(int j, float volts) {
+        return ConductorColors.textRgb(secondaryColor(j, volts));
+    }
+
+    /**
+     * A primary's conductor colour by its winding voltage, the same rule as the secondaries. The
+     * NEC assigns no colour above 600 V, so a medium-voltage winding borrows the higher-system set.
+     */
+    public int primaryColor(int k, float volts) {
+        return ConductorColors.hot(k, volts);
+    }
+
+    public int primaryRgb(int k, float volts) {
+        return ConductorColors.rgb(primaryColor(k, volts));
+    }
+
+    public int primaryTextRgb(int k, float volts) {
+        return ConductorColors.textRgb(primaryColor(k, volts));
+    }
 }

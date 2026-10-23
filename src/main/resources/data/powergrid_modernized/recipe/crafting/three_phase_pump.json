@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powergrid_modernized:three_phase_motor"
+    },
+    {
+      "item": "create:fluid_pipe"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:three_phase_pump"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "powergrid_modernized:ac_fork"
+    }
+  ]
+}

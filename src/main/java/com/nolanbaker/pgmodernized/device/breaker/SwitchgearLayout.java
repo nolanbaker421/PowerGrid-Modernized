@@ -3,13 +3,11 @@ package com.nolanbaker.pgmodernized.device.breaker;
 import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -87,18 +85,19 @@ public final class SwitchgearLayout {
         return Lang.builder().translate("gui.breaker_panel.hub." + (hub < 4 ? "top" : "bottom"), hub % 4 + 1).style(ChatFormatting.AQUA).component();
     }
 
+    /** L1, L2, L3 black, red, blue; the neutral (k = 3) white. */
     public static Component busName(int k) {
         if(k == 3)
-            return Lang.builder().translate("switchgear.bus_n").style(ChatFormatting.BLUE).component();
-        return Component.translatable("powergrid.switchgear.bus", k + 1).withStyle(Style.EMPTY.withColor(ConductorColors.textRgb(k)));
+            return ConductorColors.neutralLabel("switchgear.bus_n");
+        return ConductorColors.hotLabel("switchgear.bus", k, k + 1);
     }
 
     public static Component loadName(int k) {
-        return Component.translatable("powergrid.switchgear.load", k + 1).withStyle(Style.EMPTY.withColor(ConductorColors.textRgb(k)));
+        return ConductorColors.hotLabel("switchgear.load", k, k + 1);
     }
 
     public static int phaseRgb(int k) {
-        return k == 3 ? IDecoratedTerminal.BLUE : ConductorColors.rgb(k);
+        return k == 3 ? ConductorColors.neutralRgb() : ConductorColors.hotRgb(k);
     }
 
     private static AABB hub(int hub) {
@@ -130,7 +129,7 @@ public final class SwitchgearLayout {
         for(int k = 0; k < 4; ++k)
             terminals[BUS_L1 + k] = terminal(busName(k), HIDDEN).withColor(phaseRgb(k));
         for(int k = 0; k < 3; ++k)
-            terminals[LOAD_L1 + k] = terminal(loadName(k), HIDDEN).withColor(ConductorColors.rgb(k));
+            terminals[LOAD_L1 + k] = terminal(loadName(k), HIDDEN).withColor(phaseRgb(k));
         for(int k = 0; k < COUPLERS; ++k) {
             terminals[COUPLER_LEFT + k] = terminal(busName(k), coupler(true, k)).withColor(phaseRgb(k));
             terminals[COUPLER_RIGHT + k] = terminal(busName(k), coupler(false, k)).withColor(phaseRgb(k));

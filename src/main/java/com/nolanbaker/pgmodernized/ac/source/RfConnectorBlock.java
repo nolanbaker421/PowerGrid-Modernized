@@ -24,7 +24,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
@@ -58,8 +57,8 @@ public class RfConnectorBlock extends Rotation4ElectricBlock implements IBE<RfCo
 
     private static TerminalBoundingBox[] terminals() {
         var terminals = new TerminalBoundingBox[TERMINAL_COUNT];
-        terminals[TERMINAL_LINE] = terminal(name("rf_connector.line", ChatFormatting.RED), HIDDEN).withColor(IDecoratedTerminal.RED);
-        terminals[TERMINAL_NEUTRAL] = terminal(name("rf_connector.neutral", ChatFormatting.BLUE), HIDDEN).withColor(IDecoratedTerminal.BLUE);
+        terminals[TERMINAL_LINE] = terminal(ConductorColors.hotLabel("rf_connector.line", 0), HIDDEN).withColor(ConductorColors.hotRgb(0));
+        terminals[TERMINAL_NEUTRAL] = terminal(ConductorColors.neutralLabel("rf_connector.neutral"), HIDDEN).withColor(ConductorColors.neutralRgb());
         terminals[TERMINAL_HUB] = terminal(name("conduit_socket.hub", ChatFormatting.AQUA), HUB).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.ONE.bandColor());
         for(int k = 0; k < ConductorColors.COUNT; ++k)
             terminals[CONDUCTOR_BASE + k] = terminal(ConductorColors.name(k), HIDDEN).withColor(ConductorColors.rgb(k));

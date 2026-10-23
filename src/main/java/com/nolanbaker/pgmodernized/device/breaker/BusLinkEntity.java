@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.breaker;
 
+import com.nolanbaker.pgmodernized.bus.IBusLinkHost;
 import com.nolanbaker.pgmodernized.registry.ModEntities;
 import com.nolanbaker.pgmodernized.registry.ModItems;
 import net.minecraft.world.InteractionHand;
@@ -18,9 +19,10 @@ import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
 import java.util.List;
 
 /**
- * A hidden bus bar between the couplers of two adjacent switchgear sections: a Power Grid block
+ * A hidden bus bar between two bus terminals: the couplers of two adjacent switchgear sections,
+ * two bus duct segments, a duct and what it feeds, or two switchgear cells. A Power Grid block
  * wire of the bus bar item, one block long, that cannot be clicked or cut and goes away by itself
- * when either section does or turns away.
+ * when either end ({@link IBusLinkHost}) stops wanting it.
  */
 public class BusLinkEntity extends BlockWireEntity {
     private static final int CHECK_INTERVAL = 20;
@@ -64,9 +66,22 @@ public class BusLinkEntity extends BlockWireEntity {
                 kill();
                 return;
             }
-            if(level().isLoaded(a.getPos()) && level().isLoaded(b.getPos()) && !SwitchgearBlockEntity.linked(level(), a.getPos(), b.getPos()))
+            if(level().isLoaded(a.getPos()) && level().isLoaded(b.getPos()) && !valid(a, b))
                 kill();
         }
+    }
+
+    /** Both ends that can judge the link must still want it; ends that cannot fall back to the section rule. */
+    private boolean valid(BlockWireEndpoint a, BlockWireEndpoint b) {
+        var beA = level().getBlockEntity(a.getPos());
+        var beB = level().getBlockEntity(b.getPos());
+        if(beA instanceof IBusLinkHost host && !host.busLinkValid(a.getTerminal(), b.getPos(), b.getTerminal()))
+            return false;
+        if(beB instanceof IBusLinkHost host && !host.busLinkValid(b.getTerminal(), a.getPos(), a.getTerminal()))
+            return false;
+        if(!(beA instanceof IBusLinkHost) && !(beB instanceof IBusLinkHost))
+            return SwitchgearBlockEntity.linked(level(), a.getPos(), b.getPos());
+        return true;
     }
 
     @Override

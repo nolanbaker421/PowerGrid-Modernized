@@ -30,8 +30,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.utility.Lang;
@@ -39,6 +39,8 @@ import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.nolanbaker.pgmodernized.conduit.ConductorColors;
+import net.minecraft.network.chat.Style;
 
 /**
  * Circuit: one line point per lug -> one pole of the main breaker each -> one bus per lug -> one
@@ -59,6 +61,8 @@ import java.util.List;
 public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, ISpliceHost {
     /** Slot index of the main breaker in the interaction and lookup methods. */
     public static final int MAIN = PanelLayout.MAIN;
+    /** Ground current at which a GFCI breaker trips. */
+    public static final int GFCI_TRIP_MILLIAMPS = 50;
 
     // Create's SmartBlockEntity constructor builds the circuit before this class's constructor body
     // and field initialisers run, so everything buildCircuit() needs is created lazily from the block state.
@@ -67,6 +71,9 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     private Breaker[] branches;
     private SwitchedWire[] mainWires;
     private SwitchedWire[] branchWires;
+    /** The main bonding jumper, ground to neutral: whatever comes home on the ground flows here. */
+    private ElectricWire bond;
+    private float groundAmps;
     private BreakerRatingBehaviour[] ratings;
     private SpliceSupport splices;
     private List<SplicePoint> points;
@@ -280,6 +287,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             branchWires[slot] = builder.connectSwitch(resistance("branch"), buses[lugFor(slot)],
                     builder.terminalNode(PanelLayout.branchTerminal(spec, slot)), wireClosed(slot));
         }
+        bond = builder.connect(resistance("bond"), builder.terminalNode(spec.neutralTerminal()), builder.terminalNode(PanelLayout.groundTerminal(spec)));
     }
 
     private void applyWireStates() {
@@ -325,6 +333,44 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             if(!branches[i].isCovered())
                 tickBreaker(i);
         }
+        tickGround();
+    }
+
+    /** Current on the bonding jumper is a ground fault somewhere downstream: every GFCI breaker that is on trips. */
+    private void tickGround() {
+        if(bond == null || !bond.isConverged())
+            return;
+        float amps = (float) Math.abs(bond.current());
+        groundAmps = Float.isFinite(amps) ? amps : 0;
+        if(groundAmps * 1000 < GFCI_TRIP_MILLIAMPS)
+            return;
+        for(int i = 0; i < branches.length; ++i) {
+            var breaker = branches[i];
+            if(breaker.gfci && breaker.isBreaker() && breaker.state == BreakerState.ON)
+                trip(i);
+        }
+    }
+
+    /** Amperes coming home on the ground. */
+    public float groundCurrent() {
+        return groundAmps;
+    }
+
+    /** Whether anything is wired to the ground point: a splice in the editor or a hanging wire. The inspector looks for this. */
+    public boolean groundBonded() {
+        int ground = PanelLayout.groundTerminal(spec());
+        for(var splice : splices().list()) {
+            if(splice[0] == ground || splice[1] == ground)
+                return true;
+        }
+        var behaviour = getElectricBehaviour();
+        if(behaviour == null)
+            return false;
+        for(var entry : behaviour.getConnections().entrySet()) {
+            if(entry.getKey().getTerminal() == ground && !entry.getValue().isEmpty())
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -448,6 +494,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         breaker.frame = item.frame();
         breaker.rating = item.rating();
         breaker.blank = item.isBlank();
+        breaker.gfci = item.gfci();
         breaker.poles = item.isBlank() ? 1 : slot == MAIN ? spec.lugs() : item.poles();
         breaker.state = BreakerState.OFF;
         breaker.heat = 0;
@@ -660,6 +707,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     private void writeBreakers(CompoundTag tag, boolean clientPacket) {
         ensureInit();
         splices().write(tag);
+        tag.putBoolean("Cover", cover);
+        tag.putBoolean("CoverOpen", coverOpen);
         tag.put("Main", main.write(clientPacket));
         var list = new ListTag();
         for(var branch : branches)
@@ -671,6 +720,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         ensureInit();
         super.read(tag, registries, clientPacket);
+        cover = tag.getBoolean("Cover");
+        coverOpen = tag.getBoolean("CoverOpen");
         var prevMain = main.state;
         var prevBranches = new BreakerState[branches.length];
         for(int i = 0; i < branches.length; ++i)
@@ -726,7 +777,68 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             dropBreaker(main);
             for(var branch : branches)
                 dropBreaker(branch);
+            if(cover) {
+                var center = worldPosition.getCenter();
+                Containers.dropItemStack(level, center.x, center.y, center.z, ModItems.PANEL_COVER.asStack());
+                cover = false;
+            }
         }
+    }
+
+    // ---- the cover ----
+
+    private boolean cover, coverOpen;
+
+    public boolean hasCover() {
+        return cover;
+    }
+
+    public boolean coverOpen() {
+        return cover && coverOpen;
+    }
+
+    /** A closed door: the breakers are out of reach and out of sight. */
+    public boolean coverClosed() {
+        return cover && !coverOpen;
+    }
+
+    public boolean fitCover(Player player, ItemStack stack) {
+        if(cover) {
+            if(level != null && !level.isClientSide)
+                player.displayClientMessage(Lang.builder().translate("message.breaker_panel.has_cover").style(ChatFormatting.RED).component(), true);
+            return false;
+        }
+        if(level == null || level.isClientSide)
+            return true;
+        cover = true;
+        coverOpen = false;
+        if(!player.isCreative())
+            stack.shrink(1);
+        level.playSound(null, worldPosition, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 0.6f, 1.2f);
+        player.displayClientMessage(Lang.builder().translate("message.breaker_panel.cover_fitted").style(ChatFormatting.GRAY).component(), true);
+        notifyUpdate();
+        return true;
+    }
+
+    public void removeCover(Player player) {
+        if(!cover || level == null || level.isClientSide)
+            return;
+        cover = false;
+        coverOpen = false;
+        var plate = ModItems.PANEL_COVER.asStack();
+        if(!player.getInventory().add(plate))
+            player.drop(plate, false);
+        level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.6f, 1.2f);
+        player.displayClientMessage(Lang.builder().translate("message.breaker_panel.cover_removed").style(ChatFormatting.GRAY).component(), true);
+        notifyUpdate();
+    }
+
+    public void setCoverOpen(boolean open) {
+        if(!cover || coverOpen == open || level == null || level.isClientSide)
+            return;
+        coverOpen = open;
+        level.playSound(null, worldPosition, open ? SoundEvents.IRON_DOOR_OPEN : SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 0.6f, 1.3f);
+        notifyUpdate();
     }
 
     private void dropBreaker(Breaker breaker) {
@@ -742,6 +854,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     @Override
     public ItemRequirement getRequiredItems(BlockState state) {
         var requirement = ItemRequirement.NONE;
+        if(cover)
+            requirement = requirement.union(new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, ModItems.PANEL_COVER.asStack()));
         for(int slot = MAIN; slot < branches.length; ++slot) {
             var breaker = breaker(slot);
             if(!breaker.installed() || breaker.isCovered())
@@ -756,11 +870,15 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate(spec.titleKey(), spec.rating()).style(ChatFormatting.GRAY).forGoggles(tooltip);
+        if(cover)
+            Lang.builder().translate(coverOpen ? "gui.breaker_panel.cover_open" : "gui.breaker_panel.cover_closed").style(ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
         goggleLine(tooltip, MAIN);
         for(int i = 0; i < slotCount(); ++i) {
             if(!branches[i].isCovered())
                 goggleLine(tooltip, i);
         }
+        if(groundAmps >= 0.005f)
+            Lang.builder().translate("gui.breaker_panel.ground_current", String.format("%.0f", groundAmps * 1000)).style(ChatFormatting.RED).forGoggles(tooltip, 1);
         splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
@@ -777,6 +895,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             int poles = slot == MAIN ? spec.lugs() : breaker.poles;
             if(poles > 1)
                 line.text(" ").add(Lang.builder().translate("gui.breaker_panel.poles", poles).style(ChatFormatting.WHITE));
+            if(breaker.gfci)
+                line.text(" ").add(Lang.builder().translate("gui.breaker_panel.gfci").style(ChatFormatting.AQUA));
             line.text("  ").add(Lang.builder().add(stateText(breaker.state)));
             if(breaker.state == BreakerState.ON)
                 line.text("  ").add(Lang.builder().text(String.format("%.1f ", breaker.current)).add(Unit.CURRENT.get()).style(ChatFormatting.GOLD));
@@ -802,11 +922,15 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             points = new ArrayList<>();
             for(int lug = 0; lug < spec.lugs(); ++lug)
                 points.add(new SplicePoint(spec.lineTerminal(lug), PanelLayout.lineName(spec, lug), PanelLayout.lineRgb(spec, lug)));
-            points.add(new SplicePoint(spec.neutralTerminal(), Lang.builder().translate("breaker_panel.neutral").style(ChatFormatting.BLUE).component(), IDecoratedTerminal.BLUE));
+            points.add(new SplicePoint(spec.neutralTerminal(), ConductorColors.neutralLabel("breaker_panel.neutral"), ConductorColors.neutralRgb()));
+            points.add(new SplicePoint(PanelLayout.groundTerminal(spec), ConductorColors.groundLabel("breaker_panel.ground"), ConductorColors.groundRgb()));
             for(int i = 0; i < slotCount(); ++i) {
                 if(branches[i].isDeadRow())
                     continue;
-                points.add(new SplicePoint(PanelLayout.branchTerminal(spec, i), Lang.builder().add(pointName(i)).style(ChatFormatting.WHITE).component(), 0xC8C8C8));
+                // The space's wire hangs off its lug, a pole's lug on a pole row, so it wears that line's colour.
+                int lug = lugFor(i);
+                var name = pointName(i).copy().withStyle(Style.EMPTY.withColor(ConductorColors.hotTextRgb(lug)));
+                points.add(new SplicePoint(PanelLayout.branchTerminal(spec, i), name, ConductorColors.hotRgb(lug)));
             }
         }
         return points;
@@ -881,6 +1005,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         private int head = -1;
         private int pole = -1;
         private boolean blank;
+        private boolean gfci;
         private boolean locked;
         private String label = "";
         private BreakerState state = BreakerState.OFF;
@@ -900,6 +1025,11 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
         public boolean isBlank() {
             return blank;
+        }
+
+        /** Trips on ground-fault current too. */
+        public boolean isGfci() {
+            return gfci;
         }
 
         /** Taken by the breaker in {@link #head()}. */
@@ -964,16 +1094,19 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
         /** The item that put this breaker or blank here. */
         public ItemStack item() {
-            return blank || frame == null ? ModItems.blank() : ModItems.breaker(frame, poles);
+            if(blank || frame == null)
+                return ModItems.blank();
+            return gfci ? ModItems.BREAKER_GFCI.asStack() : ModItems.breaker(frame, poles);
         }
 
-        void clear() {
+        public void clear() {
             frame = null;
             rating = 0;
             poles = 1;
             head = -1;
             pole = -1;
             blank = false;
+            gfci = false;
             locked = false;
             state = BreakerState.OFF;
             heat = 0;
@@ -986,43 +1119,52 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             pole = poleIndex;
         }
 
-        // Shared with the switchgear section, which keeps one of these records on its own.
+        // Shared with the switchgear section and the switchgear cells, which keep records of their own.
 
-        void installFrom(BreakerItem item, int poleCount) {
+        public void installFrom(BreakerItem item, int poleCount) {
             clear();
             frame = item.frame();
             rating = item.rating();
             blank = item.isBlank();
+            gfci = item.gfci();
             poles = blank ? 1 : poleCount;
         }
 
-        void setRating(int value) {
+        /** A breaker of that frame built into something, at the top of its range. */
+        public void installFrame(BreakerFrame frame, int poleCount) {
+            clear();
+            this.frame = frame;
+            rating = frame.max();
+            poles = poleCount;
+        }
+
+        public void setRating(int value) {
             rating = value;
             heat = 0;
         }
 
-        void setState(BreakerState value) {
+        public void setState(BreakerState value) {
             state = value;
             heat = 0;
             current = 0;
         }
 
-        void setLocked(boolean value) {
+        public void setLocked(boolean value) {
             locked = value;
         }
 
-        void setLabel(String value) {
+        public void setLabel(String value) {
             label = value;
         }
 
         /** Open or tripped: nothing flows and the thermal element cools. */
-        void tickOpen() {
+        public void tickOpen() {
             current = 0;
             heat = BreakerTripCurve.cool(heat);
         }
 
         /** Closed and carrying this current; true when it trips on this tick. */
-        boolean tickClosed(float amps) {
+        public boolean tickClosed(float amps) {
             current = amps;
             heat = BreakerTripCurve.step(heat, amps, rating);
             if(!BreakerTripCurve.trips(heat, amps, rating))
@@ -1033,11 +1175,11 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             return true;
         }
 
-        boolean currentChanged() {
+        public boolean currentChanged() {
             return Math.abs(current - syncedCurrent) > Math.max(0.05f, Math.abs(syncedCurrent) * 0.02f);
         }
 
-        CompoundTag write(boolean clientPacket) {
+        public CompoundTag write(boolean clientPacket) {
             var tag = new CompoundTag();
             if(frame != null)
                 tag.putByte("Frame", (byte) frame.ordinal());
@@ -1049,6 +1191,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
                 tag.putInt("Pole", pole);
             }
             tag.putBoolean("Blank", blank);
+            if(gfci)
+                tag.putBoolean("Gfci", true);
             tag.putBoolean("Locked", locked);
             if(!label.isEmpty())
                 tag.putString("Label", label);
@@ -1062,7 +1206,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             return tag;
         }
 
-        void read(CompoundTag tag, boolean clientPacket) {
+        public void read(CompoundTag tag, boolean clientPacket) {
             rating = tag.getInt("Rating");
             // Panels saved before frames existed only had a rating.
             frame = tag.contains("Frame") ? BreakerFrame.byOrdinal(tag.getByte("Frame")) : rating > 0 ? BreakerFrame.forRating(rating) : null;
@@ -1074,6 +1218,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             blank = tag.getBoolean("Blank");
             if(blank)
                 frame = null;
+            gfci = tag.getBoolean("Gfci");
             locked = tag.getBoolean("Locked");
             label = tag.getString("Label");
             state = BreakerState.fromOrdinal(tag.getByte("State"));

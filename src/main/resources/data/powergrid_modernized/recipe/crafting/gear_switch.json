@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "c:plates/iron"
+    },
+    "L": {
+      "item": "minecraft:lever"
+    },
+    "C": {
+      "tag": "c:ingots/copper"
+    }
+  },
+  "pattern": [
+    "PLP",
+    "CCC",
+    "PPP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:gear_switch"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "variants": {
+    "axis=z": {
+      "model": "powergrid_modernized:block/pump_stage"
+    },
+    "axis=x": {
+      "model": "powergrid_modernized:block/pump_stage",
+      "y": 90
+    },
+    "axis=y": {
+      "model": "powergrid_modernized:block/pump_stage",
+      "x": 90
+    }
+  }
+}

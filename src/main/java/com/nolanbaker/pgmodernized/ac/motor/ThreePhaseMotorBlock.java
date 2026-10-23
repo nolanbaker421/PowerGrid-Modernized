@@ -17,8 +17,6 @@ import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.data.Iterate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.LevelReader;
@@ -72,8 +70,7 @@ public class ThreePhaseMotorBlock extends ElectricKineticBlock implements IBE<Th
     }
 
     private static TerminalBoundingBox terminal(String key, int phase, double x1, double y1, double z1, double x2, double y2, double z2) {
-        Component name = Component.translatable("powergrid." + key).withStyle(Style.EMPTY.withColor(ConductorColors.textRgb(phase)));
-        return new TerminalBoundingBox(name, x1, y1, z1, x2, y2, z2).withColor(ConductorColors.rgb(phase));
+        return new TerminalBoundingBox(ConductorColors.hotLabel(key, phase), x1, y1, z1, x2, y2, z2).withColor(ConductorColors.hotRgb(phase));
     }
 
     @Override

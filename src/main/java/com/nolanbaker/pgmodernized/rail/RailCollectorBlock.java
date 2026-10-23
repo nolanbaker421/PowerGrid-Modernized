@@ -30,6 +30,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
+import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 
 /**
  * The collector trolley: a pull box on the moving body with a spring arm and shoes. The arm swings
@@ -64,10 +65,10 @@ public class RailCollectorBlock extends Rotation4ElectricBlock implements IBE<Ra
 
     private static TerminalBoundingBox[] terminals() {
         return new TerminalBoundingBox[] {
-                new TerminalBoundingBox(name("rail.l1", ChatFormatting.RED), 3, 6, 9, 5, 8, 11).withColor(0xD03030),
-                new TerminalBoundingBox(name("rail.l2", ChatFormatting.GOLD), 6, 6, 9, 8, 8, 11).withColor(0xE0A020),
-                new TerminalBoundingBox(name("rail.l3", ChatFormatting.BLUE), 9, 6, 9, 11, 8, 11).withColor(0x3060D0),
-                new TerminalBoundingBox(name("rail.n", ChatFormatting.WHITE), 12, 6, 9, 14, 8, 11).withColor(0xE8E8E8),
+                new TerminalBoundingBox(ConductorColors.hotLabel("rail.l1", 0), 3, 6, 9, 5, 8, 11).withColor(ConductorColors.hotRgb(0)),
+                new TerminalBoundingBox(ConductorColors.hotLabel("rail.l2", 1), 6, 6, 9, 8, 8, 11).withColor(ConductorColors.hotRgb(1)),
+                new TerminalBoundingBox(ConductorColors.hotLabel("rail.l3", 2), 9, 6, 9, 11, 8, 11).withColor(ConductorColors.hotRgb(2)),
+                new TerminalBoundingBox(ConductorColors.neutralLabel("rail.n"), 12, 6, 9, 14, 8, 11).withColor(ConductorColors.neutralRgb()),
                 JackTerminals.jack(14, 0, 9, 16, 2, 11),
                 new TerminalBoundingBox(name("rail.shoe", ChatFormatting.GRAY), 7, 2, -10, 9, 4, -8).withColor(0x505050)
         };

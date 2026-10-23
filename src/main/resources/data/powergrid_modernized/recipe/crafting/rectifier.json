@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "C": {
+      "tag": "c:plates/copper"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "RRR",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:rectifier"
+  }
+}

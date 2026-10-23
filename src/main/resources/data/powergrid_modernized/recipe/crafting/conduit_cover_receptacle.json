@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powergrid_modernized:conduit_cover_blank"
+    },
+    {
+      "tag": "c:nuggets/copper"
+    },
+    {
+      "tag": "c:nuggets/copper"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:conduit_cover_receptacle"
+  }
+}

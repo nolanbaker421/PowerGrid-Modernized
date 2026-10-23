@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "c:plates/iron"
+    },
+    "B": {
+      "item": "powergrid_modernized:bus_bar"
+    },
+    "K": {
+      "item": "powergrid_modernized:breaker_800a_3p"
+    },
+    "C": {
+      "tag": "c:ingots/copper"
+    }
+  },
+  "pattern": [
+    "PKP",
+    "BBB",
+    "PCP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:bus_duct_plug_in_breaker"
+  }
+}

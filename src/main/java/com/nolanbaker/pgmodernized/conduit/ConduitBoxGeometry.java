@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -27,7 +28,9 @@ public final class ConduitBoxGeometry {
     public static final int HUB_COUNT = 12;
     public static final int HUB_BASE = FRONT_COUNT;
     public static final int CONDUCTOR_BASE = HUB_BASE + HUB_COUNT;
-    public static final int TERMINAL_COUNT = CONDUCTOR_BASE + HUB_COUNT * ConductorColors.COUNT;
+    /** The receptacle's face, a socket placement for power cords; only there under a receptacle cover. */
+    public static final int TERMINAL_RECEPTACLE = CONDUCTOR_BASE + HUB_COUNT * ConductorColors.COUNT;
+    public static final int TERMINAL_COUNT = TERMINAL_RECEPTACLE + 1;
 
     public static final String[] HUB_KEYS = {"top", "right", "bottom", "left"};
 
@@ -116,6 +119,7 @@ public final class ConduitBoxGeometry {
                 terminals[conductorTerminal(h, k)] = terminal(name, frame.apply(HIDDEN)).withColor(ConductorColors.rgb(k));
             }
         }
+        terminals[TERMINAL_RECEPTACLE] = terminal(IDecoratedTerminal.SOCKET, frame.apply(RECEPTACLE_FACE));
         return terminals;
     }
 
@@ -129,9 +133,23 @@ public final class ConduitBoxGeometry {
     }
 
     public static VoxelShape shape(boolean nubs, UnaryOperator<AABB> frame) {
+        return shape(nubs ? ConduitCover.NODE : ConduitCover.BLANK, frame);
+    }
+
+    /** The lamp holder and bulb of a light socket cover, standing out from the plate. */
+    public static final AABB LAMP_HOLDER = new AABB(6.5, 6.5, 11, 9.5, 9.5, 13), BULB = new AABB(6, 6, 8.5, 10, 10, 11);
+    /** The face of a receptacle cover that a cord plugs into. */
+    public static final AABB RECEPTACLE_FACE = new AABB(6.5, 6, 11.5, 9.5, 10, 13);
+
+    /** The box with that cover: its exposed cover terminals as nubs, and the lamp of a light socket. */
+    public static VoxelShape shape(ConduitCover cover, UnaryOperator<AABB> frame) {
         var shape = box(frame.apply(BODY));
-        if(nubs) for(int k = 0; k < FRONT_COUNT; ++k)
+        for(int k = 0; k < cover.terminals(); ++k)
             shape = Shapes.or(shape, box(frame.apply(frontNub(k))));
+        if(cover.isLight())
+            shape = Shapes.or(shape, box(frame.apply(LAMP_HOLDER)), box(frame.apply(BULB)));
+        if(cover == ConduitCover.RECEPTACLE)
+            shape = Shapes.or(shape, box(frame.apply(RECEPTACLE_FACE)));
         for(var hub : HUBS)
             shape = Shapes.or(shape, box(frame.apply(hub)));
         return shape;

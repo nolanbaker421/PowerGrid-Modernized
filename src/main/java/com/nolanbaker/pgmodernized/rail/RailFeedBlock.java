@@ -10,9 +10,7 @@ import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
 import com.nolanbaker.pgmodernized.network.JackTerminals;
 import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -26,7 +24,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-import org.patryk3211.powergrid.utility.Lang;
+import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 
 /**
  * The feed box of a conductor rail run: a pull box whose four studs (L1, L2, L3, N) are the four
@@ -56,16 +54,12 @@ public class RailFeedBlock extends Rotation4ElectricBlock implements IBE<RailFee
 
     private static TerminalBoundingBox[] terminals() {
         return new TerminalBoundingBox[] {
-                new TerminalBoundingBox(name("rail.l1", ChatFormatting.RED), 3, 6, 3, 5, 8, 5).withColor(0xD03030),
-                new TerminalBoundingBox(name("rail.l2", ChatFormatting.GOLD), 6, 6, 3, 8, 8, 5).withColor(0xE0A020),
-                new TerminalBoundingBox(name("rail.l3", ChatFormatting.BLUE), 9, 6, 3, 11, 8, 5).withColor(0x3060D0),
-                new TerminalBoundingBox(name("rail.n", ChatFormatting.WHITE), 12, 6, 3, 14, 8, 5).withColor(0xE8E8E8),
+                new TerminalBoundingBox(ConductorColors.hotLabel("rail.l1", 0), 3, 6, 3, 5, 8, 5).withColor(ConductorColors.hotRgb(0)),
+                new TerminalBoundingBox(ConductorColors.hotLabel("rail.l2", 1), 6, 6, 3, 8, 8, 5).withColor(ConductorColors.hotRgb(1)),
+                new TerminalBoundingBox(ConductorColors.hotLabel("rail.l3", 2), 9, 6, 3, 11, 8, 5).withColor(ConductorColors.hotRgb(2)),
+                new TerminalBoundingBox(ConductorColors.neutralLabel("rail.n"), 12, 6, 3, 14, 8, 5).withColor(ConductorColors.neutralRgb()),
                 JackTerminals.jack(14, 0, 9, 16, 2, 11)
         };
-    }
-
-    private static Component name(String key, ChatFormatting style) {
-        return Lang.builder().translate(key).style(style).component();
     }
 
     @Override

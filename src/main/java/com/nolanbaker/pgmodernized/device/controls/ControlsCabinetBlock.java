@@ -31,10 +31,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
+import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 
 /**
  * A wall cabinet with a DIN rail inside and a door of six cells outside. Modules clip onto the
@@ -160,8 +160,8 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
 
     private static TerminalBoundingBox[] terminals() {
         var terminals = new TerminalBoundingBox[BASE_COUNT];
-        terminals[TERMINAL_LINE] = terminal(name("controls.line", ChatFormatting.RED), HIDDEN).withColor(IDecoratedTerminal.RED);
-        terminals[TERMINAL_NEUTRAL] = terminal(name("controls.neutral", ChatFormatting.BLUE), HIDDEN).withColor(IDecoratedTerminal.BLUE);
+        terminals[TERMINAL_LINE] = terminal(ConductorColors.hotLabel("controls.line", 0), HIDDEN).withColor(ConductorColors.hotRgb(0));
+        terminals[TERMINAL_NEUTRAL] = terminal(ConductorColors.neutralLabel("controls.neutral"), HIDDEN).withColor(ConductorColors.neutralRgb());
         for(int slot = 0; slot < RAIL; ++slot) {
             for(int ch = 0; ch < RELAY_CHANNELS; ++ch) {
                 terminals[relayTerminal(slot, ch, 0)] = terminal(Lang.builder().translate("controls.relay_com", slot + 1, ch + 1).style(ChatFormatting.GOLD).component(), HIDDEN)
@@ -190,10 +190,6 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
 
     private static TerminalBoundingBox terminal(Component name, AABB px) {
         return new TerminalBoundingBox(name, px.minX, px.minY, px.minZ, px.maxX, px.maxY, px.maxZ);
-    }
-
-    private static Component name(String key, ChatFormatting style) {
-        return Lang.builder().translate(key).style(style).component();
     }
 
     @Override

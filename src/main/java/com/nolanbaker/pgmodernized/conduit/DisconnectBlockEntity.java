@@ -20,7 +20,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -154,9 +153,9 @@ public class DisconnectBlockEntity extends ElectricBlockEntity implements ISplic
         if(points == null) {
             var list = new ArrayList<SplicePoint>();
             for(int k = 0; k < POLES; ++k)
-                list.add(new SplicePoint(LINE_BASE + k, lineName(k), IDecoratedTerminal.RED));
+                list.add(new SplicePoint(LINE_BASE + k, lineName(k), ConductorColors.hotRgb(k)));
             for(int k = 0; k < POLES; ++k)
-                list.add(new SplicePoint(LOAD_BASE + k, loadName(k), IDecoratedTerminal.BLUE));
+                list.add(new SplicePoint(LOAD_BASE + k, loadName(k), ConductorColors.hotRgb(k)));
             points = List.copyOf(list);
         }
         return points;

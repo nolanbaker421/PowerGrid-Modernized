@@ -4,6 +4,7 @@ import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitPlacement;
 import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
+import com.nolanbaker.pgmodernized.registry.ModItems;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.ChatFormatting;
@@ -146,6 +147,14 @@ public class BreakerPanelBlock extends HorizontalElectricBlock implements IBE<Br
 
     /** Item clicks on the head or on one of its extensions; {@code headPos} is always the head. */
     public ItemInteractionResult interactItem(ItemStack stack, BlockState state, Level level, BlockPos headPos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(stack.is(ModItems.PANEL_COVER.get())) {
+            if(hit.getDirection() != facing(state))
+                return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+            return onBlockEntityUseItemOn(level, headPos, be -> be.fitCover(player, stack) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL);
+        }
+        // Behind a closed door nothing goes in or out; a bare hand opens it.
+        if(!stack.isEmpty() && level.getBlockEntity(headPos) instanceof BreakerPanelBlockEntity be && be.coverClosed() && hit.getDirection() == facing(state))
+            return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         if(stack.getItem() instanceof BreakerItem breaker) {
             int slot = slotAt(state, headPos, hit, level);
             if(slot == PanelLayout.NO_SLOT)
@@ -180,6 +189,21 @@ public class BreakerPanelBlock extends HorizontalElectricBlock implements IBE<Br
     /** Empty-hand clicks on the head or on one of its extensions; {@code headPos} is always the head. */
     public InteractionResult interact(BlockState state, Level level, BlockPos headPos, Player player, BlockHitResult hit) {
         int slot = slotAt(state, headPos, hit, level);
+        if(hit.getDirection() == facing(state) && level.getBlockEntity(headPos) instanceof BreakerPanelBlockEntity be && be.hasCover()) {
+            // A closed door opens on a click and comes off on a sneak-click; an open one closes on a
+            // sneak-click anywhere on the front that has no breaker to pull: the frame or an empty space.
+            if(be.coverClosed()) {
+                if(player.isShiftKeyDown())
+                    be.removeCover(player);
+                else
+                    be.setCoverOpen(true);
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+            if(player.isShiftKeyDown() && (slot == PanelLayout.NO_SLOT || !be.breaker(slot).installed())) {
+                be.setCoverOpen(false);
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+        }
         if(slot == PanelLayout.NO_SLOT) {
             // The front outside the breaker spaces opens the splice editor for the conduit knockouts.
             if(hit.getDirection() != facing(state) || player.isShiftKeyDown())

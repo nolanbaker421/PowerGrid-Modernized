@@ -8,6 +8,13 @@ import com.nolanbaker.pgmodernized.device.camlock.CamLockBoxBlock;
 import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlock;
 import com.nolanbaker.pgmodernized.device.helm.HelmBlock;
 import com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlock;
+import com.nolanbaker.pgmodernized.device.busduct.BusDuctBlock;
+import com.nolanbaker.pgmodernized.device.busduct.BusDuctFeedBlock;
+import com.nolanbaker.pgmodernized.device.busduct.BusDuctPlugInBlock;
+import com.nolanbaker.pgmodernized.device.busduct.BusDuctPlugInBreakerBlock;
+import com.nolanbaker.pgmodernized.device.capacitor.CapacitorBankBlock;
+import com.nolanbaker.pgmodernized.device.rectifier.RectifierBlock;
+import com.nolanbaker.pgmodernized.device.gear.GearCellBlock;
 import com.nolanbaker.pgmodernized.rack.RackBlock;
 import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
 import com.nolanbaker.pgmodernized.rack.PinionBlock;
@@ -433,7 +440,7 @@ public class ModBlocks {
     public static final BlockEntry<ConduitBoxBlock> CONDUIT_BOX = REGISTRATE.block("conduit_box", ConduitBoxBlock::new)
             .blockstate(NonNullBiConsumer.noop())
             .initialProperties(SharedProperties::softMetal)
-            .properties(p -> p.noOcclusion())
+            .properties(p -> p.noOcclusion().lightLevel(ConduitBoxBlock::lightOf))
             .transform(pickaxeOnly())
             .lang("Conduit Box")
             .item()
@@ -445,7 +452,7 @@ public class ModBlocks {
     public static final BlockEntry<CeilingConduitBoxBlock> CEILING_TILE_CONDUIT_BOX = REGISTRATE.block("ceiling_tile_conduit_box", CeilingConduitBoxBlock::new)
             .blockstate(NonNullBiConsumer.noop())
             .initialProperties(SharedProperties::softMetal)
-            .properties(p -> p.noOcclusion())
+            .properties(p -> p.noOcclusion().lightLevel(ConduitBoxBlock::lightOf))
             .transform(pickaxeOnly())
             .lang("Ceiling Tile Conduit Box")
             .register();
@@ -504,6 +511,80 @@ public class ModBlocks {
             .properties(p -> p.noOcclusion())
             .transform(pickaxeOnly())
             .lang("Disconnect")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** Bus duct: a segment, the end feed that puts wire on a run, and the plug-in disconnect that taps one. */
+    public static final BlockEntry<BusDuctBlock> BUS_DUCT = REGISTRATE.block("bus_duct", BusDuctBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Bus Duct")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<BusDuctFeedBlock> BUS_DUCT_FEED = REGISTRATE.block("bus_duct_feed", BusDuctFeedBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Bus Duct End Feed")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<BusDuctPlugInBlock> BUS_DUCT_PLUG_IN = REGISTRATE.block("bus_duct_plug_in", BusDuctPlugInBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Bus Duct Plug-In Disconnect")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** Custom switchgear: a cell with a 3 x 3 grid of slots for bars, breakers, fuses, switches, contactors and lugs. */
+    public static final BlockEntry<BusDuctPlugInBreakerBlock> BUS_DUCT_PLUG_IN_BREAKER = REGISTRATE.block("bus_duct_plug_in_breaker", BusDuctPlugInBreakerBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Bus Duct Plug-In Breaker")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<RectifierBlock> RECTIFIER = REGISTRATE.block("rectifier", RectifierBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Rectifier")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<CapacitorBankBlock> CAPACITOR_BANK = REGISTRATE.block("capacitor_bank", CapacitorBankBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Capacitor Bank")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<GearCellBlock> GEAR_CELL = REGISTRATE.block("gear_cell", GearCellBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Switchgear Cell")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

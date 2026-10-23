@@ -17,7 +17,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -104,8 +103,8 @@ public class ConduitSwitchBlockEntity extends ElectricBlockEntity implements ISp
     public List<SplicePoint> points() {
         if(points == null) {
             points = List.of(
-                    new SplicePoint(TERMINAL_POLE_A, Lang.builder().translate("conduit_switch.line").style(ChatFormatting.RED).component(), IDecoratedTerminal.RED),
-                    new SplicePoint(TERMINAL_POLE_B, Lang.builder().translate("conduit_switch.load").style(ChatFormatting.BLUE).component(), IDecoratedTerminal.BLUE));
+                    new SplicePoint(TERMINAL_POLE_A, ConductorColors.hotLabel("conduit_switch.line", 0), ConductorColors.hotRgb(0)),
+                    new SplicePoint(TERMINAL_POLE_B, ConductorColors.hotLabel("conduit_switch.load", 1), ConductorColors.hotRgb(1)));
         }
         return points;
     }

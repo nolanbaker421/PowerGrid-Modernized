@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powergrid_modernized:breaker_50a_3p"
+    },
+    {
+      "item": "powergrid_modernized:gear_contactor"
+    },
+    {
+      "tag": "c:plates/iron"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:gear_starter"
+  }
+}
