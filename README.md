@@ -274,7 +274,7 @@ Cat6 across the air. A **Radio** (line, neutral, Cat6 jack, coax port) becomes w
 on its **Coax Cable** makes it: a **Dish Antenna** is one end of a point-to-point link with a one
 degree beam, a **Sector Antenna** is a base station with an aimed beam 30 to 180 degrees wide, an
 **Omni Antenna** is a client that roams between the sectors of its carrier. Links pair by typed link
-ID rather than channel, reach 2000 blocks for dishes and omnis and 1000 for sectors (config), lose reach with the length of the coax run, and
+ID rather than channel, reach 2000 blocks for dishes, 1000 for a 120° sector (more the narrower its beam) and 500 for omnis (config), lose reach with the length of the coax run, and
 join the two radios' jacks exactly as a cable would, so OpenComputers and CC: Tweaked networks merge
 across them. Antennas are aimed to a tenth of a degree on a sneak-click screen, with goggles reading
 the bearing to the partner and the degrees off axis. A **Cable Hanger** carries eight coax or Cat6

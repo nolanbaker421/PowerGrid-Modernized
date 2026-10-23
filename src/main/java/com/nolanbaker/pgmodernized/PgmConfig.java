@@ -115,10 +115,10 @@ public final class PgmConfig {
         b.comment("Radios, antennas, coax and metering").push("radio");
         RADIO_DISH_RANGE = b.comment("Reach of a dish in blocks; a link needs both dishes within reach of each other.")
                 .defineInRange("dish_range", 2000, 16, 100_000);
-        RADIO_SECTOR_RANGE = b.comment("Reach of a sector antenna in blocks.")
+        RADIO_SECTOR_RANGE = b.comment("Reach of a sector antenna in blocks at a 120 degree beamwidth; a narrower beam reaches further, by the square root of 120 over the beamwidth.")
                 .defineInRange("sector_range", 1000, 16, 100_000);
-        RADIO_CELL_RANGE = b.comment("Reach of an omni (cell) antenna in blocks.")
-                .defineInRange("cell_range", 2000, 16, 100_000);
+        RADIO_CELL_RANGE = b.comment("Reach of an omni (cell) antenna in blocks. A link needs both ends within reach, so this is the radius a cell is served to.")
+                .defineInRange("cell_range", 500, 16, 100_000);
         RADIO_DISH_BEAM = b.comment("Degrees off its aim a dish still sees its partner.")
                 .defineInRange("dish_beam_degrees", 1.0, 0.1, 90.0);
         RADIO_SECTOR_CLIENTS = b.comment("Cell antennas one sector carries at once.")

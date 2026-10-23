@@ -79,7 +79,7 @@ public class ThreePhasePumpBlock extends ElectricPumpBlock {
         Resistance.coil(winding, player, tooltip);
         Voltage.rated(ThreePhasePumpBlockEntity.RATED_VOLTS, player, tooltip);
         if(winding > 0)
-            Power.rated(3 * ThreePhasePumpBlockEntity.RATED_VOLTS * ThreePhasePumpBlockEntity.RATED_VOLTS / winding, player, tooltip);
+            Power.rated(ThreePhasePumpBlockEntity.ratedWatts(winding), player, tooltip);
     }
 
     private static TerminalBoundingBox[] terminals() {

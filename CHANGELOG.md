@@ -4,6 +4,20 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.43.0 — 2026-10-23
+
+### Changed
+- Three-phase pump and motor windings take their inductance from a nameplate power factor at
+  60 Hz (pump 0.85, motor 0.9) instead of Power Grid's DC motor time constant, which gave them a
+  power factor of 0.26 and left the pump crawling at 120 V until kilovolts were applied. The pump's
+  inductance falls with its stages like its resistance, so stages no longer slow it. Pump winding
+  260 Ω: a one-stage pump at 120 V a phase draws 120 W real and sits at the speed cap. The motor's
+  load-following resistance is solved with the reactance in, so it draws what its stress is worth.
+- Sector reach scales with beamwidth: the configured reach is at 120°, a 30° panel reaches twice
+  as far and a 180° one 0.82 of it.
+- Omni (cell) antennas reach 500 blocks by default, down from 2000. A link needs both ends within
+  reach, so this is the radius a tower serves. Existing config files keep their `cell_range`.
+
 ## 0.42.1 — 2026-10-23
 
 ### Fixed

@@ -55,9 +55,10 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         // Rectifier: the rails out to the DC lugs. Capacitor bank: the contact in front of each capacitor.
         resistance("rectifier", "output", 0.002);
         resistance("capacitor_bank", "contact", 0.002);
-        // Three-phase pump: one winding set; each stage puts another in parallel.
-        resistance("three_phase_pump", "winding", 360.0);
-        RESISTANCES.put(asResource("three_phase_pump"), 360.0);
+        // Three-phase pump: one winding set; each stage puts another in parallel. 260 Ω at a power
+        // factor of 0.85 is 120 W real at 120 V a phase, which is Power Grid's pump speed cap.
+        resistance("three_phase_pump", "winding", 260.0);
+        RESISTANCES.put(asResource("three_phase_pump"), 260.0);
         // Three-phase motor: one winding per phase, star connected; thermal limits are its own.
         resistance("three_phase_motor", "winding", 8.0);
         resistance("three_phase_drive", "output", 0.05);

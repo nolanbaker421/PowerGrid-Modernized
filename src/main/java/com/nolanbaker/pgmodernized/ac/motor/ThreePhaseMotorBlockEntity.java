@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.ac.motor;
 
+import com.nolanbaker.pgmodernized.ac.Windings;
+
 import com.nolanbaker.pgmodernized.PgmConfig;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
@@ -139,10 +141,8 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         return (float) (BlockStressValues.getCapacity(getBlockState().getBlock()) * perStress);
     }
 
-    private static float timeConstant() {
-        var configs = ModdedConfigs.server();
-        return configs == null ? 0.01f : configs.electricity.motorTimeConstant.getF();
-    }
+    /** Nameplate power factor at full load and 60 Hz; sets the windings' inductance. */
+    public static final float POWER_FACTOR = 0.9f;
 
     private static boolean dynamicResistance() {
         var configs = ModdedConfigs.server();
@@ -160,7 +160,7 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         deviceHubs().buildCircuit(builder);
         var star = builder.addInternalNode();
         float R = resistance("winding");
-        float L = R * timeConstant();
+        float L = Windings.inductance(R, POWER_FACTOR);
         windings = new LRSeriesWire[3];
         senses = new PhaseSenseWire[3];
         readings = new AcReadings.Filter[3];
@@ -199,7 +199,10 @@ public class ThreePhaseMotorBlockEntity extends GeneratingKineticBlockEntity imp
         double volts = Math.max(1, phaseVolts);
         double full = 3.0 * volts * volts / r;
         double want = Math.max(demandWatts, full * IDLE_FRACTION);
-        double target = Math.max(r, Math.min(r / IDLE_FRACTION, 3.0 * volts * volts / want));
+        // The reactance is fixed, so the resistance is solved for I²R meeting the demand, not V²/R.
+        double x = Windings.reactance(r, POWER_FACTOR);
+        double floor = Windings.resistanceFor(volts, full / 3, x);
+        double target = Math.max(floor, Math.min(r / IDLE_FRACTION, Windings.resistanceFor(volts, want / 3, x)));
         for(var winding : windings)
             winding.setResistance((float) target);
     }

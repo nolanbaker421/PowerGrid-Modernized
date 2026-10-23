@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.ac.pump;
 
+import com.nolanbaker.pgmodernized.ac.Windings;
+
 import com.nolanbaker.pgmodernized.ac.motor.PhaseSenseWire;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
@@ -52,6 +54,8 @@ public class ThreePhasePumpBlockEntity extends ElectricPumpBlockEntity implement
     public static final int MAX_STAGES = 6;
     public static final float SENSE = 1_000_000f;
     public static final float RATED_VOLTS = 120;
+    /** Nameplate power factor at 60 Hz; sets the windings' inductance. */
+    public static final float RATED_POWER_FACTOR = 0.85f;
 
     private DeviceSpliceHost deviceHubs;
     // No initialisers: buildCircuit runs from the superclass constructor.
@@ -84,18 +88,17 @@ public class ThreePhasePumpBlockEntity extends ElectricPumpBlockEntity implement
 
     /** Full-load draw of a one-stage pump at the rated phase voltage, which a stage adds again each. */
     private float ratedWatts() {
-        float r = resistance("winding");
-        return r > 0 ? 3 * RATED_VOLTS * RATED_VOLTS / r : 0;
+        return ratedWatts(resistance("winding"));
+    }
+
+    /** Real power of one winding set at the rated voltage: 3 V² pf² / R, since I = V pf / R. */
+    public static float ratedWatts(float winding) {
+        return winding > 0 ? 3 * RATED_VOLTS * RATED_VOLTS * RATED_POWER_FACTOR * RATED_POWER_FACTOR / winding : 0;
     }
 
     @Override
     public ThermalBehaviour specifyThermalBehaviour() {
         return ThermalBehaviour.forMaxPower(this, ratedWatts() * (1 + MAX_STAGES), 1.2f);
-    }
-
-    private static float timeConstant() {
-        var configs = ModdedConfigs.server();
-        return configs == null ? 0.01f : configs.electricity.motorTimeConstant.getF();
     }
 
     /** Winding resistance for the present stage count: each stage is another winding set in parallel. */
@@ -110,7 +113,8 @@ public class ThreePhasePumpBlockEntity extends ElectricPumpBlockEntity implement
         deviceHubs().buildCircuit(builder);
         var star = builder.addInternalNode();
         float r = windingResistance();
-        float l = resistance("winding") * timeConstant();
+        // Stages are winding sets in parallel: the inductance falls with the resistance, so the power factor holds.
+        float l = Windings.inductance(r, RATED_POWER_FACTOR);
         windings = new LRSeriesWire[3];
         senses = new PhaseSenseWire[3];
         readings = new AcReadings.Filter[3];

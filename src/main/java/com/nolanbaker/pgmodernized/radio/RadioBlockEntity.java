@@ -165,7 +165,7 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
             return 0;
         double base = switch(role) {
             case DISH -> PgmConfig.RADIO_DISH_RANGE.get();
-            case SECTOR -> PgmConfig.RADIO_SECTOR_RANGE.get();
+            case SECTOR -> PgmConfig.RADIO_SECTOR_RANGE.get() * RadioMath.beamGain(antenna == null ? 120 : antenna.beamwidth());
             case OMNI -> PgmConfig.RADIO_CELL_RANGE.get();
         };
         return base * RadioMath.coaxFactor(coaxLength, PgmConfig.COAX_FULL_RANGE_LENGTH.get(), PgmConfig.COAX_HALF_RANGE_LENGTH.get());

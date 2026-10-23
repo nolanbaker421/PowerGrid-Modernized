@@ -10,6 +10,15 @@ import net.minecraft.world.phys.Vec3;
 public final class RadioMath {
     private RadioMath() {}
 
+    /**
+     * How much further a sector reaches than at the 120° reference beamwidth: gain goes as one over
+     * the beamwidth and reach as the square root of gain, so a 30° panel reaches twice as far and a
+     * 180° one 0.82 of it.
+     */
+    public static double beamGain(double beamwidthDeg) {
+        return Math.sqrt(120 / Math.max(1, beamwidthDeg));
+    }
+
     /** Unit vector an antenna aimed at that azimuth and elevation points along. */
     public static Vec3 aim(double azimuthDeg, double elevationDeg) {
         double a = Math.toRadians(azimuthDeg), e = Math.toRadians(elevationDeg);

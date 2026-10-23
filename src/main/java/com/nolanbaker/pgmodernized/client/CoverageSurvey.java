@@ -75,7 +75,7 @@ public final class CoverageSurvey {
             // The radio is down or not yet heard from: draw what it will cover once it is up.
             reach = switch(kind) {
                 case DISH -> PgmConfig.RADIO_DISH_RANGE.get();
-                case SECTOR -> PgmConfig.RADIO_SECTOR_RANGE.get();
+                case SECTOR -> PgmConfig.RADIO_SECTOR_RANGE.get() * RadioMath.beamGain(beamwidth);
                 case OMNI -> PgmConfig.RADIO_CELL_RANGE.get();
             };
         }

@@ -719,8 +719,8 @@ windings, with a terminal box on top carrying U, V, W and a conduit knockout eac
   stage puts another winding set in parallel and adds the pump's pressure range again: a pump with
   two stages draws three times the power at the same voltage, pumps the same flow, and pushes it
   three times as far up the pipe. The goggles show the stage count and the range.
-- It heats like the motor and can burn out. The windings are 360 ohms a phase, so at 120 V per
-  phase a one-stage pump draws 120 W and sits at Power Grid's pump speed limit (256, config
+- It heats like the motor and can burn out. The windings are 260 ohms a phase at a power factor of
+  0.85 (60 Hz), so at 120 V per phase a one-stage pump draws 120 W real and sits at Power Grid's pump speed limit (256, config
   `electricPumpMaxSpeed`, reached at 120 W by `electricPumpPower`); each stage draws another 120 W
   at that voltage. Below 120 V the speed falls with the square of the voltage.
 - Recipe: a Three-Phase Motor and a Create fluid pipe, shapeless. A stage is iron plates around a
@@ -823,8 +823,8 @@ end of its **Coax Cable**:
 | Antenna | Makes the radio | Reach | Beam |
 | --- | --- | --- | --- |
 | **Dish Antenna** | one end of a point-to-point link | 2000 blocks | 1°, both dishes must be aimed at each other |
-| **Sector Antenna** | a base station | 1000 blocks | aimed, 30° to 180° wide (120° by default) |
-| **Omni Antenna** | a client that roams between base stations | 2000 blocks | all directions |
+| **Sector Antenna** | a base station | 1000 blocks at 120°, further the narrower the beam (2000 at 30°, 816 at 180°) | aimed, 30° to 180° wide (120° by default) |
+| **Omni Antenna** | a client that roams between base stations | 500 blocks | all directions |
 
 - **Coax** hangs port to port like a wire, radio to antenna, up to 64 blocks a span. It costs reach:
   the full reach up to 16 blocks of coax on the run, half at 64, less beyond, so keep the hut at the
