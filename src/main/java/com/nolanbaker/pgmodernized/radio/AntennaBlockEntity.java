@@ -34,6 +34,8 @@ public class AntennaBlockEntity extends SmartBlockEntity implements ICoaxPort, I
     }
     private Aim aim = Aim.NONE;
     private String radioId = "";
+    /** The radio's reach through this antenna, as last synced; the server asks the radio directly. */
+    private double reach;
 
     public AntennaBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -98,11 +100,22 @@ public class AntennaBlockEntity extends SmartBlockEntity implements ICoaxPort, I
 
     /** The radio's reading of the aim, pushed once a second; synced when it moves. */
     public void setAim(String radioId, Aim aim) {
-        boolean changed = !aim.equals(this.aim) || !radioId.equals(this.radioId);
+        var radio = radioEntity();
+        double r = radio == null ? 0 : radio.range();
+        boolean changed = !aim.equals(this.aim) || !radioId.equals(this.radioId) || r != reach;
         this.aim = aim;
         this.radioId = radioId;
+        this.reach = r;
         if(changed)
             sendData();
+    }
+
+    /** How far the radio reaches through this antenna in blocks; 0 while no radio drives it. */
+    public double reach() {
+        if(level != null && level.isClientSide)
+            return reach;
+        var radio = radioEntity();
+        return radio == null ? 0 : radio.range();
     }
 
     public Aim aim() {
@@ -185,6 +198,8 @@ public class AntennaBlockEntity extends SmartBlockEntity implements ICoaxPort, I
         tag.putDouble("Elevation", elevation);
         tag.putDouble("Beamwidth", beamwidth);
         tag.putBoolean("AimSet", aimSet);
+        if(clientPacket)
+            tag.putDouble("Reach", reach());
         if(radio != null && clientPacket && radio() != null) {
             tag.putLong("Radio", radio.asLong());
             tag.putString("RadioId", radioId);
@@ -208,6 +223,7 @@ public class AntennaBlockEntity extends SmartBlockEntity implements ICoaxPort, I
         beamwidth = tag.contains("Beamwidth") ? tag.getDouble("Beamwidth") : 120;
         aimSet = tag.getBoolean("AimSet");
         if(clientPacket) {
+            reach = tag.getDouble("Reach");
             radio = tag.contains("Radio") ? BlockPos.of(tag.getLong("Radio")) : null;
             radioSeen = level == null ? 0 : level.getGameTime();
             radioId = tag.getString("RadioId");

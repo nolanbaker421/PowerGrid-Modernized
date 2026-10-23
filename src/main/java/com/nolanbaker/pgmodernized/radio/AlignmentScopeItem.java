@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.radio;
 
+import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.registry.ModDataComponents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -23,7 +24,9 @@ import java.util.List;
  * The installer's boresight scope. Clip it on one antenna (click it), walk to the other and clip it
  * on that one: both are sighted in on each other, azimuth and elevation to a tenth of a degree, as
  * two riggers with scopes and a radio would do it. Sneak-click a single dish and it is sighted in
- * on the nearest dish with its radio's link ID. Sneak-click the air to put the scope away.
+ * on the nearest dish with its radio's link ID, and any antenna sneak-clicked has its coverage drawn
+ * in the world for a minute ({@link com.nolanbaker.pgmodernized.client.CoverageSurvey}). Sneak-click
+ * the air to put the scope away.
  */
 public class AlignmentScopeItem extends Item {
     private static final String KEY = "ScopeFrom";
@@ -54,23 +57,37 @@ public class AlignmentScopeItem extends Item {
         var pos = context.getClickedPos();
         var player = context.getPlayer();
         var stack = context.getItemInHand();
-        if(!(level.getBlockEntity(pos) instanceof AntennaBlockEntity antenna) || !antenna.kind().aimed()) {
+        if(!(level.getBlockEntity(pos) instanceof AntennaBlockEntity antenna))
             return InteractionResult.PASS;
-        }
         if(player != null && player.isShiftKeyDown()) {
-            // Sight this dish in on its radio's nearest same-ID dish.
-            if(level.isClientSide)
+            // Survey: the client draws this antenna's coverage for a minute, wherever the player goes.
+            if(level.isClientSide) {
+                ClientHooks.survey(pos);
                 return InteractionResult.SUCCESS;
-            var radio = antenna.radioEntity();
-            var target = radio == null ? null : radio.nearest(false);
-            if(target == null || target.antenna() == null) {
-                say(player, "message.scope.no_target", ChatFormatting.RED);
-                return InteractionResult.FAIL;
             }
-            aim(antenna, target.antenna());
-            say(player, "message.scope.sighted", ChatFormatting.GREEN, target.linkId(), degrees(antenna.azimuth()), degrees(antenna.elevation()));
+            if(antenna.kind() == AntennaKind.DISH) {
+                // And a dish is sighted in on its radio's nearest same-ID dish.
+                var radio = antenna.radioEntity();
+                var target = radio == null ? null : radio.nearest(false);
+                if(target == null || target.antenna() == null) {
+                    say(player, "message.scope.no_target", ChatFormatting.RED);
+                    return InteractionResult.SUCCESS;
+                }
+                aim(antenna, target.antenna());
+                say(player, "message.scope.sighted", ChatFormatting.GREEN, target.linkId(), degrees(antenna.azimuth()), degrees(antenna.elevation()));
+                return InteractionResult.SUCCESS;
+            }
+            double reach = antenna.reach();
+            if(reach <= 0)
+                say(player, "message.scope.survey_down", ChatFormatting.YELLOW);
+            else if(antenna.kind() == AntennaKind.SECTOR)
+                say(player, "message.scope.survey_sector", ChatFormatting.GRAY, String.format("%.0f", reach), String.format("%.0f", antenna.beamwidth()), degrees(antenna.elevation()));
+            else
+                say(player, "message.scope.survey_omni", ChatFormatting.GRAY, String.format("%.0f", reach));
             return InteractionResult.SUCCESS;
         }
+        if(!antenna.kind().aimed())
+            return InteractionResult.PASS;
         var first = from(stack);
         if(first == null || first.equals(pos)) {
             if(!level.isClientSide) {
@@ -110,6 +127,8 @@ public class AlignmentScopeItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
+        if(player.isShiftKeyDown() && level.isClientSide)
+            ClientHooks.clearSurvey();
         if(player.isShiftKeyDown() && from(stack) != null) {
             setFrom(stack, null);
             if(!level.isClientSide)

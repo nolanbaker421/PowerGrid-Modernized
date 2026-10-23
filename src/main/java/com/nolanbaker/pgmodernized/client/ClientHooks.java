@@ -7,6 +7,15 @@ import net.minecraft.core.BlockPos;
 public final class ClientHooks {
     private ClientHooks() {}
 
+    /** Draws the coverage of the antenna at {@code pos} for a minute. */
+    public static void survey(BlockPos pos) {
+        CoverageSurvey.start(pos);
+    }
+
+    public static void clearSurvey() {
+        CoverageSurvey.clear();
+    }
+
     /** Opens the splice editor for a conduit box or breaker panel. */
     public static void openSplices(BlockPos pos) {
         Minecraft.getInstance().setScreen(new SpliceScreen(pos));

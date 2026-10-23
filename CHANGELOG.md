@@ -4,6 +4,23 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.42.0 — 2026-10-22
+
+### Added
+- **Coverage survey** on the Alignment Scope: sneak-click any antenna and its coverage is drawn in
+  the world for a minute, wherever you go. A sector is a cage of lines along its beam edges, its aim
+  and its 45° tilt limits with arcs at each quarter of its reach; a dish is its 1° cone; an omni a
+  ring at its reach. Drawn at the radio's real reach through that coax run.
+
+### Changed
+- Sector antennas reach 1000 blocks by default, down from 2000. Dishes and omnis stay at 2000. A
+  config file written by an earlier version keeps its own `sector_range`.
+
+### Fixed
+- Hovering the Three-Phase Pump in an inventory crashed the game ("not found in any resistance
+  providers"): Power Grid's pump tooltip asked for a single resistance the three-winding pump does
+  not have. The pump now shows its winding per phase, rated voltage and full-load draw.
+
 ## 0.41.0 — 2026-10-22
 
 Radio links, wireless metering, and a round of fixes found in play.

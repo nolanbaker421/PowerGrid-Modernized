@@ -879,12 +879,15 @@
   "powergrid.gui.collector.range": "%1$s, hearing %2$s blocks",
   "powergrid.gui.collector.meters": "%1$s meter(s) heard",
   "item.powergrid_modernized.alignment_scope": "Alignment Scope",
-  "powergrid.scope.tooltip": "Clip it on one antenna, then on the other: both are sighted in on each other. Sneak-click a dish to sight it on its nearest partner",
+  "powergrid.scope.tooltip": "Clip it on one antenna, then on the other: both are sighted in on each other. Sneak-click an antenna to draw its coverage for a minute (a dish is also sighted on its nearest partner)",
   "powergrid.scope.clipped_at": "Clipped on the antenna at %1$s %2$s %3$s",
   "powergrid.message.scope.clipped": "Scope clipped on. Now clip it on the far antenna.",
   "powergrid.message.scope.aligned": "Sighted in: this end %1$s° / %2$s°, far end %3$s° / %4$s°, %5$s blocks apart",
   "powergrid.message.scope.sighted": "Sighted in on %1$s: %2$s° azimuth, %3$s° elevation",
   "powergrid.message.scope.no_target": "No dish with this radio's link ID to sight in on",
   "powergrid.message.scope.lost": "The first antenna is gone; clipped on here instead",
-  "powergrid.message.scope.cleared": "Scope put away"
+  "powergrid.message.scope.cleared": "Scope put away",
+  "powergrid.message.scope.survey_sector": "Coverage drawn for a minute: %1$s blocks reach, %2$s° beam, %3$s° tilt",
+  "powergrid.message.scope.survey_omni": "Reach drawn for a minute: %1$s blocks",
+  "powergrid.message.scope.survey_down": "This antenna's radio is down; drawn at the configured reach"
 }

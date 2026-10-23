@@ -823,7 +823,7 @@ end of its **Coax Cable**:
 | Antenna | Makes the radio | Reach | Beam |
 | --- | --- | --- | --- |
 | **Dish Antenna** | one end of a point-to-point link | 2000 blocks | 1°, both dishes must be aimed at each other |
-| **Sector Antenna** | a base station | 2000 blocks | aimed, 30° to 180° wide (120° by default) |
+| **Sector Antenna** | a base station | 1000 blocks | aimed, 30° to 180° wide (120° by default) |
 | **Omni Antenna** | a client that roams between base stations | 2000 blocks | all directions |
 
 - **Coax** hangs port to port like a wire, radio to antenna, up to 64 blocks a span. It costs reach:
@@ -848,7 +848,14 @@ end of its **Coax Cable**:
   Click it on one antenna, walk to the other and click it on that one, and both are sighted in on
   each other, azimuth and elevation to a tenth of a degree (a sector keeps its downtilt). Sneak-click
   a single dish with it and it is sighted in on the nearest dish with its radio's link ID; sneak-click
-  the air to put it away. Goggles on the antenna show the bearing and elevation to its partner, or to the
+  the air to put it away.
+- **Survey**: sneak-click any antenna with the scope and its coverage is drawn in the world for a
+  minute, and stays drawn wherever you walk or fly, so you can ride out to the edge and see where it
+  falls. A sector is a cage of lines: its beam edges, its aim (yellow) and its 45° up and down limits,
+  with arcs at each quarter of its reach and a bright one at the edge. A dish is its 1° cone, an omni a
+  ring at its reach. Reach is the radio's real reach through that coax run; a dead radio is drawn at
+  the configured reach. Lines hide behind terrain, which is the point: a hill in the cage shadows what
+  is behind it only if line of sight is on. Sneak-click the air to clear it. Goggles on the antenna show the bearing and elevation to its partner, or to the
   nearest same-ID dish when it has none, and how many degrees off axis you are, so you dial it in
   like a signal meter. A dish starts out aimed the way it was placed.
 - A joined pair's jacks are connected exactly as a Cat6 cable would connect them: OpenComputers

@@ -11,8 +11,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.network.chat.Component;
+
+import java.util.List;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.patryk3211.powergrid.config.ResistanceValues;
+import org.patryk3211.powergrid.electricity.info.Power;
+import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.electricity.info.Voltage;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -59,6 +66,20 @@ public class ThreePhasePumpBlock extends ElectricPumpBlock {
         registerDefaultState(defaultBlockState().setValue(REVERSED, false));
         var shape = DeviceHubs.withHubs(northShape(), HUBS);
         setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), shape, ShapeRotation.northToUp(shape)));
+    }
+
+    /**
+     * Power Grid's pump tooltip asks for the block's one bare resistance, which a three-winding
+     * machine does not have, so it is replaced with the winding per phase, the rated phase voltage and
+     * the full-load draw of a one-stage pump.
+     */
+    @Override
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        float winding = ResistanceValues.get(this, "winding");
+        Resistance.coil(winding, player, tooltip);
+        Voltage.rated(ThreePhasePumpBlockEntity.RATED_VOLTS, player, tooltip);
+        if(winding > 0)
+            Power.rated(3 * ThreePhasePumpBlockEntity.RATED_VOLTS * ThreePhasePumpBlockEntity.RATED_VOLTS / winding, player, tooltip);
     }
 
     private static TerminalBoundingBox[] terminals() {

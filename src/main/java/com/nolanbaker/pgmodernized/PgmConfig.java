@@ -116,7 +116,7 @@ public final class PgmConfig {
         RADIO_DISH_RANGE = b.comment("Reach of a dish in blocks; a link needs both dishes within reach of each other.")
                 .defineInRange("dish_range", 2000, 16, 100_000);
         RADIO_SECTOR_RANGE = b.comment("Reach of a sector antenna in blocks.")
-                .defineInRange("sector_range", 2000, 16, 100_000);
+                .defineInRange("sector_range", 1000, 16, 100_000);
         RADIO_CELL_RANGE = b.comment("Reach of an omni (cell) antenna in blocks.")
                 .defineInRange("cell_range", 2000, 16, 100_000);
         RADIO_DISH_BEAM = b.comment("Degrees off its aim a dish still sees its partner.")
