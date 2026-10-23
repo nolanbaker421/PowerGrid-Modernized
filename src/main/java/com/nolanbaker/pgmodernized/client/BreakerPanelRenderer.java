@@ -32,7 +32,6 @@ public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBl
             return;
         var spec = be.spec();
         var facing = BreakerPanelBlock.facing(state);
-        var consumer = buffer.getBuffer(RenderType.cutout());
         var renderer = Minecraft.getInstance().getBlockRenderer().getModelRenderer();
 
         ms.pushPose();
@@ -53,12 +52,12 @@ public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBl
             var box = PanelLayout.breakerBox(spec, slot, breaker.rows());
             boolean roll = slot >= 0 && PanelLayout.rightColumn(slot);
             if(breaker.isBlank()) {
-                draw(ms, consumer, renderer, BreakerPanelModels.get(BreakerPanelModels.BLANK), box, roll, light, overlay);
+                draw(ms, buffer, renderer, BreakerPanelModels.get(BreakerPanelModels.BLANK), box, roll, light, overlay);
                 continue;
             }
-            draw(ms, consumer, renderer, BreakerPanelModels.get(breaker.state()), box, roll, light, overlay);
+            draw(ms, buffer, renderer, BreakerPanelModels.get(breaker.state()), box, roll, light, overlay);
             if(breaker.locked())
-                draw(ms, consumer, renderer, BreakerPanelModels.get(BreakerPanelModels.LOCK), box, roll, light, overlay);
+                draw(ms, buffer, renderer, BreakerPanelModels.get(BreakerPanelModels.LOCK), box, roll, light, overlay);
         }
         ms.popPose();
     }
@@ -82,8 +81,14 @@ public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBl
         ms.popPose();
     }
 
-    private static void draw(PoseStack ms, VertexConsumer consumer, ModelBlockRenderer renderer, BakedModel model, AABB box,
+    /**
+     * The cutout buffer is fetched here, right before use: it is not one of the source's fixed buffers,
+     * so solid boxes drawn in between (a panel's door, a cell's bus bars) would end it and the next quad
+     * would crash with "Not building!".
+     */
+    private static void draw(PoseStack ms, MultiBufferSource buffer, ModelBlockRenderer renderer, BakedModel model, AABB box,
                              boolean roll, int light, int overlay) {
+        var consumer = buffer.getBuffer(RenderType.cutout());
         float w = (float) box.getXsize(), h = (float) box.getYsize(), d = (float) box.getZsize();
         ms.pushPose();
         ms.translate(box.minX / 16, box.minY / 16, box.minZ / 16);

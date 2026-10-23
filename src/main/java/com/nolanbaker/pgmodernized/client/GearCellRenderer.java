@@ -125,11 +125,10 @@ public class GearCellRenderer extends SafeBlockEntityRenderer<GearCellBlockEntit
     }
 
     private static void breakerModel(GearSlot slot, AABB box, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
-        var consumer = buffer.getBuffer(RenderType.cutout());
         var renderer = Minecraft.getInstance().getBlockRenderer().getModelRenderer();
-        draw(ms, consumer, renderer, BreakerPanelModels.get(slot.breaker.state()), box, light, overlay);
+        draw(ms, buffer, renderer, BreakerPanelModels.get(slot.breaker.state()), box, light, overlay);
         if(slot.breaker.locked())
-            draw(ms, consumer, renderer, BreakerPanelModels.get(BreakerPanelModels.LOCK), box, light, overlay);
+            draw(ms, buffer, renderer, BreakerPanelModels.get(BreakerPanelModels.LOCK), box, light, overlay);
     }
 
     private static void fuses(GearSlot slot, double[] r, PoseStack ms, MultiBufferSource buffer, int light) {
@@ -204,8 +203,14 @@ public class GearCellRenderer extends SafeBlockEntityRenderer<GearCellBlockEntit
         ms.translate(-cx, -cy, 0);
     }
 
-    private static void draw(PoseStack ms, com.mojang.blaze3d.vertex.VertexConsumer consumer, net.minecraft.client.renderer.block.ModelBlockRenderer renderer,
+    /**
+     * The cutout buffer is fetched here, right before use: it is not one of the source's fixed buffers,
+     * so solid boxes drawn in between (a panel's door, a cell's bus bars) would end it and the next quad
+     * would crash with "Not building!".
+     */
+    private static void draw(PoseStack ms, MultiBufferSource buffer, net.minecraft.client.renderer.block.ModelBlockRenderer renderer,
                              BakedModel model, AABB box, int light, int overlay) {
+        var consumer = buffer.getBuffer(RenderType.cutout());
         float w = (float) box.getXsize(), h = (float) box.getYsize(), d = (float) box.getZsize();
         ms.pushPose();
         ms.translate(box.minX / 16, box.minY / 16, box.minZ / 16);

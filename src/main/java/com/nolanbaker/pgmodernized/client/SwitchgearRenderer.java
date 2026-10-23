@@ -26,21 +26,26 @@ public class SwitchgearRenderer extends SafeBlockEntityRenderer<SwitchgearBlockE
         if(!breaker.installed())
             return;
         var facing = SwitchgearBlock.facing(state);
-        var consumer = buffer.getBuffer(RenderType.cutout());
         var renderer = Minecraft.getInstance().getBlockRenderer().getModelRenderer();
         ms.pushPose();
         ms.translate(0.5, 0.5, 0.5);
         ms.mulPose(Axis.YP.rotationDegrees(-(facing.toYRot() + 180)));
         ms.translate(-0.5, -0.5, -0.5);
         var box = SwitchgearLayout.BREAKER;
-        draw(ms, consumer, renderer, breaker.isBlank() ? BreakerPanelModels.get(BreakerPanelModels.BLANK) : BreakerPanelModels.get(breaker.state()), box, light, overlay);
+        draw(ms, buffer, renderer, breaker.isBlank() ? BreakerPanelModels.get(BreakerPanelModels.BLANK) : BreakerPanelModels.get(breaker.state()), box, light, overlay);
         if(breaker.locked() && !breaker.isBlank())
-            draw(ms, consumer, renderer, BreakerPanelModels.get(BreakerPanelModels.LOCK), box, light, overlay);
+            draw(ms, buffer, renderer, BreakerPanelModels.get(BreakerPanelModels.LOCK), box, light, overlay);
         ms.popPose();
     }
 
-    private static void draw(PoseStack ms, com.mojang.blaze3d.vertex.VertexConsumer consumer, net.minecraft.client.renderer.block.ModelBlockRenderer renderer,
+    /**
+     * The cutout buffer is fetched here, right before use: it is not one of the source's fixed buffers,
+     * so solid boxes drawn in between (a panel's door, a cell's bus bars) would end it and the next quad
+     * would crash with "Not building!".
+     */
+    private static void draw(PoseStack ms, MultiBufferSource buffer, net.minecraft.client.renderer.block.ModelBlockRenderer renderer,
                              BakedModel model, net.minecraft.world.phys.AABB box, int light, int overlay) {
+        var consumer = buffer.getBuffer(RenderType.cutout());
         float w = (float) box.getXsize(), h = (float) box.getYsize(), d = (float) box.getZsize();
         ms.pushPose();
         ms.translate(box.minX / 16, box.minY / 16, box.minZ / 16);

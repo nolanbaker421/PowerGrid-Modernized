@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.42.1 — 2026-10-23
+
+### Fixed
+- Opening a breaker panel's cover crashed the game on every frame ("Not building!") and kept the
+  world from loading again while the panel was in view. The panel renderer took its breaker buffer
+  before drawing the door, which closed that buffer. Present since the cover arrived in 0.38.0; a
+  world hit by it loads again with this version, nothing to repair. The switchgear and gear cell
+  renderers took the same fix.
+
 ## 0.42.0 — 2026-10-22
 
 ### Added
