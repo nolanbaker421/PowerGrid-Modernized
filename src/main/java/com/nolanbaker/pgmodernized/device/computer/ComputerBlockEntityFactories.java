@@ -8,6 +8,9 @@ import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.nolanbaker.pgmodernized.device.analogio.AnalogIOBlockEntity;
 import com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlockEntity;
 import com.nolanbaker.pgmodernized.device.gear.GearCellBlockEntity;
+import com.nolanbaker.pgmodernized.radio.CoaxHangerBlockEntity;
+import com.nolanbaker.pgmodernized.radio.CollectorBlockEntity;
+import com.nolanbaker.pgmodernized.radio.RadioBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.ClampMeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineAmmeterBlockEntity;
 import com.nolanbaker.pgmodernized.device.meter.LineVoltmeterBlockEntity;
@@ -34,6 +37,21 @@ public final class ComputerBlockEntityFactories {
     public static BlockEntityFactory<RailCollectorBlockEntity> RAIL_COLLECTOR = RailCollectorBlockEntity::new;
     public static BlockEntityFactory<CableChainAnchorBlockEntity> CABLE_CHAIN_ANCHOR = CableChainAnchorBlockEntity::new;
     public static BlockEntityFactory<GearCellBlockEntity> GEAR_CELL = GearCellBlockEntity::new;
+    public static BlockEntityFactory<RadioBlockEntity> RADIO = RadioBlockEntity::new;
+    public static BlockEntityFactory<CollectorBlockEntity> COLLECTOR = CollectorBlockEntity::new;
+    public static BlockEntityFactory<CoaxHangerBlockEntity> COAX_HANGER = CoaxHangerBlockEntity::new;
+
+    public static BlockEntityFactory<RadioBlockEntity> radio() {
+        return (type, pos, state) -> RADIO.create(type, pos, state);
+    }
+
+    public static BlockEntityFactory<CollectorBlockEntity> collector() {
+        return (type, pos, state) -> COLLECTOR.create(type, pos, state);
+    }
+
+    public static BlockEntityFactory<CoaxHangerBlockEntity> coaxHanger() {
+        return (type, pos, state) -> COAX_HANGER.create(type, pos, state);
+    }
 
     public static BlockEntityFactory<GearCellBlockEntity> gearCell() {
         return (type, pos, state) -> GEAR_CELL.create(type, pos, state);

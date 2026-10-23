@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "R": {
+      "item": "minecraft:comparator"
+    },
+    "C": {
+      "item": "powergrid_modernized:cat6_cable"
+    },
+    "M": {
+      "item": "powergrid_modernized:ct_cabinet"
+    }
+  },
+  "pattern": [
+    "III",
+    "RCR",
+    "IMI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:collector"
+  }
+}

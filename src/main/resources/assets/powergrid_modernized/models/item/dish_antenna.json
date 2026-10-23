@@ -1,0 +1,284 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "dish": "powergrid_modernized:block/antenna_dish",
+    "mast": "powergrid_modernized:block/antenna_mast",
+    "panel": "powergrid_modernized:block/antenna_panel",
+    "clip": "powergrid_modernized:block/coax_clip",
+    "particle": "powergrid_modernized:block/antenna_mast"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        0,
+        6
+      ],
+      "to": [
+        10,
+        10,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            6,
+            10,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "south": {
+          "uv": [
+            6,
+            6,
+            10,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "east": {
+          "uv": [
+            6,
+            6,
+            10,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "west": {
+          "uv": [
+            6,
+            6,
+            10,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "up": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#mast"
+        },
+        "down": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#mast"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        4,
+        6
+      ],
+      "to": [
+        15,
+        16,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            0,
+            15,
+            12
+          ],
+          "texture": "#dish"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            15,
+            12
+          ],
+          "texture": "#dish"
+        },
+        "east": {
+          "uv": [
+            9,
+            0,
+            10,
+            12
+          ],
+          "texture": "#dish"
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            7,
+            12
+          ],
+          "texture": "#dish"
+        },
+        "up": {
+          "uv": [
+            1,
+            6,
+            15,
+            7
+          ],
+          "texture": "#dish"
+        },
+        "down": {
+          "uv": [
+            1,
+            9,
+            15,
+            10
+          ],
+          "texture": "#dish"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        6,
+        3
+      ],
+      "to": [
+        8.5,
+        8,
+        6
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7.5,
+            8,
+            8.5,
+            10
+          ],
+          "texture": "#mast"
+        },
+        "south": {
+          "uv": [
+            7.5,
+            8,
+            8.5,
+            10
+          ],
+          "texture": "#mast"
+        },
+        "east": {
+          "uv": [
+            10,
+            8,
+            13,
+            10
+          ],
+          "texture": "#mast"
+        },
+        "west": {
+          "uv": [
+            3,
+            8,
+            6,
+            10
+          ],
+          "texture": "#mast"
+        },
+        "up": {
+          "uv": [
+            7.5,
+            3,
+            8.5,
+            6
+          ],
+          "texture": "#mast"
+        },
+        "down": {
+          "uv": [
+            7.5,
+            10,
+            8.5,
+            13
+          ],
+          "texture": "#mast"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        9,
+        2
+      ],
+      "to": [
+        9,
+        11,
+        3.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            5,
+            9,
+            7
+          ],
+          "texture": "#mast"
+        },
+        "south": {
+          "uv": [
+            7,
+            5,
+            9,
+            7
+          ],
+          "texture": "#mast"
+        },
+        "east": {
+          "uv": [
+            12.5,
+            5,
+            14,
+            7
+          ],
+          "texture": "#mast"
+        },
+        "west": {
+          "uv": [
+            2,
+            5,
+            3.5,
+            7
+          ],
+          "texture": "#mast"
+        },
+        "up": {
+          "uv": [
+            7,
+            2,
+            9,
+            3.5
+          ],
+          "texture": "#mast"
+        },
+        "down": {
+          "uv": [
+            7,
+            12.5,
+            9,
+            14
+          ],
+          "texture": "#mast"
+        }
+      }
+    }
+  ]
+}

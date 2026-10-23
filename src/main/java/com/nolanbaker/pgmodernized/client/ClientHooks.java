@@ -41,4 +41,9 @@ public final class ClientHooks {
     public static void openLoadBank(BlockPos pos) {
         Minecraft.getInstance().setScreen(new LoadBankScreen(pos));
     }
+
+    /** Opens the settings form of a radio, antenna, collector or meter antenna. */
+    public static void openSettings(BlockPos pos, String titleKey) {
+        Minecraft.getInstance().setScreen(new SettingsScreen(pos, net.minecraft.network.chat.Component.translatable(titleKey)));
+    }
 }

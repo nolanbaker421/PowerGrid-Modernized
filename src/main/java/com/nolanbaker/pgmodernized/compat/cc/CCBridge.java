@@ -8,6 +8,8 @@ import com.nolanbaker.pgmodernized.device.transformer.TransformerBlockEntity;
 import com.nolanbaker.pgmodernized.compat.cc.transformer.TransformerPeripheral;
 import com.nolanbaker.pgmodernized.compat.cc.ctcabinet.CtCabinetPeripheral;
 import com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlockEntity;
+import com.nolanbaker.pgmodernized.radio.CollectorBlockEntity;
+import com.nolanbaker.pgmodernized.radio.RadioBlockEntity;
 import com.nolanbaker.pgmodernized.compat.cc.analogio.AnalogIOPeripheral;
 import com.nolanbaker.pgmodernized.compat.cc.meter.ClampMeterPeripheral;
 import com.nolanbaker.pgmodernized.compat.cc.meter.LineAmmeterPeripheral;
@@ -61,6 +63,10 @@ public class CCBridge {
                 (be, direction) -> new TransformerPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.GEAR_CELL.get(),
                 (be, direction) -> new GearCellPeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.RADIO.get(),
+                (be, direction) -> new RadioPeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.COLLECTOR.get(),
+                (be, direction) -> new CollectorPeripheral(be));
         ForkHooks.get().registerCC(event);
 
         // The standalone jack behaves like a piece of CC cable towards its neighbours.
@@ -93,6 +99,10 @@ public class CCBridge {
             return new CtCabinetPeripheral(cabinet);
         if(be instanceof TransformerBlockEntity transformer)
             return new TransformerPeripheral(transformer);
+        if(be instanceof RadioBlockEntity radio)
+            return new RadioPeripheral(radio);
+        if(be instanceof CollectorBlockEntity collector)
+            return new CollectorPeripheral(collector);
         if(ForkHooks.get().ccPeripheral(be) instanceof IPeripheral peripheral)
             return peripheral;
         return null;

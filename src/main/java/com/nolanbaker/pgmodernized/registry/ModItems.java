@@ -20,6 +20,9 @@ import com.nolanbaker.pgmodernized.device.breaker.BreakerItem;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerLockItem;
 import com.nolanbaker.pgmodernized.device.breaker.BusBarItem;
 import com.nolanbaker.pgmodernized.network.Cat6CableItem;
+import com.nolanbaker.pgmodernized.radio.AlignmentScopeItem;
+import com.nolanbaker.pgmodernized.radio.CoaxCableItem;
+import com.nolanbaker.pgmodernized.radio.MeterAntennaItem;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import net.minecraft.world.item.Item;
@@ -37,6 +40,25 @@ public class ModItems {
     public static final ItemEntry<Cat6CableItem> CAT6_CABLE = REGISTRATE.item("cat6_cable", Cat6CableItem::new)
             .model(NonNullBiConsumer.noop())
             .lang("Cat6 Cable")
+            .register();
+
+    /** A smart meter's radio: right-click a CT cabinet with it and the cabinet reports over the air. */
+    public static final ItemEntry<MeterAntennaItem> METER_ANTENNA = REGISTRATE.item("meter_antenna", MeterAntennaItem::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Meter Antenna")
+            .register();
+
+    /** The installer's boresight scope: sights two antennas in on each other. */
+    public static final ItemEntry<AlignmentScopeItem> ALIGNMENT_SCOPE = REGISTRATE.item("alignment_scope", AlignmentScopeItem::new)
+            .properties(p -> p.stacksTo(1))
+            .model(NonNullBiConsumer.noop())
+            .lang("Alignment Scope")
+            .register();
+
+    /** Coax from a radio to its antenna; stats in data/powergrid_modernized/powergrid/wire_types/coax_cable.json. */
+    public static final ItemEntry<CoaxCableItem> COAX_CABLE = REGISTRATE.item("coax_cable", CoaxCableItem::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Coax Cable")
             .register();
 
     /** Proof you sat the course. Only found in the Electrical Training Center of a village; the inspector asks for it. */

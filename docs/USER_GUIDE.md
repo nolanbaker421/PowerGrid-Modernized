@@ -58,6 +58,8 @@ regular build.
 | Rectifier | Six-pulse diode bridge: three-phase (or single-phase) AC in, smoothed DC out |
 | Capacitor Bank | Three capacitors in delta on a handle, for power factor correction |
 | Three-Phase Pump, Pump Stage | Power Grid's pump on a three-phase motor; stages bolt on for more reach (AC build) |
+| Radio, Dish / Sector / Omni Antenna, Coax Cable, Cable Hanger | Cat6 across the air: point-to-point dishes and carrier networks of sectors and cells, aimed to a tenth of a degree |
+| Meter Antenna, Meter Collector | Smart metering: CT cabinets report to a head end 2000 blocks away |
 | Conduit 1/2", 3/4", 1" | Empty raceway, laid along surfaces, that wire is pulled through |
 | Conduit Box | Small wall box: ends and splices conduit runs; takes a blank, node, light socket or receptacle cover plate |
 | Conduit Socket | Tiny fitting that turns the end of a conduit into a cord socket |
@@ -810,6 +812,85 @@ Sneak-right-click the switch with an empty hand to change its mode:
 
 ComputerCraft traffic is always shared. Conduit and Cat6 will not land on Power Grid's own wire
 connectors or nodes; they need a knockout or a jack.
+
+### Radio links
+
+Cat6 across the air. A **Radio** is the indoor unit: a small box with a line and a neutral (50 W
+at 120 V), a Cat6 jack, a 1" conduit knockout on top (bare hand opens its splice editor) and a
+coax port beside it. What it does is decided by the antenna at the far
+end of its **Coax Cable**:
+
+| Antenna | Makes the radio | Reach | Beam |
+| --- | --- | --- | --- |
+| **Dish Antenna** | one end of a point-to-point link | 2000 blocks | 1°, both dishes must be aimed at each other |
+| **Sector Antenna** | a base station | 2000 blocks | aimed, 30° to 180° wide (120° by default) |
+| **Omni Antenna** | a client that roams between base stations | 2000 blocks | all directions |
+
+- **Coax** hangs port to port like a wire, radio to antenna, up to 64 blocks a span. It costs reach:
+  the full reach up to 16 blocks of coax on the run, half at 64, less beyond, so keep the hut at the
+  foot of the tower. Sneak-right-click with the coil in hand to drop a pending end.
+- **Cable Hanger**: a bracket with eight clips that mounts on any face. Each clip is a pass-through
+  with a port on either side, so coax lands on one side and leaves by the other and eight lines run
+  up one tower leg in a single column. Cat6 clips on the same way (the two sides of a clip are one
+  network node, like a switch's ports). Goggles list what each clip carries.
+- **Link IDs** instead of channels. Sneak-click a radio with an empty hand and type one. Two dishes
+  with the same ID pair up; if more share it, each takes the nearest that is aimed back at it.
+  Sector and omni radios with the same ID are one **carrier**: an omni joins the nearest sector of
+  its carrier that covers it and has a seat (16 per sector), and a car driving past another
+  carrier's towers never touches them.
+- **Mounting**: an antenna placed on top of a block stands on a mast; placed against the side of
+  a block it hangs off a bracket, facing out from the wall; placed under a block it hangs from a
+  mast. The coax port is on the mast or the arm.
+- **Aiming**: sneak-click a dish or sector antenna with an empty hand for its azimuth (compass
+  degrees, 0 north, 90 east), elevation (negative is downtilt) and, for a sector, its beamwidth, to a
+  tenth of a degree. The dish or panel turns on its mount to show where it points.
+- **Alignment Scope** (a spyglass, a comparator and an iron nugget): the installer's boresight.
+  Click it on one antenna, walk to the other and click it on that one, and both are sighted in on
+  each other, azimuth and elevation to a tenth of a degree (a sector keeps its downtilt). Sneak-click
+  a single dish with it and it is sighted in on the nearest dish with its radio's link ID; sneak-click
+  the air to put it away. Goggles on the antenna show the bearing and elevation to its partner, or to the
+  nearest same-ID dish when it has none, and how many degrees off axis you are, so you dial it in
+  like a signal meter. A dish starts out aimed the way it was placed.
+- A joined pair's jacks are connected exactly as a Cat6 cable would connect them: OpenComputers
+  networks merge, CC: Tweaked wired networks merge, components and peripherals appear on both ends.
+  A radio that loses power, its antenna, its ID or its partner drops the join; an omni on a moving
+  body hands over between sectors as it goes.
+- Antennas take their position from the body they stand on, so a dish or a whip on a crane or a
+  ship keeps its links; the body's rotation is not followed, so a dish on something that turns
+  keeps pointing the way it was placed. Cell antennas do not care, which is what they are for.
+- Both ends must be in loaded chunks for a link to carry traffic, the same as a Cat6 cable to a far
+  chunk.
+- Config section `radio`: every reach, the dish beam, seats per sector, the coax lengths, and
+  `line_of_sight`, off by default, which makes blocks between two antennas break the link.
+- Computers see a radio as `powergrid_radio`: `getLinkId()`, `setLinkId(id)`, `getRole()`, `isUp()`,
+  `isLinked()`, `getAntenna()` (kind, coax, range, azimuth, elevation, beamwidth) and `getPeers()`
+  (id, position, distance, off-axis). OpenComputers gets the signal `radio_link` with the peer count
+  when it changes.
+
+### Wireless metering
+
+Smart meters. A **Meter Antenna** is a module: right-click a CT cabinet with it and the cabinet
+grows a small radio box and whip on its door and reports over the air from then on, nothing to
+wire. Click the fitted cabinet with another module for its screen, a **meter ID** and a
+**utility**; sneak-click it with the module in hand to take the fitted one out.
+Every ten seconds, while it has power and its chunk is ticking, it files the cabinet's four
+channels (volts, amps, watts, power factor and the cumulative watt-hours) with the time and its
+position. A **Meter Collector** is the radio's box with a utility of its own; through the antenna
+on its coax it hears every meter antenna of that utility within 2000 blocks of the antenna, less
+what the coax costs, and keeps their last report.
+
+- It is store and forward, like the real thing: a meter in an unloaded chunk shows its last report
+  and how old it is instead of going blank, and its energy only counts while the chunk is loaded,
+  as the cabinet's own counter does. Several collectors can hear one meter; two utilities can meter
+  one town.
+- The collector keeps no billing state. Computers read it as `powergrid_collector`: `getMeters()`
+  is every meter heard, nearest first, each with `id`, `utility`, `x`, `y`, `z`, `time`, `age`
+  (seconds), `totalPower`, `totalEnergy` and per-channel tables `voltage`, `current`, `power`,
+  `powerFactor`, `energy`; `getMeter(id)` one of them; `getMeterCount()`, `getRange()`,
+  `getUtility()`, `setUtility(id)`. A new report raises the event (CC) or signal (OC)
+  `meter_report` with the meter's ID, total watts and total watt-hours. Billing is a Lua program's
+  job from there.
+- Config: `meter_range` and `meter_report_seconds` under `radio`.
 
 ## 8. Computer integration
 

@@ -8,6 +8,10 @@ import com.nolanbaker.pgmodernized.device.busduct.BusDuctPlugInBlockEntity;
 import com.nolanbaker.pgmodernized.device.busduct.BusDuctPlugInBreakerBlockEntity;
 import com.nolanbaker.pgmodernized.device.capacitor.CapacitorBankBlockEntity;
 import com.nolanbaker.pgmodernized.device.rectifier.RectifierBlockEntity;
+import com.nolanbaker.pgmodernized.radio.AntennaBlockEntity;
+import com.nolanbaker.pgmodernized.radio.CoaxHangerBlockEntity;
+import com.nolanbaker.pgmodernized.radio.CollectorBlockEntity;
+import com.nolanbaker.pgmodernized.radio.RadioBlockEntity;
 import com.nolanbaker.pgmodernized.device.helm.RadioBaseBlockEntity;
 import com.nolanbaker.pgmodernized.client.StationRenderer;
 import com.nolanbaker.pgmodernized.device.controls.StationBlockEntity;
@@ -30,6 +34,7 @@ import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlockEntity;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlockEntity;
+import com.nolanbaker.pgmodernized.client.AntennaRenderer;
 import com.nolanbaker.pgmodernized.client.BreakerPanelRenderer;
 import com.nolanbaker.pgmodernized.client.SwitchgearRenderer;
 import com.nolanbaker.pgmodernized.device.breaker.SwitchgearBlockEntity;
@@ -255,6 +260,27 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<CapacitorBankBlockEntity> CAPACITOR_BANK =
             REGISTRATE.blockEntity("capacitor_bank", CapacitorBankBlockEntity::new)
                     .validBlock(ModBlocks.CAPACITOR_BANK)
+                    .register();
+
+    public static final BlockEntityEntry<RadioBlockEntity> RADIO =
+            REGISTRATE.blockEntity("radio", ComputerBlockEntityFactories.radio())
+                    .validBlock(ModBlocks.RADIO)
+                    .register();
+
+    public static final BlockEntityEntry<CollectorBlockEntity> COLLECTOR =
+            REGISTRATE.blockEntity("collector", ComputerBlockEntityFactories.collector())
+                    .validBlock(ModBlocks.COLLECTOR)
+                    .register();
+
+    public static final BlockEntityEntry<AntennaBlockEntity> ANTENNA =
+            REGISTRATE.blockEntity("antenna", AntennaBlockEntity::new)
+                    .validBlocks(ModBlocks.DISH_ANTENNA, ModBlocks.SECTOR_ANTENNA, ModBlocks.OMNI_ANTENNA)
+                    .renderer(() -> AntennaRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<CoaxHangerBlockEntity> COAX_HANGER =
+            REGISTRATE.blockEntity("coax_hanger", ComputerBlockEntityFactories.coaxHanger())
+                    .validBlock(ModBlocks.COAX_HANGER)
                     .register();
 
     public static final BlockEntityEntry<GearCellBlockEntity> GEAR_CELL =

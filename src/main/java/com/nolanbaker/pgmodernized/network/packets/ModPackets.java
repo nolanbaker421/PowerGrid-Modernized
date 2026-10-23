@@ -19,6 +19,7 @@ public final class ModPackets {
         registrar.playToServer(HmiPressPayload.TYPE, HmiPressPayload.STREAM_CODEC, HmiPressPayload::handle);
         registrar.playToServer(StationPayload.TYPE, StationPayload.STREAM_CODEC, StationPayload::handle);
         registrar.playToServer(CellLabelPayload.TYPE, CellLabelPayload.STREAM_CODEC, CellLabelPayload::handle);
+        registrar.playToServer(SettingsPayload.TYPE, SettingsPayload.STREAM_CODEC, SettingsPayload::handle);
         registrar.playToClient(HelmStatePayload.TYPE, HelmStatePayload.STREAM_CODEC, HelmStatePayload::handle);
     }
 }

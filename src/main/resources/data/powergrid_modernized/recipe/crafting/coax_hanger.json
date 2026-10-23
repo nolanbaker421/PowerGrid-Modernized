@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    }
+  },
+  "pattern": [
+    "N N",
+    "NNN"
+  ],
+  "result": {
+    "count": 4,
+    "id": "powergrid_modernized:coax_hanger"
+  }
+}

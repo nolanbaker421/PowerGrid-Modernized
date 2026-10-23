@@ -24,6 +24,7 @@ import com.nolanbaker.pgmodernized.client.FlexConduitRenderer;
 import com.nolanbaker.pgmodernized.device.breaker.BusLinkEntity;
 import com.nolanbaker.pgmodernized.network.Cat6BlockWireEntity;
 import com.nolanbaker.pgmodernized.network.Cat6WireEntity;
+import com.nolanbaker.pgmodernized.radio.CoaxWireEntity;
 import com.tterrag.registrate.util.entry.EntityEntry;
 import net.minecraft.world.entity.MobCategory;
 import org.patryk3211.powergrid.electricity.wire.HangingWireRenderer;
@@ -41,6 +42,12 @@ public class ModEntities {
     public static final EntityEntry<Cat6BlockWireEntity> CAT6_BLOCK_CABLE =
             REGISTRATE.entity("cat6_block_cable", Cat6BlockWireEntity::new, MobCategory.MISC)
                     .renderer(() -> BodyWireRenderer::new)
+                    .register();
+
+    /** Coax hung from a radio or a hanger clip to an antenna. */
+    public static final EntityEntry<CoaxWireEntity> COAX_CABLE =
+            REGISTRATE.entity("coax_cable", CoaxWireEntity::new, MobCategory.MISC)
+                    .renderer(() -> HangingWireRenderer::new)
                     .register();
 
     /** Invisible conductor inside conduit or a flex whip. */

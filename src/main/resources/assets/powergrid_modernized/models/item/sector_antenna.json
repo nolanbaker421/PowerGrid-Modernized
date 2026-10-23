@@ -1,0 +1,148 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "dish": "powergrid_modernized:block/antenna_dish",
+    "mast": "powergrid_modernized:block/antenna_mast",
+    "panel": "powergrid_modernized:block/antenna_panel",
+    "clip": "powergrid_modernized:block/coax_clip",
+    "particle": "powergrid_modernized:block/antenna_mast"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        0,
+        6
+      ],
+      "to": [
+        10,
+        10,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            6,
+            10,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "south": {
+          "uv": [
+            6,
+            6,
+            10,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "east": {
+          "uv": [
+            6,
+            6,
+            10,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "west": {
+          "uv": [
+            6,
+            6,
+            10,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "up": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#mast"
+        },
+        "down": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#mast"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        3,
+        5
+      ],
+      "to": [
+        13,
+        17,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            2,
+            13,
+            16
+          ],
+          "texture": "#panel"
+        },
+        "south": {
+          "uv": [
+            3,
+            2,
+            13,
+            16
+          ],
+          "texture": "#panel"
+        },
+        "east": {
+          "uv": [
+            9,
+            2,
+            11,
+            16
+          ],
+          "texture": "#panel"
+        },
+        "west": {
+          "uv": [
+            5,
+            2,
+            7,
+            16
+          ],
+          "texture": "#panel"
+        },
+        "up": {
+          "uv": [
+            3,
+            5,
+            13,
+            7
+          ],
+          "texture": "#panel"
+        },
+        "down": {
+          "uv": [
+            3,
+            9,
+            13,
+            11
+          ],
+          "texture": "#panel"
+        }
+      }
+    }
+  ]
+}

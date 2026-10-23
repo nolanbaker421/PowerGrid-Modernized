@@ -38,6 +38,16 @@ public final class PgmConfig {
     public static final ModConfigSpec.IntValue RF_BUFFER;
     public static final ModConfigSpec.IntValue RF_MAX_OUTPUT;
     public static final ModConfigSpec.DoubleValue RF_EFFICIENCY;
+    public static final ModConfigSpec.IntValue RADIO_DISH_RANGE;
+    public static final ModConfigSpec.IntValue RADIO_SECTOR_RANGE;
+    public static final ModConfigSpec.IntValue RADIO_CELL_RANGE;
+    public static final ModConfigSpec.DoubleValue RADIO_DISH_BEAM;
+    public static final ModConfigSpec.IntValue RADIO_SECTOR_CLIENTS;
+    public static final ModConfigSpec.BooleanValue RADIO_LINE_OF_SIGHT;
+    public static final ModConfigSpec.IntValue COAX_FULL_RANGE_LENGTH;
+    public static final ModConfigSpec.IntValue COAX_HALF_RANGE_LENGTH;
+    public static final ModConfigSpec.IntValue METER_RANGE;
+    public static final ModConfigSpec.IntValue METER_REPORT_SECONDS;
 
     static {
         var b = new ModConfigSpec.Builder();
@@ -101,6 +111,28 @@ public final class PgmConfig {
                 .defineInRange("motor_efficiency", 0.9, 0.05, 1.0);
         MOTOR_MAX_CAPACITY = b.comment("Most stress per rpm a three-phase motor can carry, however much it is fed (1024 is four creative motors at 256 rpm).")
                 .defineInRange("motor_max_capacity", 1024.0, 1.0, 1_000_000.0);
+        b.pop();
+        b.comment("Radios, antennas, coax and metering").push("radio");
+        RADIO_DISH_RANGE = b.comment("Reach of a dish in blocks; a link needs both dishes within reach of each other.")
+                .defineInRange("dish_range", 2000, 16, 100_000);
+        RADIO_SECTOR_RANGE = b.comment("Reach of a sector antenna in blocks.")
+                .defineInRange("sector_range", 2000, 16, 100_000);
+        RADIO_CELL_RANGE = b.comment("Reach of an omni (cell) antenna in blocks.")
+                .defineInRange("cell_range", 2000, 16, 100_000);
+        RADIO_DISH_BEAM = b.comment("Degrees off its aim a dish still sees its partner.")
+                .defineInRange("dish_beam_degrees", 1.0, 0.1, 90.0);
+        RADIO_SECTOR_CLIENTS = b.comment("Cell antennas one sector carries at once.")
+                .defineInRange("sector_clients", 16, 1, 256);
+        RADIO_LINE_OF_SIGHT = b.comment("Whether blocks between two antennas break the link (a ray through air from one to the other).")
+                .define("line_of_sight", false);
+        COAX_FULL_RANGE_LENGTH = b.comment("Blocks of coax an antenna may be fed through at full reach.")
+                .defineInRange("coax_full_range_length", 16, 1, 1024);
+        COAX_HALF_RANGE_LENGTH = b.comment("Blocks of coax at which the reach has fallen to half; it keeps falling beyond.")
+                .defineInRange("coax_half_range_length", 64, 2, 4096);
+        METER_RANGE = b.comment("Blocks a collector hears meter antennas over.")
+                .defineInRange("meter_range", 2000, 16, 100_000);
+        METER_REPORT_SECONDS = b.comment("Seconds between a meter antenna's reports.")
+                .defineInRange("meter_report_seconds", 10, 1, 3600);
         b.pop();
         b.comment("FE inverter").push("inverter");
         INVERTER_BUFFER = b.comment("FE the inverter stores. It must cover one tick of its load, and a brownout ends once it holds a second's worth again.")

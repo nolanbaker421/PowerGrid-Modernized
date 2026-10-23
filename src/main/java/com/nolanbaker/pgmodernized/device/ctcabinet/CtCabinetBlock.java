@@ -21,6 +21,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -43,6 +45,8 @@ import com.nolanbaker.pgmodernized.conduit.ConductorColors;
  * viewer's left. Mirrored by {@code tools/gen_ct_cabinet_assets.py}.
  */
 public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCabinetBlockEntity> {
+    /** A meter antenna module is fitted: the cabinet reports its readings over the air. */
+    public static final BooleanProperty ANTENNA = BooleanProperty.create("antenna");
     public static final int CHANNELS = 4;
     public static final int TERMINAL_REFERENCE = 0;
     /** Terminal count of the points plus the jack; knockouts and landings follow. */
@@ -82,6 +86,7 @@ public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCab
 
     public CtCabinetBlock(Properties properties) {
         super(properties);
+        registerDefaultState(defaultBlockState().setValue(ANTENNA, false));
         var shape = DeviceHubs.withHubs(BODY, HUBS);
         shape = DeviceHubs.withHubs(shape, JACK_BOX);
         setTerminalCollection(horizontalNorthTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), shape));
@@ -105,12 +110,18 @@ public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCab
     }
 
     @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(ANTENNA);
+    }
+
+    @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         var face = ctx.getClickedFace();
         var facing = face.getAxis().isHorizontal() ? face : ctx.getHorizontalDirection().getOpposite();
         if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
             facing = facing.getOpposite();
-        return defaultBlockState().setValue(HORIZONTAL_FACING, facing);
+        return defaultBlockState().setValue(HORIZONTAL_FACING, facing).setValue(ANTENNA, false);
     }
 
     public static Direction facing(BlockState state) {

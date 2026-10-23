@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powergrid_modernized:omni_antenna"
+    },
+    {
+      "item": "minecraft:comparator"
+    },
+    {
+      "tag": "c:nuggets/iron"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:meter_antenna"
+  }
+}

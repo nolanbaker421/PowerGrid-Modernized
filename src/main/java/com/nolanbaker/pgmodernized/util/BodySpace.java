@@ -2,6 +2,7 @@ package com.nolanbaker.pgmodernized.util;
 
 import dev.ryanhcode.sable.companion.SableCompanion;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntityEndpoint;
@@ -21,6 +22,13 @@ public final class BodySpace {
     public static Vec3 local(Entity entity, Vec3 world) {
         var subLevel = SableCompanion.INSTANCE.getTrackingSubLevel(entity);
         return subLevel == null ? world : subLevel.logicalPose().transformPositionInverse(world);
+    }
+
+    /** Where a block's centre is in the world right now: on a Sable body, where the body holds it. */
+    public static Vec3 live(Level level, BlockPos pos) {
+        var center = pos.getCenter();
+        var body = SableCompanion.INSTANCE.getContaining(level, pos);
+        return body == null ? center : body.logicalPose().transformPosition(center);
     }
 
     /** An endpoint's exact position, in body coordinates when it is the end of a run riding a body. */

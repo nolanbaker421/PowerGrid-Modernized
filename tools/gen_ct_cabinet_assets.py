@@ -62,14 +62,17 @@ def model():
     elements.append(element(*JACK, "#jack"))
     dump(os.path.join(ASSETS, "models", "block", NAME + ".json"), {"parent": "block/block", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "models", "item", NAME + ".json"), {"parent": "%s:block/%s" % (MOD, NAME)})
-    dump(os.path.join(ASSETS, "blockstates", NAME + ".json"), {
-        "variants": {
-            "facing=north": {"model": "%s:block/%s" % (MOD, NAME)},
-            "facing=east": {"model": "%s:block/%s" % (MOD, NAME), "y": 90},
-            "facing=south": {"model": "%s:block/%s" % (MOD, NAME), "y": 180},
-            "facing=west": {"model": "%s:block/%s" % (MOD, NAME), "y": 270},
-        }
-    })
+    # With a meter antenna module: a small radio box high on the door with a whip up past the top edge.
+    tex2 = dict(tex, whip="%s:block/antenna_panel" % MOD)
+    antenna = list(elements) + [element(2.5, 12, 9, 4.5, 14, 10, "#side"), element(3.25, 14, 9.25, 3.75, 16, 9.75, "#whip")]
+    dump(os.path.join(ASSETS, "models", "block", NAME + "_antenna.json"), {"parent": "block/block", "textures": tex2, "elements": antenna})
+    variants = {}
+    for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
+        for flag, model in (("false", NAME), ("true", NAME + "_antenna")):
+            v = {"model": "%s:block/%s" % (MOD, model)}
+            v.update(rot)
+            variants["antenna=%s,facing=%s" % (flag, facing)] = v
+    dump(os.path.join(ASSETS, "blockstates", NAME + ".json"), {"variants": variants})
 
 
 def data():

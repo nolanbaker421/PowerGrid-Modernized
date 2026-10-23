@@ -122,7 +122,9 @@ public final class Cat6Placement {
         var jack = endpoint.jack(level);
         if(jack == null)
             return false;
-        if(jack.isPortUsed(endpoint.getPort())) {
+        // On a hanger a clip's port is one port for Cat6 and coax alike; a radio's jack and coax port are separate.
+        if(jack.isPortUsed(endpoint.getPort())
+                || (endpoint.jackBlock(level) instanceof com.nolanbaker.pgmodernized.radio.CoaxHangerBlockEntity hanger && hanger.coaxSupport().isPortUsed(endpoint.getPort()))) {
             message(player, "message.cat6_port_used", ChatFormatting.RED);
             return false;
         }

@@ -10,6 +10,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import com.nolanbaker.pgmodernized.util.TerminalBoxes;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -237,19 +238,19 @@ public final class GearLayout {
             for(int i = 0; i < COLS; ++i) {
                 for(int k = 0; k < CONDUCTORS; ++k) {
                     int t = edge(side, i, k);
-                    terminals[t] = new TerminalBoundingBox(edgeName(t), HIDDEN).withColor(conductorRgb(k));
+                    terminals[t] = TerminalBoxes.px(edgeName(t), HIDDEN).withColor(conductorRgb(k));
                 }
             }
         }
         for(int slot = 0; slot < SLOTS; ++slot) {
             for(int k = 0; k < CONDUCTORS; ++k)
-                terminals[lug(slot, k)] = new TerminalBoundingBox(lugName(slot, k), lugBox(slot, k)).withColor(conductorRgb(k));
+                terminals[lug(slot, k)] = TerminalBoxes.px(lugName(slot, k), lugBox(slot, k)).withColor(conductorRgb(k));
         }
         for(int h = 0; h < HUB_COUNT; ++h) {
-            terminals[hubTerminal(h)] = new TerminalBoundingBox(hubName(h), hub(h)).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.FOUR.bandColor());
+            terminals[hubTerminal(h)] = TerminalBoxes.px(hubName(h), hub(h)).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.FOUR.bandColor());
             for(int k = 0; k < PER_HUB; ++k) {
                 var name = Lang.builder().add(hubName(h)).text(" ").add(ConductorColors.name(k)).component();
-                terminals[conductorTerminal(h, k)] = new TerminalBoundingBox(name, HIDDEN).withColor(ConductorColors.rgb(k));
+                terminals[conductorTerminal(h, k)] = TerminalBoxes.px(name, HIDDEN).withColor(ConductorColors.rgb(k));
             }
         }
         return terminals;

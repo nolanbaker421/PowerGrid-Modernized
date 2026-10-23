@@ -30,6 +30,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
+import com.nolanbaker.pgmodernized.util.TerminalBoxes;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 import java.util.ArrayList;
@@ -74,8 +75,8 @@ public class BusDuctPlugInBlock extends Rotation4ElectricBlock implements IBE<Bu
     private static TerminalBoundingBox[] terminals() {
         var terminals = new TerminalBoundingBox[BASE_COUNT];
         for(int k = 0; k < BusDuctBlock.BUS_COUNT; ++k) {
-            terminals[STAB_BASE + k] = new TerminalBoundingBox(BusDuctBlock.busName(k), STABS).withColor(BusDuctBlock.busRgb(k));
-            terminals[LOAD_BASE + k] = new TerminalBoundingBox(loadName(k), lug(k)).withColor(BusDuctBlock.busRgb(k));
+            terminals[STAB_BASE + k] = TerminalBoxes.px(BusDuctBlock.busName(k), STABS).withColor(BusDuctBlock.busRgb(k));
+            terminals[LOAD_BASE + k] = TerminalBoxes.px(loadName(k), lug(k)).withColor(BusDuctBlock.busRgb(k));
         }
         return terminals;
     }

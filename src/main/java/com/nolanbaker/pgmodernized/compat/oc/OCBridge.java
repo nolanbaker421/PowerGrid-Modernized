@@ -34,6 +34,9 @@ public class OCBridge {
         expose(event, ModBlockEntities.CABLE_CHAIN_ANCHOR.get());
         expose(event, ModBlockEntities.NETWORK_JACK.get());
         expose(event, ModBlockEntities.NETWORK_SWITCH.get());
+        expose(event, ModBlockEntities.RADIO.get());
+        expose(event, ModBlockEntities.COLLECTOR.get());
+        expose(event, ModBlockEntities.COAX_HANGER.get());
     }
 
     public static <T extends BlockEntity> void expose(RegisterCapabilitiesEvent event, BlockEntityType<T> type) {
@@ -63,8 +66,12 @@ public class OCBridge {
         ComputerBlockEntityFactories.CABLE_CHAIN_ANCHOR = OCCableChainAnchorBlockEntity::new;
         ComputerBlockEntityFactories.NETWORK_JACK = OCNetworkJackBlockEntity::new;
         ComputerBlockEntityFactories.NETWORK_SWITCH = OCNetworkSwitchBlockEntity::new;
+        ComputerBlockEntityFactories.RADIO = OCRadioBlockEntity::new;
+        ComputerBlockEntityFactories.COLLECTOR = OCCollectorBlockEntity::new;
+        ComputerBlockEntityFactories.COAX_HANGER = OCCoaxHangerBlockEntity::new;
         // Cat6 cables link the OC nodes of the jacks they join.
         JackSupport.registerLinkFactory((be, jack) -> be instanceof OCNetworkSwitchBlockEntity sw ? new OCJackLink(sw::nodeForPort)
+                : be instanceof OCCoaxHangerBlockEntity hanger ? new OCJackLink(hanger::nodeForPort)
                 : be instanceof OCControlsCabinetBlockEntity cabinet ? new OCJackLink(cabinet::nodeForPort)
                 : be instanceof Environment env ? new OCJackLink(env) : null);
     }

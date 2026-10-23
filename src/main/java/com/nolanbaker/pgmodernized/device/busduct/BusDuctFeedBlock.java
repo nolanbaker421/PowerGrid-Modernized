@@ -23,6 +23,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
+import com.nolanbaker.pgmodernized.util.TerminalBoxes;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 /**
@@ -53,7 +54,7 @@ public class BusDuctFeedBlock extends HorizontalElectricBlock implements IBE<Bus
     private static TerminalBoundingBox[] terminals() {
         var terminals = new TerminalBoundingBox[LUGS];
         for(int k = 0; k < LUGS; ++k)
-            terminals[k] = new TerminalBoundingBox(BusDuctBlock.busName(k), lug(k)).withColor(BusDuctBlock.busRgb(k));
+            terminals[k] = TerminalBoxes.px(BusDuctBlock.busName(k), lug(k)).withColor(BusDuctBlock.busRgb(k));
         return terminals;
     }
 

@@ -1,0 +1,104 @@
+{
+  "variants": {
+    "facing=north,horizontal=north": {
+      "model": "powergrid_modernized:block/coax_hanger"
+    },
+    "facing=east,horizontal=north": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 90
+    },
+    "facing=south,horizontal=north": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 180
+    },
+    "facing=west,horizontal=north": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 270
+    },
+    "facing=up,horizontal=north": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "x": 270,
+      "y": 0
+    },
+    "facing=down,horizontal=north": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "x": 90,
+      "y": 0
+    },
+    "facing=north,horizontal=east": {
+      "model": "powergrid_modernized:block/coax_hanger"
+    },
+    "facing=east,horizontal=east": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 90
+    },
+    "facing=south,horizontal=east": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 180
+    },
+    "facing=west,horizontal=east": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 270
+    },
+    "facing=up,horizontal=east": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "x": 270,
+      "y": 90
+    },
+    "facing=down,horizontal=east": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north,horizontal=south": {
+      "model": "powergrid_modernized:block/coax_hanger"
+    },
+    "facing=east,horizontal=south": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 90
+    },
+    "facing=south,horizontal=south": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 180
+    },
+    "facing=west,horizontal=south": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 270
+    },
+    "facing=up,horizontal=south": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "x": 270,
+      "y": 180
+    },
+    "facing=down,horizontal=south": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "x": 90,
+      "y": 180
+    },
+    "facing=north,horizontal=west": {
+      "model": "powergrid_modernized:block/coax_hanger"
+    },
+    "facing=east,horizontal=west": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 90
+    },
+    "facing=south,horizontal=west": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 180
+    },
+    "facing=west,horizontal=west": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "y": 270
+    },
+    "facing=up,horizontal=west": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "x": 270,
+      "y": 270
+    },
+    "facing=down,horizontal=west": {
+      "model": "powergrid_modernized:block/coax_hanger",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

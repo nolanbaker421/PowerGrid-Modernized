@@ -268,6 +268,24 @@ cannot branch; wire cutters pick up a whole run.
 Cables re-link themselves once a second, so jacks that unload and reload, or a rebuilt network, recover
 without any manual action. Breaking a jack drops a hanging cable and trims the last segment of a laid run.
 
+## Radio links and metering
+
+Cat6 across the air. A **Radio** (line, neutral, Cat6 jack, coax port) becomes whatever the antenna
+on its **Coax Cable** makes it: a **Dish Antenna** is one end of a point-to-point link with a one
+degree beam, a **Sector Antenna** is a base station with an aimed beam 30 to 180 degrees wide, an
+**Omni Antenna** is a client that roams between the sectors of its carrier. Links pair by typed link
+ID rather than channel, reach 2000 blocks (config), lose reach with the length of the coax run, and
+join the two radios' jacks exactly as a cable would, so OpenComputers and CC: Tweaked networks merge
+across them. Antennas are aimed to a tenth of a degree on a sneak-click screen, with goggles reading
+the bearing to the partner and the degrees off axis. A **Cable Hanger** carries eight coax or Cat6
+lines through pass-through clips on one bracket. Antennas on Sable bodies keep their links.
+
+Metering on top: a **Meter Antenna** on a CT cabinet files the cabinet's readings every ten seconds
+under a meter ID and a utility, and a **Meter Collector** hears every meter of its utility within
+2000 blocks and hands the last reports, with their age, to the computers on its jack as
+`powergrid_collector`, raising `meter_report` as they come in. Store and forward, no billing in the
+mod: that is a Lua program's job.
+
 ## AC support (one jar)
 
 There is one jar. It runs on the stock Power Grid release, which simulates direct current only, and
@@ -372,6 +390,10 @@ of collectors can ride one run.
 
 Only Power Grid's public API is used: the `ElectricBlockEntity` family, the `ResistanceValues` and
 `ThermalValues` provider hooks, and public fields on the wire entities. No upstream classes are patched.
+
+## Changelog
+
+Every release is listed in [CHANGELOG.md](CHANGELOG.md), newest first.
 
 ## Notes for maintainers
 

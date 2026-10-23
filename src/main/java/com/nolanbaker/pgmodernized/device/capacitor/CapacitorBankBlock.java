@@ -27,6 +27,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
+import com.nolanbaker.pgmodernized.util.TerminalBoxes;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 /**
@@ -61,7 +62,7 @@ public class CapacitorBankBlock extends HorizontalElectricBlock implements IBE<C
     private static TerminalBoundingBox[] terminals() {
         var terminals = new TerminalBoundingBox[3];
         for(int k = 0; k < 3; ++k)
-            terminals[k] = new TerminalBoundingBox(ConductorColors.hotLabel("capacitor_bank.line", k, k + 1), LUGS[k]).withColor(ConductorColors.hotRgb(k));
+            terminals[k] = TerminalBoxes.px(ConductorColors.hotLabel("capacitor_bank.line", k, k + 1), LUGS[k]).withColor(ConductorColors.hotRgb(k));
         return terminals;
     }
 

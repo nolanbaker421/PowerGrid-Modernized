@@ -96,6 +96,12 @@
     {
       "id": "powergrid_modernized:pump_stage",
       "required": false
-    }
+    },
+    "powergrid_modernized:radio",
+    "powergrid_modernized:collector",
+    "powergrid_modernized:dish_antenna",
+    "powergrid_modernized:sector_antenna",
+    "powergrid_modernized:omni_antenna",
+    "powergrid_modernized:coax_hanger"
   ]
 }

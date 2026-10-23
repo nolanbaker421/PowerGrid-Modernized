@@ -20,6 +20,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import com.nolanbaker.pgmodernized.util.TerminalBoxes;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -62,7 +63,7 @@ public class BusDuctBlock extends DirectionalElectricBlock implements IBE<BusDuc
     private static TerminalBoundingBox[] terminals() {
         var terminals = new TerminalBoundingBox[BUS_COUNT];
         for(int k = 0; k < BUS_COUNT; ++k)
-            terminals[k] = new TerminalBoundingBox(busName(k), HIDDEN).withColor(busRgb(k));
+            terminals[k] = TerminalBoxes.px(busName(k), HIDDEN).withColor(busRgb(k));
         return terminals;
     }
 

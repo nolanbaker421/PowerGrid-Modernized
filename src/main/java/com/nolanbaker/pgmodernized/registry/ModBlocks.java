@@ -14,6 +14,11 @@ import com.nolanbaker.pgmodernized.device.busduct.BusDuctPlugInBlock;
 import com.nolanbaker.pgmodernized.device.busduct.BusDuctPlugInBreakerBlock;
 import com.nolanbaker.pgmodernized.device.capacitor.CapacitorBankBlock;
 import com.nolanbaker.pgmodernized.device.rectifier.RectifierBlock;
+import com.nolanbaker.pgmodernized.radio.AntennaBlock;
+import com.nolanbaker.pgmodernized.radio.AntennaKind;
+import com.nolanbaker.pgmodernized.radio.CoaxHangerBlock;
+import com.nolanbaker.pgmodernized.radio.CollectorBlock;
+import com.nolanbaker.pgmodernized.radio.RadioBlock;
 import com.nolanbaker.pgmodernized.device.gear.GearCellBlock;
 import com.nolanbaker.pgmodernized.rack.RackBlock;
 import com.nolanbaker.pgmodernized.rack.PinionBlockEntity;
@@ -575,6 +580,66 @@ public class ModBlocks {
             .properties(p -> p.noOcclusion())
             .transform(pickaxeOnly())
             .lang("Capacitor Bank")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<RadioBlock> RADIO = REGISTRATE.block("radio", RadioBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Radio")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<CollectorBlock> COLLECTOR = REGISTRATE.block("collector", CollectorBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Meter Collector")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<AntennaBlock> DISH_ANTENNA = REGISTRATE.block("dish_antenna", p -> new AntennaBlock(p, AntennaKind.DISH))
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Dish Antenna")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<AntennaBlock> SECTOR_ANTENNA = REGISTRATE.block("sector_antenna", p -> new AntennaBlock(p, AntennaKind.SECTOR))
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Sector Antenna")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<AntennaBlock> OMNI_ANTENNA = REGISTRATE.block("omni_antenna", p -> new AntennaBlock(p, AntennaKind.OMNI))
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Omni Antenna")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<CoaxHangerBlock> COAX_HANGER = REGISTRATE.block("coax_hanger", CoaxHangerBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Cable Hanger")
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()

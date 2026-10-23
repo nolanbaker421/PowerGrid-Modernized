@@ -23,6 +23,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
+import com.nolanbaker.pgmodernized.util.TerminalBoxes;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -56,9 +57,9 @@ public class RectifierBlock extends HorizontalElectricBlock implements IBE<Recti
     private static TerminalBoundingBox[] terminals() {
         var terminals = new TerminalBoundingBox[5];
         for(int k = 0; k < 3; ++k)
-            terminals[k] = new TerminalBoundingBox(ConductorColors.hotLabel("rectifier.ac", k, k + 1), LUGS[k]).withColor(ConductorColors.hotRgb(k));
-        terminals[DC_PLUS] = new TerminalBoundingBox(Lang.builder().translate("rectifier.dc_plus").style(ChatFormatting.RED).component(), LUGS[DC_PLUS]).withColor(IDecoratedTerminal.RED);
-        terminals[DC_MINUS] = new TerminalBoundingBox(Lang.builder().translate("rectifier.dc_minus").style(ChatFormatting.BLUE).component(), LUGS[DC_MINUS]).withColor(IDecoratedTerminal.BLUE);
+            terminals[k] = TerminalBoxes.px(ConductorColors.hotLabel("rectifier.ac", k, k + 1), LUGS[k]).withColor(ConductorColors.hotRgb(k));
+        terminals[DC_PLUS] = TerminalBoxes.px(Lang.builder().translate("rectifier.dc_plus").style(ChatFormatting.RED).component(), LUGS[DC_PLUS]).withColor(IDecoratedTerminal.RED);
+        terminals[DC_MINUS] = TerminalBoxes.px(Lang.builder().translate("rectifier.dc_minus").style(ChatFormatting.BLUE).component(), LUGS[DC_MINUS]).withColor(IDecoratedTerminal.BLUE);
         return terminals;
     }
 

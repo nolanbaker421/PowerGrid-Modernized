@@ -7,6 +7,12 @@ import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceReadings;
 import com.nolanbaker.pgmodernized.network.INetworkJack;
 import com.nolanbaker.pgmodernized.network.JackSupport;
+import com.nolanbaker.pgmodernized.PgmConfig;
+import com.nolanbaker.pgmodernized.radio.ISettingsHost;
+import com.nolanbaker.pgmodernized.radio.MeterRegistry;
+import com.nolanbaker.pgmodernized.radio.MeterReport;
+import com.nolanbaker.pgmodernized.registry.ModItems;
+import com.nolanbaker.pgmodernized.util.BodySpace;
 import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.ChatFormatting;
@@ -23,6 +29,9 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.ArrayList;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Containers;
+import java.util.Map;
 import java.util.List;
 
 import static com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlock.*;
@@ -34,7 +43,7 @@ import static com.nolanbaker.pgmodernized.device.ctcabinet.CtCabinetBlock.*;
  * energy integrated from the real power every tick. Readings are synced to clients for the editor
  * and goggles; energy is saved with the block.
  */
-public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDeviceSpliceHost, ISpliceReadings, INetworkJack, IHaveGoggleInformation {
+public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDeviceSpliceHost, ISpliceReadings, INetworkJack, ISettingsHost, IHaveGoggleInformation {
     /** Shunt resistance per channel, ohms. */
     public static final float SHUNT = 0.001f;
     /** Voltage sense branch from each In point to Reference, ohms. */
@@ -57,6 +66,10 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
     private final double[] energy = new double[CHANNELS];
     private final float[] syncedWatts = new float[CHANNELS];
     private double syncedEnergy;
+    /** The meter antenna module: who the collectors list this cabinet as, and when it last spoke. */
+    private String meterId = "", utility = "";
+    private int reportTimer;
+    private long lastReport = -1;
 
     public CtCabinetBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -103,6 +116,10 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
     public void tick() {
         super.tick();
         jack.tick();
+        if(level instanceof ServerLevel server && hasAntenna() && ++reportTimer >= PgmConfig.METER_REPORT_SECONDS.get() * 20) {
+            reportTimer = 0;
+            report(server);
+        }
     }
 
     @Override
@@ -234,8 +251,94 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         Lang.builder().translate("gui.ct_cabinet.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
         for(var line : readings())
             Lang.builder().add(line).forGoggles(tooltip, 1);
+        if(hasAntenna()) {
+            Lang.builder().translate("gui.meter_antenna.id", meterId(), utility.isBlank() ? "-" : utility).style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
+            if(lastReport >= 0 && level != null)
+                Lang.builder().translate("gui.meter_antenna.last_report", (level.getGameTime() - lastReport) / 20).style(ChatFormatting.DARK_AQUA).forGoggles(tooltip, 1);
+        }
         deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
+    }
+
+    // ---- the meter antenna module ----
+
+    public boolean hasAntenna() {
+        var state = getBlockState();
+        return state.hasProperty(CtCabinetBlock.ANTENNA) && state.getValue(CtCabinetBlock.ANTENNA);
+    }
+
+    /** The ID collectors list this meter under: the typed one, else one made from its position. */
+    public String meterId() {
+        if(!meterId.isBlank())
+            return meterId;
+        return "meter_" + coord(worldPosition.getX()) + "_" + coord(worldPosition.getY()) + "_" + coord(worldPosition.getZ());
+    }
+
+    private static String coord(int v) {
+        return v < 0 ? "n" + (-v) : Integer.toString(v);
+    }
+
+    public String utility() {
+        return utility;
+    }
+
+    /** One report to the level's meter register. */
+    public void report(ServerLevel server) {
+        var v = new double[CHANNELS];
+        var a = new double[CHANNELS];
+        var w = new double[CHANNELS];
+        var pf = new double[CHANNELS];
+        var wh = new double[CHANNELS];
+        for(int k = 0; k < CHANNELS; ++k) {
+            v[k] = volts[k];
+            a[k] = amps[k];
+            w[k] = watts[k];
+            pf[k] = powerFactors[k];
+            wh[k] = energyWh(k);
+        }
+        MeterRegistry.get(server).put(new MeterReport(meterId(), utility, BodySpace.live(server, worldPosition), server.getGameTime(), CHANNELS, v, a, w, pf, wh));
+        lastReport = server.getGameTime();
+    }
+
+    /** The module came out: the register forgets this meter. */
+    public void antennaRemoved() {
+        if(level instanceof ServerLevel server)
+            MeterRegistry.get(server).forget(meterId());
+        lastReport = -1;
+        setChanged();
+        sendData();
+    }
+
+    @Override
+    public List<Field> settingsFields() {
+        return List.of(new Field("meter_id", "powergrid.gui.meter_antenna.meter_id", false, meterId),
+                new Field("utility", "powergrid.gui.meter_antenna.utility", false, utility));
+    }
+
+    @Override
+    public void applySettings(Map<String, String> values) {
+        var oldId = meterId();
+        if(values.containsKey("meter_id"))
+            meterId = values.get("meter_id").trim();
+        if(values.containsKey("utility"))
+            utility = values.get("utility").trim();
+        if(level instanceof ServerLevel server && hasAntenna()) {
+            if(!oldId.equals(meterId()))
+                MeterRegistry.get(server).forget(oldId);
+            report(server);
+        }
+        setChanged();
+        sendData();
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        if(level instanceof ServerLevel server && hasAntenna()) {
+            MeterRegistry.get(server).forget(meterId());
+            var center = worldPosition.getCenter();
+            Containers.dropItemStack(level, center.x, center.y, center.z, ModItems.METER_ANTENNA.asStack());
+        }
     }
 
     // ---- jack ----
@@ -277,6 +380,9 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         for(int n = 0; n < CHANNELS; ++n)
             joules[n] = Math.round(energy[n]);
         tag.putLongArray("EnergyJ", joules);
+        tag.putString("MeterId", meterId);
+        tag.putString("Utility", utility);
+        tag.putLong("LastReport", lastReport);
         if(clientPacket) {
             var list = new net.minecraft.nbt.ListTag();
             for(int n = 0; n < CHANNELS; ++n) {
@@ -298,6 +404,9 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         var joules = tag.getLongArray("EnergyJ");
         for(int n = 0; n < CHANNELS && n < joules.length; ++n)
             energy[n] = joules[n];
+        meterId = tag.getString("MeterId");
+        utility = tag.getString("Utility");
+        lastReport = tag.contains("LastReport") ? tag.getLong("LastReport") : -1;
         if(clientPacket && tag.contains("Readings")) {
             var list = tag.getList("Readings", net.minecraft.nbt.Tag.TAG_FLOAT);
             for(int n = 0; n < CHANNELS && n * 4 + 3 < list.size(); ++n) {

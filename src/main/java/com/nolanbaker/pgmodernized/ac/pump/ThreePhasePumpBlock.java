@@ -4,6 +4,7 @@ import com.nolanbaker.pgmodernized.ac.AcContent;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs;
+import com.nolanbaker.pgmodernized.util.ShapeRotation;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.core.BlockPos;
@@ -26,6 +27,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
+import com.nolanbaker.pgmodernized.util.TerminalBoxes;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.pump.ElectricPumpBlock;
 import org.patryk3211.powergrid.electricity.pump.ElectricPumpBlockEntity;
@@ -49,19 +51,21 @@ public class ThreePhasePumpBlock extends ElectricPumpBlock {
     public static final BooleanProperty REVERSED = BooleanProperty.create("reversed");
     private static final AABB HIDDEN = new AABB(7.5, 7.5, 7, 8.5, 8.5, 8);
     public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(3, HUBS.length, new int[] {U, V, W});
-    private static final VoxelShaper SHAPER = VoxelShaper.forDirectional(DeviceHubs.withHubs(northShape(), HUBS), Direction.NORTH);
+    private static final VoxelShaper SHAPER = VoxelShaper.forDirectional(DeviceHubs.withHubs(northShape(), HUBS), Direction.NORTH)
+            .withVerticalShapes(ShapeRotation.northToUp(DeviceHubs.withHubs(northShape(), HUBS)));
 
     public ThreePhasePumpBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState().setValue(REVERSED, false));
-        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(northShape(), HUBS)));
+        var shape = DeviceHubs.withHubs(northShape(), HUBS);
+        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), shape, ShapeRotation.northToUp(shape)));
     }
 
     private static TerminalBoundingBox[] terminals() {
         var terminals = new TerminalBoundingBox[3];
         String[] keys = {"three_phase_motor.u", "three_phase_motor.v", "three_phase_motor.w"};
         for(int k = 0; k < 3; ++k)
-            terminals[k] = new TerminalBoundingBox(ConductorColors.hotLabel(keys[k], k), LUGS[k]).withColor(ConductorColors.hotRgb(k));
+            terminals[k] = TerminalBoxes.px(ConductorColors.hotLabel(keys[k], k), LUGS[k]).withColor(ConductorColors.hotRgb(k));
         return terminals;
     }
 

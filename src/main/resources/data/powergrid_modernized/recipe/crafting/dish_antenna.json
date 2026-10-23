@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "C": {
+      "tag": "c:wires/copper"
+    },
+    "N": {
+      "tag": "c:nuggets/iron"
+    }
+  },
+  "pattern": [
+    "III",
+    "ICI",
+    " N "
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:dish_antenna"
+  }
+}

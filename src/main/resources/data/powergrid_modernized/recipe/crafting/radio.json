@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "R": {
+      "item": "minecraft:comparator"
+    },
+    "C": {
+      "item": "powergrid_modernized:cat6_cable"
+    }
+  },
+  "pattern": [
+    "III",
+    "RCR",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:radio"
+  }
+}
