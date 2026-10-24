@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.device.breaker;
 
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import com.nolanbaker.pgmodernized.util.StateTerminals;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitPlacement;
@@ -52,7 +54,22 @@ public class BreakerPanelBlock extends HorizontalElectricBlock implements IBE<Br
         super(properties);
         this.spec = spec;
         registerDefaultState(defaultBlockState().setValue(SECTIONS, 1));
-        setTerminalCollection(horizontalNorthTerminals(this, PanelLayout.terminals(spec), PanelLayout.shape(spec)));
+        // Per section count: the terminals of extensions the panel does not have are specks, so the wiring overlay never draws them.
+        var all = PanelLayout.terminals(spec);
+        var bySections = new TerminalBoundingBox[2 + PanelLayout.MAX_EXT][];
+        setTerminalCollection(StateTerminals.horizontalNorth(this, PanelLayout.shape(spec), state -> {
+            int sections = sectionsOf(state);
+            if(bySections[sections] == null)
+                bySections[sections] = StateTerminals.present(all, index -> hasTerminal(sections, index));
+            return bySections[sections];
+        }));
+    }
+
+    /** Whether a panel of that many sections has the terminal: not one of a missing extension, nor a bottom knockout an extension covers. */
+    private boolean hasTerminal(int sections, int index) {
+        if(PanelLayout.sectionOf(spec, index) >= sections)
+            return false;
+        return !(sections > 1 && PanelLayout.isHeadBottomHub(PanelLayout.hubAt(spec, index)));
     }
 
     @Override

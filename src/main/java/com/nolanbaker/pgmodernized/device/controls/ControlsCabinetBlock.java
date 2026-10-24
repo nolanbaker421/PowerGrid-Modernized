@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.controls;
 
+import com.nolanbaker.pgmodernized.util.StateTerminals;
 import net.minecraft.world.level.block.Block;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
@@ -123,7 +124,22 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
         var shape = DeviceHubs.withHubs(BODY, HUBS);
         shape = DeviceHubs.withHubs(shape, JACK_BOX, PLC_JACK_BOX);
         var head = DeviceHubs.withExtras(DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), ioTerminals());
-        setTerminalCollection(horizontalNorthTerminals(this, CabinetLayout.terminals(head), shape));
+        // Per section count: the terminals of extensions the cabinet does not have are specks, so the wiring overlay never draws them.
+        var all = CabinetLayout.terminals(head);
+        var bySections = new TerminalBoundingBox[2 + MAX_EXT][];
+        setTerminalCollection(StateTerminals.horizontalNorth(this, shape, state -> {
+            int sections = sectionsOf(state);
+            if(bySections[sections] == null)
+                bySections[sections] = StateTerminals.present(all, index -> hasTerminal(sections, index));
+            return bySections[sections];
+        }));
+    }
+
+    /** Whether a cabinet of that many sections has the terminal: not one of a missing extension, nor a bottom knockout an extension covers. */
+    private static boolean hasTerminal(int sections, int index) {
+        if(CabinetLayout.sectionOf(index) >= sections)
+            return false;
+        return !(sections > 1 && CabinetLayout.isHeadBottomHub(CabinetLayout.hubAt(index)));
     }
 
     @Override

@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.47.2 — 2026-10-24
+
+### Fixed
+- Breaker panels and the controls cabinet showed the knockout outlines of extensions they did not
+  have while wiring. The terminal collection is built per section count now, with the absent
+  extensions' terminals as specks, the same cure as the conduit box in 0.47.1.
+
 ## 0.47.1 — 2026-10-24
 
 ### Fixed
