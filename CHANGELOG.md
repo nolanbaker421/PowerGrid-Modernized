@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.50.2 — 2026-10-24
+
+### Changed
+- Knockout marks stand a third of a pixel off the body instead of a twentieth, so they show as a
+  coloured sliver on each edge when a wall box is seen from the front.
+
 ## 0.50.1 — 2026-10-24
 
 ### Fixed

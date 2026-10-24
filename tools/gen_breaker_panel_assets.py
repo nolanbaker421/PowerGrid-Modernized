@@ -234,17 +234,21 @@ def _wrap(a, b):
     return a, b
 
 
+# A knockout mark stands this far off the body: enough to read as a coloured sliver edge-on, which is how a wall box is seen.
+KNOCKOUT_PROUD = 0.35
+
+
 def flatten_knockout(x1, y1, z1, x2, y2, z2):
     """A knockout box becomes a flat patch on the body face it sits on: along its thinnest axis
     (ties broken by the axis farthest from the block centre) it keeps the end nearer the centre,
-    0.05 px proud, so the trade-size colour marks the spot without a box sticking out."""
+    a third of a pixel proud, so the trade-size colour marks the spot without a box sticking out."""
     lo, hi = [x1, y1, z1], [x2, y2, z2]
     size = [hi[i] - lo[i] for i in range(3)]
     thin = min(range(3), key=lambda i: (round(size[i], 4), -abs((lo[i] + hi[i]) / 2 - 8)))
     if (lo[thin] + hi[thin]) / 2 >= 8:
-        hi[thin] = lo[thin] + 0.05
+        hi[thin] = lo[thin] + KNOCKOUT_PROUD
     else:
-        lo[thin] = hi[thin] - 0.05
+        lo[thin] = hi[thin] - KNOCKOUT_PROUD
     return lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]
 
 

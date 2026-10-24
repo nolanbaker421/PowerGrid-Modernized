@@ -120,11 +120,14 @@ public final class DeviceHubs {
     }
 
     /**
-     * A knockout box as it is drawn now: a patch 0.05 px proud of the body face it sits on. Along
+     * A knockout box as it is drawn now: a patch a third of a pixel proud of the body face it sits on. Along
      * its thinnest axis (ties broken by the axis farthest from the block centre) it keeps the end
      * nearer the centre. The same rule as the asset generator's, so the outline matches the model;
      * the terminal boxes keep their full depth, so a click on the patch still lands inside one.
      */
+    /** How far a knockout mark stands off the body, matching the asset generator's KNOCKOUT_PROUD. */
+    public static final double KNOCKOUT_PROUD = 0.35;
+
     public static AABB flat(AABB px) {
         double[] lo = {px.minX, px.minY, px.minZ}, hi = {px.maxX, px.maxY, px.maxZ};
         int thin = 0;
@@ -135,9 +138,9 @@ public final class DeviceHubs {
                 thin = i;
         }
         if((lo[thin] + hi[thin]) / 2 >= 8)
-            hi[thin] = lo[thin] + 0.05;
+            hi[thin] = lo[thin] + KNOCKOUT_PROUD;
         else
-            lo[thin] = hi[thin] - 0.05;
+            lo[thin] = hi[thin] - KNOCKOUT_PROUD;
         return new AABB(lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]);
     }
 
