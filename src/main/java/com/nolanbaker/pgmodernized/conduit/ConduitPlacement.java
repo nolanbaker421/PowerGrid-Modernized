@@ -147,6 +147,12 @@ public final class ConduitPlacement {
                 if(exit != null) {
                     points.add(new BlockWireEntity.Point(exit, Knockouts.STUB_PX));
                     last = last.relative(exit, Knockouts.STUB_PX / 16.0);
+                    double tubeRadius = stack.getItem() instanceof ConduitItem conduit ? conduit.size().tubeThickness() / 2 : 0;
+                    var lift = Knockouts.lift(level, hub, exit, tubeRadius);
+                    if(lift != null) {
+                        points.add(new BlockWireEntity.Point(lift.away(), lift.pixels()));
+                        last = last.relative(lift.away(), lift.pixels() / 16.0);
+                    }
                 }
             }
         }
@@ -316,6 +322,7 @@ public final class ConduitPlacement {
         // A run leaves a knockout dead centre and square: a straight stub along the knockout's face
         // normal, and only then the tracer. The same at the far end, in reverse, so the tube enters
         // the target knockout the same way instead of wherever the route happened to arrive.
+        double tubeRadius = stack.getItem() instanceof ConduitItem conduit ? conduit.size().tubeThickness() / 2 : 0;
         var stubs = new ArrayList<BlockWireEntity.Point>();
         if(existing == null && from instanceof BlockWireEndpoint start) {
             var exit = Knockouts.exit(level, start);
@@ -323,14 +330,25 @@ public final class ConduitPlacement {
                 stubs.add(new BlockWireEntity.Point(exit, Knockouts.STUB_PX));
                 lastPoint = lastPoint.relative(exit, Knockouts.STUB_PX / 16.0);
                 continueDir = exit;
+                // Thick tube steps off the wall behind the knockout before it goes anywhere.
+                var lift = Knockouts.lift(level, start, exit, tubeRadius);
+                if(lift != null) {
+                    stubs.add(new BlockWireEntity.Point(lift.away(), lift.pixels()));
+                    lastPoint = lastPoint.relative(lift.away(), lift.pixels() / 16.0);
+                    continueDir = lift.away();
+                }
             }
         }
         var targetPoint = BodySpace.local(level, to);
         ITerminalPlacement terminal = to instanceof BlockWireEndpoint hub ? hub.getTerminalPlacement(level) : null;
         Direction entryDir = to instanceof BlockWireEndpoint hub ? Knockouts.exit(level, hub) : null;
+        Knockouts.Lift entryLift = null;
         if(entryDir != null) {
             targetPoint = BlockTrace.alignPosition(targetPoint).relative(entryDir, Knockouts.STUB_PX / 16.0);
             terminal = null;
+            entryLift = Knockouts.lift(level, (BlockWireEndpoint) to, entryDir, tubeRadius);
+            if(entryLift != null)
+                targetPoint = targetPoint.relative(entryLift.away(), entryLift.pixels() / 16.0);
         }
 
         if(!SableUtils.sameSubLevel(level, lastPoint, targetPoint)) {
@@ -344,6 +362,8 @@ public final class ConduitPlacement {
         }
         var points = new ArrayList<>(stubs);
         points.addAll(path.points());
+        if(entryLift != null)
+            points.add(new BlockWireEntity.Point(entryLift.away().getOpposite(), entryLift.pixels()));
         if(entryDir != null)
             points.add(new BlockWireEntity.Point(entryDir.getOpposite(), Knockouts.STUB_PX));
         float addedLength = 0;

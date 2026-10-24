@@ -75,8 +75,8 @@ public class BodyWireRenderer extends BlockWireRenderer {
         int rgb = run.getColor() & 0xFFFFFF;
         var segs = run.segments;
         int n = segs.size();
-        // Bend radius at each corner: one and a half tubes, never under two pixels nor over four, nor more than half of either leg.
-        float wanted = Math.max(2 / 16f, Math.min(4 / 16f, 1.5f * t));
+        // Bend radius at each corner: one and a half tubes, never under two pixels nor over six, nor more than half of either leg.
+        float wanted = Math.max(2 / 16f, Math.min(6 / 16f, 1.5f * t));
         float[] radii = new float[n];
         for(int i = 0; i + 1 < n; ++i) {
             var a = segs.get(i);
@@ -98,9 +98,10 @@ public class BodyWireRenderer extends BlockWireRenderer {
                 len += 1 / 16f;
             }
             float rIn = i > 0 ? radii[i - 1] : 0, rOut = radii[i];
-            // Shortened by the bend radius at each corner, less half a pixel so the straight runs into its elbow.
+            // Shortened by the bend radius at each corner. Power Grid draws every segment half a tube
+            // longer at both ends, so that half is cut too, less half a pixel so the straight runs into its elbow.
             float lap = 0.5f / 16;
-            float cutIn = rIn > 0 ? rIn - lap : 0, cutOut = rOut > 0 ? rOut - lap : 0;
+            float cutIn = rIn > 0 ? rIn + t / 2 - lap : 0, cutOut = rOut > 0 ? rOut + t / 2 - lap : 0;
             start = start.relative(dir, cutIn);
             len -= cutIn + cutOut;
             var mid = run.position().add(start).add(Vec3.atLowerCornerOf(dir.getNormal()).scale(len / 2));

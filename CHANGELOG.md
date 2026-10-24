@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.50.5 — 2026-10-24
+
+### Fixed
+- Corners on thick conduit still met in a sharp joint with the elbow lost inside it: Power Grid
+  draws every segment half a tube longer at both ends, so the cut at a corner now takes that half
+  as well as the bend radius. Bends go up to six pixels on big tube.
+- Conduit sank into the wall behind a box: the run's centre line sat at the knockout's depth, a
+  pixel and a half off the wall. A run now steps off the wall by what its tube needs right after
+  the knockout, and steps back before the far one, on strut legs too.
+
 ## 0.50.4 — 2026-10-24
 
 ### Fixed
