@@ -365,6 +365,15 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         return points;
     }
 
+    /**
+     * An endpoint block is gone. Power Grid's block wire would shorten itself and stay as a stub to
+     * build on, which for a conduit run is a ghost hitbox at the surviving device; the run comes down.
+     */
+    @Override
+    public void endpointRemoved(IWireEndpoint endpoint) {
+        kill();
+    }
+
     /** Taking the conduit up drops the pulled wires too. */
     @Override
     public void kill() {

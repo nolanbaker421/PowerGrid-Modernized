@@ -222,7 +222,7 @@ def unit_elements(size, phases, hung):
         top = LID[size][4] + by[1]
         els.append(element(7, top - 2, 15, 9, top, 16.5, "#skid"))
         z1 = BODY[size][2] + by[2]
-        els.append(element(7, by[1] + 6, z1 - 1, 9, by[1] + 8, z1, "#jack"))
+        els.append(element(7, by[1] + 1, z1 - 1, 9, by[1] + 3, z1, "#jack"))   # below the LV taps, clear of the neutral
     else:
         els.append(element(6, 10, BODY[size][2] - 0.25, 10, 13, BODY[size][2], "#cap"))   # nameplate
         jy = 4 if size == "PAD" else 6

@@ -324,7 +324,7 @@ public final class TransformerGeometry {
         AABB box;
         if(size.isPole()) {
             var body = shift(body(size), hung ? hungShift(size) : Vec3.ZERO);
-            box = new AABB(7, body.minY + 6, body.minZ - 1, 9, body.minY + 8, body.minZ);
+            box = new AABB(7, body.minY + 1, body.minZ - 1, 9, body.minY + 3, body.minZ);
         } else if(size == TransformerSize.DRY) {
             box = new AABB(7, 6, 3, 9, 8, 4);
         } else if(size == TransformerSize.PAD) {

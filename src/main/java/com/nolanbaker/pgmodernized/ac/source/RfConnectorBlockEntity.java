@@ -184,7 +184,7 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
             adoptLanded = false;
             landedKey = key;
             if(key != 0 && !adopt)
-                splices().land(0);
+                splices().landNew(0);
         }
         if(Math.abs(watts - syncedWatts) > Math.max(5, syncedWatts * 0.05) || Math.abs(supplied - syncedSupplied) > Math.max(5, syncedSupplied * 0.05))
             sendData();

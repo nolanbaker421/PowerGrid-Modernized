@@ -72,7 +72,7 @@ public class ConduitSocketBlockEntity extends ElectricBlockEntity implements ISp
             adoptLanded = false;
             landedKey = key;
             if(key != 0 && !adopt)
-                splices().land(0);
+                splices().landNew(0);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.breaker;
 
+import net.minecraft.world.level.block.Block;
 import com.nolanbaker.pgmodernized.fork.ForkHooks;
 import net.minecraft.world.phys.AABB;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
@@ -125,10 +126,28 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         return ratings[slot + 1];
     }
 
-    /** The head and its extensions. */
+    /** The head and its extensions, from the block state as it stands; the cached count only tracks changes. */
     public int sections() {
         ensureInit();
-        return sections;
+        var state = getBlockState();
+        return state != null && state.getBlock() instanceof BreakerPanelBlock ? BreakerPanelBlock.sectionsOf(state) : sections;
+    }
+
+    /**
+     * The extensions actually standing under the head. The state's count is set when an extension is
+     * placed or taken; this puts it right if the two ever disagree, as was seen after a reload.
+     */
+    private void healSections() {
+        if(level == null || level.isClientSide)
+            return;
+        var state = getBlockState();
+        if(!(state.getBlock() instanceof BreakerPanelBlock))
+            return;
+        int found = 1;
+        while(found <= PanelLayout.MAX_EXT && level.getBlockState(worldPosition.below(found)).getBlock() instanceof PanelExtensionBlock)
+            ++found;
+        if(found != BreakerPanelBlock.sectionsOf(state))
+            level.setBlock(worldPosition, state.setValue(BreakerPanelBlock.SECTIONS, found), Block.UPDATE_ALL);
     }
 
     /** Branch spaces the panel has with its present extensions. */
@@ -428,6 +447,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         super.lazyTick();
         if(level == null || level.isClientSide)
             return;
+        healSections();
         splices().prune();
         if(main.currentChanged()) {
             sendData();

@@ -66,6 +66,32 @@ public final class SpliceSupport {
         changed();
     }
 
+    /**
+     * The run on that hub changed: lands each pulled conductor that has no splice yet on the point of
+     * the same number, if that point is free, and leaves every splice the player made alone. Server side.
+     */
+    public void landNew(int hub) {
+        var run = host.hubRun(hub);
+        if(run == null)
+            return;
+        var points = host.points();
+        boolean changed = false;
+        for(int k = 0; k < run.size().conductors() && k < points.size(); ++k) {
+            if(run.conductor(k) == null)
+                continue;
+            int point = points.get(k).terminal();
+            int conductor = host.conductorTerminal(hub, k);
+            boolean conductorSpliced = splices.stream().anyMatch(s -> s[0] == conductor || s[1] == conductor);
+            boolean pointUsed = splices.stream().anyMatch(s -> s[0] == point || s[1] == point);
+            if(conductorSpliced || pointUsed)
+                continue;
+            splices.add(new int[] {Math.min(point, conductor), Math.max(point, conductor)});
+            changed = true;
+        }
+        if(changed)
+            changed();
+    }
+
     /** Lands every pulled conductor of the run on that hub on the point of the same number. Server side. */
     public void land(int hub) {
         var run = host.hubRun(hub);

@@ -4,6 +4,19 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.45.1 — 2026-10-24
+
+### Fixed
+- A breaker panel came back from a reload unaware of the extension under it: cover, splice screen
+  and tooltip saw one section while power still flowed through the lower runs. The section count
+  is now read from the block state every time, and the head checks the blocks below it every lazy
+  tick and puts the state right if they disagree.
+- Pulling a new wire through a run on a conduit switch or receptacle no longer re-lands line and
+  load over the splices made by hand: only new, unspliced conductors land, and only on free points.
+- Breaking a device at one end of a conduit run left a ghost run with a hitbox at the other device.
+  The run comes down with its wires like a conduit should.
+- The pole transformers' network jack sat on the neutral tap; it is below the LV taps now.
+
 ## 0.45.0 — 2026-10-24
 
 ### Added
