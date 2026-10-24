@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.47.0 — 2026-10-24
+
+### Added
+- **Light socket covers take Power Grid's bulbs**: the standard bulb, the LV bulb, grow lamps and
+  neon tubes, with their own filament, warm-up, burnout and light level, drawn in the socket.
+  Right-click with a bulb to fit it, sneak-click to take it out. A socket without a bulb is dark;
+  sockets from earlier versions keep a standard bulb.
+- Conduit runs show a coupling at every corner and both ends.
+
 ## 0.46.0 — 2026-10-24
 
 ### Added

@@ -253,6 +253,7 @@
   "powergrid.gui.conduit_switch.to_a": "Common to traveller A",
   "powergrid.gui.conduit_switch.to_b": "Common to traveller B",
   "powergrid.gui.redstone_port.input": "Reads %1$s",
+  "powergrid.gui.conduit_box.no_bulb": "No bulb in the socket",
   "block.powergrid_modernized.disconnect": "Disconnect",
   "powergrid.disconnect.line": "Line %1$s",
   "powergrid.disconnect.load": "Load %1$s",

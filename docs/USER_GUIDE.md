@@ -813,7 +813,18 @@ Sneak-right-click the switch with an empty hand to change its mode:
 ComputerCraft traffic is always shared. Conduit and Cat6 will not land on Power Grid's own wire
 connectors or nodes; they need a knockout or a jack.
 
-#### Conduit button and 3-way switch
+#### Light sockets take Power Grid's bulbs
+
+A light socket cover is a real fixture now. Right-click it with any of Power Grid's bulbs, the
+standard bulb, the LV bulb, a grow lamp or a neon tube, and the bulb goes in; sneak-click with an
+empty hand and the bulb comes out before the plate does. The bulb's own physics apply: its filament,
+its warm-up, its burnout at too high a voltage, and its light level, drawn with Power Grid's bulb
+model in the socket. A socket without a bulb is dark. Light sockets from before this version keep
+a standard bulb, since they had a lamp built in.
+
+Conduit runs now show a coupling at every corner and both ends, a pixel proud of the tube.
+
+### Conduit button and 3-way switch
 
 - **Conduit Button** (nuggets and a stone button): the conduit switch that lets go. Click it and its
   contact closes for half a second, then opens by itself; its run, landing and splice screen are the

@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.client.ConduitBoxRenderer;
 import com.nolanbaker.pgmodernized.conduit.ConduitThreeWayBlockEntity;
 import com.nolanbaker.pgmodernized.client.GearCellRenderer;
 import com.nolanbaker.pgmodernized.device.gear.GearCellBlockEntity;
@@ -118,6 +119,7 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<ConduitBoxBlockEntity> CONDUIT_BOX =
             REGISTRATE.blockEntity("conduit_box", ConduitBoxBlockEntity::new)
                     .validBlocks(ModBlocks.CONDUIT_BOX, ModBlocks.CEILING_TILE_CONDUIT_BOX)
+                    .renderer(() -> ConduitBoxRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<ConduitSocketBlockEntity> CONDUIT_SOCKET =

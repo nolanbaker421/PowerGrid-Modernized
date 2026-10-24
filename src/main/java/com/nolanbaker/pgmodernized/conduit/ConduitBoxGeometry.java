@@ -137,7 +137,9 @@ public final class ConduitBoxGeometry {
     }
 
     /** The lamp holder and bulb of a light socket cover, standing out from the plate. */
-    public static final AABB LAMP_HOLDER = new AABB(6.5, 6.5, 11, 9.5, 9.5, 13), BULB = new AABB(6, 6, 8.5, 10, 10, 11);
+    public static final AABB LAMP_HOLDER = new AABB(6.5, 6.5, 11, 9.5, 9.5, 13);
+    /** Where the bulb sits in front of the holder; the renderer draws the fitted bulb here. */
+    public static final AABB BULB = new AABB(6, 6, 8.5, 10, 10, 11);
     /** The face of a receptacle cover that a cord plugs into. */
     public static final AABB RECEPTACLE_FACE = new AABB(6.5, 6, 11.5, 9.5, 10, 13);
 

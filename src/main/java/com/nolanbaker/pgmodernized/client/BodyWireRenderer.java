@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.client;
 
+import net.minecraft.world.phys.Vec3;
+import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.nolanbaker.pgmodernized.util.BodyRider;
 import dev.ryanhcode.sable.companion.ClientSubLevelAccess;
@@ -38,6 +40,7 @@ public class BodyWireRenderer extends BlockWireRenderer {
         var origin = entity instanceof BodyRider rider ? rider.ride().origin() : null;
         if(body == null || origin == null) {
             super.render(entity, yaw, partialTicks, poseStack, buffer, light);
+            collars(entity, poseStack, buffer, light);
             return;
         }
         var pose = body.renderPose(partialTicks);
@@ -48,7 +51,35 @@ public class BodyWireRenderer extends BlockWireRenderer {
         poseStack.translate(where.x - drawn.x, where.y - drawn.y, where.z - drawn.z);
         poseStack.mulPose(new Quaternionf((float) q.x(), (float) q.y(), (float) q.z(), (float) q.w()));
         super.render(entity, yaw, partialTicks, poseStack, buffer, light);
+        collars(entity, poseStack, buffer, light);
         poseStack.popPose();
+    }
+
+    /**
+     * A coupling at every corner and both ends of a conduit run: a cube a pixel proud of the tube,
+     * in the tube's colour darkened, so joints read as fittings instead of bare ends meeting.
+     */
+    private static void collars(BlockWireEntity entity, PoseStack poseStack, MultiBufferSource buffer, int light) {
+        if(!(entity instanceof ConduitRunEntity run) || run.isNipple() || run.segments.isEmpty())
+            return;
+        double half = run.size().tubeThickness() * 16 / 2 + 1;
+        int rgb = entity.getColor() & 0xFFFFFF;
+        int r = (int) ((rgb >> 16 & 0xFF) * 0.8), g = (int) ((rgb >> 8 & 0xFF) * 0.8), b = (int) ((rgb & 0xFF) * 0.8);
+        int shade = r << 16 | g << 8 | b;
+        var pos = Vec3.ZERO;
+        BlockWireEntity.Point last = null;
+        for(var segment : run.segments) {
+            if(last == null || last.direction != segment.direction)
+                collar(poseStack, buffer, light, pos, half, shade);
+            pos = pos.add(segment.vector());
+            last = segment;
+        }
+        collar(poseStack, buffer, light, pos, half, shade);
+    }
+
+    private static void collar(PoseStack poseStack, MultiBufferSource buffer, int light, Vec3 at, double half, int rgb) {
+        double x = at.x * 16, y = at.y * 16, z = at.z * 16;
+        DeviceDraw.box(poseStack, buffer, light, x - half, y - half, z - half, x + half, y + half, z + half, rgb);
     }
 
     @Override

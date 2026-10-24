@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
@@ -183,6 +184,11 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(stack.getItem() instanceof ILightBulb && cover(state).isLight()) {
+            if(!level.isClientSide && level.getBlockEntity(pos) instanceof ConduitBoxBlockEntity be && be.fitBulb(player, stack))
+                level.playSound(null, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.4f);
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
         if(stack.getItem() instanceof ConduitCoverItem plate) {
             if(cover(state).isPlate()) {
                 if(!level.isClientSide)
@@ -209,6 +215,11 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
                 return InteractionResult.PASS;
             if(level.isClientSide)
                 return InteractionResult.SUCCESS;
+            // A light socket gives up its bulb first, then its plate.
+            if(cover.isLight() && level.getBlockEntity(pos) instanceof ConduitBoxBlockEntity be && be.takeBulb(player)) {
+                level.playSound(null, pos, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.6f, 1.4f);
+                return InteractionResult.SUCCESS;
+            }
             if(cover.hasTerminals() && level.getBlockEntity(pos) instanceof ConduitBoxBlockEntity be && be.hasCoverWires()) {
                 player.displayClientMessage(Lang.builder().translate("message.conduit_box.wires_attached").style(ChatFormatting.RED).component(), true);
                 return InteractionResult.FAIL;

@@ -135,8 +135,7 @@ def box_model():
             y = ROWS_Y[k // 4]
             elements.append(element(x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2, "#terminal"))
         if cover.startswith("light"):
-            elements.append(element(*LAMP_HOLDER, "#box"))
-            elements.append(element(*BULB, "#" + cover.replace("light", "lamp")))
+            elements.append(element(*LAMP_HOLDER, "#box"))   # the bulb itself is drawn by the block entity renderer
         if cover == "receptacle":
             elements.append(receptacle_face(RECEPTACLE_FACE))
         dump(os.path.join(ASSETS, "models", "block", "conduit_box_%s.json" % cover), {"parent": "block/block", "textures": tex, "elements": elements})
@@ -240,7 +239,6 @@ def ceiling_box_models():
             elements.append(element(*on_tile((x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2)), "#terminal"))
         if cover.startswith("light"):
             elements.append(element(*on_tile(LAMP_HOLDER), "#box"))
-            elements.append(element(*on_tile(BULB), "#" + cover.replace("light", "lamp")))
         if cover == "receptacle":
             e = element(*on_tile(RECEPTACLE_FACE), "#box")
             e["faces"]["up"] = {"uv": [0, 0, 16, 16], "texture": "#receptacle"}
