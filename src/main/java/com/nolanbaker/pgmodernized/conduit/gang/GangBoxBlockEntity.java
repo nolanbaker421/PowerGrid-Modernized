@@ -147,8 +147,27 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         }
     }
 
+    /** The block state names the gang a cord plugs into: the first receptacle, or none. */
+    private void syncSocket() {
+        if(level == null || level.isClientSide)
+            return;
+        var state = getBlockState();
+        if(!state.hasProperty(GangBoxBlock.SOCKET))
+            return;
+        int gang = 0;
+        for(int slot = 0; slot < gangs(); ++slot) {
+            if(devices[slot] == GangDevice.RECEPTACLE) {
+                gang = slot + 1;
+                break;
+            }
+        }
+        if(state.getValue(GangBoxBlock.SOCKET) != gang)
+            level.setBlock(worldPosition, state.setValue(GangBoxBlock.SOCKET, gang), net.minecraft.world.level.block.Block.UPDATE_ALL);
+    }
+
     private void rebuild() {
         points = null;
+        syncSocket();
         if(level != null && !level.isClientSide && electricBehaviour != null)
             electricBehaviour.rebuildCircuit(false);
         setChanged();
@@ -387,8 +406,10 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             on[slot] = (bits & 1 << slot) != 0;
         }
         points = null;
-        if(changed && !clientPacket && level != null && !level.isClientSide && electricBehaviour != null)
+        if(changed && !clientPacket && level != null && !level.isClientSide && electricBehaviour != null) {
             electricBehaviour.rebuildCircuit(false);
+            syncSocket();
+        }
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
             applyContacts(slot);
     }

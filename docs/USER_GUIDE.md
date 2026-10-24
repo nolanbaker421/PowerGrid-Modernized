@@ -836,8 +836,8 @@ switch to flip it or a button to press it (it lets go after half a second).
 Nothing lands by itself. Sneak-click an empty gang or the plate for the splice screen: every device
 shows its points by gang, Line and Load for a switch or button, Common and the two Travellers for a
 3-way, In A, In B, Out A and Out B for a 4-way (straight or crossed), Line and Neutral for a
-receptacle, and you splice the run's conductors to them. A power cord plugs into the plate and
-lands on the first receptacle in the box.
+receptacle, and you splice the run's conductors to them. A power cord plugs into the first receptacle in
+the box; a box without one takes no cord.
 
 The Conduit Switch, Conduit Socket, Conduit Button and 3-Way Conduit Switch blocks stay for
 builds that have them; each crafts into its gang device.

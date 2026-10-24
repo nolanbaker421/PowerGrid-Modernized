@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.48.2 — 2026-10-24
+
+### Fixed
+- A power cord plugged into a gang box hung from the middle of the plate. The box's state now names
+  the gang of its first receptacle and the cord plugs into that face; a box with no receptacle
+  takes no cord.
+
 ## 0.48.1 — 2026-10-24
 
 ### Fixed

@@ -1,5 +1,8 @@
 package com.nolanbaker.pgmodernized.conduit.gang;
 
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitPlacement;
@@ -38,6 +41,20 @@ import java.util.Map;
  * into the plate and lands on the first receptacle.
  */
 public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxBlockEntity>, ISocketElectric {
+    /** The gang of the first receptacle, 1 to 4, or 0 with none: where a power cord plugs in. Kept by the block entity. */
+    public static final IntegerProperty SOCKET = IntegerProperty.create("socket", 0, GangLayout.MAX_GANGS);
+    private static final ITerminalPlacement NO_SOCKET = new ITerminalPlacement() {
+        @Override
+        public boolean check(Vec3 pos) {
+            return false;
+        }
+
+        @Override
+        public Vec3 getOrigin() {
+            return Vec3.ZERO;
+        }
+    };
+
     private final int gangs;
     private final Map<BlockState, ITerminalPlacement> sockets = new HashMap<>();
 
@@ -45,6 +62,13 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         super(properties);
         this.gangs = gangs;
         setTerminalCollection(rotation4DownTerminals(this, GangLayout.terminals(gangs), GangLayout.shape(gangs)));
+        registerDefaultState(defaultBlockState().setValue(SOCKET, 0));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(SOCKET);
     }
 
     public int gangs() {
@@ -72,10 +96,17 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         return null;
     }
 
-    /** The plate is the cord's socket; the cord lands on terminals 0 and 1, which the entity wires to its first receptacle. */
+    /** The first receptacle's face is the cord's socket; the cord lands on terminals 0 and 1, which the entity wires to that receptacle. */
     @Override
     public ITerminalPlacement socket(BlockState state) {
-        return sockets.computeIfAbsent(state, s -> new TerminalBoundingBox(IDecoratedTerminal.SOCKET, GangFrame.worldBox(s, GangLayout.plate(gangs))));
+        int gang = state.hasProperty(SOCKET) ? state.getValue(SOCKET) : 0;
+        if(gang <= 0 || gang > gangs)
+            return NO_SOCKET;
+        return sockets.computeIfAbsent(state, s -> {
+            var face = GangLayout.slot(gangs, gang - 1);
+            var raised = new net.minecraft.world.phys.AABB(face.minX, face.minY, face.minZ, face.maxX, face.maxY + 0.8, face.maxZ);
+            return new TerminalBoundingBox(IDecoratedTerminal.SOCKET, GangFrame.worldBox(s, raised));
+        });
     }
 
     /** The gang under a block-local point on the plate, or -1 off the plate. */
