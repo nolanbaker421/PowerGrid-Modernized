@@ -112,9 +112,33 @@ public final class DeviceHubs {
     }
 
     public static VoxelShape withHubs(VoxelShape shape, AABB... hubs) {
-        for(var hub : hubs)
-            shape = Shapes.or(shape, Block.box(hub.minX, hub.minY, hub.minZ, hub.maxX, hub.maxY, hub.maxZ));
+        for(var hub : hubs) {
+            var f = flat(hub);
+            shape = Shapes.or(shape, Block.box(f.minX, f.minY, f.minZ, f.maxX, f.maxY, f.maxZ));
+        }
         return shape;
+    }
+
+    /**
+     * A knockout box as it is drawn now: a patch 0.05 px proud of the body face it sits on. Along
+     * its thinnest axis (ties broken by the axis farthest from the block centre) it keeps the end
+     * nearer the centre. The same rule as the asset generator's, so the outline matches the model;
+     * the terminal boxes keep their full depth, so a click on the patch still lands inside one.
+     */
+    public static AABB flat(AABB px) {
+        double[] lo = {px.minX, px.minY, px.minZ}, hi = {px.maxX, px.maxY, px.maxZ};
+        int thin = 0;
+        for(int i = 1; i < 3; ++i) {
+            double si = hi[i] - lo[i], st = hi[thin] - lo[thin];
+            double oi = Math.abs((lo[i] + hi[i]) / 2 - 8), ot = Math.abs((lo[thin] + hi[thin]) / 2 - 8);
+            if(si < st - 1e-6 || (Math.abs(si - st) < 1e-6 && oi > ot))
+                thin = i;
+        }
+        if((lo[thin] + hi[thin]) / 2 >= 8)
+            hi[thin] = lo[thin] + 0.05;
+        else
+            lo[thin] = hi[thin] - 0.05;
+        return new AABB(lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]);
     }
 
     private static TerminalBoundingBox terminal(Component name, AABB px) {

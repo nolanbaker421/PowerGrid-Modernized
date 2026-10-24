@@ -53,7 +53,7 @@ public class ConduitSwitchBlock extends Rotation4ElectricBlock implements IBE<Co
     public ConduitSwitchBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState().setValue(ON, false));
-        setTerminalCollection(rotation4DownTerminals(this, terminals(), Shapes.or(box(BODY), box(HUB), box(HUB2), box(PLATE))));
+        setTerminalCollection(rotation4DownTerminals(this, terminals(), Shapes.or(box(BODY), box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(HUB)), box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(HUB2)), box(PLATE))));
     }
 
     @Override

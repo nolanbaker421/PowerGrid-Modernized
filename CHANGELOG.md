@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.50.0 — 2026-10-24
+
+### Changed
+- Conduit corners are real elbows: each straight stops short by the bend radius, two and a half
+  tubes or half the shorter leg, and a quarter-circle elbow in the tube's own thickness fills the
+  corner. The corner couplings are gone; the end connectors stay.
+- Knockout hitboxes are flat like the knockouts now, so the block outline no longer shows boxes
+  standing off the body. Clicks on the mark still land on the knockout.
+
 ## 0.49.0 — 2026-10-24
 
 ### Added

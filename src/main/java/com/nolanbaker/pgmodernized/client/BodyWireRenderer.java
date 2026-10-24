@@ -1,5 +1,11 @@
 package com.nolanbaker.pgmodernized.client;
 
+import org.joml.Matrix4f;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec3;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -39,8 +45,7 @@ public class BodyWireRenderer extends BlockWireRenderer {
         var body = bodyOf(entity);
         var origin = entity instanceof BodyRider rider ? rider.ride().origin() : null;
         if(body == null || origin == null) {
-            super.render(entity, yaw, partialTicks, poseStack, buffer, light);
-            collars(entity, poseStack, buffer, light);
+            draw(entity, yaw, partialTicks, poseStack, buffer, light);
             return;
         }
         var pose = body.renderPose(partialTicks);
@@ -50,39 +55,109 @@ public class BodyWireRenderer extends BlockWireRenderer {
         poseStack.pushPose();
         poseStack.translate(where.x - drawn.x, where.y - drawn.y, where.z - drawn.z);
         poseStack.mulPose(new Quaternionf((float) q.x(), (float) q.y(), (float) q.z(), (float) q.w()));
-        super.render(entity, yaw, partialTicks, poseStack, buffer, light);
-        collars(entity, poseStack, buffer, light);
+        draw(entity, yaw, partialTicks, poseStack, buffer, light);
         poseStack.popPose();
     }
 
     /**
-     * Fittings on a conduit run, in the tube's colour darkened: a coupling half a pixel proud of the
-     * tube at every corner, so an elbow reads as a fitting instead of two bare ends meeting, and a
-     * connector exactly the tube's size at each end, flush with it, where it enters the knockout.
+     * Conduit is drawn here rather than by Power Grid's loop: each straight is shortened by the bend
+     * radius where it meets the next, and a real elbow, three chords of a quarter circle in the tube's
+     * own thickness, fills the corner. Each end keeps a connector the tube's size where it enters the
+     * knockout. Nipples and non-conduit block wires still go through Power Grid's renderer.
      */
-    private static void collars(BlockWireEntity entity, PoseStack poseStack, MultiBufferSource buffer, int light) {
-        if(!(entity instanceof ConduitRunEntity run) || run.isNipple() || run.segments.isEmpty())
+    private void draw(BlockWireEntity entity, float yaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int light) {
+        if(!(entity instanceof ConduitRunEntity run) || run.isNipple() || run.segments.isEmpty()) {
+            super.render(entity, yaw, partialTicks, poseStack, buffer, light);
             return;
-        double tube = run.size().tubeThickness() * 16 / 2;
-        double half = tube + 0.5;
-        int rgb = entity.getColor() & 0xFFFFFF;
+        }
+        var consumer = buffer.getBuffer(RenderType.entitySolid(getTextureLocation(entity)));
+        var entry = run.getWireEntry();
+        float t = entry != null ? entry.wireThickness() : run.size().tubeThickness();
+        int color = run.getColor() | 0xFF000000;
+        int rgb = run.getColor() & 0xFFFFFF;
+        var segs = run.segments;
+        int n = segs.size();
+        // Bend radius at each corner: two and a half tubes, never more than half of either leg.
+        float wanted = Math.max(3 / 16f, 2.5f * t);
+        float[] radii = new float[n];
+        for(int i = 0; i + 1 < n; ++i) {
+            var a = segs.get(i);
+            var b = segs.get(i + 1);
+            if(a.direction != b.direction)
+                radii[i] = Math.min(wanted, Math.min(a.length() / 2, b.length() / 2));
+        }
+        var pos = Vec3.ZERO;
+        for(int i = 0; i < n; ++i) {
+            var seg = segs.get(i);
+            var dir = seg.direction;
+            var start = pos;
+            float len = seg.length();
+            if(i == 0) {
+                start = start.relative(dir, -1 / 16.0);
+                len += 1 / 16f;
+            }
+            float rIn = i > 0 ? radii[i - 1] : 0, rOut = radii[i];
+            start = start.relative(dir, rIn);
+            len -= rIn + rOut;
+            var mid = run.position().add(start).add(Vec3.atLowerCornerOf(dir.getNormal()).scale(len / 2));
+            int segLight = LevelRenderer.getLightColor(run.level(), BlockPos.containing(mid));
+            if(len > 0.001f)
+                renderSegment(poseStack, consumer, segLight, OverlayTexture.NO_OVERLAY, start, dir, t, len, color);
+            var next = pos.add(seg.vector());
+            if(rOut > 0.001f)
+                elbow(poseStack, buffer, segLight, next, dir, segs.get(i + 1).direction, rOut, t, rgb);
+            pos = next;
+        }
+        connectors(run, poseStack, buffer, light, t, rgb);
+    }
+
+    /** A quarter-circle elbow from the incoming leg to the outgoing, as three chords of the tube's thickness. */
+    private static void elbow(PoseStack poseStack, MultiBufferSource buffer, int light, Vec3 corner, Direction in, Direction out, float r, float t, int rgb) {
+        var d1 = Vec3.atLowerCornerOf(in.getNormal());
+        var d2 = Vec3.atLowerCornerOf(out.getNormal());
+        var centre = corner.subtract(d1.scale(r)).add(d2.scale(r));
+        var normal = d1.cross(d2);
+        double h = t * 16 / 2 + 0.15;
+        int pieces = 3;
+        for(int k = 0; k < pieces; ++k) {
+            double a = Math.toRadians(90.0 * k / pieces), b = Math.toRadians(90.0 * (k + 1) / pieces);
+            var pa = centre.subtract(d2.scale(r * Math.cos(a))).add(d1.scale(r * Math.sin(a)));
+            var pb = centre.subtract(d2.scale(r * Math.cos(b))).add(d1.scale(r * Math.sin(b)));
+            var mid = pa.add(pb).scale(0.5);
+            var chord = pb.subtract(pa);
+            double len = chord.length() * 16 / 2 + 0.3;
+            var u = chord.normalize();
+            var v = normal.cross(u);
+            poseStack.pushPose();
+            poseStack.translate(mid.x, mid.y, mid.z);
+            poseStack.mulPose(new Matrix4f(
+                    (float) u.x, (float) u.y, (float) u.z, 0,
+                    (float) v.x, (float) v.y, (float) v.z, 0,
+                    (float) normal.x, (float) normal.y, (float) normal.z, 0,
+                    0, 0, 0, 1));
+            DeviceDraw.box(poseStack, buffer, light, -len, -h, -h, len, h, h, rgb);
+            poseStack.popPose();
+        }
+    }
+
+    /** A connector exactly the tube's size at each end, one tube radius in from the knockout, in the tube's colour darkened. */
+    private static void connectors(ConduitRunEntity run, PoseStack poseStack, MultiBufferSource buffer, int light, float t, int rgb) {
+        double tube = t * 16 / 2;
         int r = (int) ((rgb >> 16 & 0xFF) * 0.8), g = (int) ((rgb >> 8 & 0xFF) * 0.8), b = (int) ((rgb & 0xFF) * 0.8);
         int shade = r << 16 | g << 8 | b;
+        var first = run.segments.get(0);
+        connector(poseStack, buffer, light, first.vector().normalize().scale(tube / 16), tube, shade);
         var pos = Vec3.ZERO;
         BlockWireEntity.Point last = null;
         for(var segment : run.segments) {
-            if(last == null)
-                collar(poseStack, buffer, light, pos.add(segment.vector().normalize().scale(tube / 16)), tube, shade);
-            else if(last.direction != segment.direction)
-                collar(poseStack, buffer, light, pos, half, shade);
             pos = pos.add(segment.vector());
             last = segment;
         }
         if(last != null)
-            collar(poseStack, buffer, light, pos.subtract(last.vector().normalize().scale(tube / 16)), tube, shade);
+            connector(poseStack, buffer, light, pos.subtract(last.vector().normalize().scale(tube / 16)), tube, shade);
     }
 
-    private static void collar(PoseStack poseStack, MultiBufferSource buffer, int light, Vec3 at, double half, int rgb) {
+    private static void connector(PoseStack poseStack, MultiBufferSource buffer, int light, Vec3 at, double half, int rgb) {
         double x = at.x * 16, y = at.y * 16, z = at.z * 16;
         DeviceDraw.box(poseStack, buffer, light, x - half, y - half, z - half, x + half, y + half, z + half, rgb);
     }

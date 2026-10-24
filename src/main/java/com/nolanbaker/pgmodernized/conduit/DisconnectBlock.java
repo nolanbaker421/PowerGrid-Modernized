@@ -66,7 +66,7 @@ public class DisconnectBlock extends HorizontalElectricBlock implements IBE<Disc
         registerDefaultState(defaultBlockState().setValue(ON, false).setValue(LOCKED, false));
         var shape = Shapes.or(box(BODY), box(HANDLE_SWEEP));
         for(var hub : HUB_BOXES)
-            shape = Shapes.or(shape, box(hub));
+            shape = Shapes.or(shape, box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub)));
         for(int k = 0; k < POLES; ++k)
             shape = Shapes.or(shape, box(lineLug(k)), box(loadLug(k)));
         setTerminalCollection(horizontalNorthTerminals(this, terminals(), shape));

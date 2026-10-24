@@ -357,7 +357,7 @@ public final class PanelLayout {
     public static VoxelShape shape(PanelSpec spec) {
         var shape = box(BODY);
         for(int h = 0; h < HUB_COUNT; ++h)
-            shape = Shapes.or(shape, box(hub(h)));
+            shape = Shapes.or(shape, box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub(h))));
         return shape;
     }
 
@@ -366,7 +366,7 @@ public final class PanelLayout {
         // Up to the top of its block: the model continues a pixel into the head to close the seam.
         var shape = box(new AABB(BODY.minX, BODY.minY, BODY.minZ, BODY.maxX, 16, BODY.maxZ));
         for(int h = 4; h < HUB_COUNT; ++h)
-            shape = Shapes.or(shape, box(hub(h)));
+            shape = Shapes.or(shape, box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub(h))));
         return shape;
     }
 

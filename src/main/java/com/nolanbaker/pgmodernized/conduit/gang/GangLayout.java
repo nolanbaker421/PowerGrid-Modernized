@@ -73,7 +73,7 @@ public final class GangLayout {
     public static VoxelShape shape(int gangs) {
         var shape = Shapes.or(box(body(gangs)), box(plate(gangs)));
         for(int h = 0; h < hubCount(gangs); ++h)
-            shape = Shapes.or(shape, box(hub(gangs, h)));
+            shape = Shapes.or(shape, box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub(gangs, h))));
         return shape;
     }
 

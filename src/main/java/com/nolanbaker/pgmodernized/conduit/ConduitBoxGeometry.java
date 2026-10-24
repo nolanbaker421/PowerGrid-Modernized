@@ -162,7 +162,7 @@ public final class ConduitBoxGeometry {
         if(cover == ConduitCover.RECEPTACLE)
             shape = Shapes.or(shape, box(frame.apply(RECEPTACLE_FACE)));
         for(var hub : HUBS)
-            shape = Shapes.or(shape, box(frame.apply(hub)));
+            shape = Shapes.or(shape, box(frame.apply(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub))));
         return shape;
     }
 

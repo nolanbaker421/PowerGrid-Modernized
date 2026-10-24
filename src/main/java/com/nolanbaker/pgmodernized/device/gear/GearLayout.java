@@ -259,7 +259,7 @@ public final class GearLayout {
     public static VoxelShape shape() {
         var shape = box(BODY);
         for(int h = 0; h < HUB_COUNT; ++h)
-            shape = Shapes.or(shape, box(hub(h)));
+            shape = Shapes.or(shape, box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub(h))));
         return shape;
     }
 

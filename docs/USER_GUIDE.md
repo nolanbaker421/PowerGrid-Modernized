@@ -822,7 +822,7 @@ its warm-up, its burnout at too high a voltage, and its light level, drawn with 
 model in the socket. A socket without a bulb is dark. Light sockets from before this version keep
 a standard bulb, since they had a lamp built in.
 
-Conduit runs leave and enter every knockout straight and on centre, show a coupling at every corner, half a pixel proud of the tube, and a connector the tube's own size at each end.
+Conduit runs leave and enter every knockout straight and on centre, bend through a real elbow at every corner, and end in a connector the tube's own size where they enter a knockout.
 
 ### Strut channel
 
