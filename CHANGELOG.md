@@ -4,6 +4,23 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.49.0 — 2026-10-24
+
+### Added
+- **Strut Channel**: a 3 px rail on any face with a clamp every four pixels. A pending conduit run
+  clicked onto it goes straight to the clamp in square legs, no path finding, across the strut
+  first and along it last, and stays one piece over any number of struts until it closes on a
+  knockout. Parallel runs take the clamps side by side.
+
+### Changed
+- Knockouts on every block are flat marks in the trade-size colour instead of boxes standing a
+  pixel off the body: conduit boxes, switches, sockets, gang boxes, pull boxes, panels, cabinets,
+  gear cells, drives, transformers and the rest. The hubs' hitboxes and terminals are unchanged.
+
+### Fixed
+- The inspector asset generator wrote the pre-1.21 looting function for the push broom's loot
+  table, undoing the 0.39.0 fix whenever it was run.
+
 ## 0.48.8 — 2026-10-24
 
 ### Changed

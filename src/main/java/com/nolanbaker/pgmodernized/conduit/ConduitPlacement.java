@@ -85,6 +85,130 @@ public final class ConduitPlacement {
         return run.getResult();
     }
 
+    /** A strut was clicked with the pending run: the run goes straight to the clamp, leg by leg, with no tracer. */
+    public static InteractionResult strutClick(UseOnContext context, Vec3 clampLocal, Direction.Axis strutAxis) {
+        var stack = context.getItemInHand();
+        var level = context.getLevel();
+        var player = context.getPlayer();
+        var existing = ConduitConnection.get(stack, level);
+        if(existing == null) {
+            message(player, "message.conduit.strut_first", ChatFormatting.RED);
+            return InteractionResult.FAIL;
+        }
+        if(FlexConduitItem.isFlex(stack)) {
+            message(player, "message.conduit.strut_no_flex", ChatFormatting.RED);
+            return InteractionResult.FAIL;
+        }
+        var pos = context.getClickedPos();
+        var target = new ImaginaryWireEndpoint(new Vec3(pos.getX() + clampLocal.x, pos.getY() + clampLocal.y, pos.getZ() + clampLocal.z));
+        var run = layStraight(level, stack, player, existing, target, strutAxis);
+        if(run.getResult().consumesAction()) {
+            var entity = run.getObject();
+            if(entity != null)
+                ConduitConnection.set(stack, new BlockWireEntityEndpoint(entity, true), level);
+            return InteractionResult.SUCCESS;
+        }
+        return run.getResult();
+    }
+
+    /**
+     * Lays the pending run to a point in straight legs: a knockout's stub first, then the axes across
+     * the strut, vertical before horizontal, and along the strut last so the tube arrives along the
+     * rail. The run stays open at the clamp, ready for the next strut or the closing knockout.
+     */
+    private static InteractionResultHolder<ConduitRunEntity> layStraight(Level level, ItemStack stack, @Nullable Player player,
+                                                                         IWireEndpoint from, IWireEndpoint to, Direction.Axis strutAxis) {
+        var entry = wireEntry(level, stack, player);
+        if(entry == null)
+            return InteractionResultHolder.fail(null);
+        ConduitRunEntity existing = null;
+        var last = BodySpace.local(level, from);
+        var points = new ArrayList<BlockWireEntity.Point>();
+        if(from instanceof BlockWireEntityEndpoint runEnd) {
+            existing = runOf(level, runEnd, player);
+            if(existing == null)
+                return InteractionResultHolder.fail(null);
+            if(existing.getItem() != stack.getItem()) {
+                message(player, "message.connection_incorrect_wire_type", ChatFormatting.RED);
+                return InteractionResultHolder.fail(null);
+            }
+            if(!runEnd.getEnd() || existing.segments.isEmpty()) {
+                message(player, "message.connection_failed", ChatFormatting.RED);
+                return InteractionResultHolder.fail(null);
+            }
+        } else {
+            last = BlockTrace.alignPosition(last);
+            if(from instanceof BlockWireEndpoint hub) {
+                if(!hubFree(level, player, hub, stack)) {
+                    ConduitConnection.clear(stack);
+                    return InteractionResultHolder.fail(null);
+                }
+                var exit = Knockouts.exit(level, hub);
+                if(exit != null) {
+                    points.add(new BlockWireEntity.Point(exit, Knockouts.STUB_PX));
+                    last = last.relative(exit, Knockouts.STUB_PX / 16.0);
+                }
+            }
+        }
+        var target = BodySpace.local(level, to);
+        if(!SableUtils.sameSubLevel(level, last, target)) {
+            message(player, "message.connection_different_bodies", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
+        var order = new ArrayList<Direction.Axis>();
+        if(strutAxis != Direction.Axis.Y)
+            order.add(Direction.Axis.Y);
+        for(var axis : Direction.Axis.values())
+            if(axis != strutAxis && axis != Direction.Axis.Y)
+                order.add(axis);
+        order.add(strutAxis);
+        double[] cur = {last.x, last.y, last.z};
+        for(var axis : order) {
+            int i = axis.ordinal();
+            int px = (int) Math.round((target.get(axis) - cur[i]) * 16);
+            if(px == 0)
+                continue;
+            points.add(new BlockWireEntity.Point(Direction.fromAxisAndDirection(axis, px > 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE), Math.abs(px)));
+            cur[i] += px / 16.0;
+        }
+        if(points.isEmpty()) {
+            message(player, "message.connection_failed", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
+        float addedLength = 0;
+        for(var point : points)
+            addedLength += point.length();
+        if(existing == null) {
+            int newItems = Math.max((int) Math.ceil(addedLength * entry.itemsPerMeter()), 1);
+            if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
+                message(player, "message.connection_missing_items", ChatFormatting.RED);
+                return InteractionResultHolder.fail(null);
+            }
+            if(level.isClientSide)
+                return InteractionResultHolder.success(null);
+            var entity = ConduitRunEntity.create(level, from, stack.copyWithCount(newItems), points);
+            SubLevelStick.stick(entity);
+            if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
+                PowerGridModernized.LOGGER.error("Failed to spawn conduit run entity");
+                message(player, "message.connection_failed", ChatFormatting.RED);
+                return InteractionResultHolder.fail(null);
+            }
+            takeItems(player, stack, newItems);
+            return InteractionResultHolder.success(entity);
+        }
+        int newItems = (int) Math.ceil((existing.getTotalLength() + addedLength) * entry.itemsPerMeter() - existing.getWireCount());
+        if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
+            message(player, "message.connection_missing_items", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
+        if(level.isClientSide)
+            return InteractionResultHolder.success(null);
+        existing.extend(points, newItems);
+        existing.sendExtraData();
+        takeItems(player, stack, newItems);
+        return InteractionResultHolder.success(existing);
+    }
+
     /** A run was clicked with a conduit item (server side): continue from its nearer free end. */
     public static InteractionResult attach(ConduitRunEntity run, Player player, ItemStack stack) {
         var level = run.level();

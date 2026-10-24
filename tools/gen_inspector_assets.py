@@ -122,7 +122,7 @@ def loot():
         "pools": [
             {"rolls": 1, "entries": [{"type": "minecraft:item", "name": "minecraft:stick",
                                       "functions": [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": 0, "max": 2}},
-                                                    {"function": "minecraft:looting_enchant", "count": {"type": "minecraft:uniform", "min": 0, "max": 1}}]}]},
+                                                    {"function": "minecraft:enchanted_count_increase", "enchantment": "minecraft:looting", "count": {"type": "minecraft:uniform", "min": 0, "max": 1}}]}]},
             {"rolls": 1, "conditions": [{"condition": "minecraft:random_chance", "chance": 0.25}],
              "entries": [{"type": "minecraft:item", "name": "%s:copper_scrap" % MOD}]},
         ],

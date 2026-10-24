@@ -824,6 +824,20 @@ a standard bulb, since they had a lamp built in.
 
 Conduit runs leave and enter every knockout straight and on centre, show a coupling at every corner, half a pixel proud of the tube, and a connector the tube's own size at each end.
 
+### Strut channel
+
+**Strut Channel** (five iron plates for six) is a 3 px rail on any face, running along one axis, with
+a clamp every four pixels. Placed on a floor or ceiling it runs the way you face; on a wall it stands
+upright, or runs along the wall if you sneak while placing. It has no terminals and carries no
+power: it is what conduit clips to. Start a run at a knockout, then click the strut where the run
+should clip, and the run goes there in straight legs with no path finding, across the strut first
+and along it last, sitting in the clamp at the tube's own height. Click the next strut, and the
+next, then close on a knockout; the run stays one piece over every strut. Parallel runs take the
+clamps side by side, so a rack of conduit comes out straight and evenly spaced.
+
+Knockouts are flat marks in the trade-size colour now, not boxes standing off the body; the
+clickable hubs are where they always were, shown while conduit is in hand.
+
 ### Gang boxes
 
 The **Gang Box** comes in 1-, 2-, 3- and 4-gang sizes, four pixels a gang, and takes devices as

@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.conduit.StrutBlock;
 import com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitThreeWayBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitButtonBlock;
@@ -501,6 +502,18 @@ public class ModBlocks {
             .register();
 
     /** A light switch on the end of a run: the first two pulled wires land on its poles and the toggle joins them. */
+    /** Strut channel: a rail with clamp positions that conduit runs clip to in straight legs. */
+    public static final BlockEntry<StrutBlock> STRUT = REGISTRATE.block("strut", StrutBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Strut Channel")
+            .item()
+            .model(NonNullBiConsumer.noop())
+            .build()
+            .register();
+
     /** Device boxes of one to four gangs; the devices are items. */
     public static final BlockEntry<GangBoxBlock> GANG_BOX_1 = gangBox(1);
     public static final BlockEntry<GangBoxBlock> GANG_BOX_2 = gangBox(2);

@@ -1,0 +1,213 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "steel": "powergrid_modernized:block/bus_duct",
+    "particle": "powergrid_modernized:block/bus_duct"
+  },
+  "elements": [
+    {
+      "from": [
+        6.5,
+        0.0,
+        15.5
+      ],
+      "to": [
+        9.5,
+        16.0,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.5,
+            0,
+            9.5,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "south": {
+          "uv": [
+            6.5,
+            0,
+            9.5,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "west": {
+          "uv": [
+            15.5,
+            0,
+            16,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "up": {
+          "uv": [
+            6.5,
+            15.5,
+            9.5,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "down": {
+          "uv": [
+            6.5,
+            0,
+            9.5,
+            0.5
+          ],
+          "texture": "#steel"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        0.0,
+        13.0
+      ],
+      "to": [
+        7.0,
+        16.0,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9.0,
+            0,
+            9.5,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "south": {
+          "uv": [
+            6.5,
+            0,
+            7.0,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            3.0,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "west": {
+          "uv": [
+            13.0,
+            0,
+            15.5,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "up": {
+          "uv": [
+            6.5,
+            13.0,
+            7.0,
+            15.5
+          ],
+          "texture": "#steel"
+        },
+        "down": {
+          "uv": [
+            6.5,
+            0.5,
+            7.0,
+            3.0
+          ],
+          "texture": "#steel"
+        }
+      }
+    },
+    {
+      "from": [
+        9.0,
+        0.0,
+        13.0
+      ],
+      "to": [
+        9.5,
+        16.0,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.5,
+            0,
+            7.0,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "south": {
+          "uv": [
+            9.0,
+            0,
+            9.5,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            3.0,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "west": {
+          "uv": [
+            13.0,
+            0,
+            15.5,
+            16
+          ],
+          "texture": "#steel"
+        },
+        "up": {
+          "uv": [
+            9.0,
+            13.0,
+            9.5,
+            15.5
+          ],
+          "texture": "#steel"
+        },
+        "down": {
+          "uv": [
+            9.0,
+            0.5,
+            9.5,
+            3.0
+          ],
+          "texture": "#steel"
+        }
+      }
+    }
+  ]
+}
