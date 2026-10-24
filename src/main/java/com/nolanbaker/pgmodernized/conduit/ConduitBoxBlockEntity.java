@@ -45,6 +45,9 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     @Nullable
     private LightBulbState bulb;
     private int powerLevel;
+    /** Bulb data read before the filament wire existed; applied when the circuit is next built. */
+    @Nullable
+    private CompoundTag pendingBulb;
 
     public ConduitBoxBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -62,7 +65,13 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(ConduitBoxGeometry.TERMINAL_COUNT);
         splices().buildCircuit(builder);
-        lamp = cover().isLight() && bulb != null ? builder.connectSwitch(bulb.resistance(), builder.terminalNode(0), builder.terminalNode(1), true) : null;
+        // A light socket always has its filament wire, open with no bulb in: the bulb's state loader and
+        // ticker both reach for it, on the client as on the server.
+        lamp = cover().isLight() ? builder.connectSwitch(bulb != null ? bulb.resistance() : resistance("lamp"), builder.terminalNode(0), builder.terminalNode(1), bulb != null) : null;
+        if(lamp != null && bulb != null && pendingBulb != null) {
+            bulb.read(pendingBulb);
+            pendingBulb = null;
+        }
     }
 
     // ---- the bulb ----
@@ -304,8 +313,14 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
                 if(!clientPacket && level != null && !level.isClientSide && electricBehaviour != null)
                     electricBehaviour.rebuildCircuit(false);
             }
-            if(bulb != null)
-                bulb.read(b);
+            if(bulb != null) {
+                if(lamp == null && electricBehaviour != null)
+                    electricBehaviour.rebuildCircuit(false);
+                if(lamp != null)
+                    bulb.read(b);
+                else
+                    pendingBulb = b.copy();
+            }
         } else if(!tag.getBoolean("BulbKept") && !clientPacket && cover().isLight()) {
             // A light socket from before bulbs were real: it had a lamp built in, so it keeps a standard bulb.
             bulb = ModdedItems.LIGHT_BULB.get().createState(this);

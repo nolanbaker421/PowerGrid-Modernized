@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.48.3 — 2026-10-24
+
+### Fixed
+- Fitting a bulb in a light socket crashed: the bulb's state loader reaches for the filament wire,
+  which the socket only made once a bulb was in. The socket always carries the wire now, open
+  until a bulb is fitted, and bulb data read before the wire exists waits for it.
+
 ## 0.48.2 — 2026-10-24
 
 ### Fixed
