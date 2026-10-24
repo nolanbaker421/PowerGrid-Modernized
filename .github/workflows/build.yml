@@ -2,9 +2,14 @@ name: Build
 
 on: [push, pull_request]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -50,8 +55,80 @@ jobs:
       - name: Check stock Power Grid compatibility
         run: ./gradlew compileJava -PstockCompat=true -Ppowergrid_jar=libs/powergrid-stock.jar --rerun-tasks
 
+      - name: Read the mod version
+        id: version
+        run: echo "version=$(grep '^mod_version=' gradle.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
       - name: Upload the mod jar
         uses: actions/upload-artifact@v4
         with:
           name: powergrid-modernized
           path: build/libs/*.jar
+
+  # Every push to main whose mod_version has no release yet gets one: the tag v<version>, the mod
+  # jar, and that version's section of CHANGELOG.md as the notes. Bumping mod_version is the
+  # release switch; a push that leaves it alone only builds.
+  release:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Decide whether this version is new
+        id: check
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "Release v$VERSION already exists; nothing to publish."
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download the built jars
+        if: steps.check.outputs.new == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: powergrid-modernized
+          path: jars
+
+      - name: Pick the mod jar and write the notes
+        if: steps.check.outputs.new == 'true'
+        id: notes
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          base=$(grep '^archives_base_name=' gradle.properties | cut -d= -f2)
+          mc=$(grep '^minecraft_version=' gradle.properties | cut -d= -f2)
+          jar="jars/${base}-mc${mc}-${VERSION}.jar"
+          test -f "$jar" || { echo "::error::$jar not built"; ls jars; exit 1; }
+          echo "jar=$jar" >> "$GITHUB_OUTPUT"
+          # The CHANGELOG section for this version: from its heading to the next.
+          awk -v v="$VERSION" '
+            /^## / { if (found) exit; if (index($0, "## " v " ") == 1 || $0 == "## " v) { found = 1; next } }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then
+            echo "No CHANGELOG.md entry for $VERSION." > notes.md
+          fi
+          {
+            echo ""
+            echo "Needs NeoForge 21.1 on Minecraft ${mc}, Create 6, and Create: Power Grid. The AC features need the powergrid-ac fork; the rest loads on stock Power Grid."
+          } >> notes.md
+          echo "Notes:"; cat notes.md
+
+      - name: Publish the release
+        if: steps.check.outputs.new == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.build.outputs.version }}
+          name: ${{ needs.build.outputs.version }}
+          body_path: notes.md
+          files: ${{ steps.notes.outputs.jar }}
+          fail_on_unmatched_files: true

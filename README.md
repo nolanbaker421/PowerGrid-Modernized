@@ -392,6 +392,11 @@ of collectors can ride one run.
 Only Power Grid's public API is used: the `ElectricBlockEntity` family, the `ResistanceValues` and
 `ThermalValues` provider hooks, and public fields on the wire entities. No upstream classes are patched.
 
+## Downloads
+
+Every version is on the [Releases page](https://github.com/nolanbaker421/PowerGrid-Modernized/releases): the jar
+and that version's changelog entry, published by the build the moment `mod_version` changes on `main`.
+
 ## Changelog
 
 Every release is listed in [CHANGELOG.md](CHANGELOG.md), newest first.
