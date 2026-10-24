@@ -109,9 +109,18 @@ public final class ConduitBoxGeometry {
 
     /** The terminals with every box put through {@code frame}, for a box drawn in another frame than north. */
     public static TerminalBoundingBox[] terminals(UnaryOperator<AABB> frame) {
+        return terminals(frame, ConduitCover.NODE);
+    }
+
+    /**
+     * The terminals as the box with that cover shows them. Power Grid's wiring overlay draws every
+     * terminal in a block's collection, so a cover nub the plate does not expose, and the receptacle
+     * face of any other plate, are specks here rather than merely refused by the lookup.
+     */
+    public static TerminalBoundingBox[] terminals(UnaryOperator<AABB> frame, ConduitCover cover) {
         var terminals = new TerminalBoundingBox[TERMINAL_COUNT];
         for(int k = 0; k < FRONT_COUNT; ++k)
-            terminals[k] = terminal(ConductorColors.name(k), frame.apply(frontNub(k))).withColor(ConductorColors.rgb(k));
+            terminals[k] = terminal(ConductorColors.name(k), frame.apply(cover.exposes(k) ? frontNub(k) : HIDDEN)).withColor(ConductorColors.rgb(k));
         for(int h = 0; h < HUB_COUNT; ++h) {
             terminals[hubTerminal(h)] = terminal(hubName(h), frame.apply(HUBS[h])).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.ONE_HALF.bandColor());
             for(int k = 0; k < ConductorColors.COUNT; ++k) {
@@ -119,7 +128,7 @@ public final class ConduitBoxGeometry {
                 terminals[conductorTerminal(h, k)] = terminal(name, frame.apply(HIDDEN)).withColor(ConductorColors.rgb(k));
             }
         }
-        terminals[TERMINAL_RECEPTACLE] = terminal(IDecoratedTerminal.SOCKET, frame.apply(RECEPTACLE_FACE));
+        terminals[TERMINAL_RECEPTACLE] = terminal(IDecoratedTerminal.SOCKET, frame.apply(cover == ConduitCover.RECEPTACLE ? RECEPTACLE_FACE : HIDDEN));
         return terminals;
     }
 

@@ -45,6 +45,8 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         // Switchgear cells: contact resistance of each pole of a breaker, fuse, switch or contactor in a slot.
         resistance("gear_cell", "pole", 0.0005);
         resistance("conduit_switch", "contact", 0.001);
+        resistance("conduit_button", "contact", 0.001);
+        resistance("conduit_switch_3way", "contact", 0.001);
         resistance("disconnect", "contact", 0.0005);
         // Conduit boxes: the lamp of a light socket cover, sixty watts at 120 V.
         resistance("conduit_box", "lamp", 240);

@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import com.nolanbaker.pgmodernized.registry.ModBlocks;
 import com.nolanbaker.pgmodernized.registry.ModItems;
 import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
@@ -47,12 +48,14 @@ public class CeilingConduitBoxBlock extends ConduitBoxBlock implements CeilingBl
     public CeilingConduitBoxBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(COVER, ConduitCover.OPEN));
-        var terminals = ConduitBoxGeometry.terminals(ON_TILE);
+        var byCover = new java.util.EnumMap<ConduitCover, TerminalBoundingBox[]>(ConduitCover.class);
         var shapes = new java.util.EnumMap<ConduitCover, VoxelShape>(ConduitCover.class);
-        for(var cover : ConduitCover.values())
+        for(var cover : ConduitCover.values()) {
+            byCover.put(cover, ConduitBoxGeometry.terminals(ON_TILE, cover));
             shapes.put(cover, Shapes.or(TILE, ConduitBoxGeometry.shape(cover, ON_TILE)));
+        }
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
-                .forAllStates(state -> terminals)
+                .forAllStates(state -> byCover.get(cover(state)))
                 .withShapeMapper(state -> shapes.get(cover(state)))
                 .build());
     }

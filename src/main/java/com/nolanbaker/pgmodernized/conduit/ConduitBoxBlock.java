@@ -70,9 +70,11 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
             var shape = ConduitBoxGeometry.shape(cover, java.util.function.UnaryOperator.identity());
             shapes.put(cover, VoxelShaper.forDirectional(shape, Direction.NORTH).withVerticalShapes(ShapeRotation.northToUp(shape)));
         }
-        var terminals = ConduitBoxGeometry.terminals();
+        var byCover = new java.util.EnumMap<ConduitCover, TerminalBoundingBox[]>(ConduitCover.class);
+        for(var cover : ConduitCover.values())
+            byCover.put(cover, ConduitBoxGeometry.terminals(java.util.function.UnaryOperator.identity(), cover));
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
-                .forAllStates(state -> BlockStateTerminalCollection.each(terminals, terminal -> switch(state.getValue(FACING)) {
+                .forAllStates(state -> BlockStateTerminalCollection.each(byCover.get(cover(state)), terminal -> switch(state.getValue(FACING)) {
                     case NORTH -> terminal;
                     case SOUTH -> terminal.rotateAroundY(180);
                     case EAST -> terminal.rotateAroundY(90);

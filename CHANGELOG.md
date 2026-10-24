@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.47.1 — 2026-10-24
+
+### Fixed
+- Placing a Conduit Button or a 3-Way Conduit Switch crashed: neither had a contact resistance.
+- A conduit box showed the outlines of all twelve cover nubs and the receptacle face while
+  wiring, whatever plate it wore or none. Power Grid's overlay draws every terminal in the
+  block's collection, so the collection now carries, per cover, only what that cover exposes.
+
 ## 0.47.0 — 2026-10-24
 
 ### Added
