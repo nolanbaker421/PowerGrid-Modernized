@@ -52,6 +52,25 @@ public final class CCJackLink implements JackSupport.Link, WiredElement {
             node.disconnectFrom(remote.node);
     }
 
+    /** A radio link: port 1 on either end means relay, so the networks stay apart and only packets cross. */
+    @Override
+    public void connect(JackSupport.Link other, int localPort, int remotePort) {
+        if(!(other instanceof CCJackLink remote))
+            return;
+        if(localPort == 1 || remotePort == 1)
+            CCPacketBridge.link(node, remote.node);
+        else
+            node.connectTo(remote.node);
+    }
+
+    @Override
+    public void disconnect(JackSupport.Link other, int localPort, int remotePort) {
+        if(!(other instanceof CCJackLink remote))
+            return;
+        CCPacketBridge.unlink(node, remote.node);
+        node.disconnectFrom(remote.node);
+    }
+
     @Override
     public void onLoad() {
         node.updatePeripherals(peripheral == null ? Map.of() : Map.of(jack.networkName(), peripheral));
@@ -72,6 +91,7 @@ public final class CCJackLink implements JackSupport.Link, WiredElement {
 
     @Override
     public void remove() {
+        CCPacketBridge.unlinkAll(node);
         node.remove();
     }
 

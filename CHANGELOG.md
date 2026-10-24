@@ -4,6 +4,20 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.45.0 — 2026-10-24
+
+### Added
+- **Radio mode**: bridge (the default, networks merge over the link) or relay (only network
+  messages cross, hop counted, components and peripherals stay home), set on the radio's screen or
+  by computers with `setMode`. Either end in relay makes the link a relay. OpenComputers relays
+  between the radio's component node and an air-side node; CC: Tweaked repeats modem packets
+  between the two wired networks.
+- **Cell Card**: a SIM for a computer. In an OpenComputers card slot it is the `cell_card`
+  component, a roaming client of its carrier that joins the nearest covering sector with a seat and
+  hands over as it moves; on a CC: Tweaked pocket computer it is a `modem` whose packets go through
+  the towers, so rednet works anywhere in coverage. Right-click a radio with it to take the carrier;
+  relay by default, sneak-click the air for bridge. Cards take sector seats like omnis.
+
 ## 0.44.1 — 2026-10-24
 
 ### Fixed

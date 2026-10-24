@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.radio;
 
+import java.util.HashMap;
 import com.nolanbaker.pgmodernized.PgmConfig;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
@@ -69,6 +70,11 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
     private double coaxLength;
     /** Radios this one joined, and radios that joined this one. */
     private final Set<RadioBlockEntity> outbound = new HashSet<>(), inbound = new HashSet<>();
+    /** Relay mode: only network messages cross the link; bridge mode (the default) merges the networks. */
+    private boolean relay;
+    /** Cell cards holding a seat on this sector, by the tick they last checked in; a card that stops checking in loses it. */
+    private final Map<Object, Long> cardSeats = new HashMap<>();
+    private static final long SEAT_LEASE = 100;
     private List<Peer> peers = List.of();
     private int refreshTimer;
     private boolean registered;
@@ -188,7 +194,68 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
     }
 
     public int clientCount() {
-        return inbound.size();
+        return taken();
+    }
+
+    public JackSupport jack() {
+        return jack;
+    }
+
+    // ---- mode ----
+
+    public boolean relay() {
+        return relay;
+    }
+
+    /** The jack port a radio link uses: a relay keeps the air on port 1, apart from the computers on port 0. */
+    public int airPort() {
+        return relay ? 1 : 0;
+    }
+
+    public void setRelay(boolean value) {
+        if(relay == value)
+            return;
+        if(level != null && !level.isClientSide)
+            dropAll();
+        relay = value;
+        onModeChanged();
+        setChanged();
+        sendData();
+        if(level != null && !level.isClientSide)
+            refresh();
+    }
+
+    /** The computer side drops the edges of the old mode; the links re-form on the next refresh. */
+    protected void onModeChanged() {}
+
+    // ---- seats ----
+
+    private void pruneSeats() {
+        if(level == null)
+            return;
+        long now = level.getGameTime();
+        cardSeats.values().removeIf(t -> now - t > SEAT_LEASE);
+    }
+
+    /** Seats in use on this sector: omni radios joined to it and cell cards checking in. */
+    public int taken() {
+        pruneSeats();
+        return inbound.size() + cardSeats.size();
+    }
+
+    /** A cell card takes or keeps a seat; false when the sector is full. Call every second to hold it. */
+    public boolean claimSeat(Object key) {
+        if(level == null)
+            return false;
+        pruneSeats();
+        if(!cardSeats.containsKey(key) && taken() >= PgmConfig.RADIO_SECTOR_CLIENTS.get())
+            return false;
+        cardSeats.put(key, level.getGameTime());
+        return true;
+    }
+
+    public void releaseSeat(Object key) {
+        cardSeats.remove(key);
     }
 
     // ---- the link ----
@@ -281,13 +348,13 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
     }
 
     private void link(RadioBlockEntity other) {
-        jack.connect(other.jack);
+        jack.connect(other.jack, airPort(), other.airPort());
         outbound.add(other);
         other.inbound.add(this);
     }
 
     private void unlink(RadioBlockEntity other) {
-        jack.disconnect(other.jack);
+        jack.disconnect(other.jack, airPort(), other.airPort());
         outbound.remove(other);
         other.inbound.remove(this);
     }
@@ -296,7 +363,7 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
         for(var other : List.copyOf(outbound))
             unlink(other);
         for(var other : List.copyOf(inbound)) {
-            other.jack.disconnect(jack);
+            other.jack.disconnect(jack, other.airPort(), airPort());
             other.outbound.remove(this);
             inbound.remove(other);
         }
@@ -355,10 +422,40 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
                 continue;
             if(!other.covers(theirs, mine))
                 continue;
-            int taken = other.inbound.contains(this) ? other.inbound.size() - 1 : other.inbound.size();
+            int taken = other.taken() - (other.inbound.contains(this) ? 1 : 0);
             if(taken >= seats)
                 continue;
             if(!lineOfSight(theirs, mine))
+                continue;
+            if(d < bestDistance) {
+                best = other;
+                bestDistance = d;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * For cell cards: the nearest sector of {@code carrier} whose beam covers {@code pos}, within
+     * {@code clientReach} and the sector's own reach, with a seat free or already held by {@code claimant}.
+     */
+    @Nullable
+    public static RadioBlockEntity nearestSector(Level level, Vec3 pos, String carrier, double clientReach, Object claimant) {
+        RadioBlockEntity best = null;
+        double bestDistance = Double.MAX_VALUE;
+        int seats = PgmConfig.RADIO_SECTOR_CLIENTS.get();
+        for(var other : radios(level)) {
+            if(other.isRemoved() || other.antenna == null || other.antenna.kind() != AntennaKind.SECTOR || !carrier.equals(other.linkId) || !other.up())
+                continue;
+            var theirs = other.antennaPosition();
+            double d = pos.distanceTo(theirs);
+            if(d > Math.min(clientReach, other.range()))
+                continue;
+            if(!other.covers(theirs, pos))
+                continue;
+            if(other.taken() - (other.cardSeats.containsKey(claimant) ? 1 : 0) >= seats)
+                continue;
+            if(!other.lineOfSight(theirs, pos))
                 continue;
             if(d < bestDistance) {
                 best = other;
@@ -437,13 +534,16 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
 
     @Override
     public List<Field> settingsFields() {
-        return List.of(new Field("link_id", "powergrid.gui.radio.link_id", false, linkId));
+        return List.of(new Field("link_id", "powergrid.gui.radio.link_id", false, linkId),
+                new Field("mode", "powergrid.gui.radio.mode", false, relay ? "relay" : "bridge"));
     }
 
     @Override
     public void applySettings(Map<String, String> values) {
         if(values.containsKey("link_id"))
             setLinkId(values.get("link_id"));
+        if(values.containsKey("mode"))
+            setRelay(values.get("mode").trim().equalsIgnoreCase("relay"));
     }
 
     // ---- persistence ----
@@ -453,6 +553,7 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
         super.write(tag, registries, clientPacket);
         deviceHubs().write(tag, registries, clientPacket);
         tag.putString("LinkId", linkId);
+        tag.putBoolean("Relay", relay);
         if(clientPacket) {
             tag.putFloat("Volts", volts);
             tag.putString("Role", role() == null ? "" : role().id());
@@ -468,7 +569,7 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
                 list.add(p);
             }
             tag.put("Peers", list);
-            tag.putInt("Clients", inbound.size());
+            tag.putInt("Clients", taken());
         }
     }
 
@@ -477,6 +578,7 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
         super.read(tag, registries, clientPacket);
         deviceHubs().read(tag, registries, clientPacket);
         linkId = tag.getString("LinkId");
+        relay = tag.getBoolean("Relay");
         if(clientPacket) {
             volts = tag.getFloat("Volts");
             clientRole = tag.getString("Role");
@@ -529,7 +631,7 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
 
     /** For the antenna's goggles: where its partner, or the nearest candidate, lies and how far off the aim is. */
     private AntennaBlockEntity.Aim aimFor(AntennaBlockEntity antenna) {
-        int clients = inbound.size();
+        int clients = taken();
         if(!antenna.kind().aimed())
             return new AntennaBlockEntity.Aim("", 0, 0, 0, 0, false, clients);
         var here = antenna.livePosition();

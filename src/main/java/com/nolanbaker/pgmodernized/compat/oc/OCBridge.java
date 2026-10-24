@@ -47,6 +47,8 @@ public class OCBridge {
     public static void register() {
         // Adapter driver for read-only blocks (gauges, meters, batteries, anything electric).
         Driver.add(new PowerGridBlockDriver());
+        // The Cell Card in any card slot.
+        Driver.add(new OCCellCardDriver());
         // Computer-facing blocks become OpenComputers network nodes themselves, so cables attach directly.
         ComputerBlockEntityFactories.ANALOG_IO = OCAnalogIOBlockEntity::new;
         ComputerBlockEntityFactories.VFD = OCVfdBlockEntity::new;
@@ -71,6 +73,7 @@ public class OCBridge {
         ComputerBlockEntityFactories.COAX_HANGER = OCCoaxHangerBlockEntity::new;
         // Cat6 cables link the OC nodes of the jacks they join.
         JackSupport.registerLinkFactory((be, jack) -> be instanceof OCNetworkSwitchBlockEntity sw ? new OCJackLink(sw::nodeForPort)
+                : be instanceof OCRadioBlockEntity radio ? new OCJackLink(radio::nodeForPort)
                 : be instanceof OCCoaxHangerBlockEntity hanger ? new OCJackLink(hanger::nodeForPort)
                 : be instanceof OCControlsCabinetBlockEntity cabinet ? new OCJackLink(cabinet::nodeForPort)
                 : be instanceof Environment env ? new OCJackLink(env) : null);

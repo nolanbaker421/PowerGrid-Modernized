@@ -856,6 +856,22 @@ end of its **Coax Cable**:
   each other, azimuth and elevation to a tenth of a degree (a sector keeps its downtilt). Sneak-click
   a single dish with it and it is sighted in on the nearest dish with its radio's link ID; sneak-click
   the air to put it away.
+- **Mode**: the radio's screen also takes a mode, **bridge** or **relay**. Bridge, the default, joins
+  the two jacks' networks outright, so OpenComputers components and CC: Tweaked peripherals on one
+  side are visible on the other. Relay keeps the networks apart and repeats only network messages
+  (modem packets) across the link, hop counted, the way an OpenComputers Relay or a chain of
+  switches in relay mode does. Either end set to relay makes the link a relay. Computers read and
+  set it with `getMode()` / `setMode("relay")`.
+- **Cell Card** (paper, a comparator and a gold nugget): a SIM for a computer. Right-click a radio
+  with it to take that radio's link ID as the carrier; sneak-click the air to switch it between relay
+  (the default) and bridge. In an OpenComputers card slot, a case, server, tablet, robot or drone, it
+  is the `cell_card` component: once a second it joins the nearest sector of its carrier that covers
+  the machine within the omni reach, with a seat free, and hands over as the machine moves; it raises
+  the `cell_link` signal with true or false, and offers `getCarrier`, `setCarrier`, `getMode`,
+  `setMode`, `isConnected` and `getTower`. Crafted onto a CC: Tweaked pocket computer it is a `modem`
+  on the back whose packets travel through the carrier's towers and their relays, so `rednet` works
+  from anywhere in coverage; it also answers `getCarrier`, `setCarrier`, `isConnected` and `getTower`,
+  and raises `cell_link`. A card takes one of the sector's seats like an omni does.
 - **Survey**: sneak-click any antenna with the scope and its coverage is drawn in the world for a
   minute, and stays drawn wherever you walk or fly, so you can ride out to the edge and see where it
   falls. A sector is a cage of lines: its beam edges, its aim (yellow) and its 45° up and down limits,

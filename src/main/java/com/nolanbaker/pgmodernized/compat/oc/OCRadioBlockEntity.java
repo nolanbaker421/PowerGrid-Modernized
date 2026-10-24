@@ -1,5 +1,9 @@
 package com.nolanbaker.pgmodernized.compat.oc;
 
+import org.jetbrains.annotations.Nullable;
+import li.cil.oc.api.network.Packet;
+import li.cil.oc.api.network.Visibility;
+import li.cil.oc.api.Network;
 import com.nolanbaker.pgmodernized.radio.RadioBlockEntity;
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Callback;
@@ -18,11 +22,38 @@ import java.util.Map;
 
 /** Radio that is an OpenComputers node itself, component "powergrid_radio"; a radio link joins two of these nodes. */
 public class OCRadioBlockEntity extends RadioBlockEntity implements Environment {
+    private static final String NETWORK_MESSAGE = "network.message";
+
     private final Node ocNode = OCNodeSupport.create(this, "powergrid_radio");
+    /** Relay mode: the air side's own node, in its own network; messages are repeated between it and the component node. */
+    @Nullable
+    private Node airNode;
     private int lastPeers = -1;
 
     public OCRadioBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    /** The node a jack port joins: the component node, or the air node for port 1 in relay mode. */
+    public Node nodeForPort(int port) {
+        return port == 1 && relay() ? air() : ocNode;
+    }
+
+    /** The node a cell card joins: the air node in relay mode, the component node in bridge mode. */
+    public Node airNodeForCards() {
+        return relay() ? air() : ocNode;
+    }
+
+    private Node air() {
+        if(airNode == null)
+            airNode = Network.newNode(this, Visibility.None).create();
+        return airNode;
+    }
+
+    @Override
+    protected void onModeChanged() {
+        OCNodeSupport.remove(airNode);
+        airNode = null;
     }
 
     @Override
@@ -31,6 +62,8 @@ public class OCRadioBlockEntity extends RadioBlockEntity implements Environment 
         OCNodeSupport.tick(this, ocNode);
         if(level == null || level.isClientSide || ocNode.network() == null)
             return;
+        if(relay() && air().network() == null && !isRemoved())
+            Network.joinNewNetwork(air());
         int peers = peers().size();
         if(peers != lastPeers) {
             if(lastPeers >= 0)
@@ -43,12 +76,14 @@ public class OCRadioBlockEntity extends RadioBlockEntity implements Environment 
     public void invalidate() {
         super.invalidate();
         OCNodeSupport.remove(ocNode);
+        OCNodeSupport.remove(airNode);
     }
 
     @Override
     public void remove() {
         super.remove();
         OCNodeSupport.remove(ocNode);
+        OCNodeSupport.remove(airNode);
     }
 
     @Override
@@ -66,7 +101,43 @@ public class OCRadioBlockEntity extends RadioBlockEntity implements Environment 
     @Override public Node node() { return ocNode; }
     @Override public void onConnect(Node node) {}
     @Override public void onDisconnect(Node node) {}
-    @Override public void onMessage(Message message) {}
+    /** Relay mode: a modem message from the computers goes out over the air, and one from the air to the computers, a hop older. */
+    @Override
+    public void onMessage(Message message) {
+        if(!relay() || airNode == null || !NETWORK_MESSAGE.equals(message.name()))
+            return;
+        var source = message.source();
+        if(source == null || source.network() == null)
+            return;
+        Node to;
+        if(source.network() == ocNode.network() && source != ocNode)
+            to = airNode;
+        else if(source.network() == airNode.network() && source != airNode)
+            to = ocNode;
+        else
+            return;
+        if(to.network() == null)
+            return;
+        var data = message.data();
+        Object[] relayed = data;
+        if(data != null && data.length > 0 && data[0] instanceof Packet packet) {
+            if(packet.ttl() <= 0)
+                return;
+            relayed = new Object[] {packet.hop()};
+        }
+        to.sendToReachable(NETWORK_MESSAGE, relayed);
+    }
+
+    @Callback(direct = true, doc = "function():string -- bridge (networks merge over the link) or relay (network messages only).")
+    public Object[] getMode(Context context, Arguments args) {
+        return result(relay() ? "relay" : "bridge");
+    }
+
+    @Callback(doc = "function(mode:string) -- bridge or relay.")
+    public Object[] setMode(Context context, Arguments args) {
+        setRelay(args.checkString(0).trim().equalsIgnoreCase("relay"));
+        return result();
+    }
 
     private static Object[] result(Object... values) {
         return values;

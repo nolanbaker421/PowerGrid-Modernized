@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.compat.cc;
 
+import net.neoforged.bus.api.IEventBus;
 import com.nolanbaker.pgmodernized.device.rangefinder.RangefinderBlockEntity;
 import com.nolanbaker.pgmodernized.device.helm.HelmBlockEntity;
 import com.nolanbaker.pgmodernized.device.controls.ControlsCabinetBlockEntity;
@@ -34,8 +35,10 @@ import org.jetbrains.annotations.Nullable;
 /** Everything that touches CC: Tweaked classes. Only referenced when the mod is loaded. */
 public class CCBridge {
     /** Mod construction: lets every jack join the wired network. */
-    public static void init() {
+    public static void init(IEventBus modBus) {
         JackSupport.registerLinkFactory((be, jack) -> new CCJackLink(be, jack, peripheralFor(be)));
+        // The Cell Card as a pocket computer upgrade.
+        CellCardPocketUpgrade.TYPES.register(modBus);
     }
 
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {

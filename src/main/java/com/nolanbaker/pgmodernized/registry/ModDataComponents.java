@@ -24,6 +24,12 @@ public class ModDataComponents {
                     .persistent(CompoundTag.CODEC)
                     .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
 
+    /** A Cell Card's carrier and mode. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> CELL_CARD =
+            REGISTER.registerComponentType("cell_card", builder -> builder
+                    .persistent(CompoundTag.CODEC)
+                    .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
+
     /** Serialised wire endpoint of the first end chosen while laying a conduit run. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> CONDUIT_CONNECTION =
             REGISTER.registerComponentType("conduit_connection", builder -> builder

@@ -27,6 +27,17 @@ public class RadioPeripheral implements IPeripheral {
         radio.setLinkId(id);
     }
 
+    /** bridge: the networks merge over the link; relay: only modem packets cross. */
+    @LuaFunction
+    public String getMode() {
+        return radio.relay() ? "relay" : "bridge";
+    }
+
+    @LuaFunction(mainThread = true)
+    public void setMode(String mode) {
+        radio.setRelay(mode.trim().equalsIgnoreCase("relay"));
+    }
+
     /** dish_antenna, sector_antenna, omni_antenna, or an empty string with no antenna on the coax. */
     @LuaFunction
     public String getRole() {

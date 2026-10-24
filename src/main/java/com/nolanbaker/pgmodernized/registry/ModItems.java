@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.radio.CellCardItem;
 import com.nolanbaker.pgmodernized.device.gear.GearComponentItem;
 import com.nolanbaker.pgmodernized.device.gear.GearKind;
 import com.nolanbaker.pgmodernized.device.helm.RadioRemoteItem;
@@ -53,6 +54,13 @@ public class ModItems {
             .properties(p -> p.stacksTo(1))
             .model(NonNullBiConsumer.noop())
             .lang("Alignment Scope")
+            .register();
+
+    /** A SIM for a computer: an OpenComputers card or a pocket computer upgrade that joins a carrier's towers. */
+    public static final ItemEntry<CellCardItem> CELL_CARD = REGISTRATE.item("cell_card", CellCardItem::new)
+            .properties(p -> p.stacksTo(1))
+            .model(NonNullBiConsumer.noop())
+            .lang("Cell Card")
             .register();
 
     /** Coax from a radio to its antenna; stats in data/powergrid_modernized/powergrid/wire_types/coax_cable.json. */

@@ -198,6 +198,23 @@ def coax_item():
     dump(os.path.join(ASSETS, "models", "item", "alignment_scope.json"), {"parent": "minecraft:item/handheld", "textures": {"layer0": "%s:item/alignment_scope" % MOD}})
 
 
+def cell_card_item():
+    # A SIM: cream card with a gold contact pad and a clipped corner.
+    card = canvas(16, 16)
+    body = (0xe8, 0xe4, 0xd8)
+    fill(card, 3, 2, 13, 14, body)
+    fill(card, 3, 2, 4, 3, (0, 0, 0, 0))                     # the clipped corner
+    fill(card, 3, 13, 13, 14, shade(body, 0.8))
+    fill(card, 12, 2, 13, 14, shade(body, 0.85))
+    gold = (0xd8, 0xa8, 0x30)
+    fill(card, 5, 6, 10, 11, gold)
+    fill(card, 5, 8, 10, 9, shade(gold, 0.7))
+    fill(card, 7, 6, 8, 11, shade(gold, 0.7))
+    fill(card, 5, 3, 11, 4, (0x30, 0x70, 0xb0))              # the carrier stripe
+    write_png(os.path.join(ITEM_TEX, "cell_card.png"), card)
+    dump(os.path.join(ASSETS, "models", "item", "cell_card.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/cell_card" % MOD}})
+
+
 def recipes():
     iron = {"tag": "c:plates/iron"}
     copper = {"tag": "c:wires/copper"}
@@ -212,6 +229,7 @@ def recipes():
     recipe("coax_hanger", ["N N", "NNN"], {"N": nugget}, 4, {"items": "%s:coax_cable" % MOD})
     recipe_shapeless("meter_antenna", [{"item": "%s:omni_antenna" % MOD}, {"item": "minecraft:comparator"}, nugget], 1, {"items": "%s:ct_cabinet" % MOD})
     recipe_shapeless("alignment_scope", [{"item": "minecraft:spyglass"}, {"item": "minecraft:comparator"}, nugget], 1, {"items": "%s:dish_antenna" % MOD})
+    recipe_shapeless("cell_card", [{"item": "minecraft:paper"}, {"item": "minecraft:comparator"}, {"tag": "c:nuggets/gold"}], 1, {"items": "%s:omni_antenna" % MOD})
 
 
 def main():
@@ -222,6 +240,7 @@ def main():
     hanger()
     meter_antenna()
     coax_item()
+    cell_card_item()
     recipes()
     print("radio assets written")
 

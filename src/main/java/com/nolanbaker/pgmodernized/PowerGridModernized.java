@@ -88,7 +88,7 @@ public class PowerGridModernized {
         ModDataComponents.REGISTER.register(bus);
 
         if(Platform.isModLoaded("computercraft")) {
-            CCBridge.init();
+            CCBridge.init(bus);
         }
         SableHooks.install();
         NeoForge.EVENT_BUS.register(WireGuard.class);
