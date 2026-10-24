@@ -1,6 +1,5 @@
 package com.nolanbaker.pgmodernized.client;
 
-import org.joml.Matrix4f;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -82,8 +81,11 @@ public class BodyWireRenderer extends BlockWireRenderer {
         for(int i = 0; i + 1 < n; ++i) {
             var a = segs.get(i);
             var b = segs.get(i + 1);
-            if(a.direction != b.direction)
-                radii[i] = Math.min(wanted, Math.min(a.length() / 2, b.length() / 2));
+            // A bend needs a real corner (not a reversal) and room: under a pixel it stays a sharp joint.
+            if(a.direction != b.direction && a.direction != b.direction.getOpposite()) {
+                float r = Math.min(wanted, Math.min(a.length() / 2, b.length() / 2));
+                radii[i] = r >= 1 / 16f ? r : 0;
+            }
         }
         var pos = Vec3.ZERO;
         for(int i = 0; i < n; ++i) {
@@ -130,32 +132,23 @@ public class BodyWireRenderer extends BlockWireRenderer {
         return best;
     }
 
-    /** A quarter-circle elbow from the incoming leg to the outgoing, as three chords of the tube's thickness. */
+    /**
+     * A quarter-circle elbow from the incoming leg to the outgoing, drawn the way Minecraft draws a
+     * curve: axis-aligned cubes the tube's own size stepped along the arc, overlapping, so the
+     * elbow's section is the tube's section at every point and nothing pokes out past the straights.
+     */
     private static void elbow(PoseStack poseStack, MultiBufferSource buffer, int light, Vec3 corner, Direction in, Direction out, float r, float t, int rgb) {
         var d1 = Vec3.atLowerCornerOf(in.getNormal());
         var d2 = Vec3.atLowerCornerOf(out.getNormal());
         var centre = corner.subtract(d1.scale(r)).add(d2.scale(r));
-        var normal = d1.cross(d2);
-        double h = t * 16 / 2 + 0.15;
-        int pieces = 3;
-        for(int k = 0; k < pieces; ++k) {
-            double a = Math.toRadians(90.0 * k / pieces), b = Math.toRadians(90.0 * (k + 1) / pieces);
-            var pa = centre.subtract(d2.scale(r * Math.cos(a))).add(d1.scale(r * Math.sin(a)));
-            var pb = centre.subtract(d2.scale(r * Math.cos(b))).add(d1.scale(r * Math.sin(b)));
-            var mid = pa.add(pb).scale(0.5);
-            var chord = pb.subtract(pa);
-            double len = chord.length() * 16 / 2 + 0.3;
-            var u = chord.normalize();
-            var v = normal.cross(u);
-            poseStack.pushPose();
-            poseStack.translate(mid.x, mid.y, mid.z);
-            poseStack.mulPose(new Matrix4f(
-                    (float) u.x, (float) u.y, (float) u.z, 0,
-                    (float) v.x, (float) v.y, (float) v.z, 0,
-                    (float) normal.x, (float) normal.y, (float) normal.z, 0,
-                    0, 0, 0, 1));
-            DeviceDraw.box(poseStack, buffer, light, -len, -h, -h, len, h, h, rgb);
-            poseStack.popPose();
+        double h = t * 16 / 2;
+        // Steps no further apart than half a tube, so the cubes overlap into a continuous bend.
+        int steps = Math.max(2, (int) Math.ceil(r * Math.PI / 2 / Math.max(0.02, t / 2)));
+        for(int k = 0; k <= steps; ++k) {
+            double a = Math.toRadians(90.0 * k / steps);
+            var p = centre.subtract(d2.scale(r * Math.cos(a))).add(d1.scale(r * Math.sin(a)));
+            double x = p.x * 16, y = p.y * 16, z = p.z * 16;
+            DeviceDraw.box(poseStack, buffer, light, x - h, y - h, z - h, x + h, y + h, z + h, rgb);
         }
     }
 

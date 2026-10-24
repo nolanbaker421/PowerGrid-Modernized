@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.50.4 — 2026-10-24
+
+### Fixed
+- Elbows on thick conduit poked out past the tube: the bend was three turned boxes whose corners
+  stood proud of the straights' square section. It is a stepped arc of axis-aligned cubes the
+  tube's own size now, the way a curve is drawn in blocks. Corners with under a pixel of room, or
+  a reversal, stay sharp joints instead of drawing a blob.
+
 ## 0.50.3 — 2026-10-24
 
 ### Fixed
