@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.48.7 — 2026-10-24
+
+### Changed
+- Each end of a conduit run has a connector exactly the tube's size, flush with it, where it
+  enters the knockout; corners keep their slightly proud coupling.
+
 ## 0.48.6 — 2026-10-24
 
 ### Fixed
