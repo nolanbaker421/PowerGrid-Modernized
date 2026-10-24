@@ -730,10 +730,16 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     /** The port a tag RS<n> names, or null: no such port on this Cat6, or not a port name. */
     @Nullable
     private RedstonePortBlockEntity portOf(String name) {
-        if(!name.startsWith("RS") || name.length() < 3 || ports.isEmpty())
+        return portOf(name, "RS");
+    }
+
+    /** The port a tag names with that prefix, RS<n> for its output or RI<n> for the redstone it reads. */
+    @Nullable
+    private RedstonePortBlockEntity portOf(String name, String prefix) {
+        if(!name.startsWith(prefix) || name.length() <= prefix.length() || ports.isEmpty())
             return null;
         try {
-            return portNumber(Integer.parseInt(name.substring(2)));
+            return portNumber(Integer.parseInt(name.substring(prefix.length())));
         } catch(NumberFormatException e) {
             return null;
         }
@@ -1010,12 +1016,21 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
 
     private final class PlcIo implements PlcProgram.Io {
         @Override
+        public long dayTime() {
+            return level == null ? 0 : level.getDayTime() % 24000;
+        }
+
+        @Override
         public double read(String name) {
             if(name.equals("E"))
                 return isEStopped() ? 1 : 0;
             if(name.startsWith("RS")) {
                 var port = portOf(name);
                 return port == null ? Double.NaN : port.output();
+            }
+            if(name.startsWith("RI")) {
+                var port = portOf(name, "RI");
+                return port == null ? Double.NaN : port.input();
             }
             if(name.startsWith("B") && name.indexOf('.') > 1) {
                 int dot = name.indexOf('.');

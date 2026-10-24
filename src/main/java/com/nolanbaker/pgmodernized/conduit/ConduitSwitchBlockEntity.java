@@ -32,7 +32,9 @@ public class ConduitSwitchBlockEntity extends ElectricBlockEntity implements ISp
     private SpliceSupport splices;
     private List<SplicePoint> points;
     private SwitchedWire contact;
-    private boolean on;
+    protected boolean on;
+    /** A button's remaining hold, in ticks. */
+    private int holdTicks;
     private int landedKey = -1;
     /** Set on loading a save without the key: adopt the run as landed instead of landing it again. */
     private boolean adoptLanded;
@@ -65,11 +67,30 @@ public class ConduitSwitchBlockEntity extends ElectricBlockEntity implements ISp
         return on;
     }
 
-    /** Server side. */
-    public void toggle(Player player) {
-        on = !on;
+    /** The contacts follow {@link #on}; a subclass with other contacts says how. */
+    protected void applyContacts() {
         if(contact != null)
             contact.setState(on);
+    }
+
+    private boolean momentary() {
+        return getBlockState().getBlock() instanceof ConduitSwitchBlock block && block.momentary();
+    }
+
+    /** Server side: a switch flips, a button closes for its hold time. */
+    public void toggle(Player player) {
+        if(momentary()) {
+            holdTicks = ConduitButtonBlock.HOLD_TICKS;
+            if(on)
+                return;
+        }
+        setOn(!on);
+    }
+
+    /** Server side. */
+    public void setOn(boolean value) {
+        on = value;
+        applyContacts();
         if(level != null) {
             var state = getBlockState();
             if(state.getBlock() instanceof ConduitSwitchBlock)
@@ -78,6 +99,13 @@ public class ConduitSwitchBlockEntity extends ElectricBlockEntity implements ISp
         }
         setChanged();
         sendData();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if(level != null && !level.isClientSide && holdTicks > 0 && --holdTicks == 0 && on)
+            setOn(false);
     }
 
     @Override
@@ -193,8 +221,7 @@ public class ConduitSwitchBlockEntity extends ElectricBlockEntity implements ISp
         else
             adoptLanded = !splices().list().isEmpty();
         on = tag.getBoolean("On");
-        if(contact != null)
-            contact.setState(on);
+        applyContacts();
     }
 
     @Override

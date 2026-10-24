@@ -31,6 +31,7 @@ public class RedstonePortBlockEntity extends SmartBlockEntity implements INetwor
     private final JackSupport jack = new JackSupport(this, true);
     private int number = 1;
     private int output;
+    private int input;
     @Nullable
     private BlockPos cabinet;
     private int findTimer;
@@ -49,6 +50,11 @@ public class RedstonePortBlockEntity extends SmartBlockEntity implements INetwor
     /** The redstone level put out, 0..15. */
     public int output() {
         return output;
+    }
+
+    /** The strongest redstone signal reaching the port from a neighbour, 0..15, read as tag RI<n>. */
+    public int input() {
+        return input;
     }
 
     /** Server side: sets the level, clamped to 0..15, and wakes the neighbours when it changes. */
@@ -81,6 +87,13 @@ public class RedstonePortBlockEntity extends SmartBlockEntity implements INetwor
         jack.tick();
         if(level == null || level.isClientSide)
             return;
+        // What the neighbours put on the port. A port that also puts out a level reads its own signal back through
+        // anything it powers, so an input port is best left at output 0.
+        int now = level.getBestNeighborSignal(worldPosition);
+        if(now != input) {
+            input = now;
+            setChanged();
+        }
         if(++findTimer >= 40) {
             findTimer = 0;
             var found = DriveLink.nearest(level, jack, ControlsCabinetBlockEntity.class, worldPosition);
@@ -135,6 +148,7 @@ public class RedstonePortBlockEntity extends SmartBlockEntity implements INetwor
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate("gui.redstone_port.title", number).style(ChatFormatting.GRAY).forGoggles(tooltip);
         Lang.builder().translate("gui.redstone_port.level", output).style(output > 0 ? ChatFormatting.RED : ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
+        Lang.builder().translate("gui.redstone_port.input", input).style(input > 0 ? ChatFormatting.RED : ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
         if(cabinet == null)
             Lang.builder().translate("gui.redstone_port.unconnected").style(ChatFormatting.RED).forGoggles(tooltip, 1);
         else

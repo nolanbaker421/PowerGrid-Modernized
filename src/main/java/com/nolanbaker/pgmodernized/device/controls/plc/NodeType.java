@@ -10,6 +10,7 @@ public enum NodeType {
     TAG("Tag", Group.IO, List.of(Param.text(0, "Tag", "X1.1"))),
     SET("Set tag", Group.IO, List.of(Param.text(0, "Tag", "Y1.1"))),
     CONST("Constant", Group.IO, List.of(Param.number(0, "Value", 0), Param.text(0, "Text instead", ""))),
+    TIME("Time of day", Group.IO, List.of()),
     AND("And", Group.LOGIC, List.of(Param.count(0, "Inputs", 2, 2, 8))),
     OR("Or", Group.LOGIC, List.of(Param.count(0, "Inputs", 2, 2, 8))),
     NOT("Not", Group.LOGIC, List.of()),
@@ -175,6 +176,7 @@ public enum NodeType {
     public String[] outputNames(PlcGraph.Node node) {
         return switch(this) {
             case TAG, CONST, THROTTLE -> new String[] {"Value"};
+            case TIME -> new String[] {"Ticks", "Hour", "Day"};
             case AND, OR, NOT, XOR, RISE, FALL, LATCH, TOGGLE, SELECT, PULSE, BLINK, COMPARE, HYSTERESIS -> new String[] {"Q"};
             case TON, TOF -> new String[] {"Q", "Elapsed"};
             case ADD, SUB, MUL, DIV, SCALE, CLAMP, SMOOTH -> new String[] {"Out"};

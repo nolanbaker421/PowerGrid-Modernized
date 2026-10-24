@@ -813,7 +813,28 @@ Sneak-right-click the switch with an empty hand to change its mode:
 ComputerCraft traffic is always shared. Conduit and Cat6 will not land on Power Grid's own wire
 connectors or nodes; they need a knockout or a jack.
 
-### Ponder
+#### Conduit button and 3-way switch
+
+- **Conduit Button** (nuggets and a stone button): the conduit switch that lets go. Click it and its
+  contact closes for half a second, then opens by itself; its run, landing and splice screen are the
+  switch's. For a lamp pulsed from more than one place, a bell, or a PLC rising-edge block.
+- **3-Way Conduit Switch** (nuggets and three levers): a common and two travellers. Put one at each
+  door with the two travellers running between them, the common of one on the line and the common
+  of the other on the load, and either switch lights the hall. The first three wires pulled through
+  its run land on common, traveller A and traveller B, so pull them in the same order at both ends;
+  the splice screen moves any of them. Goggles say which traveller the common is on.
+
+### PLC: time of day and redstone in
+
+- The **Time of day** block (I/O group) has no inputs and three outputs: the day tick (0 to 23999),
+  the hour (6 at sunrise, 18 at sunset, 0 at midnight) and Day, 1 while the sun is up. Compare the
+  hour, or feed Day through Not into the lights.
+- A **Redstone Port** also reads: whatever redstone its neighbours put on it is the tag `RI<n>`, 0 to
+  15, next to the `RS<n>` it puts out. A daylight sensor, pressure plate or lever against the port is
+  a PLC input. A port that puts out a level reads its own signal back through anything it powers, so
+  keep an input port's output at 0.
+
+## Ponder
 
 Hold **W** over a breaker panel, a radio or an antenna in any inventory for a Ponder scene of it,
 Create's in-game tour. The index (Ponder's book on the main menu or from a scene) has two pages

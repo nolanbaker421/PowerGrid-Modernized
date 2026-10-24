@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.conduit.ConduitThreeWayBlock;
+import com.nolanbaker.pgmodernized.conduit.ConduitButtonBlock;
 import com.nolanbaker.pgmodernized.device.helm.RadioBaseBlock;
 import com.nolanbaker.pgmodernized.device.controls.StationBlock;
 import com.nolanbaker.pgmodernized.device.hmi.HmiBlock;
@@ -498,6 +500,30 @@ public class ModBlocks {
             .register();
 
     /** A light switch on the end of a run: the first two pulled wires land on its poles and the toggle joins them. */
+    /** A momentary button on a run: the switch that lets go. */
+    public static final BlockEntry<ConduitButtonBlock> CONDUIT_BUTTON = REGISTRATE.block("conduit_button", ConduitButtonBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Conduit Button")
+            .item()
+            .model(NonNullBiConsumer.noop())
+            .build()
+            .register();
+
+    /** A 3-way switch: common and two travellers. */
+    public static final BlockEntry<ConduitThreeWayBlock> CONDUIT_SWITCH_3WAY = REGISTRATE.block("conduit_switch_3way", ConduitThreeWayBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("3-Way Conduit Switch")
+            .item()
+            .model(NonNullBiConsumer.noop())
+            .build()
+            .register();
+
     public static final BlockEntry<ConduitSwitchBlock> CONDUIT_SWITCH = REGISTRATE.block("conduit_switch", ConduitSwitchBlock::new)
             .blockstate(NonNullBiConsumer.noop())
             .initialProperties(SharedProperties::softMetal)

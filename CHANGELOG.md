@@ -4,6 +4,21 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.46.0 — 2026-10-24
+
+### Added
+- **Conduit Button**: the conduit switch that lets go, closed for half a second per press.
+- **3-Way Conduit Switch**: common and two travellers; two of them light a hall from either end.
+- **PLC Time of day** block: day tick, hour and a Day bit.
+- **Redstone Port input**: the redstone reaching a port is tag `RI<n>` for the PLC.
+
+### Fixed
+- Landing terminals inside boxes, switches, sockets, disconnects, pull boxes, panels and gear
+  cells were one-pixel cubes that drew a phantom outline while wiring; they are specks now.
+- A click within a pixel of a conduit box cover nub lands on the nearest nub, so the middle
+  nubs take a wire without pixel hunting.
+- A conduit started from a box on a ceiling tile leaves it upward instead of diving into the tile.
+
 ## 0.45.1 — 2026-10-24
 
 ### Fixed

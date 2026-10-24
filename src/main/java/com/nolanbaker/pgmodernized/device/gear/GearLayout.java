@@ -45,7 +45,7 @@ public final class GearLayout {
     public static final int TERMINAL_COUNT = GROUND_LUG_BASE + GROUND_LUG_COUNT;
 
     public static final AABB BODY = new AABB(0, 0, FRONT_Z, 16, 16, 16);
-    private static final AABB HIDDEN = new AABB(7.5, 7.5, 8, 8.5, 8.5, 9);
+    private static final AABB HIDDEN = new AABB(7.99, 7.99, 8.49, 8.01, 8.01, 8.51);   // a speck: a landing has no outline to show
     private static final double[] SIDE_HUB_Y = {4.5, 11.5};
 
     private GearLayout() {}

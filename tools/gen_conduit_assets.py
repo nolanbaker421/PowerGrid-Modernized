@@ -304,6 +304,51 @@ def switch_model():
 PULL_BOX_KNOCKOUTS = {"h": [(5, 8), (11, 8)], "v": [(8, 5), (8, 11)]}
 
 
+BUTTON_CAP = {False: (7, 3.5, 7, 9, 5, 9), True: (7, 3.5, 7, 9, 4.2, 9)}
+
+
+def button_model():
+    """The conduit button: the switch's body with a round cap on the plate that sits down while pressed."""
+    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_one" % MOD, "particle": "%s:block/conduit_box" % MOD}
+    for on in (False, True):
+        boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#knockout"), (SOCKET_HUB2, "#knockout"), (SWITCH_PLATE, "#box"), (BUTTON_CAP[on], "#terminal")]
+        for suffix, transform in (("v", lambda b: b), ("h", to_h)):
+            elements = [element(*transform(box), texture) for box, texture in boxes]
+            dump(os.path.join(ASSETS, "models", "block", "conduit_button", "block_%s_%s.json" % (suffix, "on" if on else "off")),
+                 {"parent": "block/block", "textures": tex, "elements": elements})
+    dump(os.path.join(ASSETS, "models", "item", "conduit_button.json"), {"parent": "%s:block/conduit_button/block_v_off" % MOD})
+    variants = {}
+    for key, (suffix, rot) in ROTATION4.items():
+        for on in (False, True):
+            v = {"model": "%s:block/conduit_button/block_%s_%s" % (MOD, suffix, "on" if on else "off")}
+            v.update(rot)
+            variants[key + ",on=" + ("true" if on else "false")] = v
+    dump(os.path.join(ASSETS, "blockstates", "conduit_button.json"), {"variants": variants})
+
+
+THREE_WAY_MARK = (9.2, 3.5, 6.2, 9.8, 3.7, 9.8)
+
+
+def three_way_model():
+    """The 3-way switch: the switch with a stripe down the plate's edge so the two tell apart; the toggle shows which traveller."""
+    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_one" % MOD,
+           "mark": "%s:block/knockout_one" % MOD, "particle": "%s:block/conduit_box" % MOD}
+    for on in (False, True):
+        boxes = [(SOCKET_BODY, "#box"), (SOCKET_HUB, "#knockout"), (SOCKET_HUB2, "#knockout"), (SWITCH_PLATE, "#box"), (THREE_WAY_MARK, "#mark"), (SWITCH_TOGGLE[on], "#terminal")]
+        for suffix, transform in (("v", lambda b: b), ("h", to_h)):
+            elements = [element(*transform(box), texture) for box, texture in boxes]
+            dump(os.path.join(ASSETS, "models", "block", "conduit_switch_3way", "block_%s_%s.json" % (suffix, "on" if on else "off")),
+                 {"parent": "block/block", "textures": tex, "elements": elements})
+    dump(os.path.join(ASSETS, "models", "item", "conduit_switch_3way.json"), {"parent": "%s:block/conduit_switch_3way/block_v_off" % MOD})
+    variants = {}
+    for key, (suffix, rot) in ROTATION4.items():
+        for on in (False, True):
+            v = {"model": "%s:block/conduit_switch_3way/block_%s_%s" % (MOD, suffix, "on" if on else "off")}
+            v.update(rot)
+            variants[key + ",on=" + ("true" if on else "false")] = v
+    dump(os.path.join(ASSETS, "blockstates", "conduit_switch_3way.json"), {"variants": variants})
+
+
 def pull_box_assets():
     """A full-block grey cabinet: a door with a handle on the front, two flush knockouts on every other face."""
     block = os.path.join(ASSETS, "textures", "block")
@@ -427,6 +472,8 @@ def recipes():
     shaped("conduit_box", ["NNN", "N N", "NNN"], {"N": nugget}, 2, {"items": "powergrid:wire"})
     shaped("conduit_socket", ["NCN", " N "], {"N": nugget, "C": {"tag": "c:nuggets/copper"}}, 2, {"items": "powergrid:wire"})
     shaped("conduit_switch", ["NLN", " N "], {"N": nugget, "L": {"item": "minecraft:lever"}}, 2, {"items": "powergrid:wire"})
+    shaped("conduit_button", ["NBN", " N "], {"N": nugget, "B": {"item": "minecraft:stone_button"}}, 2, {"items": "powergrid:wire"})
+    shaped("conduit_switch_3way", ["NLN", "LNL"], {"N": nugget, "L": {"item": "minecraft:lever"}}, 2, {"items": "%s:conduit_switch" % MOD})
     shaped("pull_box", ["PPP", "P P", "PPP"], {"P": {"tag": "c:plates/iron"}}, 1, {"items": "powergrid:wire"})
     shaped("terminal_cabinet", ["NNN", "NBN", "NNN"], {"N": {"tag": "c:nuggets/copper"}, "B": {"item": "%s:pull_box" % MOD}}, 1,
            {"items": "%s:pull_box" % MOD})
@@ -451,11 +498,15 @@ def main():
     box_model()
     socket_model()
     switch_model()
+    button_model()
+    three_way_model()
     pull_box_assets()
     item_models()
     loot_table("conduit_box")
     loot_table("conduit_socket")
     loot_table("conduit_switch")
+    loot_table("conduit_button")
+    loot_table("conduit_switch_3way")
     loot_table("pull_box")
     loot_table("terminal_cabinet")
     recipes()

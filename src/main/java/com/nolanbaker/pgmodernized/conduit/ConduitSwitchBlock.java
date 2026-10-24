@@ -44,11 +44,11 @@ public class ConduitSwitchBlock extends Rotation4ElectricBlock implements IBE<Co
     public static final int TERMINAL_HUB2 = CONDUCTOR_BASE + ConductorColors.COUNT, CONDUCTOR2_BASE = TERMINAL_HUB2 + 1;
     public static final int TERMINAL_COUNT = CONDUCTOR2_BASE + ConductorColors.COUNT;
 
-    private static final AABB BODY = new AABB(5, 0, 5, 11, 3, 11);
-    private static final AABB HUB = new AABB(7, 0.5, 4, 9, 2.5, 5);
-    private static final AABB HUB2 = new AABB(7, 0.5, 11, 9, 2.5, 12);
-    private static final AABB PLATE = new AABB(6, 3, 6, 10, 3.5, 10);
-    private static final AABB HIDDEN = new AABB(7.5, 1, 7.5, 8.5, 2, 8.5);
+    protected static final AABB BODY = new AABB(5, 0, 5, 11, 3, 11);
+    protected static final AABB HUB = new AABB(7, 0.5, 4, 9, 2.5, 5);
+    protected static final AABB HUB2 = new AABB(7, 0.5, 11, 9, 2.5, 12);
+    protected static final AABB PLATE = new AABB(6, 3, 6, 10, 3.5, 10);
+    protected static final AABB HIDDEN = new AABB(7.99, 1.49, 7.99, 8.01, 1.51, 8.01);   // a speck: a landing has no outline to show
 
     public ConduitSwitchBlock(Properties properties) {
         super(properties);
@@ -79,15 +79,25 @@ public class ConduitSwitchBlock extends Rotation4ElectricBlock implements IBE<Co
         return terminals;
     }
 
-    private static TerminalBoundingBox terminal(Component name, AABB px) {
+    /** The knockout terminals, for the hit tests; a subclass with other numbering says its own. */
+    protected int[] hubTerminals() {
+        return new int[] {TERMINAL_HUB, TERMINAL_HUB2};
+    }
+
+    /** A button closes only while pressed. */
+    public boolean momentary() {
+        return false;
+    }
+
+    protected static TerminalBoundingBox terminal(Component name, AABB px) {
         return new TerminalBoundingBox(name, px.minX, px.minY, px.minZ, px.maxX, px.maxY, px.maxZ);
     }
 
-    private static Component name(String key, ChatFormatting style) {
+    protected static Component name(String key, ChatFormatting style) {
         return Lang.builder().translate(key).style(style).component();
     }
 
-    private static VoxelShape box(AABB px) {
+    protected static VoxelShape box(AABB px) {
         return Block.box(px.minX, px.minY, px.minZ, px.maxX, px.maxY, px.maxZ);
     }
 
@@ -104,7 +114,7 @@ public class ConduitSwitchBlock extends Rotation4ElectricBlock implements IBE<Co
 
     @Override
     public ITerminalPlacement terminalAt(BlockState state, Vec3 pos) {
-        for(int t : new int[] {TERMINAL_HUB, TERMINAL_HUB2}) {
+        for(int t : hubTerminals()) {
             var hub = terminal(state, t);
             if(hub != null && hub.check(pos))
                 return hub;
@@ -116,7 +126,7 @@ public class ConduitSwitchBlock extends Rotation4ElectricBlock implements IBE<Co
     private int hubClicked(BlockState state, UseOnContext context) {
         var pos = context.getClickedPos();
         var local = context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
-        for(int t : new int[] {TERMINAL_HUB, TERMINAL_HUB2}) {
+        for(int t : hubTerminals()) {
             var hub = terminal(state, t);
             if(hub != null && hub.check(local))
                 return t;

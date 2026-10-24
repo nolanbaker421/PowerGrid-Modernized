@@ -53,7 +53,7 @@ public class DisconnectBlock extends HorizontalElectricBlock implements IBE<Disc
 
     private static final AABB BODY = new AABB(3, 1, 11, 13, 15, 16);
     private static final AABB HANDLE_SWEEP = new AABB(1.5, 4, 12, 3, 13, 13.5);
-    private static final AABB HIDDEN = new AABB(7.5, 7.5, 13, 8.5, 8.5, 14);
+    private static final AABB HIDDEN = new AABB(7.99, 7.99, 13.49, 8.01, 8.01, 13.51);   // a speck: a landing has no outline to show
     /** Knockouts: two on the top edge, two on the bottom, near the wall. */
     private static final AABB[] HUB_BOXES = {
             new AABB(4, 15, 13.5, 6, 16, 15.5), new AABB(10, 15, 13.5, 12, 16, 15.5),

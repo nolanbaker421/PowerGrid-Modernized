@@ -26,7 +26,7 @@ public final class PullBoxGeometry {
     private static final double[] ALONG = {5, 11};
     private static final double HALF = 1.5, DEPTH = 0.5;
     private static final AABB[] HUBS = new AABB[HUB_COUNT];
-    private static final AABB HIDDEN = new AABB(7.5, 7.5, 7.5, 8.5, 8.5, 8.5);
+    private static final AABB HIDDEN = new AABB(7.99, 7.99, 7.99, 8.01, 8.01, 8.01);   // a speck: a landing has no outline to show
     private static final double[] LUG_U = {3.5, 6.5, 9.5, 12.5};
     private static final double[] LUG_Y = {11.5, 8, 4.5};
 

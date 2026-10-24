@@ -188,6 +188,9 @@ public final class ConduitPlacement {
             continueDir = existing.segments.get(existing.segments.size() - 1).direction;
         } else {
             lastPoint = BlockTrace.alignPosition(lastPoint);
+            // A box on a ceiling tile sits inside the tile's block: leave it upward, never down through the tile.
+            if(from instanceof BlockWireEndpoint start && level.getBlockState(start.getPos()).getBlock() instanceof CeilingConduitBoxBlock)
+                continueDir = Direction.UP;
         }
         var targetPoint = BodySpace.local(level, to);
         ITerminalPlacement terminal = to instanceof BlockWireEndpoint hub ? hub.getTerminalPlacement(level) : null;

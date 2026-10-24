@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit;
 
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
 import com.nolanbaker.pgmodernized.registry.ModItems;
@@ -95,7 +96,23 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
     @Override
     public int terminalIndexAt(BlockState state, Vec3 pos) {
         int terminal = super.terminalIndexAt(state, pos);
-        return terminal == ConduitBoxGeometry.TERMINAL_RECEPTACLE ? -1 : terminal;
+        if(terminal == ConduitBoxGeometry.TERMINAL_RECEPTACLE)
+            return -1;
+        if(terminal >= 0)
+            return terminal;
+        // The cover nubs are 1.2 px across; a click within a pixel of one counts, nearest first.
+        int best = -1;
+        double bestDistance = 1.0 / 16;
+        for(int k = 0; k < ConduitBoxGeometry.FRONT_COUNT; ++k) {
+            if(!(terminal(state, k) instanceof TerminalBoundingBox nub))
+                continue;
+            double d = pos.distanceTo(nub.getOutline().getCenter());
+            if(d < bestDistance) {
+                best = k;
+                bestDistance = d;
+            }
+        }
+        return best;
     }
 
     @Override

@@ -50,6 +50,11 @@ public final class PlcProgram {
         boolean hasDevice(String alias);
 
         /** A text tag's value (S1, S2, ...), or null when there is no such tag. */
+        /** Ticks into the Minecraft day, 0 to 23999; 0 where there is no world. */
+        default long dayTime() {
+            return 0;
+        }
+
         default @Nullable String readText(String name) {
             return null;
         }

@@ -48,7 +48,7 @@ public final class PanelLayout {
 
     public static final double FRONT_Z = 10;
     private static final AABB BODY = new AABB(1, 1, 10, 15, 15, 16);
-    private static final AABB HIDDEN = new AABB(7.5, 7.5, 11, 8.5, 8.5, 12);
+    private static final AABB HIDDEN = new AABB(7.99, 7.99, 11.49, 8.01, 8.01, 11.51);   // a speck: a landing has no outline to show
     private static final double[] HUB_U = {3.5, 6.5, 9.5, 12.5};
     private static final double[] SIDE_HUB_Y = {4, 9};
     private static final double HUB_Z1 = 12.5, HUB_Z2 = 14.5;

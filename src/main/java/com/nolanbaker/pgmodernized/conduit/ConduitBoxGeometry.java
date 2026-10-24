@@ -50,7 +50,7 @@ public final class ConduitBoxGeometry {
             HUBS[9 + i] = new AABB(12, y - 1, 13.5, 13, y + 1, 15.5);    // viewer's left (+x)
         }
     }
-    private static final AABB HIDDEN = new AABB(7.5, 7.5, 14, 8.5, 8.5, 15);
+    private static final AABB HIDDEN = new AABB(7.99, 7.99, 14.49, 8.01, 8.01, 14.51);   // a speck: a landing has no outline to show
     private static final double[] COLUMNS_U = {5, 7, 9, 11};
     private static final double[] ROWS_Y = {10, 8, 6};
     private static final double NUB = 0.6, NUB_Z1 = 12.4, NUB_Z2 = 13;

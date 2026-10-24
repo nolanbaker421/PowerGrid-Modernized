@@ -51,7 +51,7 @@ public class ConduitSocketBlock extends Rotation4ElectricBlock implements IBE<Co
     private static final AABB HUB = new AABB(7, 0.5, 4, 9, 2.5, 5);
     private static final AABB HUB2 = new AABB(7, 0.5, 11, 9, 2.5, 12);
     private static final AABB SOCKET = new AABB(6.5, 3, 6.5, 9.5, 4, 9.5);
-    private static final AABB HIDDEN = new AABB(7.5, 1, 7.5, 8.5, 2, 8.5);
+    private static final AABB HIDDEN = new AABB(7.99, 1.49, 7.99, 8.01, 1.51, 8.01);   // a speck: a landing has no outline to show
 
     public ConduitSocketBlock(Properties properties) {
         super(properties);

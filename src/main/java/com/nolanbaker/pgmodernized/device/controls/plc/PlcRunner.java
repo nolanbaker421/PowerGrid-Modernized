@@ -268,6 +268,12 @@ public final class PlcRunner {
                 else
                     writeTag(name, in(node, 0));
             }
+            case TIME -> {
+                long ticks = io.dayTime();
+                o[0] = ticks;
+                o[1] = ((ticks / 1000.0) + 6) % 24;
+                o[2] = ticks < 12000 || ticks >= 23000 ? 1 : 0;
+            }
             case CONST -> {
                 if(node.text.isEmpty()) {
                     o[0] = node.num(0);

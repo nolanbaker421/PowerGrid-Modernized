@@ -35,6 +35,8 @@
     "powergrid_modernized:transformer_dry_480v_240v",
     "powergrid_modernized:transformer_dry_480v_208v",
     "powergrid_modernized:conduit_switch",
+    "powergrid_modernized:conduit_button",
+    "powergrid_modernized:conduit_switch_3way",
     "powergrid_modernized:transformer_pad_3500v_480v",
     "powergrid_modernized:transformer_pad_8kv_480v",
     "powergrid_modernized:transformer_sub_35kv_8kv",

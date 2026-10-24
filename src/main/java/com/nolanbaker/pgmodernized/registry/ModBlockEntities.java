@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.conduit.ConduitThreeWayBlockEntity;
 import com.nolanbaker.pgmodernized.client.GearCellRenderer;
 import com.nolanbaker.pgmodernized.device.gear.GearCellBlockEntity;
 import com.nolanbaker.pgmodernized.device.busduct.BusDuctBlockEntity;
@@ -131,7 +132,12 @@ public class ModBlockEntities {
 
     public static final BlockEntityEntry<ConduitSwitchBlockEntity> CONDUIT_SWITCH =
             REGISTRATE.blockEntity("conduit_switch", ConduitSwitchBlockEntity::new)
-                    .validBlock(ModBlocks.CONDUIT_SWITCH)
+                    .validBlocks(ModBlocks.CONDUIT_SWITCH, ModBlocks.CONDUIT_BUTTON)
+                    .register();
+
+    public static final BlockEntityEntry<ConduitThreeWayBlockEntity> CONDUIT_SWITCH_3WAY =
+            REGISTRATE.blockEntity("conduit_switch_3way", ConduitThreeWayBlockEntity::new)
+                    .validBlock(ModBlocks.CONDUIT_SWITCH_3WAY)
                     .register();
 
     public static final BlockEntityEntry<com.nolanbaker.pgmodernized.conduit.DisconnectBlockEntity> DISCONNECT =
