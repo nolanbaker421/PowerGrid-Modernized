@@ -203,9 +203,9 @@ public final class ConduitPlacement {
         }
         var targetPoint = BodySpace.local(level, to);
         ITerminalPlacement terminal = to instanceof BlockWireEndpoint hub ? hub.getTerminalPlacement(level) : null;
-        Direction entry = to instanceof BlockWireEndpoint hub ? Knockouts.exit(level, hub) : null;
-        if(entry != null) {
-            targetPoint = BlockTrace.alignPosition(targetPoint).relative(entry, Knockouts.STUB_PX / 16.0);
+        Direction entryDir = to instanceof BlockWireEndpoint hub ? Knockouts.exit(level, hub) : null;
+        if(entryDir != null) {
+            targetPoint = BlockTrace.alignPosition(targetPoint).relative(entryDir, Knockouts.STUB_PX / 16.0);
             terminal = null;
         }
 
@@ -220,8 +220,8 @@ public final class ConduitPlacement {
         }
         var points = new ArrayList<>(stubs);
         points.addAll(path.points());
-        if(entry != null)
-            points.add(new BlockWireEntity.Point(entry.getOpposite(), Knockouts.STUB_PX));
+        if(entryDir != null)
+            points.add(new BlockWireEntity.Point(entryDir.getOpposite(), Knockouts.STUB_PX));
         float addedLength = 0;
         for(var point : points)
             addedLength += point.length();
