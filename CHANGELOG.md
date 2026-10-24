@@ -4,6 +4,17 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.50.1 — 2026-10-24
+
+### Fixed
+- Conduit straights drawn black against a wall: the renderer lit each straight from its centre
+  line, which sits inside the wall's block. It takes the brightest of the surrounding blocks now,
+  as Power Grid does.
+
+### Changed
+- Bend radius is one and a half tubes, never under two pixels nor over four.
+- New conduit is silver.
+
 ## 0.50.0 — 2026-10-24
 
 ### Changed

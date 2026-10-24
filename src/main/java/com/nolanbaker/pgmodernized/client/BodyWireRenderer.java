@@ -77,8 +77,8 @@ public class BodyWireRenderer extends BlockWireRenderer {
         int rgb = run.getColor() & 0xFFFFFF;
         var segs = run.segments;
         int n = segs.size();
-        // Bend radius at each corner: two and a half tubes, never more than half of either leg.
-        float wanted = Math.max(3 / 16f, 2.5f * t);
+        // Bend radius at each corner: one and a half tubes, never under two pixels nor over four, nor more than half of either leg.
+        float wanted = Math.max(2 / 16f, Math.min(4 / 16f, 1.5f * t));
         float[] radii = new float[n];
         for(int i = 0; i + 1 < n; ++i) {
             var a = segs.get(i);
@@ -100,7 +100,7 @@ public class BodyWireRenderer extends BlockWireRenderer {
             start = start.relative(dir, rIn);
             len -= rIn + rOut;
             var mid = run.position().add(start).add(Vec3.atLowerCornerOf(dir.getNormal()).scale(len / 2));
-            int segLight = LevelRenderer.getLightColor(run.level(), BlockPos.containing(mid));
+            int segLight = brightest(run, mid);
             if(len > 0.001f)
                 renderSegment(poseStack, consumer, segLight, OverlayTexture.NO_OVERLAY, start, dir, t, len, color);
             var next = pos.add(seg.vector());
@@ -109,6 +109,22 @@ public class BodyWireRenderer extends BlockWireRenderer {
             pos = next;
         }
         connectors(run, poseStack, buffer, light, t, rgb);
+    }
+
+    /**
+     * The light for a piece of tube at that point: the brightest of its block and the six around it,
+     * as Power Grid samples, since a run along a wall has its centre line inside the wall's block.
+     */
+    private static int brightest(ConduitRunEntity run, Vec3 at) {
+        var level = run.level();
+        var centre = BlockPos.containing(at);
+        int best = LevelRenderer.getLightColor(level, centre);
+        for(var d : Direction.values()) {
+            int light = LevelRenderer.getLightColor(level, centre.relative(d));
+            if((light & 0xFFFF) > (best & 0xFFFF) || (light >> 16) > (best >> 16))
+                best = Math.max(best & 0xFFFF, light & 0xFFFF) | Math.max(best >> 16 & 0xFFFF, light >> 16 & 0xFFFF) << 16;
+        }
+        return best;
     }
 
     /** A quarter-circle elbow from the incoming leg to the outgoing, as three chords of the tube's thickness. */
