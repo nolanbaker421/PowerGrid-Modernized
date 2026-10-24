@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.48.4 — 2026-10-24
+
+### Fixed
+- The bulb in a light socket was drawn inside the box: Power Grid's bulb model stands up from its
+  base, not down from the top. It now sits on the holder and points out of the socket.
+
 ## 0.48.3 — 2026-10-24
 
 ### Fixed

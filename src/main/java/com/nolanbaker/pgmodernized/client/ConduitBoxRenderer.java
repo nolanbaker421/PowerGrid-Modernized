@@ -56,9 +56,9 @@ public class ConduitBoxRenderer extends SafeBlockEntityRenderer<ConduitBoxBlockE
         var space = ConduitBoxGeometry.BULB;
         double cx = (space.minX + space.maxX) / 32, cy = (space.minY + space.maxY) / 32, back = space.maxZ / 16;
         ms.translate(cx, cy, back);
-        ms.mulPose(Axis.XP.rotationDegrees(-90));   // a fixture bulb hangs down (-y); ours points out (-z)
+        ms.mulPose(Axis.XP.rotationDegrees(-90));   // the bulb model stands up (+y) from its base at y = 0; ours points out of the box (-z)
         ms.scale(SCALE, SCALE, SCALE);
-        ms.translate(-0.5, -1, -0.5);
+        ms.translate(-0.5, 0, -0.5);                 // base on the holder's face, bulb out into its space
         draw(ms, buffer, renderer, bulb.getModel(), light, overlay, RenderType.cutout());
         if(be.getPowerLevel() > 0 && !bulb.isBurned())
             draw(ms, buffer, renderer, bulb.getLightModel(), LightTexture.FULL_BRIGHT, overlay, RenderType.translucent());
