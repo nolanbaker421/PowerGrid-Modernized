@@ -4,6 +4,23 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.44.1 — 2026-10-24
+
+### Fixed
+- Conduit switches, receptacle sockets and RF connectors forgot which conductors were landed on
+  their points across a reload and landed the run's first conductors again, so a switch spliced
+  line and load by hand came back shorting line to neutral through the default landing. The
+  landing record is saved now, and a save from before this version keeps the splices it has.
+- The Ponder scenes faced away from the camera; the plots are turned round.
+
+## 0.44.0 — 2026-10-23
+
+### Added
+- **Ponder**: hold W on a breaker panel, a radio or an antenna for a scene. Three to start: the
+  breaker panel (main, branches, a load, the cover), a point-to-point dish link, and a carrier of
+  a sector and a cell client. Two index pages, Power Distribution and Radio Links. The plots are
+  generated from `tools/gen_ponder_schematics.py` and the text keys from `tools/gen_ponder_lang.py`.
+
 ## 0.43.0 — 2026-10-23
 
 ### Changed

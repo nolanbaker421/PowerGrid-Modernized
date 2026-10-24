@@ -813,6 +813,13 @@ Sneak-right-click the switch with an empty hand to change its mode:
 ComputerCraft traffic is always shared. Conduit and Cat6 will not land on Power Grid's own wire
 connectors or nodes; they need a knockout or a jack.
 
+### Ponder
+
+Hold **W** over a breaker panel, a radio or an antenna in any inventory for a Ponder scene of it,
+Create's in-game tour. The index (Ponder's book on the main menu or from a scene) has two pages
+for this mod, Power Distribution and Radio Links. More scenes arrive with each release; the user
+guide stays the full reference.
+
 ### Radio links
 
 Cat6 across the air. A **Radio** is the indoor unit: a small box with a line and a neutral (50 W

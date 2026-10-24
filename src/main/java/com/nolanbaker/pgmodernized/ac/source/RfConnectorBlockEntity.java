@@ -65,6 +65,8 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
     private SpliceSupport splices;
     private List<SplicePoint> points;
     private int landedKey = -1;
+    /** Set on loading a save without the key: adopt the run as landed instead of landing it again. */
+    private boolean adoptLanded;
 
     // No initialisers: buildCircuit runs from the superclass constructor.
     private ElectricWire load;
@@ -177,8 +179,11 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
                 key |= 1 << conductor.slot();
         }
         if(key != landedKey) {
+            // A world saved before the key was kept lands nothing on its first look: the splices it has are the player's.
+            boolean adopt = adoptLanded;
+            adoptLanded = false;
             landedKey = key;
-            if(key != 0)
+            if(key != 0 && !adopt)
                 splices().land(0);
         }
         if(Math.abs(watts - syncedWatts) > Math.max(5, syncedWatts * 0.05) || Math.abs(supplied - syncedSupplied) > Math.max(5, syncedSupplied * 0.05))
@@ -269,6 +274,7 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         splices().write(tag);
+        tag.putInt("LandedKey", landedKey);
         tag.putInt("Energy", energy.getEnergyStored());
         if(clientPacket) {
             tag.putFloat("Volts", volts);
@@ -284,6 +290,7 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
     public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
         super.writeSafe(tag, registries);
         splices().write(tag);
+        tag.putInt("LandedKey", landedKey);
         tag.putInt("Energy", energy.getEnergyStored());
     }
 
@@ -291,6 +298,10 @@ public class RfConnectorBlockEntity extends ElectricBlockEntity implements IHave
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         splices().read(tag);
+        if(tag.contains("LandedKey"))
+            landedKey = tag.getInt("LandedKey");
+        else
+            adoptLanded = !splices().list().isEmpty();
         energy.set(tag.getInt("Energy"));
         if(clientPacket) {
             volts = tag.getFloat("Volts");

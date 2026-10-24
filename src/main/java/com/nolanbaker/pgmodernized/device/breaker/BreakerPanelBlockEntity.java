@@ -482,6 +482,35 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     }
 
     /** Plug a breaker or a blank into an empty space. Consumes one item unless the player is in creative mode. */
+    /** Installs a breaker with no player involved, as a Ponder scene does. */
+    public void installForScene(int slot, BreakerItem item) {
+        var breaker = breaker(slot);
+        breaker.frame = item.frame();
+        breaker.rating = item.rating();
+        breaker.blank = item.isBlank();
+        breaker.gfci = item.gfci();
+        breaker.poles = item.isBlank() ? 1 : slot == MAIN ? spec.lugs() : item.poles();
+        breaker.state = BreakerState.OFF;
+        breaker.heat = 0;
+        breaker.current = 0;
+        if(slot != MAIN && !item.isBlank()) {
+            int frameRows = item.frame().rows();
+            for(int i = 1; i < rowsFor(slot, item); ++i)
+                branches[slot + 2 * i].coverBy(slot, i % frameRows == 0 ? i / frameRows : -1);
+        }
+        rating(slot).follow(breaker);
+        rebuild();
+        points = null;
+        notifyUpdate();
+    }
+
+    /** Fits or removes the cover with no player involved, as a Ponder scene does. */
+    public void setCover(boolean fitted) {
+        cover = fitted;
+        coverOpen = false;
+        notifyUpdate();
+    }
+
     public boolean install(int slot, BreakerItem item, Player player, ItemStack stack) {
         var problem = installProblem(slot, item);
         if(problem != null) {

@@ -34,6 +34,8 @@ public class ConduitSwitchBlockEntity extends ElectricBlockEntity implements ISp
     private SwitchedWire contact;
     private boolean on;
     private int landedKey = -1;
+    /** Set on loading a save without the key: adopt the run as landed instead of landing it again. */
+    private boolean adoptLanded;
 
     public ConduitSwitchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -91,8 +93,11 @@ public class ConduitSwitchBlockEntity extends ElectricBlockEntity implements ISp
                 key |= 1 << conductor.slot();
         }
         if(key != landedKey) {
+            // A world saved before the key was kept lands nothing on its first look: the splices it has are the player's.
+            boolean adopt = adoptLanded;
+            adoptLanded = false;
             landedKey = key;
-            if(key != 0)
+            if(key != 0 && !adopt)
                 splices().land(0);
         }
     }
@@ -167,6 +172,7 @@ public class ConduitSwitchBlockEntity extends ElectricBlockEntity implements ISp
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         splices().write(tag);
+        tag.putInt("LandedKey", landedKey);
         tag.putBoolean("On", on);
     }
 
@@ -174,6 +180,7 @@ public class ConduitSwitchBlockEntity extends ElectricBlockEntity implements ISp
     public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
         super.writeSafe(tag, registries);
         splices().write(tag);
+        tag.putInt("LandedKey", landedKey);
         tag.putBoolean("On", on);
     }
 
@@ -181,6 +188,10 @@ public class ConduitSwitchBlockEntity extends ElectricBlockEntity implements ISp
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         splices().read(tag);
+        if(tag.contains("LandedKey"))
+            landedKey = tag.getInt("LandedKey");
+        else
+            adoptLanded = !splices().list().isEmpty();
         on = tag.getBoolean("On");
         if(contact != null)
             contact.setState(on);
