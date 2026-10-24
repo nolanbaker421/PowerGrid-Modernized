@@ -60,6 +60,12 @@ public class CeilingConduitBoxBlock extends ConduitBoxBlock implements CeilingBl
                 .build());
     }
 
+    /** The tile box faces down into its tile as Power Grid's sockets face their mount, so the cord needs no shift. */
+    @Override
+    protected double cordOffset() {
+        return 0;
+    }
+
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         return defaultBlockState();

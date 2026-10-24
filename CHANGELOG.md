@@ -4,6 +4,19 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.48.5 — 2026-10-24
+
+### Fixed
+- A power cord in a conduit box's receptacle plate ended inside the box. Power Grid sets the cord's
+  end three pixels against the block's facing, which on its sockets points into the mount; the box's
+  points out of it, so the socket origin now compensates and the plug sits in front of the face.
+- The settings screen's label column fits its widest label; "Mode (bridge / relay)" no longer runs
+  under the box.
+
+### Changed
+- A gang box placed on a wall starts with its gangs running across instead of standing on end.
+  Floors and ceilings keep following the player's facing; a wrench still turns it.
+
 ## 0.48.4 — 2026-10-24
 
 ### Fixed

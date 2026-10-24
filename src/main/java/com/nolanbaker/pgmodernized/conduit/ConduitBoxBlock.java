@@ -92,7 +92,31 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
         if(cover(state) != ConduitCover.RECEPTACLE)
             return NO_SOCKET;
         var placement = super.terminal(state, ConduitBoxGeometry.TERMINAL_RECEPTACLE);
-        return placement == null ? NO_SOCKET : placement;
+        if(placement == null)
+            return NO_SOCKET;
+        double out = cordOffset();
+        if(out == 0)
+            return placement;
+        // Power Grid draws the cord's end three pixels against the block's facing, which on its own
+        // sockets points into the wall. This box's facing points out of it, so the origin is pushed
+        // out by twice that and the cord ends in front of the face, as it does on a Power Grid socket.
+        var facing = state.getValue(FACING);
+        return new ITerminalPlacement() {
+            @Override
+            public boolean check(Vec3 pos) {
+                return placement.check(pos);
+            }
+
+            @Override
+            public Vec3 getOrigin() {
+                return placement.getOrigin().relative(facing, out);
+            }
+        };
+    }
+
+    /** How far the cord origin moves out along the facing, in blocks; zero where the facing already points into the mount. */
+    protected double cordOffset() {
+        return 6 / 16.0;
     }
 
     /** The receptacle is never a wire terminal: Power Grid's cord looks for a clicked terminal before it looks for a socket. */

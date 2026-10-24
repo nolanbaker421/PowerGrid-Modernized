@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.conduit.gang;
 
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
@@ -73,6 +74,15 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
 
     public int gangs() {
         return gangs;
+    }
+
+    /** On a wall the default turn stands the box on end; a row of gangs runs across, so it is turned a quarter. Floors and ceilings keep the player's facing. */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        var state = super.getStateForPlacement(context);
+        if(state != null && state.getValue(FACING).getAxis().isHorizontal())
+            state = state.setValue(ROTATION, (state.getValue(ROTATION) + 1) % 4);
+        return state;
     }
 
     @Override

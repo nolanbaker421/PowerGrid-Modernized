@@ -17,13 +17,13 @@ import java.util.List;
 
 /** The settings of a radio, antenna, collector or meter antenna: a short form drawn over the world, Enter applies. */
 public class SettingsScreen extends Screen {
-    private static final int PANEL_W = 200, ROW_H = 24;
+    private static final int MIN_panelW = 200, ROW_H = 24, BOX_W = 90;
     private static final int PANEL_BG = 0xE0202024, PANEL_EDGE = 0xFF606068;
 
     private final BlockPos pos;
     private final List<ISettingsHost.Field> fields = new ArrayList<>();
     private final List<EditBox> boxes = new ArrayList<>();
-    private int panelX, panelY, panelH;
+    private int panelX, panelY, panelH, panelW;
 
     public SettingsScreen(BlockPos pos, Component title) {
         super(title);
@@ -39,11 +39,16 @@ public class SettingsScreen extends Screen {
         if(level != null && level.getBlockEntity(pos) instanceof ISettingsHost host)
             fields.addAll(host.settingsFields());
         panelH = 40 + ROW_H * fields.size() + 24;
-        panelX = (width - PANEL_W) / 2;
+        // The label column fits the widest label; the panel grows if the box would not fit beside it.
+        int labelW = 0;
+        for(var f : fields)
+            labelW = Math.max(labelW, font.width(Component.translatable(f.label())));
+        panelW = Math.max(MIN_panelW, 10 + labelW + 8 + BOX_W + 10);
+        panelX = (width - panelW) / 2;
         panelY = (height - panelH) / 2;
         for(int i = 0; i < fields.size(); ++i) {
             var field = fields.get(i);
-            var box = new EditBox(font, panelX + 100, panelY + 24 + ROW_H * i, 90, 16, Component.translatable(field.label()));
+            var box = new EditBox(font, panelX + panelW - BOX_W - 10, panelY + 24 + ROW_H * i, BOX_W, 16, Component.translatable(field.label()));
             box.setMaxLength(32);
             if(field.numeric())
                 box.setFilter(s -> s.matches("-?[0-9]*\\.?[0-9]*"));
@@ -79,8 +84,8 @@ public class SettingsScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
-        graphics.fill(panelX, panelY, panelX + PANEL_W, panelY + panelH, PANEL_BG);
-        graphics.renderOutline(panelX, panelY, PANEL_W, panelH, PANEL_EDGE);
+        graphics.fill(panelX, panelY, panelX + panelW, panelY + panelH, PANEL_BG);
+        graphics.renderOutline(panelX, panelY, panelW, panelH, PANEL_EDGE);
         graphics.drawString(font, title, panelX + 10, panelY + 8, 0xFFFFFF);
         for(int i = 0; i < fields.size(); ++i)
             graphics.drawString(font, Component.translatable(fields.get(i).label()), panelX + 10, panelY + 28 + ROW_H * i, 0xC0C0C0);
