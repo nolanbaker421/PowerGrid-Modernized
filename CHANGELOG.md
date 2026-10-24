@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.48.0 — 2026-10-24
+
+### Added
+- **Gang Boxes**, 1 to 4 gangs at four pixels a gang, taking device items: Single-Pole Switch,
+  3-Way Switch, 4-Way Switch, Push Button, Duplex Receptacle and Blank Insert. Devices fit and come
+  out with a click, switches flip, buttons let go, and every device's points sit in the splice
+  screen by gang; nothing lands by itself. A cord in the plate reaches the first receptacle. The
+  old Conduit Switch, Socket, Button and 3-Way blocks remain and craft into their devices.
+
 ## 0.47.2 — 2026-10-24
 
 ### Fixed

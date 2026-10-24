@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.client.GangBoxRenderer;
+import com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlockEntity;
 import com.nolanbaker.pgmodernized.client.ConduitBoxRenderer;
 import com.nolanbaker.pgmodernized.conduit.ConduitThreeWayBlockEntity;
 import com.nolanbaker.pgmodernized.client.GearCellRenderer;
@@ -135,6 +137,12 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<ConduitSwitchBlockEntity> CONDUIT_SWITCH =
             REGISTRATE.blockEntity("conduit_switch", ConduitSwitchBlockEntity::new)
                     .validBlocks(ModBlocks.CONDUIT_SWITCH, ModBlocks.CONDUIT_BUTTON)
+                    .register();
+
+    public static final BlockEntityEntry<GangBoxBlockEntity> GANG_BOX =
+            REGISTRATE.blockEntity("gang_box", GangBoxBlockEntity::new)
+                    .validBlocks(ModBlocks.GANG_BOX_1, ModBlocks.GANG_BOX_2, ModBlocks.GANG_BOX_3, ModBlocks.GANG_BOX_4)
+                    .renderer(() -> GangBoxRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<ConduitThreeWayBlockEntity> CONDUIT_SWITCH_3WAY =

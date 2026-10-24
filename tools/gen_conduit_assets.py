@@ -347,6 +347,68 @@ def three_way_model():
     dump(os.path.join(ASSETS, "blockstates", "conduit_switch_3way.json"), {"variants": variants})
 
 
+ITEM_TEX_DIR = os.path.join(ASSETS, "textures", "item")
+
+
+def gang_hubs(gangs):
+    left = 8 - 2 * gangs
+    hubs = [(7, 0.5, 4, 9, 2.5, 5), (7, 0.5, 11, 9, 2.5, 12)]
+    if gangs == 3:
+        hubs += [(left - 1, 0.5, 7, left, 2.5, 9), (16 - left, 0.5, 7, 17 - left, 2.5, 9)]
+    return hubs
+
+
+def gang_box_models():
+    """Gang boxes: a body four pixels a gang wide, a plate on top, knockouts north and south (east and west on the 3-gang)."""
+    tex = {"box": "%s:block/conduit_box" % MOD, "knockout": "%s:block/knockout_one" % MOD, "particle": "%s:block/conduit_box" % MOD}
+    for gangs in range(1, 5):
+        left = 8 - 2 * gangs
+        body = (left, 0, 5, 16 - left, 3, 11)
+        plate = (left + 0.5, 3, 5.5, 16 - left - 0.5, 3.5, 10.5)
+        boxes = [(body, "#box"), (plate, "#box")] + [(hub, "#knockout") for hub in gang_hubs(gangs)]
+        name = "gang_box_%d" % gangs
+        for suffix, transform in (("v", lambda b: b), ("h", to_h)):
+            elements = [element(*transform(box), texture) for box, texture in boxes]
+            dump(os.path.join(ASSETS, "models", "block", name, "block_%s.json" % suffix), {"parent": "block/block", "textures": tex, "elements": elements})
+        dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s/block_v" % (MOD, name)})
+        variants = {}
+        for key, (suffix, rot) in ROTATION4.items():
+            v = {"model": "%s:block/%s/block_%s" % (MOD, name, suffix)}
+            v.update(rot)
+            variants[key] = v
+        dump(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": variants})
+
+
+def gang_device_items():
+    """Item icons for the gang devices: a plate with the device on it."""
+    plate = (0xd8, 0xd8, 0xd8)
+    dark = (0x2a, 0x2a, 0x2a)
+    for device in ("blank", "switch", "switch_3way", "switch_4way", "button", "receptacle"):
+        img = canvas(16, 16)
+        fill(img, 3, 1, 13, 15, plate)
+        fill(img, 3, 14, 13, 15, shade(plate, 0.7))
+        fill(img, 12, 1, 13, 15, shade(plate, 0.8))
+        if device.startswith("switch"):
+            fill(img, 6, 4, 10, 12, (0xa0, 0xa0, 0xa0))
+            fill(img, 7, 5, 9, 8, (0xf4, 0xf4, 0xf4))        # the toggle, up
+            marks = {"switch": 0, "switch_3way": 3, "switch_4way": 4}[device]
+            for i in range(marks):
+                fill(img, 4 + 2 * i, 13, 5 + 2 * i, 14, dark)
+        elif device == "button":
+            fill(img, 5, 5, 11, 11, (0x40, 0x40, 0x40))
+            fill(img, 6, 6, 10, 10, (0xc8, 0x30, 0x30))
+            fill(img, 6, 6, 10, 7, (0xe0, 0x50, 0x50))
+        elif device == "receptacle":
+            face = (0xe8, 0xe4, 0xda)
+            fill(img, 5, 3, 11, 13, face)
+            for y in (4, 9):
+                fill(img, 6, y, 7, y + 2, dark)
+                fill(img, 9, y, 10, y + 2, dark)
+                fill(img, 7, y + 3, 9, y + 4, dark)
+        write_png(os.path.join(ITEM_TEX_DIR, "gang_%s.png" % device), img)
+        dump(os.path.join(ASSETS, "models", "item", "gang_%s.json" % device), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/gang_%s" % (MOD, device)}})
+
+
 def pull_box_assets():
     """A full-block grey cabinet: a door with a handle on the front, two flush knockouts on every other face."""
     block = os.path.join(ASSETS, "textures", "block")
@@ -471,6 +533,27 @@ def recipes():
     shaped("conduit_socket", ["NCN", " N "], {"N": nugget, "C": {"tag": "c:nuggets/copper"}}, 2, {"items": "powergrid:wire"})
     shaped("conduit_switch", ["NLN", " N "], {"N": nugget, "L": {"item": "minecraft:lever"}}, 2, {"items": "powergrid:wire"})
     shaped("conduit_button", ["NBN", " N "], {"N": nugget, "B": {"item": "minecraft:stone_button"}}, 2, {"items": "powergrid:wire"})
+    # Gang boxes: an iron plate a gang on a nugget frame.
+    plate = {"tag": "c:plates/iron"}
+    shaped("gang_box_1", ["NPN"], {"N": nugget, "P": plate}, 1, {"items": "powergrid:wire"})
+    shaped("gang_box_2", ["PP", "NN"], {"N": nugget, "P": plate}, 1, {"items": "%s:gang_box_1" % MOD})
+    shaped("gang_box_3", ["PPP", "NNN"], {"N": nugget, "P": plate}, 1, {"items": "%s:gang_box_1" % MOD})
+    shaped("gang_box_4", ["PPP", "PNN"], {"N": nugget, "P": plate}, 1, {"items": "%s:gang_box_1" % MOD})
+    # Devices.
+    lever = {"item": "minecraft:lever"}
+    recipe_shapeless("gang_blank", [nugget, nugget], 2, {"items": "%s:gang_box_1" % MOD})
+    recipe_shapeless("gang_switch", [lever, nugget], 1, {"items": "%s:gang_box_1" % MOD})
+    recipe_shapeless("gang_switch_3way", [lever, lever, nugget], 1, {"items": "%s:gang_switch" % MOD})
+    recipe_shapeless("gang_switch_4way", [lever, lever, lever, nugget], 1, {"items": "%s:gang_switch_3way" % MOD})
+    recipe_shapeless("gang_button", [{"item": "minecraft:stone_button"}, nugget], 1, {"items": "%s:gang_box_1" % MOD})
+    recipe_shapeless("gang_receptacle", [{"tag": "c:ingots/copper"}, nugget, nugget], 1, {"items": "%s:gang_box_1" % MOD})
+    # The old single blocks turn into their device.
+    for old, device in (("conduit_switch", "gang_switch"), ("conduit_button", "gang_button"), ("conduit_switch_3way", "gang_switch_3way"), ("conduit_socket", "gang_receptacle")):
+        dump(os.path.join(DATA, "recipe", "crafting", device + "_from_" + old + ".json"), {
+            "type": "minecraft:crafting_shapeless", "category": "misc",
+            "ingredients": [{"item": "%s:%s" % (MOD, old)}],
+            "result": {"count": 1, "id": "%s:%s" % (MOD, device)},
+        })
     shaped("conduit_switch_3way", ["NLN", "LNL"], {"N": nugget, "L": {"item": "minecraft:lever"}}, 2, {"items": "%s:conduit_switch" % MOD})
     shaped("pull_box", ["PPP", "P P", "PPP"], {"P": {"tag": "c:plates/iron"}}, 1, {"items": "powergrid:wire"})
     shaped("terminal_cabinet", ["NNN", "NBN", "NNN"], {"N": {"tag": "c:nuggets/copper"}, "B": {"item": "%s:pull_box" % MOD}}, 1,
@@ -498,6 +581,8 @@ def main():
     switch_model()
     button_model()
     three_way_model()
+    gang_box_models()
+    gang_device_items()
     pull_box_assets()
     item_models()
     loot_table("conduit_box")
@@ -505,6 +590,8 @@ def main():
     loot_table("conduit_switch")
     loot_table("conduit_button")
     loot_table("conduit_switch_3way")
+    for gangs in range(1, 5):
+        loot_table("gang_box_%d" % gangs)
     loot_table("pull_box")
     loot_table("terminal_cabinet")
     recipes()

@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitThreeWayBlock;
 import com.nolanbaker.pgmodernized.conduit.ConduitButtonBlock;
 import com.nolanbaker.pgmodernized.device.helm.RadioBaseBlock;
@@ -500,6 +501,25 @@ public class ModBlocks {
             .register();
 
     /** A light switch on the end of a run: the first two pulled wires land on its poles and the toggle joins them. */
+    /** Device boxes of one to four gangs; the devices are items. */
+    public static final BlockEntry<GangBoxBlock> GANG_BOX_1 = gangBox(1);
+    public static final BlockEntry<GangBoxBlock> GANG_BOX_2 = gangBox(2);
+    public static final BlockEntry<GangBoxBlock> GANG_BOX_3 = gangBox(3);
+    public static final BlockEntry<GangBoxBlock> GANG_BOX_4 = gangBox(4);
+
+    private static BlockEntry<GangBoxBlock> gangBox(int gangs) {
+        return REGISTRATE.block("gang_box_" + gangs, p -> new GangBoxBlock(p, gangs))
+                .blockstate(NonNullBiConsumer.noop())
+                .initialProperties(SharedProperties::softMetal)
+                .properties(p -> p.noOcclusion())
+                .transform(pickaxeOnly())
+                .lang(gangs + "-Gang Box")
+                .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+                .register();
+    }
+
     /** A momentary button on a run: the switch that lets go. */
     public static final BlockEntry<ConduitButtonBlock> CONDUIT_BUTTON = REGISTRATE.block("conduit_button", ConduitButtonBlock::new)
             .blockstate(NonNullBiConsumer.noop())

@@ -204,6 +204,7 @@ The **Conduit Socket** is the equipment end of a run: a 6 x 6 px fitting with on
 cord socket, placed like Power Grid's socket: wrench its face to turn the knockout. The first two wires pulled through its run land on the socket's two poles by
 themselves, and a Power Grid copper cord plugs into it with one click, then splits onto the
 machine as usual. A cord's split end can also land directly on two cover terminals of a Conduit Box.
+**Gang Boxes** of one to four gangs take device items, single-pole, 3-way and 4-way switches, push buttons, receptacles and blanks, all wired from the splice screen. The older single-device fittings remain:
 The **Conduit Switch** is the same fitting with a toggle instead of a socket: the first two wires
 pulled through its run land on Line and Load, and an empty-hand click joins or parts them.
 

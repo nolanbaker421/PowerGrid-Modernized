@@ -1,0 +1,282 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "box": "powergrid_modernized:block/conduit_box",
+    "knockout": "powergrid_modernized:block/knockout_one",
+    "particle": "powergrid_modernized:block/conduit_box"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        5
+      ],
+      "to": [
+        12,
+        3,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            13,
+            12,
+            16
+          ],
+          "texture": "#box"
+        },
+        "south": {
+          "uv": [
+            4,
+            13,
+            12,
+            16
+          ],
+          "texture": "#box"
+        },
+        "east": {
+          "uv": [
+            5,
+            13,
+            11,
+            16
+          ],
+          "texture": "#box"
+        },
+        "west": {
+          "uv": [
+            5,
+            13,
+            11,
+            16
+          ],
+          "texture": "#box"
+        },
+        "up": {
+          "uv": [
+            4,
+            5,
+            12,
+            11
+          ],
+          "texture": "#box"
+        },
+        "down": {
+          "uv": [
+            4,
+            5,
+            12,
+            11
+          ],
+          "texture": "#box"
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        3,
+        5.5
+      ],
+      "to": [
+        11.5,
+        3.5,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4.5,
+            12.5,
+            11.5,
+            13
+          ],
+          "texture": "#box"
+        },
+        "south": {
+          "uv": [
+            4.5,
+            12.5,
+            11.5,
+            13
+          ],
+          "texture": "#box"
+        },
+        "east": {
+          "uv": [
+            5.5,
+            12.5,
+            10.5,
+            13
+          ],
+          "texture": "#box"
+        },
+        "west": {
+          "uv": [
+            5.5,
+            12.5,
+            10.5,
+            13
+          ],
+          "texture": "#box"
+        },
+        "up": {
+          "uv": [
+            4.5,
+            5.5,
+            11.5,
+            10.5
+          ],
+          "texture": "#box"
+        },
+        "down": {
+          "uv": [
+            4.5,
+            5.5,
+            11.5,
+            10.5
+          ],
+          "texture": "#box"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        0.5,
+        4
+      ],
+      "to": [
+        9,
+        2.5,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            13.5,
+            9,
+            15.5
+          ],
+          "texture": "#knockout"
+        },
+        "south": {
+          "uv": [
+            7,
+            13.5,
+            9,
+            15.5
+          ],
+          "texture": "#knockout"
+        },
+        "east": {
+          "uv": [
+            11,
+            13.5,
+            12,
+            15.5
+          ],
+          "texture": "#knockout"
+        },
+        "west": {
+          "uv": [
+            4,
+            13.5,
+            5,
+            15.5
+          ],
+          "texture": "#knockout"
+        },
+        "up": {
+          "uv": [
+            7,
+            4,
+            9,
+            5
+          ],
+          "texture": "#knockout"
+        },
+        "down": {
+          "uv": [
+            7,
+            11,
+            9,
+            12
+          ],
+          "texture": "#knockout"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        0.5,
+        11
+      ],
+      "to": [
+        9,
+        2.5,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            13.5,
+            9,
+            15.5
+          ],
+          "texture": "#knockout"
+        },
+        "south": {
+          "uv": [
+            7,
+            13.5,
+            9,
+            15.5
+          ],
+          "texture": "#knockout"
+        },
+        "east": {
+          "uv": [
+            4,
+            13.5,
+            5,
+            15.5
+          ],
+          "texture": "#knockout"
+        },
+        "west": {
+          "uv": [
+            11,
+            13.5,
+            12,
+            15.5
+          ],
+          "texture": "#knockout"
+        },
+        "up": {
+          "uv": [
+            7,
+            11,
+            9,
+            12
+          ],
+          "texture": "#knockout"
+        },
+        "down": {
+          "uv": [
+            7,
+            4,
+            9,
+            5
+          ],
+          "texture": "#knockout"
+        }
+      }
+    }
+  ]
+}

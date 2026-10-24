@@ -1,5 +1,7 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.conduit.gang.GangDeviceItem;
+import com.nolanbaker.pgmodernized.conduit.gang.GangDevice;
 import com.nolanbaker.pgmodernized.radio.CellCardItem;
 import com.nolanbaker.pgmodernized.device.gear.GearComponentItem;
 import com.nolanbaker.pgmodernized.device.gear.GearKind;
@@ -48,6 +50,25 @@ public class ModItems {
             .model(NonNullBiConsumer.noop())
             .lang("Meter Antenna")
             .register();
+
+    /** The devices a gang box takes, by kind. */
+    public static final Map<GangDevice, ItemEntry<GangDeviceItem>> GANG_DEVICES = gangDevices();
+
+    private static Map<GangDevice, ItemEntry<GangDeviceItem>> gangDevices() {
+        var map = new EnumMap<GangDevice, ItemEntry<GangDeviceItem>>(GangDevice.class);
+        for(var device : GangDevice.values()) {
+            map.put(device, REGISTRATE.item("gang_" + device.id(), props -> new GangDeviceItem(props, device))
+                    .model(NonNullBiConsumer.noop())
+                    .lang(device.label())
+                    .register());
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    /** One of that device, as an item. */
+    public static ItemStack gangDevice(GangDevice device) {
+        return GANG_DEVICES.get(device).asStack();
+    }
 
     /** The installer's boresight scope: sights two antennas in on each other. */
     public static final ItemEntry<AlignmentScopeItem> ALIGNMENT_SCOPE = REGISTRATE.item("alignment_scope", AlignmentScopeItem::new)

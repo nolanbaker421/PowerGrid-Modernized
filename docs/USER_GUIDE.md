@@ -824,6 +824,24 @@ a standard bulb, since they had a lamp built in.
 
 Conduit runs now show a coupling at every corner and both ends, a pixel proud of the tube.
 
+### Gang boxes
+
+The **Gang Box** comes in 1-, 2-, 3- and 4-gang sizes, four pixels a gang, and takes devices as
+items: a **Single-Pole Switch**, a **3-Way Switch**, a **4-Way Switch**, a **Push Button**, a
+**Duplex Receptacle** and a **Blank Insert**. Mount it like the conduit switch, on any face and
+turned with a wrench; knockouts top and bottom, and on the 3-gang at the sides too. Right-click a
+gang with a device to fit it, sneak-click the device with an empty hand to take it out, click a
+switch to flip it or a button to press it (it lets go after half a second).
+
+Nothing lands by itself. Sneak-click an empty gang or the plate for the splice screen: every device
+shows its points by gang, Line and Load for a switch or button, Common and the two Travellers for a
+3-way, In A, In B, Out A and Out B for a 4-way (straight or crossed), Line and Neutral for a
+receptacle, and you splice the run's conductors to them. A power cord plugs into the plate and
+lands on the first receptacle in the box.
+
+The Conduit Switch, Conduit Socket, Conduit Button and 3-Way Conduit Switch blocks stay for
+builds that have them; each crafts into its gang device.
+
 ### Conduit button and 3-way switch
 
 - **Conduit Button** (nuggets and a stone button): the conduit switch that lets go. Click it and its

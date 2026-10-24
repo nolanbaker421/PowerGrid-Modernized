@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "P": {
+      "tag": "c:plates/iron"
+    }
+  },
+  "pattern": [
+    "NPN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:gang_box_1"
+  }
+}
