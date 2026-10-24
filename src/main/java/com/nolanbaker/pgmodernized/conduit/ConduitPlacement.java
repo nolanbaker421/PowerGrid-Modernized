@@ -188,12 +188,26 @@ public final class ConduitPlacement {
             continueDir = existing.segments.get(existing.segments.size() - 1).direction;
         } else {
             lastPoint = BlockTrace.alignPosition(lastPoint);
-            // A box on a ceiling tile sits inside the tile's block: leave it upward, never down through the tile.
-            if(from instanceof BlockWireEndpoint start && level.getBlockState(start.getPos()).getBlock() instanceof CeilingConduitBoxBlock)
-                continueDir = Direction.UP;
+        }
+        // A run leaves a knockout dead centre and square: a straight stub along the knockout's face
+        // normal, and only then the tracer. The same at the far end, in reverse, so the tube enters
+        // the target knockout the same way instead of wherever the route happened to arrive.
+        var stubs = new ArrayList<BlockWireEntity.Point>();
+        if(existing == null && from instanceof BlockWireEndpoint start) {
+            var exit = Knockouts.exit(level, start);
+            if(exit != null) {
+                stubs.add(new BlockWireEntity.Point(exit, Knockouts.STUB_PX));
+                lastPoint = lastPoint.relative(exit, Knockouts.STUB_PX / 16.0);
+                continueDir = exit;
+            }
         }
         var targetPoint = BodySpace.local(level, to);
         ITerminalPlacement terminal = to instanceof BlockWireEndpoint hub ? hub.getTerminalPlacement(level) : null;
+        Direction entry = to instanceof BlockWireEndpoint hub ? Knockouts.exit(level, hub) : null;
+        if(entry != null) {
+            targetPoint = BlockTrace.alignPosition(targetPoint).relative(entry, Knockouts.STUB_PX / 16.0);
+            terminal = null;
+        }
 
         if(!SableUtils.sameSubLevel(level, lastPoint, targetPoint)) {
             message(player, "message.connection_different_bodies", ChatFormatting.RED);
@@ -204,8 +218,12 @@ public final class ConduitPlacement {
             message(player, "message.connection_no_path", ChatFormatting.RED);
             return InteractionResultHolder.fail(null);
         }
+        var points = new ArrayList<>(stubs);
+        points.addAll(path.points());
+        if(entry != null)
+            points.add(new BlockWireEntity.Point(entry.getOpposite(), Knockouts.STUB_PX));
         float addedLength = 0;
-        for(var point : path.points())
+        for(var point : points)
             addedLength += point.length();
 
         boolean closes = to instanceof BlockWireEndpoint;
@@ -217,7 +235,7 @@ public final class ConduitPlacement {
             }
             if(level.isClientSide)
                 return InteractionResultHolder.success(null);
-            var entity = ConduitRunEntity.create(level, from, stack.copyWithCount(newItems), path.points());
+            var entity = ConduitRunEntity.create(level, from, stack.copyWithCount(newItems), points);
             if(closes)
                 entity.setEndpoint2(to);
             SubLevelStick.stick(entity);
@@ -236,7 +254,7 @@ public final class ConduitPlacement {
             }
             if(level.isClientSide)
                 return InteractionResultHolder.success(null);
-            existing.extend(path.points(), newItems);
+            existing.extend(points, newItems);
             if(closes)
                 existing.setEndpoint2(to);
             existing.sendExtraData();

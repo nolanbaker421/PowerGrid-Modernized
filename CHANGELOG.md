@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.48.8 — 2026-10-24
+
+### Changed
+- Conduit runs leave and enter a knockout dead centre and square: a four-pixel straight stub along
+  the knockout's face normal at each end, and the tracer only routes between the stubs. No more
+  tubes a pixel off the knockout's centre line or stopping short of the box. Runs continued from an
+  open end keep their line; the ceiling tile box's runs still leave upward.
+
 ## 0.48.7 — 2026-10-24
 
 ### Changed
