@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.50.3 — 2026-10-24
+
+### Fixed
+- Conduit straights were black: Power Grid's segment call takes the colour in its fourth slot and
+  the entity id last, for its texture tile, and the renderer had those swapped since 0.50.0.
+- Gaps between a straight and its elbow: each straight now runs half a pixel into the bend.
+
 ## 0.50.2 — 2026-10-24
 
 ### Changed

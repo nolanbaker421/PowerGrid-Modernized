@@ -3,7 +3,6 @@ package com.nolanbaker.pgmodernized.client;
 import org.joml.Matrix4f;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec3;
@@ -97,12 +96,16 @@ public class BodyWireRenderer extends BlockWireRenderer {
                 len += 1 / 16f;
             }
             float rIn = i > 0 ? radii[i - 1] : 0, rOut = radii[i];
-            start = start.relative(dir, rIn);
-            len -= rIn + rOut;
+            // Shortened by the bend radius at each corner, less half a pixel so the straight runs into its elbow.
+            float lap = 0.5f / 16;
+            float cutIn = rIn > 0 ? rIn - lap : 0, cutOut = rOut > 0 ? rOut - lap : 0;
+            start = start.relative(dir, cutIn);
+            len -= cutIn + cutOut;
             var mid = run.position().add(start).add(Vec3.atLowerCornerOf(dir.getNormal()).scale(len / 2));
             int segLight = brightest(run, mid);
+            // Power Grid's segment call: light, colour, start, direction, thickness, length, and the entity id for its texture tile.
             if(len > 0.001f)
-                renderSegment(poseStack, consumer, segLight, OverlayTexture.NO_OVERLAY, start, dir, t, len, color);
+                renderSegment(poseStack, consumer, segLight, color, start, dir, t, len, run.getId());
             var next = pos.add(seg.vector());
             if(rOut > 0.001f)
                 elbow(poseStack, buffer, segLight, next, dir, segs.get(i + 1).direction, rOut, t, rgb);
