@@ -822,7 +822,7 @@ its warm-up, its burnout at too high a voltage, and its light level, drawn with 
 model in the socket. A socket without a bulb is dark. Light sockets from before this version keep
 a standard bulb, since they had a lamp built in.
 
-Conduit runs now show a coupling at every corner and both ends, a pixel proud of the tube.
+Conduit runs show a coupling at every corner, half a pixel proud of the tube.
 
 ### Gang boxes
 

@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.48.6 — 2026-10-24
+
+### Fixed
+- Conduit couplings at the ends of a run were a pixel proud of the tube, which on 1-1/2" conduit
+  made five-pixel cubes that hid a box's terminals. Ends get no coupling, since the knockout is the
+  fitting there; corners keep one, half a pixel proud.
+
 ## 0.48.5 — 2026-10-24
 
 ### Fixed

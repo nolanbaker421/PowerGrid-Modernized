@@ -56,25 +56,26 @@ public class BodyWireRenderer extends BlockWireRenderer {
     }
 
     /**
-     * A coupling at every corner and both ends of a conduit run: a cube a pixel proud of the tube,
-     * in the tube's colour darkened, so joints read as fittings instead of bare ends meeting.
+     * A coupling at every corner of a conduit run: a cube half a pixel proud of the tube, in the
+     * tube's colour darkened, so an elbow reads as a fitting instead of two bare ends meeting. The
+     * ends get nothing: the knockout they land in is the fitting there, and a collar that size on an
+     * eight-pixel box covered its terminals.
      */
     private static void collars(BlockWireEntity entity, PoseStack poseStack, MultiBufferSource buffer, int light) {
-        if(!(entity instanceof ConduitRunEntity run) || run.isNipple() || run.segments.isEmpty())
+        if(!(entity instanceof ConduitRunEntity run) || run.isNipple() || run.segments.size() < 2)
             return;
-        double half = run.size().tubeThickness() * 16 / 2 + 1;
+        double half = run.size().tubeThickness() * 16 / 2 + 0.5;
         int rgb = entity.getColor() & 0xFFFFFF;
         int r = (int) ((rgb >> 16 & 0xFF) * 0.8), g = (int) ((rgb >> 8 & 0xFF) * 0.8), b = (int) ((rgb & 0xFF) * 0.8);
         int shade = r << 16 | g << 8 | b;
         var pos = Vec3.ZERO;
         BlockWireEntity.Point last = null;
         for(var segment : run.segments) {
-            if(last == null || last.direction != segment.direction)
+            if(last != null && last.direction != segment.direction)
                 collar(poseStack, buffer, light, pos, half, shade);
             pos = pos.add(segment.vector());
             last = segment;
         }
-        collar(poseStack, buffer, light, pos, half, shade);
     }
 
     private static void collar(PoseStack poseStack, MultiBufferSource buffer, int light, Vec3 at, double half, int rgb) {
