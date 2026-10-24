@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.48.1 — 2026-10-24
+
+### Fixed
+- Placing a gang box crashed: its device arrays were made by field initialisers, which run after
+  Power Grid's base constructor has already asked for the circuit. They are made on first use now.
+
 ## 0.48.0 — 2026-10-24
 
 ### Added

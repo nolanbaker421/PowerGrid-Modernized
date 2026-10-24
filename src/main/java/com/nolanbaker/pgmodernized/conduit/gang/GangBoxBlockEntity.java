@@ -40,16 +40,26 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     private static final int HOLD_TICKS = 10;
 
     private SpliceSupport splices;
-    private final GangDevice[] devices = new GangDevice[GangLayout.MAX_GANGS];
-    private final boolean[] on = new boolean[GangLayout.MAX_GANGS];
-    private final int[] hold = new int[GangLayout.MAX_GANGS];
+    // No initialisers: buildCircuit runs from the superclass constructor, before field initialisers would.
+    private GangDevice[] devices;
+    private boolean[] on;
+    private int[] hold;
     /** Up to four contacts a gang, by device: [line-load], [common-A, common-B], [inA-outA, inB-outB, inA-outB, inB-outA]. */
-    private final SwitchedWire[][] contacts = new SwitchedWire[GangLayout.MAX_GANGS][];
+    private SwitchedWire[][] contacts;
     private List<SplicePoint> points;
 
     public GangBoxBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         setLazyTickRate(20);
+    }
+
+    private void ensureArrays() {
+        if(devices == null) {
+            devices = new GangDevice[GangLayout.MAX_GANGS];
+            on = new boolean[GangLayout.MAX_GANGS];
+            hold = new int[GangLayout.MAX_GANGS];
+            contacts = new SwitchedWire[GangLayout.MAX_GANGS][];
+        }
     }
 
     public int gangs() {
@@ -58,10 +68,12 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     @Nullable
     public GangDevice device(int slot) {
+        ensureArrays();
         return slot >= 0 && slot < GangLayout.MAX_GANGS ? devices[slot] : null;
     }
 
     public boolean isOn(int slot) {
+        ensureArrays();
         return slot >= 0 && slot < GangLayout.MAX_GANGS && on[slot];
     }
 
@@ -76,6 +88,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
+        ensureArrays();
         builder.setTerminalCount(GangLayout.TERMINAL_COUNT);
         splices().buildCircuit(builder);
         float r = resistance("contact");
@@ -112,6 +125,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     }
 
     private void applyContacts(int slot) {
+        ensureArrays();
         var wires = contacts[slot];
         var device = devices[slot];
         if(wires == null || device == null)
@@ -150,6 +164,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     /** Server side: puts the device in the gang clicked, or the first empty one; a full box says so. */
     public void install(int slot, GangDevice device, Player player, ItemStack stack) {
+        ensureArrays();
         if(level == null || level.isClientSide)
             return;
         int gangs = gangs();
@@ -177,6 +192,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     /** Server side: takes the device out of that gang; its splices go with it. */
     public void remove(int slot, Player player) {
+        ensureArrays();
         if(level == null || level.isClientSide || device(slot) == null)
             return;
         var stack = ModItems.gangDevice(devices[slot]);
@@ -194,6 +210,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     /** The box is going: every device falls out. */
     public void dropDevices() {
+        ensureArrays();
         if(level == null || level.isClientSide)
             return;
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
@@ -205,6 +222,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     /** Server side: a switch flips; a button closes for its hold time. */
     public void toggle(int slot, Player player) {
+        ensureArrays();
         var device = device(slot);
         if(device == null || !device.toggles() || level == null || level.isClientSide)
             return;
@@ -217,6 +235,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     }
 
     private void setOn(int slot, boolean value) {
+        ensureArrays();
         on[slot] = value;
         applyContacts(slot);
         if(level != null)
@@ -227,6 +246,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     @Override
     public void tick() {
+        ensureArrays();
         super.tick();
         if(level == null || level.isClientSide)
             return;
@@ -248,6 +268,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     @Override
     public List<SplicePoint> points() {
+        ensureArrays();
         if(points == null) {
             var list = new ArrayList<SplicePoint>();
             for(int slot = 0; slot < gangs(); ++slot) {
@@ -266,6 +287,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     @Override
     public boolean isPoint(int terminal) {
+        ensureArrays();
         if(!GangLayout.isPoint(terminal))
             return false;
         var device = device(GangLayout.slotOfPoint(terminal));
@@ -322,6 +344,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     // ---- persistence ----
 
     private void writeDevices(CompoundTag tag) {
+        ensureArrays();
         var list = new ListTag();
         int bits = 0;
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
@@ -349,6 +372,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        ensureArrays();
         super.read(tag, registries, clientPacket);
         splices().read(tag);
         var list = tag.getList("Devices", Tag.TAG_STRING);
@@ -373,6 +397,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        ensureArrays();
         Lang.builder().translate("gui.gang.title", gangs()).style(ChatFormatting.GRAY).forGoggles(tooltip);
         for(int slot = 0; slot < gangs(); ++slot) {
             var device = devices[slot];
