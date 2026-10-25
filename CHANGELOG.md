@@ -4,6 +4,17 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.51.1 — 2026-10-24
+
+### Fixed
+- Conduit is drawn by the mod's own tube renderer now instead of Power Grid's segment call. The
+  stripes along straights were Power Grid tiling its banded wire texture down each leg; straights
+  are a flat-shaded tube now. The stacked and offset pieces at corners were the knockout stubs and
+  wall-lift legs being cut to nothing by the bend allowance and leaving only their elbow cubes;
+  a leg is now drawn exactly between its elbows, and a corner with no room for a bend gets a
+  plain joint. Elbows are swept quarter circles in the tube's own section, so there are no gaps
+  or steps, and each end wears a short connector collar at the knockout.
+
 ## 0.51.0 — 2026-10-24
 
 ### Added
