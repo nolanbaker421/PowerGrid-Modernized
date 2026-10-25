@@ -6,7 +6,6 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.phys.Vec3;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.nolanbaker.pgmodernized.util.BodyRider;
 import dev.ryanhcode.sable.companion.ClientSubLevelAccess;
 import dev.ryanhcode.sable.companion.SableCompanion;
@@ -62,8 +61,7 @@ public class BodyWireRenderer extends BlockWireRenderer {
      * along every straight and runs each one half a tube past its ends. Here a straight is a plain
      * flat-shaded tube drawn exactly from where it starts to where it stops, every corner with
      * room for it gets a swept elbow between the shortened legs, a corner without room gets a
-     * cube, and each end wears a collar where it enters the knockout. Nipples and non-conduit
-     * block wires still go through Power Grid's renderer.
+     * cube. Nipples and non-conduit block wires still go through Power Grid's renderer.
      */
     private void draw(BlockWireEntity entity, float yaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int light) {
         if(!(entity instanceof ConduitRunEntity run) || run.isNipple() || run.segments.isEmpty()) {
@@ -111,7 +109,6 @@ public class BodyWireRenderer extends BlockWireRenderer {
             }
             pos = end;
         }
-        collars(run, pose, consumer, t, rgb);
     }
 
     /**
@@ -128,29 +125,6 @@ public class BodyWireRenderer extends BlockWireRenderer {
                 best = Math.max(best & 0xFFFF, light & 0xFFFF) | Math.max(best >> 16 & 0xFFFF, light >> 16 & 0xFFFF) << 16;
         }
         return best;
-    }
-
-    /** A connector collar at each end: half a pixel proud of the tube, two pixels long, a shade darker, just off the knockout. */
-    private static void collars(ConduitRunEntity run, PoseStack.Pose pose, VertexConsumer consumer, float t, int rgb) {
-        int r = (int) ((rgb >> 16 & 0xFF) * 0.8), g = (int) ((rgb >> 8 & 0xFF) * 0.8), b = (int) ((rgb & 0xFF) * 0.8);
-        int shade = r << 16 | g << 8 | b;
-        var first = run.segments.get(0);
-        collar(run, pose, consumer, Vec3.ZERO, first.direction, t, shade);
-        var pos = Vec3.ZERO;
-        BlockWireEntity.Point last = null;
-        for(var segment : run.segments) {
-            pos = pos.add(segment.vector());
-            last = segment;
-        }
-        if(last != null)
-            collar(run, pose, consumer, pos, last.direction.getOpposite(), t, shade);
-    }
-
-    private static void collar(ConduitRunEntity run, PoseStack.Pose pose, VertexConsumer consumer, Vec3 at, Direction into, float t, int rgb) {
-        var from = at.relative(into, 0.5 / 16);
-        var to = at.relative(into, 2.5 / 16);
-        int light = brightest(run, run.position().add(from));
-        TubeDraw.straight(pose, consumer, light, rgb, from, to, t + 1 / 16f);
     }
 
     @Override

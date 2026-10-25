@@ -27,41 +27,6 @@ public final class Knockouts {
         return normal(level, endpoint);
     }
 
-    /**
-     * How far, and which way, a run must step off the wall behind the knockout so a tube of that
-     * radius clears it: the knockout sits a pixel and a half off the mount, so a 2" tube would bury
-     * its back half. Null when nothing solid stands behind or the tube already clears it.
-     */
-    @Nullable
-    public static Lift lift(Level level, BlockWireEndpoint endpoint, Direction exit, double tubeRadius) {
-        if(!(endpoint.getTerminalPlacement(level) instanceof TerminalBoundingBox box))
-            return null;
-        var o = box.getOutline();
-        double scale = Math.max(Math.abs(o.maxX), Math.max(Math.abs(o.maxY), Math.abs(o.maxZ))) > 2 ? 1 / 16.0 : 1;
-        var c = o.getCenter().scale(scale);
-        var pos = endpoint.getPos();
-        Lift best = null;
-        for(var wall : Direction.values()) {
-            if(wall.getAxis() == exit.getAxis())
-                continue;
-            var behind = pos.relative(wall);
-            if(!level.getBlockState(behind).isFaceSturdy(level, behind, wall.getOpposite()))
-                continue;
-            double coordinate = c.get(wall.getAxis());
-            double clearance = wall.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 - coordinate : coordinate;
-            double need = tubeRadius + 0.5 / 16 - clearance;
-            if(need <= 0)
-                continue;
-            int px = (int) Math.ceil(need * 16);
-            if(best == null || px > best.pixels())
-                best = new Lift(wall.getOpposite(), px);
-        }
-        return best;
-    }
-
-    /** A step off a wall: which way, and how many pixels. */
-    public record Lift(Direction away, int pixels) {}
-
     @Nullable
     public static Direction normal(Level level, BlockWireEndpoint endpoint) {
         if(!(endpoint.getTerminalPlacement(level) instanceof TerminalBoundingBox box))

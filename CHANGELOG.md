@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.51.2 — 2026-10-24
+
+### Fixed
+- Runs hug their wall again. The wall-lift leg from 0.50.5 fired for 1-1/2" and up because its
+  half-pixel safety margin tipped every size over the line, and the one- or two-pixel jog it put
+  in made a lump of joints at each knockout. Tube above 1" now sits a fraction of a pixel into
+  its wall, as it did before, which is what flush looks like.
+- The connector collars at the ends of a run are gone; the tube enters the knockout at its own
+  size, as asked.
+
 ## 0.51.1 — 2026-10-24
 
 ### Fixed
