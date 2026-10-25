@@ -4,6 +4,20 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.51.0 — 2026-10-24
+
+### Added
+- **Conduit Bender** (an iron plate over two iron ingots on the diagonal). Click a leg of a laid
+  run to slide it one step away from the face you clicked. The legs either side grow or shrink to
+  follow, a leg that shrinks to nothing goes, and a push across a leg on another axis puts in a
+  new corner, so offsets, kicks and saddles take a few clicks. Sneak-use in the air cycles the
+  step through 1, 2, 4 and 8 px. Sticks are taken from or handed back to your inventory as the run
+  changes length, and the wires inside follow the new path. The stubs into knockouts never move.
+- Sneak-click a run with the bender to pick the whole run up: sticks and wires, colours and
+  labels. The loaded bender lays conduit like the conduit item, spending its own sticks first, and
+  when the new run closes on a knockout the wires go back in; a wire that no longer reaches is
+  handed back. Sneak-use in the air hands a held run back as items.
+
 ## 0.50.5 — 2026-10-24
 
 ### Fixed

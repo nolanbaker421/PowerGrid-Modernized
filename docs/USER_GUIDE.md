@@ -838,6 +838,23 @@ clamps side by side, so a rack of conduit comes out straight and evenly spaced.
 Knockouts are flat marks in the trade-size colour now, not boxes standing off the body; the
 clickable hubs are where they always were, shown while conduit is in hand.
 
+### Conduit Bender
+
+The **Conduit Bender** (an iron plate over two iron ingots on the diagonal) reshapes a run after it
+is laid. Click a leg and it slides one step away from the face you clicked. The legs either side
+grow or shrink to follow; a leg that shrinks to nothing goes and its two corners become one, and a
+push across a neighbour that runs on another axis puts in a new leg and a new corner. A few clicks
+make an offset, a kick or a saddle around a beam. The step is 1 px; sneak and use the bender in
+the air to cycle it through 2, 4 and 8. Sticks come out of your inventory as the run grows and go
+back as it shrinks, and the wires inside follow the new path. The stubs into the knockouts never
+move: bend the leg after them.
+
+Sneak-click a run to pick the whole run up into the bender, sticks and wires alike, with each
+wire's colour and label. The loaded bender lays conduit exactly like the conduit item, from a
+knockout, along blocks and strut, to a knockout, spending the sticks it holds before any in your
+inventory. When the new run closes, the wires go back in; one that no longer reaches is handed back
+to you instead. Sneak-use in the air with a loaded bender hands the whole run back as items.
+
 ### Gang boxes
 
 The **Gang Box** comes in 1-, 2-, 3- and 4-gang sizes, four pixels a gang, and takes devices as
@@ -1103,6 +1120,7 @@ adapter placed next to them:
 | Conduit (8) | iron nuggets / ingots over copper wire; 1" adds a second row of ingots; bigger sizes ring copper wire with iron ingots, then iron blocks |
 | THHN wire (8) | shapeless: dried kelp with copper nuggets (14, 12, 10 AWG), copper ingots (8 AWG to 4/0) or copper blocks (250 kcmil and up) |
 | Conduit Box (2) | ring of eight iron nuggets |
+| Conduit Bender | an iron plate top right, two iron ingots down the diagonal |
 | Blank Cover Plate (2) | an iron plate |
 | Node Cover Plate | a blank cover plate and pins, shapeless |
 | Pull Box | ring of eight iron plates |

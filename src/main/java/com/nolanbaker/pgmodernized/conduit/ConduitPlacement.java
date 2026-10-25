@@ -34,7 +34,8 @@ import java.util.ArrayList;
 /**
  * Placement of conduit runs, a port of Power Grid's block-wire flow (via the Cat6 cable): a hub
  * starts a run, clicks on blocks route it along their surfaces, another hub closes it. Runs never
- * hang and never branch; one run per hub.
+ * hang and never branch; one run per hub. The held stack is a conduit item or a loaded
+ * {@link ConduitBenderItem}; sticks come from it through {@link ConduitSupply} either way.
  */
 public final class ConduitPlacement {
     private ConduitPlacement() {}
@@ -128,7 +129,7 @@ public final class ConduitPlacement {
             existing = runOf(level, runEnd, player);
             if(existing == null)
                 return InteractionResultHolder.fail(null);
-            if(existing.getItem() != stack.getItem()) {
+            if(existing.getItem() != ConduitSupply.item(stack)) {
                 message(player, "message.connection_incorrect_wire_type", ChatFormatting.RED);
                 return InteractionResultHolder.fail(null);
             }
@@ -147,7 +148,7 @@ public final class ConduitPlacement {
                 if(exit != null) {
                     points.add(new BlockWireEntity.Point(exit, Knockouts.STUB_PX));
                     last = last.relative(exit, Knockouts.STUB_PX / 16.0);
-                    double tubeRadius = stack.getItem() instanceof ConduitItem conduit ? conduit.size().tubeThickness() / 2 : 0;
+                    double tubeRadius = ConduitSupply.tubeRadius(stack);
                     var lift = Knockouts.lift(level, hub, exit, tubeRadius);
                     if(lift != null) {
                         points.add(new BlockWireEntity.Point(lift.away(), lift.pixels()));
@@ -186,24 +187,24 @@ public final class ConduitPlacement {
             addedLength += point.length();
         if(existing == null) {
             int newItems = Math.max((int) Math.ceil(addedLength * entry.itemsPerMeter()), 1);
-            if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
+            if(!ConduitSupply.has(player, stack, newItems)) {
                 message(player, "message.connection_missing_items", ChatFormatting.RED);
                 return InteractionResultHolder.fail(null);
             }
             if(level.isClientSide)
                 return InteractionResultHolder.success(null);
-            var entity = ConduitRunEntity.create(level, from, stack.copyWithCount(newItems), points);
+            var entity = ConduitRunEntity.create(level, from, ConduitSupply.stack(stack, newItems), points);
             SubLevelStick.stick(entity);
             if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
                 PowerGridModernized.LOGGER.error("Failed to spawn conduit run entity");
                 message(player, "message.connection_failed", ChatFormatting.RED);
                 return InteractionResultHolder.fail(null);
             }
-            takeItems(player, stack, newItems);
+            ConduitSupply.take(player, stack, newItems);
             return InteractionResultHolder.success(entity);
         }
         int newItems = (int) Math.ceil((existing.getTotalLength() + addedLength) * entry.itemsPerMeter() - existing.getWireCount());
-        if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
+        if(!ConduitSupply.has(player, stack, newItems)) {
             message(player, "message.connection_missing_items", ChatFormatting.RED);
             return InteractionResultHolder.fail(null);
         }
@@ -211,14 +212,14 @@ public final class ConduitPlacement {
             return InteractionResultHolder.success(null);
         existing.extend(points, newItems);
         existing.sendExtraData();
-        takeItems(player, stack, newItems);
+        ConduitSupply.take(player, stack, newItems);
         return InteractionResultHolder.success(existing);
     }
 
     /** A run was clicked with a conduit item (server side): continue from its nearer free end. */
     public static InteractionResult attach(ConduitRunEntity run, Player player, ItemStack stack) {
         var level = run.level();
-        if(run.getItem() != stack.getItem()) {
+        if(run.getItem() != ConduitSupply.item(stack)) {
             message(player, "message.connection_incorrect_wire_type", ChatFormatting.RED);
             return InteractionResult.FAIL;
         }
@@ -264,9 +265,10 @@ public final class ConduitPlacement {
             message(player, "message.conduit.hub_used", ChatFormatting.RED);
             return false;
         }
-        if(stack.getItem() instanceof ConduitItem conduit && conduit.size().ordinal() > host.maxConduit().ordinal()) {
+        var size = ConduitItem.sizeOf(stack);
+        if(size != null && size.ordinal() > host.maxConduit().ordinal()) {
             if(player != null)
-                player.displayClientMessage(Lang.builder().translate("message.conduit.too_big", conduit.size().label(), host.maxConduit().label())
+                player.displayClientMessage(Lang.builder().translate("message.conduit.too_big", size.label(), host.maxConduit().label())
                         .style(ChatFormatting.RED).component(), true);
             return false;
         }
@@ -307,7 +309,7 @@ public final class ConduitPlacement {
             existing = runOf(level, runEnd, player);
             if(existing == null)
                 return InteractionResultHolder.fail(null);
-            if(existing.getItem() != stack.getItem()) {
+            if(existing.getItem() != ConduitSupply.item(stack)) {
                 message(player, "message.connection_incorrect_wire_type", ChatFormatting.RED);
                 return InteractionResultHolder.fail(null);
             }
@@ -322,7 +324,7 @@ public final class ConduitPlacement {
         // A run leaves a knockout dead centre and square: a straight stub along the knockout's face
         // normal, and only then the tracer. The same at the far end, in reverse, so the tube enters
         // the target knockout the same way instead of wherever the route happened to arrive.
-        double tubeRadius = stack.getItem() instanceof ConduitItem conduit ? conduit.size().tubeThickness() / 2 : 0;
+        double tubeRadius = ConduitSupply.tubeRadius(stack);
         var stubs = new ArrayList<BlockWireEntity.Point>();
         if(existing == null && from instanceof BlockWireEndpoint start) {
             var exit = Knockouts.exit(level, start);
@@ -373,13 +375,13 @@ public final class ConduitPlacement {
         boolean closes = to instanceof BlockWireEndpoint;
         if(existing == null) {
             int newItems = Math.max((int) Math.ceil(addedLength * entry.itemsPerMeter()), 1);
-            if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
+            if(!ConduitSupply.has(player, stack, newItems)) {
                 message(player, "message.connection_missing_items", ChatFormatting.RED);
                 return InteractionResultHolder.fail(null);
             }
             if(level.isClientSide)
                 return InteractionResultHolder.success(null);
-            var entity = ConduitRunEntity.create(level, from, stack.copyWithCount(newItems), points);
+            var entity = ConduitRunEntity.create(level, from, ConduitSupply.stack(stack, newItems), points);
             if(closes)
                 entity.setEndpoint2(to);
             SubLevelStick.stick(entity);
@@ -388,11 +390,13 @@ public final class ConduitPlacement {
                 message(player, "message.connection_failed", ChatFormatting.RED);
                 return InteractionResultHolder.fail(null);
             }
-            takeItems(player, stack, newItems);
+            ConduitSupply.take(player, stack, newItems);
+            if(closes)
+                ConduitBenderItem.onClosed(level, stack, player, entity);
             return InteractionResultHolder.success(closes ? null : entity);
         } else {
             int newItems = (int) Math.ceil((existing.getTotalLength() + addedLength) * entry.itemsPerMeter() - existing.getWireCount());
-            if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
+            if(!ConduitSupply.has(player, stack, newItems)) {
                 message(player, "message.connection_missing_items", ChatFormatting.RED);
                 return InteractionResultHolder.fail(null);
             }
@@ -402,7 +406,9 @@ public final class ConduitPlacement {
             if(closes)
                 existing.setEndpoint2(to);
             existing.sendExtraData();
-            takeItems(player, stack, newItems);
+            ConduitSupply.take(player, stack, newItems);
+            if(closes)
+                ConduitBenderItem.onClosed(level, stack, player, existing);
             return InteractionResultHolder.success(closes ? null : existing);
         }
     }
@@ -425,19 +431,19 @@ public final class ConduitPlacement {
             return InteractionResultHolder.fail(null);
         }
         int items = Math.max(1, (int) Math.ceil(distance * FlexConduitEntity.SLACK * entry.itemsPerMeter()));
-        if(!PlayerUtilities.hasEnoughItems(player, stack, items)) {
+        if(!ConduitSupply.has(player, stack, items)) {
             message(player, "message.connection_missing_items", ChatFormatting.RED);
             return InteractionResultHolder.fail(null);
         }
         if(level.isClientSide)
             return InteractionResultHolder.success(null);
-        var entity = FlexConduitEntity.create(level, a, b, stack.copyWithCount(items));
+        var entity = FlexConduitEntity.create(level, a, b, ConduitSupply.stack(stack, items));
         if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
             PowerGridModernized.LOGGER.error("Failed to spawn flexible conduit entity");
             message(player, "message.connection_failed", ChatFormatting.RED);
             return InteractionResultHolder.fail(null);
         }
-        takeItems(player, stack, items);
+        ConduitSupply.take(player, stack, items);
         return InteractionResultHolder.success(null);
     }
 
@@ -450,7 +456,7 @@ public final class ConduitPlacement {
         var entity2 = runOf(level, end2, player);
         if(entity1 == null || entity2 == null || entity1 == entity2)
             return InteractionResultHolder.fail(null);
-        if(entity1.getItem() != entity2.getItem() || entity1.getItem() != stack.getItem()) {
+        if(entity1.getItem() != entity2.getItem() || entity1.getItem() != ConduitSupply.item(stack)) {
             message(player, "message.connection_incorrect_wire_type", ChatFormatting.RED);
             return InteractionResultHolder.fail(null);
         }
@@ -481,7 +487,7 @@ public final class ConduitPlacement {
             addedLength += point.length();
         int newItems = (int) Math.ceil((entity1.getTotalLength() + entity2.getTotalLength() + addedLength) * entry.itemsPerMeter()
                 - entity1.getWireCount() - entity2.getWireCount());
-        if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
+        if(!ConduitSupply.has(player, stack, newItems)) {
             message(player, "message.connection_missing_items", ChatFormatting.RED);
             return InteractionResultHolder.fail(null);
         }
@@ -493,7 +499,9 @@ public final class ConduitPlacement {
         if(farEnd != null)
             entity1.setEndpoint2(farEnd);
         entity1.sendExtraData();
-        takeItems(player, stack, newItems);
+        ConduitSupply.take(player, stack, newItems);
+        if(farEnd != null)
+            ConduitBenderItem.onClosed(level, stack, player, entity1);
         return InteractionResultHolder.success(farEnd == null ? entity1 : null);
     }
 
@@ -515,18 +523,12 @@ public final class ConduitPlacement {
 
     @Nullable
     private static WireItemEntry wireEntry(Level level, ItemStack stack, @Nullable Player player) {
-        var entry = WireRegistry.forItem(level, stack.getItem());
+        var entry = WireRegistry.forItem(level, ConduitSupply.item(stack));
         if(entry == null) {
-            PowerGridModernized.LOGGER.error("No wire type registered for {}", stack.getItem());
+            PowerGridModernized.LOGGER.error("No wire type registered for {}", ConduitSupply.item(stack));
             message(player, "message.connection_failed", ChatFormatting.RED);
         }
         return entry;
-    }
-
-    private static void takeItems(@Nullable Player player, ItemStack stack, int count) {
-        if(player == null || player.isCreative() || count <= 0)
-            return;
-        PlayerUtilities.removeItems(player, stack, count);
     }
 
     static void message(@Nullable Player player, String key, ChatFormatting style) {

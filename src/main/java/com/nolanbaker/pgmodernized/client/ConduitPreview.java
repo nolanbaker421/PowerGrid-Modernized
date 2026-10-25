@@ -4,6 +4,7 @@ import com.nolanbaker.pgmodernized.util.BodySpace;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.nolanbaker.pgmodernized.conduit.ConduitConnection;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
+import com.nolanbaker.pgmodernized.conduit.ConduitSupply;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import net.createmod.catnip.data.Pair;
@@ -73,7 +74,7 @@ public final class ConduitPreview {
         var endpoint = ConduitConnection.get(stack);
         if(endpoint == null)
             return;
-        item = WireRegistry.forItem(level, stack.getItem());
+        item = WireRegistry.forItem(level, ConduitSupply.item(stack));
         if(item == null)
             return;
         var target = mc.hitResult;
@@ -134,7 +135,7 @@ public final class ConduitPreview {
         }
         if(!player.isCreative()) {
             int required = Math.max(Math.round(length * item.itemsPerMeter()), 1);
-            PlacementOverlay.setItemRequirement(stack.getItem(), required, stack.getCount() >= required);
+            PlacementOverlay.setItemRequirement(ConduitSupply.item(stack), required, ConduitSupply.count(stack) >= required);
         }
     }
 

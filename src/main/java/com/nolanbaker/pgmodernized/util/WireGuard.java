@@ -43,7 +43,7 @@ public final class WireGuard {
             }
             return;
         }
-        boolean conduit = item instanceof ConduitItem;
+        boolean conduit = ConduitItem.isConduit(event.getItemStack());
         boolean cat6 = item instanceof Cat6CableItem;
         boolean busBar = item instanceof BusBarItem || item instanceof RailShoeItem;
         if(!conduit && !cat6 && !busBar)

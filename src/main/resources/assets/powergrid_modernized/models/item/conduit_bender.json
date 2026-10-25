@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "powergrid_modernized:item/conduit_bender"
+  }
+}

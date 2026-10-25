@@ -105,10 +105,11 @@ public class StrutBlock extends Block {
     /** Conduit in hand: the pending run is clipped to the clamp under the click. */
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(!(stack.getItem() instanceof ConduitItem conduit))
+        var size = ConduitItem.sizeOf(stack);
+        if(size == null)
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         var local = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
-        var clamp = clamp(state, local, conduit.size().tubeThickness() * 16 / 2);
+        var clamp = clamp(state, local, size.tubeThickness() * 16 / 2);
         var context = new UseOnContext(player, hand, hit);
         var result = ConduitPlacement.strutClick(context, clamp, axisFor(state.getValue(FACING), state.getValue(AXIS)));
         return result.consumesAction() ? ItemInteractionResult.sidedSuccess(level.isClientSide) : ItemInteractionResult.FAIL;

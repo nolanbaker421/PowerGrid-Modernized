@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "c:plates/iron"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "  P",
+    " I ",
+    "I  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:conduit_bender"
+  }
+}

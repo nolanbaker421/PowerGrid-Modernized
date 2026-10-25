@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
@@ -114,6 +115,17 @@ public class ConductorEntity extends BlockWireEntity implements BodyRider {
     /** Server side. A negative index goes back to the slot's colour. */
     public void setColorIndex(int index) {
         entityData.set(COLOR_INDEX, index < 0 ? -1 : Math.floorMod(index, ConductorColors.COUNT));
+    }
+
+    /** Its run was bent: take the run's new path between the same two landings. Server side. */
+    public void follow(ConduitRunEntity run) {
+        if(!(getEndpoint2() instanceof BlockWireEndpoint b))
+            return;
+        var end = IElectric.getTerminalPos(level(), b.getPos(), b.getTerminal());
+        segments.clear();
+        segments.addAll(run.conductorPath(position(), end));
+        bakeBoundingBoxes();
+        sendExtraData();
     }
 
     // ------------------------------------------------------------------ lifecycle

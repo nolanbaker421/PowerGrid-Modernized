@@ -35,4 +35,10 @@ public class ModDataComponents {
             REGISTER.registerComponentType("conduit_connection", builder -> builder
                     .persistent(CompoundTag.CODEC)
                     .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
+
+    /** A Conduit Bender's step, and the run it has picked up: its sticks and its wires. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> CONDUIT_BENDER =
+            REGISTER.registerComponentType("conduit_bender", builder -> builder
+                    .persistent(CompoundTag.CODEC)
+                    .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
 }

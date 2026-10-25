@@ -13,6 +13,7 @@ import com.nolanbaker.pgmodernized.conduit.ConduitCover;
 import com.nolanbaker.pgmodernized.conduit.ConduitCoverItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.BuildingWireItem;
+import com.nolanbaker.pgmodernized.conduit.ConduitBenderItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.conduit.FlexConduitItem;
 import com.nolanbaker.pgmodernized.device.controls.ControlModule;
@@ -75,6 +76,13 @@ public class ModItems {
             .properties(p -> p.stacksTo(1))
             .model(NonNullBiConsumer.noop())
             .lang("Alignment Scope")
+            .register();
+
+    /** The hand bender: slides legs of a laid run, or picks a whole run up with its wires to lay again. */
+    public static final ItemEntry<ConduitBenderItem> CONDUIT_BENDER = REGISTRATE.item("conduit_bender", ConduitBenderItem::new)
+            .properties(p -> p.stacksTo(1))
+            .model(NonNullBiConsumer.noop())
+            .lang("Conduit Bender")
             .register();
 
     /** A SIM for a computer: an OpenComputers card or a pocket computer upgrade that joins a carrier's towers. */

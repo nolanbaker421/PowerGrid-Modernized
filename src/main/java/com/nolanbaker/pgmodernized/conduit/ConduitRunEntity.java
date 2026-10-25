@@ -12,6 +12,7 @@ import com.nolanbaker.pgmodernized.util.ShockDamage;
 import com.nolanbaker.pgmodernized.util.WireAcceptance;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -229,19 +230,49 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         return -1;
     }
 
-    /** Pull one conductor of the held wire through the run. Server side. */
-    public InteractionResult pull(Player player, ItemStack stack) {
+    /** The two fittings a closed run joins, or null while either end is missing, unloaded or not a splice host. */
+    @Nullable
+    private Ends ends() {
         var level = level();
         var e1 = hub(getEndpoint1());
         var e2 = hub(getEndpoint2());
         if(e1 == null || e2 == null || !e1.isValid(level) || !e2.isValid(level))
-            return fail(player, "message.conduit.close_first");
+            return null;
         if(!(level.getBlockEntity(e1.getPos()) instanceof ISpliceHost hostA) || !(level.getBlockEntity(e2.getPos()) instanceof ISpliceHost hostB))
-            return fail(player, "message.connection_failed");
+            return null;
         int hubA = hostA.hubAt(e1.getTerminal());
         int hubB = hostB.hubAt(e2.getTerminal());
         if(hubA < 0 || hubB < 0)
-            return fail(player, "message.connection_failed");
+            return null;
+        return new Ends(e1, e2, hostA, hostB, hubA, hubB);
+    }
+
+    private record Ends(BlockWireEndpoint e1, BlockWireEndpoint e2, ISpliceHost hostA, ISpliceHost hostB, int hubA, int hubB) {}
+
+    /** A conductor of that wire in that slot, routed through the run between the two fittings' landings. Server side. */
+    @Nullable
+    private ConductorEntity spawnConductor(Ends ends, int slot, ItemStack wire) {
+        var level = level();
+        int terminalA = ends.hostA().conductorTerminal(ends.hubA(), slot);
+        int terminalB = ends.hostB().conductorTerminal(ends.hubB(), slot);
+        var start = IElectric.getTerminalPos(level, ends.e1().getPos(), terminalA);
+        var end = IElectric.getTerminalPos(level, ends.e2().getPos(), terminalB);
+        var entity = ConductorEntity.create(level, this, slot, wire,
+                new BlockWireEndpoint(ends.e1().getPos(), terminalA), new BlockWireEndpoint(ends.e2().getPos(), terminalB), start, conductorPath(start, end));
+        SubLevelStick.stick(entity);
+        return ((ServerLevel) level).tryAddFreshEntityWithPassengers(entity) ? entity : null;
+    }
+
+    /** Pull one conductor of the held wire through the run. Server side. */
+    public InteractionResult pull(Player player, ItemStack stack) {
+        var level = level();
+        var ends = ends();
+        if(ends == null) {
+            var e1 = hub(getEndpoint1());
+            var e2 = hub(getEndpoint2());
+            boolean open = e1 == null || e2 == null || !e1.isValid(level) || !e2.isValid(level);
+            return fail(player, open ? "message.conduit.close_first" : "message.connection_failed");
+        }
 
         var entry = WireRegistry.forItem(level, stack.getItem());
         if(entry == null || entry.cord() || !WireAcceptance.electrical(stack))
@@ -262,23 +293,65 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         if(!PlayerUtilities.hasEnoughItems(player, stack, required))
             return fail(player, "message.connection_missing_items");
 
-        int terminalA = hostA.conductorTerminal(hubA, slot);
-        int terminalB = hostB.conductorTerminal(hubB, slot);
-        var start = IElectric.getTerminalPos(level, e1.getPos(), terminalA);
-        var end = IElectric.getTerminalPos(level, e2.getPos(), terminalB);
-        var path = conductorPath(start, end);
-
-        var entity = ConductorEntity.create(level, this, slot, stack.copyWithCount(required),
-                new BlockWireEndpoint(e1.getPos(), terminalA), new BlockWireEndpoint(e2.getPos(), terminalB), start, path);
-        SubLevelStick.stick(entity);
-        if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity))
+        if(spawnConductor(ends, slot, stack.copyWithCount(required)) == null)
             return fail(player, "message.connection_failed");
         if(!player.isCreative())
             PlayerUtilities.removeItems(player, stack, required);
-        CopperScrap.roll(player, e1.getPos());
+        CopperScrap.roll(player, ends.e1().getPos());
         player.displayClientMessage(Lang.builder().translate("message.conduit.pulled", slot + 1)
                 .add(Lang.builder().text(" ").add(ConductorColors.name(slot))).style(ChatFormatting.GRAY).component(), true);
         return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * Puts a wire a bender kept back into a re-laid run: its old slot where that is free, the same
+     * colour and label, topped up from the player's pockets when the new run is longer and the
+     * surplus handed back when it is shorter. Server side; false when it cannot go in.
+     */
+    public boolean pullStored(Player player, int slot, ItemStack wire, int colorIndex, String label) {
+        var ends = ends();
+        if(ends == null)
+            return false;
+        var entry = WireRegistry.forItem(level(), wire.getItem());
+        if(entry == null)
+            return false;
+        if(slot < 0 || slot >= size().conductors() || conductor(slot) != null)
+            slot = freeSlot();
+        if(slot < 0)
+            return false;
+        int required = Math.max(1, (int) Math.ceil(getTotalLength() * entry.itemsPerMeter()));
+        int have = wire.getCount();
+        if(have < required && !player.isCreative()) {
+            if(!PlayerUtilities.hasEnoughItems(player, wire.getItem(), required - have))
+                return false;
+            PlayerUtilities.removeItems(player, wire.getItem(), required - have);
+        } else if(have > required) {
+            player.getInventory().placeItemBackInInventory(wire.copyWithCount(have - required));
+        }
+        var entity = spawnConductor(ends, slot, wire.copyWithCount(required));
+        if(entity == null)
+            return false;
+        entity.setColorIndex(colorIndex);
+        entity.setLabel(label);
+        return true;
+    }
+
+    /**
+     * New legs from the bender between the same two ends. Server side. The wires inside are not
+     * touched here; the bender has them {@link ConductorEntity#follow} the run afterwards.
+     */
+    public void reshape(RunReshape.Result result) {
+        segments.clear();
+        segments.addAll(result.points());
+        var shift = result.startShift();
+        if(!shift.equals(Vec3i.ZERO)) {
+            var p = position().add(shift.getX() / 16.0, shift.getY() / 16.0, shift.getZ() / 16.0);
+            setPosRaw(p.x, p.y, p.z);
+            setOldPosAndRot();
+            reapplyPosition();
+        }
+        bakeBoundingBoxes();
+        sendExtraData();
     }
 
     /** One chat line per slot: colour, wire and current. */
@@ -315,7 +388,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
     }
 
     /** Highest current in any pulled wire, for shocking the careless. */
-    private float maxAmps() {
+    float maxAmps() {
         float max = 0;
         for(var conductor : conductors())
             max = Math.max(max, Math.abs(conductor.measuredCurrent()));
@@ -429,6 +502,15 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
             return InteractionResult.PASS;
         var stack = player.getItemInHand(hand);
         boolean client = level().isClientSide;
+        if(stack.getItem() instanceof ConduitBenderItem) {
+            if(client)
+                return InteractionResult.SUCCESS;
+            if(player.isShiftKeyDown())
+                return ConduitBenderItem.pickUp(this, player, stack);
+            if(ConduitBenderItem.loaded(stack))
+                return nipple ? fail(player, "message.conduit.no_tee") : ConduitPlacement.attach(this, player, stack);
+            return ConduitBenderItem.nudge(this, player, stack);
+        }
         if(stack.getItem() instanceof ConduitItem)
             return client ? InteractionResult.SUCCESS : nipple ? fail(player, "message.conduit.no_tee") : ConduitPlacement.attach(this, player, stack);
         if(stack.is(ModdedTags.Item.WIRE_CUTTERS.tag) || stack.is(ModdedTags.Item.BAD_WIRE_CUTTERS.tag)) {

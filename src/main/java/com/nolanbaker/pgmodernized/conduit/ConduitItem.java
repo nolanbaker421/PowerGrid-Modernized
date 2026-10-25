@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.utility.Lang;
@@ -30,8 +31,17 @@ public class ConduitItem extends WireItem {
         return size;
     }
 
+    /** Conduit in hand, or a bender holding a picked-up run, which lays conduit the same way. */
     public static boolean isConduit(ItemStack stack) {
-        return stack.getItem() instanceof ConduitItem;
+        return stack.getItem() instanceof ConduitItem || ConduitBenderItem.loaded(stack);
+    }
+
+    /** The trade size that stack lays, or null for anything that is not conduit. */
+    @Nullable
+    public static ConduitSize sizeOf(ItemStack stack) {
+        if(stack.getItem() instanceof ConduitItem conduit)
+            return conduit.size();
+        return ConduitBenderItem.conduitItem(stack) instanceof ConduitItem conduit ? conduit.size() : null;
     }
 
     @Override
