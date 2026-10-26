@@ -47,7 +47,7 @@ public class CeilingConduitBoxBlock extends ConduitBoxBlock implements CeilingBl
 
     public CeilingConduitBoxBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(COVER, ConduitCover.OPEN));
+        registerDefaultState(defaultBlockState().setValue(FACING, Direction.UP).setValue(COVER, ConduitCover.OPEN));   // mounted up into the tile
         var byCover = new java.util.EnumMap<ConduitCover, TerminalBoundingBox[]>(ConduitCover.class);
         var shapes = new java.util.EnumMap<ConduitCover, VoxelShape>(ConduitCover.class);
         for(var cover : ConduitCover.values()) {
@@ -61,11 +61,6 @@ public class CeilingConduitBoxBlock extends ConduitBoxBlock implements CeilingBl
     }
 
     /** The tile box faces down into its tile as Power Grid's sockets face their mount, so the cord needs no shift. */
-    @Override
-    protected double cordOffset() {
-        return 0;
-    }
-
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         return defaultBlockState();

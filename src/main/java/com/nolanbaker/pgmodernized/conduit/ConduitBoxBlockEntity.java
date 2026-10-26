@@ -34,6 +34,10 @@ import java.util.List;
  * watts and goes dark under five.
  */
 public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISpliceHost, IHaveGoggleInformation, IFixtureEntity {
+    /** Written by every box saved since the facing turned to point into its mount; a save without it gets turned once. */
+    private static final String MOUNT_FACING_KEY = "MountFacing";
+    private boolean flipFacing;
+
     public static final float LIT_WATTS = 10, DARK_WATTS = 5;
 
     private SpliceSupport splices;
@@ -175,6 +179,13 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     @Override
     public void lazyTick() {
         super.lazyTick();
+        if(flipFacing && level != null && !level.isClientSide) {
+            flipFacing = false;
+            var state = getBlockState();
+            if(state.hasProperty(ConduitBoxBlock.FACING))
+                level.setBlock(worldPosition, state.setValue(ConduitBoxBlock.FACING, state.getValue(ConduitBoxBlock.FACING).getOpposite()), net.minecraft.world.level.block.Block.UPDATE_ALL);
+            setChanged();
+        }
         if(level != null && !level.isClientSide)
             splices().prune();
     }
@@ -279,6 +290,7 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
+        tag.putBoolean(MOUNT_FACING_KEY, true);
         splices().write(tag);
         writeBulb(tag);
     }
@@ -303,6 +315,9 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
+        // Boxes saved before 0.53.4 faced out of their mount; the facing points into it now.
+        if(!clientPacket && !tag.getBoolean(MOUNT_FACING_KEY))
+            flipFacing = true;
         splices().read(tag);
         powerLevel = tag.getInt("PowerLevel");
         if(tag.contains("Bulb")) {

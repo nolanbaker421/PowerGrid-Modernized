@@ -119,7 +119,7 @@ def breaker_panel():
     p = Plot(5, 4, 5)
     p.fill(0, 1, 4, 4, 3, 4, "minecraft:light_gray_concrete")
     p.set(2, 2, 3, m("breaker_panel_200_2p"), facing="north", sections=1)
-    p.set(0, 1, 1, m("conduit_box"), facing="up", cover="light_off")
+    p.set(0, 1, 1, m("conduit_box"), facing="down", cover="light_off")
     p.write("breaker_panel")
 
 
@@ -149,7 +149,7 @@ def conduit():
     p.fill(0, 1, 4, 4, 3, 4, "minecraft:light_gray_concrete")
     for x in (1, 3):
         for y in (1, 2):
-            p.set(x, y, 3, m("conduit_box"), facing="north", cover="blank")
+            p.set(x, y, 3, m("conduit_box"), facing="south", cover="blank")
     p.write("conduit")
 
 

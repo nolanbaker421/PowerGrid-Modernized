@@ -42,7 +42,7 @@ public class ConduitBoxRenderer extends SafeBlockEntityRenderer<ConduitBoxBlockE
         if(onTile) {
             ms.mulPose(Axis.XP.rotationDegrees(90));   // the on-tile frame: the box's front points up
         } else {
-            switch(state.getValue(ConduitBoxBlock.FACING)) {
+            switch(ConduitBoxBlock.front(state)) {
                 case SOUTH -> ms.mulPose(Axis.YP.rotationDegrees(180));
                 case EAST -> ms.mulPose(Axis.YP.rotationDegrees(-90));
                 case WEST -> ms.mulPose(Axis.YP.rotationDegrees(90));

@@ -3,9 +3,7 @@ package com.nolanbaker.pgmodernized.conduit;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.core.Direction;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
@@ -154,22 +152,6 @@ public final class ConduitBoxGeometry {
     /** The face of a receptacle cover that a cord plugs into. */
     public static final AABB RECEPTACLE_FACE = new AABB(6.5, 6, 11.5, 9.5, 10, 13);
 
-    /**
-     * A point of the north frame, in pixels, in the frame of a box with that facing, in blocks. The
-     * same turns the terminal collection and the model's blockstate rotations make: north is the
-     * frame itself, the others turn it so the front faces the given way.
-     */
-    public static Vec3 toWorld(Direction facing, Vec3 px) {
-        double x = px.x / 16, y = px.y / 16, z = px.z / 16;
-        return switch(facing) {
-            case NORTH -> new Vec3(x, y, z);
-            case SOUTH -> new Vec3(1 - x, y, 1 - z);
-            case EAST -> new Vec3(1 - z, y, x);
-            case WEST -> new Vec3(z, y, 1 - x);
-            case UP -> new Vec3(x, 1 - z, y);
-            case DOWN -> new Vec3(x, z, 1 - y);
-        };
-    }
     /** The two screw terminals beside a light fixture or a receptacle: line on the viewer's right (+x), neutral on the left. */
     public static final AABB SCREW_LINE = new AABB(10, 7, 12, 11, 9, 13), SCREW_NEUTRAL = new AABB(5, 7, 12, 6, 9, 13);
 

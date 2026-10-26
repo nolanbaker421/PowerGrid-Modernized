@@ -81,7 +81,7 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         var state = super.getStateForPlacement(context);
         if(state != null && state.getValue(FACING).getAxis().isHorizontal())
-            state = state.setValue(ROTATION, (state.getValue(ROTATION) + 1) % 4);
+            state = state.setValue(ROTATION, (state.getValue(ROTATION) + 3) % 4);   // devices upright, the first gang on the viewer's left
         return state;
     }
 

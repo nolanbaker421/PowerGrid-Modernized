@@ -75,7 +75,7 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
         for(var cover : ConduitCover.values())
             byCover.put(cover, ConduitBoxGeometry.terminals(java.util.function.UnaryOperator.identity(), cover));
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
-                .forAllStates(state -> BlockStateTerminalCollection.each(byCover.get(cover(state)), terminal -> switch(state.getValue(FACING)) {
+                .forAllStates(state -> BlockStateTerminalCollection.each(byCover.get(cover(state)), terminal -> switch(front(state)) {
                     case NORTH -> terminal;
                     case SOUTH -> terminal.rotateAroundY(180);
                     case EAST -> terminal.rotateAroundY(90);
@@ -83,7 +83,7 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
                     case UP -> terminal.rotateAroundX(-90);
                     case DOWN -> terminal.rotateAroundX(90);
                 }))
-                .withShapeMapper(state -> shapes.get(cover(state)).get(state.getValue(FACING)))
+                .withShapeMapper(state -> shapes.get(cover(state)).get(front(state)))
                 .build());
     }
 
@@ -95,15 +95,10 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
         var placement = super.terminal(state, ConduitBoxGeometry.TERMINAL_RECEPTACLE);
         if(placement == null)
             return NO_SOCKET;
-        double out = cordOffset();
-        // Power Grid draws the cord's end three pixels against the block's facing, which on its own
-        // sockets points into the wall. This box's facing points out of it, so the origin is pushed
-        // out by twice that and the cord ends in front of the face, as it does on a Power Grid socket.
-        // The face centre comes from the terminal's own rotated shape, the same box the cord is
-        // clicked on, so it is right on every facing without a second opinion about rotations.
-        var facing = state.getValue(FACING);
-        var centre = placement instanceof TerminalBoundingBox box ? box.getShape().bounds().getCenter() : placement.getOrigin();
-        var origin = centre.relative(facing, out);
+        // Power Grid draws the cord's end three pixels against the block's facing and the plug along
+        // it, which puts the plug in the receptacle when the facing points into the mount, as this
+        // box's does. The face centre comes from the terminal's own rotated shape.
+        var origin = placement instanceof TerminalBoundingBox box ? box.getShape().bounds().getCenter() : placement.getOrigin();
         return new ITerminalPlacement() {
             @Override
             public boolean check(Vec3 pos) {
@@ -117,9 +112,12 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
         };
     }
 
-    /** How far the cord origin moves out along the facing, in blocks; zero where the facing already points into the mount. */
-    protected double cordOffset() {
-        return 6 / 16.0;
+    /**
+     * The way the front faces: the facing points into the mount, as Power Grid's sockets do, so
+     * the cord's plug draws into the receptacle. The box's frame has the front to the north.
+     */
+    public static Direction front(BlockState state) {
+        return state.getValue(FACING).getOpposite();
     }
 
     /** The receptacle is never a wire terminal: Power Grid's cord looks for a clicked terminal before it looks for a socket. */
@@ -162,7 +160,8 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
-        var facing = ctx.getClickedFace();
+        // Mounted on the clicked face, so the facing is into it; sneaking mounts it the other way round.
+        var facing = ctx.getClickedFace().getOpposite();
         if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
             facing = facing.getOpposite();
         return defaultBlockState().setValue(FACING, facing).setValue(COVER, ConduitCover.OPEN);

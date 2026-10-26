@@ -4,6 +4,19 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.53.4 — 2026-10-25
+
+### Fixed
+- The cord plug on a receptacle cover drew on the wrong side of the face. Power Grid draws the
+  plug three pixels along the block's facing with its prongs that way, which is into the socket
+  on its own blocks because their facing points into the mount. The Conduit Box's facing pointed
+  out of the mount, so the plug stood off the face, prongs outward. The box's facing now points
+  into its mount like every other fitting; models, terminals, shapes and the bulb turn with it.
+  Boxes in existing worlds turn themselves round once when their chunk loads, so nothing moves.
+- Gang boxes on walls were upside down by default; they mount upright now, first gang on the
+  viewer's left. A gang box takes one cord, on its first receptacle: Power Grid allows one cord
+  socket per block.
+
 ## 0.53.3 — 2026-10-25
 
 ### Fixed

@@ -57,9 +57,10 @@ BULB = (6, 6, 8.5, 10, 10, 11)
 RECEPTACLE_FACE = (6.5, 6, 11.5, 9.5, 10, 13)
 ROWS_Y = [10, 8, 6]
 NUB, NUB_Z1, NUB_Z2 = 0.6, 12.4, 13
+# The facing points into the mount; the model's front (north in its frame) turns to the opposite way.
 DIRECTIONAL = {
-    "facing=north": {}, "facing=south": {"y": 180}, "facing=east": {"y": 90},
-    "facing=west": {"y": 270}, "facing=up": {"x": 270}, "facing=down": {"x": 90},
+    "facing=south": {}, "facing=north": {"y": 180}, "facing=west": {"y": 90},
+    "facing=east": {"y": 270}, "facing=down": {"x": 270}, "facing=up": {"x": 90},
 }
 
 
