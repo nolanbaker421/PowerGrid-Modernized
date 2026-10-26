@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.phys.Vec3;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.nolanbaker.pgmodernized.util.BodyRider;
 import dev.ryanhcode.sable.companion.ClientSubLevelAccess;
 import dev.ryanhcode.sable.companion.SableCompanion;
@@ -60,6 +61,8 @@ public class BodyWireRenderer extends BlockWireRenderer {
 
     /** How short a sideways jog can be and still be drawn as one smooth offset instead of two elbows, in pixels. */
     private static final int OFFSET_MAX_PX = 4;
+    /** A coupling every so many blocks of tube: EMT comes in ten-foot sticks. */
+    private static final double COUPLING_EVERY = 3;
     /** Short legs an offset may run through: sideways in two directions and an inline step between. */
     private static final int OFFSET_MAX_LEGS = 4;
 
@@ -96,9 +99,11 @@ public class BodyWireRenderer extends BlockWireRenderer {
             var to = endPos.add(body ? Vec3.ZERO : exactNudge(run, run.getEndpoint2(), endPos));
             var dir = to.subtract(from);
             if(dir.lengthSqr() > 1e-8) {
+                double len = dir.length();
                 dir = dir.normalize();
                 int light2 = brightest(run, run.position().add(from.add(to).scale(0.5)));
                 TubeDraw.straight(pose, consumer, light2, rgb, from.subtract(dir.scale(1 / 16.0)), to.add(dir.scale(1 / 16.0)), t);
+                couplings(pose, consumer, light2, rgb, from, dir, 0, len, t);
             }
             return;
         }
@@ -179,6 +184,7 @@ public class BodyWireRenderer extends BlockWireRenderer {
         boolean onBody = bodyOf(run) != null;
         var startNudge = onBody ? Vec3.ZERO : exactNudge(run, run.getEndpoint1(), Vec3.ZERO);
         var pos = Vec3.ZERO;
+        double travelled = 0;
         for(int i = 0; i < n; ++i) {
             var seg = segs.get(i);
             var dir = seg.direction;
@@ -189,8 +195,10 @@ public class BodyWireRenderer extends BlockWireRenderer {
                 var from = i == 0 ? pos.add(startNudge).relative(dir, -1 / 16.0) : pos.relative(dir, cutStart[i]);
                 var to = i == n - 1 ? end.add(onBody ? Vec3.ZERO : exactNudge(run, run.getEndpoint2(), end)).relative(dir, 1 / 16.0) : end.relative(dir, -cutEnd[i]);
                 int segLight = brightest(run, run.position().add(from.add(to).scale(0.5)));
-                if(to.subtract(from).dot(along) > 1e-4)
+                if(to.subtract(from).dot(along) > 1e-4) {
                     TubeDraw.straight(pose, consumer, segLight, rgb, from, to, t);
+                    couplings(pose, consumer, segLight, rgb, pos, along, travelled, seg.length(), t, cutStart[i], cutEnd[i]);
+                }
                 if(offsetSpan[i] > 0) {
                     var c1 = end;
                     var c2 = end;
@@ -211,6 +219,32 @@ public class BodyWireRenderer extends BlockWireRenderer {
                 }
             }
             pos = end;
+            travelled += seg.length();
+        }
+    }
+
+    private static void couplings(PoseStack.Pose pose, VertexConsumer consumer, int light, int rgb, Vec3 segStart, Vec3 along, double travelled, double length, float t) {
+        couplings(pose, consumer, light, rgb, segStart, along, travelled, length, t, 0, 0);
+    }
+
+    /**
+     * A coupling ring every few blocks along the run, counted from its start: a ring half a pixel
+     * proud and two pixels long, a shade darker, only where it lands on a straight well clear of
+     * the bends.
+     */
+    private static void couplings(PoseStack.Pose pose, VertexConsumer consumer, int light, int rgb, Vec3 segStart, Vec3 along,
+                                  double travelled, double length, float t, double cutStart, double cutEnd) {
+        int r = (int) ((rgb >> 16 & 0xFF) * 0.85), g = (int) ((rgb >> 8 & 0xFF) * 0.85), b = (int) ((rgb & 0xFF) * 0.85);
+        int shade = r << 16 | g << 8 | b;
+        double margin = 3 / 16.0;
+        for(double at = Math.ceil(travelled / COUPLING_EVERY) * COUPLING_EVERY; at <= travelled + length; at += COUPLING_EVERY) {
+            if(at <= 0)
+                continue;
+            double local = at - travelled;
+            if(local < cutStart + margin || local > length - cutEnd - margin)
+                continue;
+            var centre = segStart.add(along.scale(local));
+            TubeDraw.straight(pose, consumer, light, shade, centre.subtract(along.scale(1 / 16.0)), centre.add(along.scale(1 / 16.0)), t + 1 / 16f);
         }
     }
 

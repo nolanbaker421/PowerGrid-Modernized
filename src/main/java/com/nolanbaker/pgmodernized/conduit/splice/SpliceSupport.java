@@ -216,7 +216,8 @@ public final class SpliceSupport {
         }
         if(runs > 0 && !detail)
             Lang.builder().translate("gui.conduit.runs", runs).style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
-        Lang.builder().translate("gui.conduit.max_size").style(ChatFormatting.DARK_GRAY).text(" ").add(host.maxConduit().coloredLabel()).forGoggles(tooltip, 1);
+        if(detail)
+            Lang.builder().translate("gui.conduit.max_size").style(ChatFormatting.DARK_GRAY).text(" ").add(host.maxConduit().coloredLabel()).forGoggles(tooltip, 1);
         if(splices.isEmpty())
             Lang.builder().translate("gui.splice.none").style(ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
         else

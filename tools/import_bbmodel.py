@@ -31,7 +31,11 @@ def convert(element, scale):
         if face.get("rotation"):
             out["rotation"] = face["rotation"]
         faces[name] = out
-    out = {"from": element["from"], "to": element["to"], "faces": faces}
+    frm, to = list(element["from"]), list(element["to"])
+    # An inside-out element whose back lies on the body's back face fights it; pull that face in a touch.
+    if frm[2] > to[2] and frm[2] >= 15.99:
+        frm[2] -= 0.02
+    out = {"from": frm, "to": to, "faces": faces}
     if element.get("name"):
         out["name"] = element["name"]
     return out

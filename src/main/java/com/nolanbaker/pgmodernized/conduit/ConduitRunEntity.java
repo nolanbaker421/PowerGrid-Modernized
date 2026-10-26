@@ -50,7 +50,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
 
     private static final int NIPPLE_CHECK = 20;
     /** Galvanized steel; Power Grid's colourable wires would otherwise start out black. */
-    public static final int DEFAULT_COLOR = 0xC9CDD2;   // silver, as EMT comes
+    public static final int DEFAULT_COLOR = 0xA9ADB2;   // galvanized grey, with the boxes and panels
     /** Laid by a pull box to the panel above or below it; never picked up, never dropped. */
     private boolean nipple;
     private int nippleTimer;

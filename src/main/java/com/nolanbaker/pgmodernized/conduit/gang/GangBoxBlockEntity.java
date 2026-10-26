@@ -420,9 +420,12 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         ensureArrays();
         Lang.builder().translate("gui.gang.title", gangs()).style(ChatFormatting.GRAY).forGoggles(tooltip);
+        // One line for the gangs, left to right: the device, and its state where it has one.
+        var line = Lang.builder();
         for(int slot = 0; slot < gangs(); ++slot) {
             var device = devices[slot];
-            var line = Lang.builder().translate("gang.slot", slot + 1).text(": ");
+            if(slot > 0)
+                line.text(", ");
             if(device == null) {
                 line.add(Lang.builder().translate("gang.empty").style(ChatFormatting.DARK_GRAY));
             } else {
@@ -430,8 +433,8 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                 if(device.toggles())
                     line.text(" ").add(Lang.builder().translate(stateKey(device, on[slot])).style(on[slot] ? ChatFormatting.GREEN : ChatFormatting.RED));
             }
-            line.forGoggles(tooltip, 1);
         }
+        line.forGoggles(tooltip, 1);
         splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }

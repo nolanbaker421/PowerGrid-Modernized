@@ -41,6 +41,34 @@ public final class ConduitPlacement {
     /** Knockouts this close, in blocks, get one straight piece between them instead of a routed run. */
     public static final double DIRECT_MAX = 1.0;
 
+    /**
+     * Whether two knockouts get one straight piece: within a metre of each other, or on one line
+     * with nothing that has a collision box between them, at any distance.
+     */
+    public static boolean directBetween(Level level, Vec3 a, Vec3 b) {
+        if(a.distanceTo(b) <= DIRECT_MAX + 1e-6)
+            return true;
+        var d = b.subtract(a);
+        int offAxis = 0;
+        for(double c : new double[] {d.x, d.y, d.z})
+            if(Math.abs(c) > 1 / 32.0)
+                ++offAxis;
+        if(offAxis != 1)
+            return false;
+        var start = net.minecraft.core.BlockPos.containing(a);
+        var end = net.minecraft.core.BlockPos.containing(b);
+        double length = d.length();
+        var step = d.scale(0.25 / length);
+        var at = a;
+        for(double travelled = 0; travelled < length; travelled += 0.25) {
+            var pos = net.minecraft.core.BlockPos.containing(at);
+            if(!pos.equals(start) && !pos.equals(end) && !level.getBlockState(pos).getCollisionShape(level, pos).isEmpty())
+                return false;
+            at = at.add(step);
+        }
+        return true;
+    }
+
     private ConduitPlacement() {}
 
     /** A hub was clicked: remember it, or finish the pending run on it. */
@@ -332,7 +360,7 @@ public final class ConduitPlacement {
         // drawn straight from one to the other.
         if(existing == null && from instanceof BlockWireEndpoint && to instanceof BlockWireEndpoint) {
             var exactTo = BodySpace.local(level, to);
-            if(SableUtils.sameSubLevel(level, runStart, exactTo) && BodySpace.local(level, from).distanceTo(exactTo) <= DIRECT_MAX + 1e-6) {
+            if(SableUtils.sameSubLevel(level, runStart, exactTo) && directBetween(level, BodySpace.local(level, from), exactTo)) {
                 var legs = ConduitRunEntity.manhattan(runStart, BlockTrace.alignPosition(exactTo));
                 if(legs.isEmpty()) {
                     message(player, "message.connection_failed", ChatFormatting.RED);

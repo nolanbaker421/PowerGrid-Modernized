@@ -45,6 +45,8 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     /** The filament of the bulb in a light socket cover, made in buildCircuit; null under any other cover or with no bulb. */
     private SwitchedWire lamp;
     private float lampWatts;
+    /** The watts last sent to clients; goggles read the client copy. */
+    private float syncedWatts;
     /** The bulb in the socket: any of Power Grid's. Its state sets the filament's resistance and the power level. */
     @Nullable
     private LightBulbState bulb;
@@ -186,8 +188,13 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
                 level.setBlock(worldPosition, state.setValue(ConduitBoxBlock.FACING, state.getValue(ConduitBoxBlock.FACING).getOpposite()), net.minecraft.world.level.block.Block.UPDATE_ALL);
             setChanged();
         }
-        if(level != null && !level.isClientSide)
+        if(level != null && !level.isClientSide) {
             splices().prune();
+            if(Math.abs(lampWatts - syncedWatts) > 0.5f) {
+                syncedWatts = lampWatts;
+                sendData();
+            }
+        }
     }
 
     // ---- splice host ----
@@ -293,6 +300,7 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
         tag.putBoolean(MOUNT_FACING_KEY, true);
         splices().write(tag);
         writeBulb(tag);
+        tag.putFloat("LampWatts", lampWatts);
     }
 
     @Override
@@ -300,6 +308,7 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
         super.writeSafe(tag, registries);
         splices().write(tag);
         writeBulb(tag);
+        tag.putFloat("LampWatts", lampWatts);
     }
 
     private void writeBulb(CompoundTag tag) {
@@ -320,6 +329,8 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
             flipFacing = true;
         splices().read(tag);
         powerLevel = tag.getInt("PowerLevel");
+        if(clientPacket)
+            lampWatts = tag.getFloat("LampWatts");
         if(tag.contains("Bulb")) {
             var b = tag.getCompound("Bulb");
             var item = LightBulbState.getBulbItem(b);
@@ -349,11 +360,12 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
         Lang.builder().translate("gui.conduit_box.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
         if(cover().isLight() && bulb == null)
             Lang.builder().translate("gui.conduit_box.no_bulb").style(ChatFormatting.RED).forGoggles(tooltip, 1);
-        if(cover().isLight() && bulb != null)
-            Lang.builder().add(bulb.toStack().getHoverName().copy()).style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
-        if(cover().isLight()) {
+        if(cover().isLight() && bulb != null) {
             boolean lit = cover() == ConduitCover.LIGHT_ON;
-            Lang.builder().translate(lit ? "gui.conduit_box.lamp_lit" : "gui.conduit_box.lamp_dark", String.format("%.0f", lampWatts)).style(lit ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
+            Lang.builder().add(bulb.toStack().getHoverName().copy()).style(ChatFormatting.WHITE).text(": ")
+                    .add(Lang.builder().translate(lit ? "gui.conduit_box.lamp_lit" : "gui.conduit_box.lamp_dark", String.format("%.0f", lampWatts))
+                            .style(lit ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY))
+                    .forGoggles(tooltip, 1);
         }
         splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;

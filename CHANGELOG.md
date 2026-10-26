@@ -4,6 +4,21 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.58.0 — 2026-10-26
+
+### Changed
+- Conduit is galvanized grey now, the grey of the boxes and panels, with a quieter grain, and
+  wears a coupling ring every three blocks along a run, as EMT does every stick.
+- Two knockouts on one line with nothing solid between them get one straight piece at any
+  distance, not only within a metre, so a run across a room no longer climbs over a girder in its
+  way. The preview shows the straight piece.
+- Goggles say less: one line for a gang box's gangs, the bulb's name and its watts on one line,
+  the splice count alone, and the knockout size only while sneaking.
+
+### Fixed
+- A lit bulb's goggles said 0 W: the figure was never sent to the client. It is, now.
+- The open conduit box's back face fought with its interior; the interior sits a touch in front.
+
 ## 0.57.0 — 2026-10-26
 
 ### Added

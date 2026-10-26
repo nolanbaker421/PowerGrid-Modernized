@@ -131,7 +131,7 @@ public final class ConduitPreview {
                     hitTerminal = electric.terminal(state, index);
                     hitPoint = IElectric.getTerminalPos(level, pos, index);
                     onHub = true;
-                    if(endpoint instanceof BlockWireEndpoint && currentPos.distanceTo(hitPoint) <= com.nolanbaker.pgmodernized.conduit.ConduitPlacement.DIRECT_MAX + 1e-6) {
+                    if(endpoint instanceof BlockWireEndpoint && com.nolanbaker.pgmodernized.conduit.ConduitPlacement.directBetween(level, currentPos, hitPoint)) {
                         directFrom = currentPos;
                         directTo = hitPoint;
                     }
