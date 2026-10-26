@@ -199,7 +199,7 @@ public class BodyWireRenderer extends BlockWireRenderer {
             if(!skip[i]) {
                 // The first and last reach a pixel into their knockouts, from the knockout's true centre;
                 // a leg through a strut's clamp is drawn in the slot, which may be off the pixel grid.
-                var side = onBody ? Vec3.ZERO : strutNudge(run, pos, end, dir, t);
+                var side = onBody ? Vec3.ZERO : strutNudge(run, pos, end, dir, t, i == 0 ? startNudge : Vec3.ZERO);
                 var endNudge = i == n - 1 && !onBody ? exactNudge(run, run.getEndpoint2(), end) : Vec3.ZERO;
                 var from = i == 0 ? pos.add(startNudge.lengthSqr() > 0 ? startNudge : side).relative(dir, -1 / 16.0) : pos.add(side).relative(dir, cutStart[i]);
                 var to = i == n - 1 ? end.add(endNudge.lengthSqr() > 0 ? endNudge : side).relative(dir, 1 / 16.0) : end.add(side).relative(dir, -cutEnd[i]);
@@ -237,13 +237,13 @@ public class BodyWireRenderer extends BlockWireRenderer {
     }
 
     /**
-     * A coupling ring every few blocks along the run, counted from its start: a ring half a pixel
-     * proud and two pixels long, a shade darker, only where it lands on a straight well clear of
-     * the bends.
+     * A coupling ring every few blocks along the run, counted from its start: a ring a quarter
+     * pixel proud and two pixels long, a shade darker, only where it lands on a straight well
+     * clear of the bends.
      */
     private static void couplings(PoseStack.Pose pose, VertexConsumer consumer, int light, int rgb, Vec3 segStart, Vec3 along,
                                   double travelled, double length, float t, double cutStart, double cutEnd) {
-        int r = (int) ((rgb >> 16 & 0xFF) * 0.85), g = (int) ((rgb >> 8 & 0xFF) * 0.85), b = (int) ((rgb & 0xFF) * 0.85);
+        int r = (int) ((rgb >> 16 & 0xFF) * 0.93), g = (int) ((rgb >> 8 & 0xFF) * 0.93), b = (int) ((rgb & 0xFF) * 0.93);
         int shade = r << 16 | g << 8 | b;
         double margin = 3 / 16.0;
         for(double at = Math.ceil(travelled / COUPLING_EVERY) * COUPLING_EVERY; at <= travelled + length; at += COUPLING_EVERY) {
@@ -253,7 +253,7 @@ public class BodyWireRenderer extends BlockWireRenderer {
             if(local < cutStart + margin || local > length - cutEnd - margin)
                 continue;
             var centre = segStart.add(along.scale(local));
-            TubeDraw.straight(pose, consumer, light, shade, centre.subtract(along.scale(1 / 16.0)), centre.add(along.scale(1 / 16.0)), t + 1 / 16f);
+            TubeDraw.straight(pose, consumer, light, shade, centre.subtract(along.scale(1 / 16.0)), centre.add(along.scale(1 / 16.0)), t + 0.5f / 16);
         }
     }
 
@@ -272,9 +272,11 @@ public class BodyWireRenderer extends BlockWireRenderer {
     /**
      * The sideways shift that draws a leg crossing a strut's rail in the slot it was clipped to:
      * the slots sit where a panel's knockouts do, a fraction of a pixel off the run's pixel grid.
-     * Zero for a leg that crosses no strut, runs along one, or is not within a pixel of a slot.
+     * Zero for a leg that crosses no strut, runs along one, or is not near a slot: within a pixel
+     * of the leg as laid, or within half a pixel of a first leg already drawn from its knockout's
+     * true centre, so a leg is never pulled one way at the knockout and the other at the strut.
      */
-    private static Vec3 strutNudge(ConduitRunEntity run, Vec3 start, Vec3 end, Direction dir, float t) {
+    private static Vec3 strutNudge(ConduitRunEntity run, Vec3 start, Vec3 end, Direction dir, float t, Vec3 startNudge) {
         var level = run.level();
         var origin = run.position();
         var leg = end.subtract(start);
@@ -299,7 +301,9 @@ public class BodyWireRenderer extends BlockWireRenderer {
             var local = world.subtract(bp.getX(), bp.getY(), bp.getZ());
             var nudge = com.nolanbaker.pgmodernized.conduit.StrutBlock.clamp(state, local, t * 16 / 2).subtract(local);
             nudge = nudge.subtract(along.scale(nudge.dot(along)));
-            if(nudge.lengthSqr() <= (0.8 / 16) * (0.8 / 16))
+            boolean fromKnockout = startNudge.lengthSqr() > 0;
+            double limit = (fromKnockout ? 0.5 : 0.9) / 16;
+            if(nudge.subtract(fromKnockout ? startNudge : Vec3.ZERO).lengthSqr() <= limit * limit)
                 return nudge;
         }
         return Vec3.ZERO;

@@ -160,11 +160,14 @@ public final class ConduitPlacement {
     private static final int KICK_SETBACK_PX = 6;
 
     /**
-     * Lays the pending run to a point in straight legs: a knockout's stub first, then along the
-     * strut to the slot, across towards the rail at the depth it has, a kick out to the tier just
-     * short of the rail, and across the rail last, so the tube hugs the wall on the way and crosses
-     * the rail square in its clamp. The run stays open at the clamp, ready for the next strut or
-     * the closing knockout.
+     * Lays the pending run to a point in straight legs, in an order that suits the way it arrives.
+     * Coming square at the rail: along the strut to the slot, across towards the rail at the depth
+     * it has, a kick out to the tier just short of the rail, and across the rail last, so the tube
+     * hugs the wall on the way and crosses the rail square in its clamp. Coming at the mount, up a
+     * wall to a ceiling strut say: on to the tier's depth first, then along to the slot, then across,
+     * so it turns the corner even with the strut. Running along the rail: onto the rail's line first,
+     * then along to the slot. The run stays open at the clamp, ready for the next strut or the
+     * closing knockout.
      */
     private static InteractionResultHolder<ConduitRunEntity> layStraight(Level level, ItemStack stack, @Nullable Player player,
                                                                          IWireEndpoint from, IWireEndpoint to, Direction mount, Direction.Axis strutAxis) {
@@ -175,6 +178,7 @@ public final class ConduitPlacement {
         var last = BodySpace.local(level, from);
         var runStart = last;
         var points = new ArrayList<BlockWireEntity.Point>();
+        Direction incoming = null;
         if(from instanceof BlockWireEntityEndpoint runEnd) {
             existing = runOf(level, runEnd, player);
             if(existing == null)
@@ -187,6 +191,7 @@ public final class ConduitPlacement {
                 message(player, "message.connection_failed", ChatFormatting.RED);
                 return InteractionResultHolder.fail(null);
             }
+            incoming = existing.segments.get(existing.segments.size() - 1).direction;
         } else {
             last = BlockTrace.alignPosition(last);
             runStart = last;
@@ -199,6 +204,7 @@ public final class ConduitPlacement {
                 if(exit != null) {
                     points.add(new BlockWireEntity.Point(exit, Knockouts.STUB_PX));
                     last = last.relative(exit, Knockouts.STUB_PX / 16.0);
+                    incoming = exit;
                 }
             }
         }
@@ -210,14 +216,24 @@ public final class ConduitPlacement {
         var depthAxis = mount.getAxis();
         var acrossAxis = Direction.Axis.values()[3 - depthAxis.ordinal() - strutAxis.ordinal()];
         double[] cur = {last.x, last.y, last.z};
-        leg(points, cur, strutAxis, target.get(strutAxis));
-        int depthPx = (int) Math.round((target.get(depthAxis) - cur[depthAxis.ordinal()]) * 16);
-        int acrossPx = (int) Math.round((target.get(acrossAxis) - cur[acrossAxis.ordinal()]) * 16);
-        // The leg before the kick is only laid when it has room for the offset's elbow as well.
-        if(depthPx != 0 && Math.abs(acrossPx) > 2 * KICK_SETBACK_PX + 2)
-            leg(points, cur, acrossAxis, cur[acrossAxis.ordinal()] + Math.signum(acrossPx) * (Math.abs(acrossPx) - KICK_SETBACK_PX) / 16.0);
-        leg(points, cur, depthAxis, target.get(depthAxis));
-        leg(points, cur, acrossAxis, target.get(acrossAxis));
+        if(incoming != null && incoming.getAxis() == depthAxis) {
+            leg(points, cur, depthAxis, target.get(depthAxis));
+            leg(points, cur, strutAxis, target.get(strutAxis));
+            leg(points, cur, acrossAxis, target.get(acrossAxis));
+        } else if(incoming != null && incoming.getAxis() == strutAxis) {
+            leg(points, cur, depthAxis, target.get(depthAxis));
+            leg(points, cur, acrossAxis, target.get(acrossAxis));
+            leg(points, cur, strutAxis, target.get(strutAxis));
+        } else {
+            leg(points, cur, strutAxis, target.get(strutAxis));
+            int depthPx = (int) Math.round((target.get(depthAxis) - cur[depthAxis.ordinal()]) * 16);
+            int acrossPx = (int) Math.round((target.get(acrossAxis) - cur[acrossAxis.ordinal()]) * 16);
+            // The leg before the kick is only laid when it has room for the offset's elbow as well.
+            if(depthPx != 0 && Math.abs(acrossPx) > 2 * KICK_SETBACK_PX + 2)
+                leg(points, cur, acrossAxis, cur[acrossAxis.ordinal()] + Math.signum(acrossPx) * (Math.abs(acrossPx) - KICK_SETBACK_PX) / 16.0);
+            leg(points, cur, depthAxis, target.get(depthAxis));
+            leg(points, cur, acrossAxis, target.get(acrossAxis));
+        }
         points = new ArrayList<>(WallClearance.apply(level, runStart, RunReshape.tidy(points), ConduitSupply.tubeRadius(stack), true, false));
         if(points.isEmpty()) {
             message(player, "message.connection_failed", ChatFormatting.RED);
@@ -259,13 +275,13 @@ public final class ConduitPlacement {
 
     /**
      * One straight leg along an axis to a coordinate, in whole pixels, or nothing when there is
-     * nowhere to go. A move under three quarters of a pixel is not worth a jog: the renderer draws
-     * the leg in its slot anyway.
+     * nowhere to go. A move under a pixel is not worth a jog: a knockout at 11.3 starts a run on the
+     * pixel grid at 10.5, and the renderer draws the leg in its slot anyway.
      */
     private static void leg(List<BlockWireEntity.Point> points, double[] cur, Direction.Axis axis, double to) {
         int i = axis.ordinal();
         double exact = (to - cur[i]) * 16;
-        int px = Math.abs(exact) < 0.75 ? 0 : (int) Math.round(exact);
+        int px = Math.abs(exact) < 1 ? 0 : (int) Math.round(exact);
         if(px == 0)
             return;
         points.add(new BlockWireEntity.Point(Direction.fromAxisAndDirection(axis, px > 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE), Math.abs(px)));

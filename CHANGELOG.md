@@ -4,6 +4,22 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.59.5 — 2026-10-26
+
+### Changed
+- A run that meets a strut's mount square on, up a wall to a ceiling strut say, carries on to the
+  tier's depth before it turns, so it comes round the corner even with the strut instead of
+  turning first and climbing to it. A run that arrives along the rail moves onto the rail's line
+  first and then along it.
+- Couplings are lighter: a quarter pixel proud and barely darker.
+
+### Fixed
+- Jogs under a pixel are not laid at all. A knockout at 11.3 starts a run on the pixel grid at
+  10.5, and the one-pixel sidestep that laid to reach the slot at 11.3 showed as an S off the
+  panel; the renderer draws such a leg in its slot. A first leg drawn from its knockout's true
+  centre is only pulled into a slot within half a pixel of it, so it is never pulled one way at
+  the knockout and the other at the strut.
+
 ## 0.59.4 — 2026-10-26
 
 ### Fixed
