@@ -11,6 +11,7 @@ import com.nolanbaker.pgmodernized.registry.ModBlockEntities;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -24,7 +25,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
-import org.patryk3211.powergrid.electricity.base.ISocketElectric;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
@@ -39,25 +42,13 @@ import java.util.Map;
  * switch, a 3-way, a 4-way, a push button, a receptacle or a blank. Nothing lands by itself; the
  * splice screen (sneak-click an empty gang or the plate) wires the run's conductors to the devices'
  * points. Mounted like the conduit switch: on any face, turned with a wrench. A power cord plugs
- * into the plate and lands on the first receptacle.
+ * into any receptacle gang and lands on that gang's line and neutral: each gang is its own cord
+ * endpoint, so a box of receptacles takes a cord in every one.
  */
-public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxBlockEntity>, ISocketElectric {
+public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxBlockEntity>, IAcceptCord {
     /** The gang of the first receptacle, 1 to 4, or 0 with none: where a power cord plugs in. Kept by the block entity. */
     public static final IntegerProperty SOCKET = IntegerProperty.create("socket", 0, GangLayout.MAX_GANGS);
-    private static final ITerminalPlacement NO_SOCKET = new ITerminalPlacement() {
-        @Override
-        public boolean check(Vec3 pos) {
-            return false;
-        }
-
-        @Override
-        public Vec3 getOrigin() {
-            return Vec3.ZERO;
-        }
-    };
-
     private final int gangs;
-    private final Map<BlockState, ITerminalPlacement> sockets = new HashMap<>();
 
     public GangBoxBlock(Properties properties, int gangs) {
         super(properties);
@@ -108,15 +99,40 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
 
     /** The first receptacle's face is the cord's socket; the cord lands on terminals 0 and 1, which the entity wires to that receptacle. */
     @Override
-    public ITerminalPlacement socket(BlockState state) {
-        int gang = state.hasProperty(SOCKET) ? state.getValue(SOCKET) : 0;
-        if(gang <= 0 || gang > gangs)
-            return NO_SOCKET;
-        return sockets.computeIfAbsent(state, s -> {
-            var face = GangLayout.slot(gangs, gang - 1);
-            var raised = new net.minecraft.world.phys.AABB(face.minX, face.minY, face.minZ, face.maxX, face.maxY + 0.8, face.maxZ);
-            return new TerminalBoundingBox(IDecoratedTerminal.SOCKET, GangFrame.worldBox(s, raised));
-        });
+    public boolean renderPlug() {
+        return true;
+    }
+
+    /** A cord clicked on a receptacle gang: its own endpoint on that gang's line and neutral, three pixels off the plate. */
+    @Override
+    public @Nullable AutoCordEndpoint getEndpoint(UseOnContext context) {
+        var level = context.getLevel();
+        var pos = context.getClickedPos();
+        var state = level.getBlockState(pos);
+        if(!(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be))
+            return null;
+        int slot = slotAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        if(slot < 0 || be.device(slot) != GangDevice.RECEPTACLE)
+            return null;
+        var face = GangLayout.slot(gangs, slot);
+        var centre = GangFrame.toWorld(state, new Vec3((face.minX + face.maxX) / 32, GangLayout.PLATE_Y1 / 16, 0.5));
+        var out = GangFrame.toWorld(state, new Vec3(0.5, 1, 0.5)).subtract(GangFrame.toWorld(state, new Vec3(0.5, 0, 0.5))).normalize();
+        var placement = Vec3.atLowerCornerOf(pos).add(centre).add(out.scale(3 / 16.0));
+        return new AutoCordEndpoint(pos, GangLayout.point(slot, 0), GangLayout.point(slot, 1), placement, Direction.getNearest(-out.x, -out.y, -out.z));
+    }
+
+    /** The plate of the receptacle gang under the cursor, for the cord's aim outline; nothing elsewhere. */
+    @Override
+    public @Nullable ITerminalPlacement cordTerminal(BlockState state, Level level, BlockHitResult hit) {
+        var pos = hit.getBlockPos();
+        if(!(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be))
+            return null;
+        int slot = slotAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        if(slot < 0 || be.device(slot) != GangDevice.RECEPTACLE)
+            return null;
+        var face = GangLayout.slot(gangs, slot);
+        var raised = new net.minecraft.world.phys.AABB(face.minX, face.minY, face.minZ, face.maxX, face.maxY + 0.8, face.maxZ);
+        return new TerminalBoundingBox(IDecoratedTerminal.SOCKET, GangFrame.worldBox(state, raised));
     }
 
     /** The gang under a block-local point on the plate, or -1 off the plate. */

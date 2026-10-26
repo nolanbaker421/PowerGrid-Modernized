@@ -4,6 +4,19 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.53.9 — 2026-10-25
+
+### Changed
+- A gang box takes a cord in every receptacle gang. Each gang is its own cord endpoint, landing on
+  that gang's line and neutral, three pixels off the plate with the plug drawn into it, so a box
+  of three receptacles takes three cords. A cord plugged into a gang box before this release
+  comes loose and drops; plug it in again.
+- The splice editor shows a wire's label beside its number, in yellow, without hovering.
+
+### Fixed
+- Right-clicking a run with an empty hand printed nothing once a wire was pulled through it: the
+  chat line choked on an unlabelled wire. The contents list prints again.
+
 ## 0.53.8 — 2026-10-25
 
 ### Fixed

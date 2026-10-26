@@ -44,11 +44,11 @@ import java.util.Set;
  * the source of truth; the screen only sends requests.
  */
 public class SpliceScreen extends Screen {
-    private static final int PIN = 8, PITCH = 11, PADDING = 10, HUB_W = 76, DUCT_W = 46, LANE = 4, GUTTER_H = 30, TITLE_H = 16, HINT_H = 14;
+    private static final int PIN = 8, PITCH = 11, PADDING = 10, HUB_W = 100, DUCT_W = 46, LANE = 4, GUTTER_H = 30, TITLE_H = 16, HINT_H = 14;
     private static final int COL_W = 42, ROW_H = 12, BUS_GAP = 14, BAR_W = 10, BAR_GAP = 10, MAIN_H = 20, BAR_SLOT = 6;
     private static final int MOD_W = 112, MOD_ROW = 11;
     private static final int PANEL_BG = 0xF0202225, PANEL_BORDER = 0xFF5A5E66, TEXT = 0xFFE8E8E8, DIM = 0xFF9A9A9A, LINE = 0xFFE0C060;
-    private static final int GLOW = 0xFFFFF4A0;
+    private static final int GLOW = 0xFFFFF4A0, LABEL = 0xFFE8D060;
     private static final int BOX_FILL = 0xFF2A2D32, BOX_EMPTY = 0xFF232528, BOX_BORDER = 0xFF4A4E56, DUCT_FILL = 0xFF191B1E, BUS_FILL = 0xFF3A3326;
     private static final int ON_FILL = 0xFF2C4A30, OFF_FILL = 0xFF383B40, TRIPPED_FILL = 0xFF5A2A2A;
 
@@ -652,15 +652,21 @@ public class SpliceScreen extends Screen {
                     graphics.drawString(font, font.plainSubstrByWidth(pin.name.getString(), ductRX - pin.x - PIN - 8), pin.x + PIN + 4, pin.y, TEXT, false);
             }
         }
-        // Conductor numbers beside their pins, away from the duct.
+        // Conductor numbers beside their pins, away from the duct, with the wire's label after the number.
         for(var pin : pins) {
             if(!pin.conductor)
                 continue;
             int hub = host.hubOf(pin.terminal);
+            var run = hub >= 0 ? host.hubRun(hub) : null;
+            var conductor = run == null ? null : run.conductor(host.conductorOf(pin.terminal));
             String number = String.valueOf(host.conductorOf(pin.terminal) + 1);
+            String label = conductor == null || conductor.label().isEmpty() ? "" : " " + conductor.label();
+            String shown = label.isEmpty() ? number : font.plainSubstrByWidth(number + label, HUB_W - PIN - 8);
             boolean leftColumn = pin.duct == Side.LEFT && pin.cx() < ductLX;
-            int tx = leftColumn ? pin.x - 4 - font.width(number) : pin.x + PIN + 4;
+            int tx = leftColumn ? pin.x - 4 - font.width(shown) : pin.x + PIN + 4;
             graphics.drawString(font, number, tx, pin.y, hub >= 0 && pin.usable ? TEXT : DIM, false);
+            if(shown.length() > number.length())
+                graphics.drawString(font, shown.substring(number.length()), tx + font.width(number), pin.y, LABEL, false);
         }
 
         // The selected pin, or failing that the hovered one, lights up together with everything it is joined to.
