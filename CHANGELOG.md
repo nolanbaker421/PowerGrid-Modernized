@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.59.4 — 2026-10-26
+
+### Fixed
+- A kick between two short legs was drawn as two sharp knuckles when a neighbouring bend left
+  no room for the offset; the bend now gives way to the offset instead. A run to a strut close
+  to its knockout kicks out right off the stub rather than laying a leg too short to draw well.
+
 ## 0.59.3 — 2026-10-26
 
 ### Changed

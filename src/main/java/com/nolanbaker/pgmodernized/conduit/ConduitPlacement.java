@@ -213,7 +213,8 @@ public final class ConduitPlacement {
         leg(points, cur, strutAxis, target.get(strutAxis));
         int depthPx = (int) Math.round((target.get(depthAxis) - cur[depthAxis.ordinal()]) * 16);
         int acrossPx = (int) Math.round((target.get(acrossAxis) - cur[acrossAxis.ordinal()]) * 16);
-        if(depthPx != 0 && Math.abs(acrossPx) > KICK_SETBACK_PX + 2)
+        // The leg before the kick is only laid when it has room for the offset's elbow as well.
+        if(depthPx != 0 && Math.abs(acrossPx) > 2 * KICK_SETBACK_PX + 2)
             leg(points, cur, acrossAxis, cur[acrossAxis.ordinal()] + Math.signum(acrossPx) * (Math.abs(acrossPx) - KICK_SETBACK_PX) / 16.0);
         leg(points, cur, depthAxis, target.get(depthAxis));
         leg(points, cur, acrossAxis, target.get(acrossAxis));

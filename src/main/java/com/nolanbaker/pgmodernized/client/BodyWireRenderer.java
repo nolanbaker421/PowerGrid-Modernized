@@ -154,9 +154,15 @@ public class BodyWireRenderer extends BlockWireRenderer {
             var c = segs.get(i + span + 1);
             var diagonal = along.scale(2 * m).add(jog).normalize();
             double cut = m + TubeDraw.setback(wanted, along, diagonal);
-            double needA = cut + Math.max(startCut[i], i > 0 ? radii[i - 1] : 0), needC = cut + radii[i + span + 1];
-            if(a.length() < needA || c.length() < needC)
+            // The legs either side must hold the cut; a bend at their far ends gives way to it,
+            // down to a sharp joint, since a kink drawn as two sharp joints looks worse.
+            double roomA = a.length() - cut - startCut[i], roomC = c.length() - cut;
+            if(roomA < -1e-6 || roomC < -1e-6)
                 continue;
+            if(i > 0 && radii[i - 1] > roomA)
+                radii[i - 1] = roomA >= 1.5f / 16 ? (float) roomA : 0;
+            if(radii[i + span + 1] > roomC)
+                radii[i + span + 1] = roomC >= 1.5f / 16 ? (float) roomC : 0;
             offsetSpan[i] = span;
             offsetCut[i] = cut;
             startCut[i + span + 1] = cut;
