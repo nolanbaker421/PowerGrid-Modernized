@@ -126,7 +126,16 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         return getItem() instanceof ConduitItem conduit ? conduit.size() : ConduitSize.HALF;
     }
 
-    /** A nipple lives exactly as long as its pull box and panel stand next to each other. */
+    private static boolean isGutter(@Nullable net.minecraft.world.level.block.entity.BlockEntity be) {
+        return be instanceof PullBoxBlockEntity || be instanceof com.nolanbaker.pgmodernized.conduit.trough.ITroughSection;
+    }
+
+    private static boolean isPanel(@Nullable net.minecraft.world.level.block.entity.BlockEntity be) {
+        return be instanceof com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlockEntity
+                || be instanceof com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlockEntity;
+    }
+
+    /** A nipple lives exactly as long as its gutter and panel stand next to each other. */
     @Override
     public void tick() {
         super.tick();
@@ -142,8 +151,8 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
             return;
         var beA = level().getBlockEntity(a.getPos());
         var beB = level().getBlockEntity(b.getPos());
-        boolean pair = (beA instanceof PullBoxBlockEntity && beB instanceof com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlockEntity)
-                || (beB instanceof PullBoxBlockEntity && beA instanceof com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlockEntity);
+        // A gutter (pull box or trough section) against a panel (head or extension), either way round.
+        boolean pair = (isGutter(beA) && isPanel(beB)) || (isGutter(beB) && isPanel(beA));
         if(!pair || !a.getPos().closerThan(b.getPos(), 1.5))
             kill();
     }

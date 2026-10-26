@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.54.1 — 2026-10-26
+
+### Fixed
+- A trough over or under a panel laid its nipples and lost them again every second, which made
+  the editor blink: the nipple's own check only accepted a pull box with a panel head. It accepts
+  a trough section too, and a panel extension at the panel end.
+
 ## 0.54.0 — 2026-10-26
 
 ### Added
