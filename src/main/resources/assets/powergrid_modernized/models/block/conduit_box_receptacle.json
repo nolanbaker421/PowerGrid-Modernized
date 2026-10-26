@@ -1,9 +1,12 @@
 {
   "parent": "block/block",
+  "render_type": "minecraft:cutout",
   "textures": {
     "box": "powergrid_modernized:block/conduit_box_detail",
     "knockout": "powergrid_modernized:block/knockout_one_half",
     "particle": "powergrid_modernized:block/conduit_box",
+    "plate": "powergrid_modernized:block/conduit_box",
+    "terminal": "powergrid_modernized:block/panel_terminal",
     "receptacle": "powergrid_modernized:block/receptacle"
   },
   "elements": [
@@ -924,7 +927,7 @@
             9.5,
             10
           ],
-          "texture": "#box"
+          "texture": "#plate"
         },
         "east": {
           "uv": [
@@ -933,7 +936,7 @@
             4.5,
             10
           ],
-          "texture": "#box"
+          "texture": "#plate"
         },
         "west": {
           "uv": [
@@ -942,7 +945,7 @@
             13,
             10
           ],
-          "texture": "#box"
+          "texture": "#plate"
         },
         "up": {
           "uv": [
@@ -951,7 +954,7 @@
             9.5,
             13
           ],
-          "texture": "#box"
+          "texture": "#plate"
         },
         "down": {
           "uv": [
@@ -960,7 +963,143 @@
             9.5,
             4.5
           ],
-          "texture": "#box"
+          "texture": "#plate"
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        7,
+        12
+      ],
+      "to": [
+        11,
+        9,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            7,
+            6,
+            9
+          ],
+          "texture": "#terminal"
+        },
+        "south": {
+          "uv": [
+            10,
+            7,
+            11,
+            9
+          ],
+          "texture": "#terminal"
+        },
+        "east": {
+          "uv": [
+            3,
+            7,
+            4,
+            9
+          ],
+          "texture": "#terminal"
+        },
+        "west": {
+          "uv": [
+            12,
+            7,
+            13,
+            9
+          ],
+          "texture": "#terminal"
+        },
+        "up": {
+          "uv": [
+            10,
+            12,
+            11,
+            13
+          ],
+          "texture": "#terminal"
+        },
+        "down": {
+          "uv": [
+            10,
+            3,
+            11,
+            4
+          ],
+          "texture": "#terminal"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        7,
+        12
+      ],
+      "to": [
+        6,
+        9,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            7,
+            11,
+            9
+          ],
+          "texture": "#terminal"
+        },
+        "south": {
+          "uv": [
+            5,
+            7,
+            6,
+            9
+          ],
+          "texture": "#terminal"
+        },
+        "east": {
+          "uv": [
+            3,
+            7,
+            4,
+            9
+          ],
+          "texture": "#terminal"
+        },
+        "west": {
+          "uv": [
+            12,
+            7,
+            13,
+            9
+          ],
+          "texture": "#terminal"
+        },
+        "up": {
+          "uv": [
+            5,
+            12,
+            6,
+            13
+          ],
+          "texture": "#terminal"
+        },
+        "down": {
+          "uv": [
+            5,
+            3,
+            6,
+            4
+          ],
+          "texture": "#terminal"
         }
       }
     }

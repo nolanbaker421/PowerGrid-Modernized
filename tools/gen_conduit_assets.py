@@ -125,7 +125,8 @@ LUNA_VARIANT = {"open": "open", "blank": "blank", "node": "node", "light_off": "
 
 def box_model():
     tex = {"box": "%s:block/conduit_box_detail" % MOD, "knockout": "%s:block/knockout_one_half" % MOD,
-           "particle": "%s:block/conduit_box" % MOD, "receptacle": "%s:block/receptacle" % MOD}
+           "particle": "%s:block/conduit_box" % MOD, "plate": "%s:block/conduit_box" % MOD,
+           "terminal": "%s:block/panel_terminal" % MOD, "receptacle": "%s:block/receptacle" % MOD}
     with open(LUNA, encoding="utf-8") as f:
         luna = json.load(f)["variants"]
     for cover in COVERS:
@@ -135,7 +136,12 @@ def box_model():
             elements.append(element(*hub, "#knockout"))
         if cover == "receptacle":
             elements.append(receptacle_face(RECEPTACLE_FACE))
-        dump(os.path.join(ASSETS, "models", "block", "conduit_box_%s.json" % cover), {"parent": "block/block", "textures": tex, "elements": elements})
+        if cover == "receptacle" or cover.startswith("light"):
+            for screw in SCREWS:
+                elements.append(element(*screw, "#terminal"))
+        # Cutout: the detail texture has transparent pixels where the plate is open.
+        dump(os.path.join(ASSETS, "models", "block", "conduit_box_%s.json" % cover),
+             {"parent": "block/block", "render_type": "minecraft:cutout", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "models", "item", "conduit_box.json"), {"parent": "%s:block/conduit_box_open" % MOD})
     ceiling_box_models()
     variants = {}
@@ -186,9 +192,13 @@ def box_model():
 
 def receptacle_face(box):
     """The face element, textured with the receptacle on its front and the plate colour elsewhere."""
-    e = element(*box, "#box")
+    e = element(*box, "#plate")
     e["faces"]["north"] = {"uv": [0, 0, 16, 16], "texture": "#receptacle"}
     return e
+
+
+# The screw terminals beside a light fixture or a receptacle; mirrors ConduitBoxGeometry.SCREW_LINE / SCREW_NEUTRAL.
+SCREWS = [(10, 7, 12, 11, 9, 13), (5, 7, 12, 6, 9, 13)]
 
 
 # Floor frame (FACING = down): body on the floor, socket face up, knockout on the north edge.

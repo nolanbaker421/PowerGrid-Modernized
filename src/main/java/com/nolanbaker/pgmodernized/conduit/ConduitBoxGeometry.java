@@ -120,7 +120,7 @@ public final class ConduitBoxGeometry {
     public static TerminalBoundingBox[] terminals(UnaryOperator<AABB> frame, ConduitCover cover) {
         var terminals = new TerminalBoundingBox[TERMINAL_COUNT];
         for(int k = 0; k < FRONT_COUNT; ++k)
-            terminals[k] = terminal(ConductorColors.name(k), frame.apply(cover.exposes(k) ? frontNub(k) : HIDDEN)).withColor(ConductorColors.rgb(k));
+            terminals[k] = terminal(ConductorColors.name(k), frame.apply(cover.exposes(k) ? coverNub(cover, k) : HIDDEN)).withColor(ConductorColors.rgb(k));
         for(int h = 0; h < HUB_COUNT; ++h) {
             terminals[hubTerminal(h)] = terminal(hubName(h), frame.apply(HUBS[h])).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.ONE_HALF.bandColor());
             for(int k = 0; k < ConductorColors.COUNT; ++k) {
@@ -151,12 +151,21 @@ public final class ConduitBoxGeometry {
     public static final AABB BULB = new AABB(6, 6, 8.5, 10, 10, 11);
     /** The face of a receptacle cover that a cord plugs into. */
     public static final AABB RECEPTACLE_FACE = new AABB(6.5, 6, 11.5, 9.5, 10, 13);
+    /** The two screw terminals beside a light fixture or a receptacle: line on the viewer's right (+x), neutral on the left. */
+    public static final AABB SCREW_LINE = new AABB(10, 7, 12, 11, 9, 13), SCREW_NEUTRAL = new AABB(5, 7, 12, 6, 9, 13);
+
+    /** Where a cover's exposed terminal sits: a node on the node plate, a screw beside a fixture or receptacle. */
+    public static AABB coverNub(ConduitCover cover, int k) {
+        if(cover.isLight() || cover == ConduitCover.RECEPTACLE)
+            return k == 0 ? SCREW_LINE : SCREW_NEUTRAL;
+        return frontNub(k);
+    }
 
     /** The box with that cover: its exposed cover terminals as nubs, and the lamp of a light socket. */
     public static VoxelShape shape(ConduitCover cover, UnaryOperator<AABB> frame) {
         var shape = box(frame.apply(BODY));
         for(int k = 0; k < cover.terminals(); ++k)
-            shape = Shapes.or(shape, box(frame.apply(frontNub(k))));
+            shape = Shapes.or(shape, box(frame.apply(coverNub(cover, k))));
         if(cover.isLight())
             shape = Shapes.or(shape, box(frame.apply(LAMP_HOLDER)), box(frame.apply(BULB)));
         if(cover == ConduitCover.RECEPTACLE)

@@ -4,6 +4,17 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.52.2 — 2026-10-25
+
+### Fixed
+- The Conduit Box models render with cutout transparency, so the open parts of Luna-Terra's
+  textures (her work, as are all the box textures and cover models since 0.52.1) show through
+  instead of filling in grey.
+- The light and receptacle covers' two pole terminals sat where the old node nubs were, which
+  her covers no longer draw, so their wiring outlines floated in space. They are screw terminals
+  beside the fixture and the receptacle now, drawn on the plate, line on the right and neutral on
+  the left. The Conduit Socket's outline is its cord socket and stays.
+
 ## 0.52.1 — 2026-10-25
 
 ### Changed

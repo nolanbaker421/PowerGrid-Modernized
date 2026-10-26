@@ -1,9 +1,12 @@
 {
   "parent": "block/block",
+  "render_type": "minecraft:cutout",
   "textures": {
     "box": "powergrid_modernized:block/conduit_box_detail",
     "knockout": "powergrid_modernized:block/knockout_one_half",
     "particle": "powergrid_modernized:block/conduit_box",
+    "plate": "powergrid_modernized:block/conduit_box",
+    "terminal": "powergrid_modernized:block/panel_terminal",
     "receptacle": "powergrid_modernized:block/receptacle"
   },
   "elements": [
