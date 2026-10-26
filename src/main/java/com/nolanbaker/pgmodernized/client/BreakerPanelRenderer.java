@@ -39,8 +39,10 @@ public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBl
         ms.translate(0.5, 0.5, 0.5);
         ms.mulPose(Axis.YP.rotationDegrees(-(facing.toYRot() + 180)));
         ms.translate(-0.5, -0.5, -0.5);
-        if(be.hasCover())
+        if(be.hasCover()) {
+            deadFront(be, ms, buffer, light);
             cover(be, ms, buffer, light);
+        }
         if(be.coverClosed()) {
             ms.popPose();
             return;
@@ -62,7 +64,18 @@ public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBl
         ms.popPose();
     }
 
-    private static final int DOOR = 0x7A7E86, DOOR_EDGE = 0x5A5E66, HANDLE = 0xC8CCD0;
+    private static final int DOOR = 0x7A7E86, DOOR_EDGE = 0x5A5E66, HANDLE = 0xC8CCD0, DEAD_FRONT = 0x888C94;
+
+    /**
+     * The dead front that comes with the cover: a plate over the interior of the head and its
+     * extensions, in the north frame, that the breakers stand through, so the bus bars and rails
+     * are out of sight once the panel is covered, door open or shut.
+     */
+    private static void deadFront(BreakerPanelBlockEntity be, PoseStack ms, MultiBufferSource buffer, int light) {
+        double bottom = 1 - 16 * (be.sections() - 1);
+        double front = PanelLayout.FRONT_Z;
+        DeviceDraw.box(ms, buffer, light, 1, bottom, front - 0.3, 15, 15, front, DEAD_FRONT);
+    }
 
     /** The door over the front of the head and its extensions, in the north frame: closed flat on the front, or swung open on a hinge at the viewer's left. */
     private static void cover(BreakerPanelBlockEntity be, PoseStack ms, MultiBufferSource buffer, int light) {

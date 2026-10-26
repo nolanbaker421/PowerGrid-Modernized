@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.59.3 — 2026-10-26
+
+### Changed
+- A covered breaker panel has a dead front: a plate over the interior that the breakers stand
+  through, so the bus bars and rails are hidden with the door open as well as shut. Take the cover
+  off to see the bars again.
+
 ## 0.59.2 — 2026-10-26
 
 ### Fixed
