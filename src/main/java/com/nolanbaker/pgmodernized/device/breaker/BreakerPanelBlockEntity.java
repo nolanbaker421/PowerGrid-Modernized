@@ -158,8 +158,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
     /** Whether any of the head's bottom knockouts carries a run, which an extension would cover. */
     public boolean bottomHubsUsed() {
-        for(int h = 4; h < PanelLayout.EDGE_HUBS; ++h) {
-            if(SpliceSupport.runAt(this, PanelLayout.hubTerminal(spec(), h)) != null)
+        for(int h = 0; h < PanelLayout.ALL_HUBS; ++h) {
+            if(PanelLayout.isHeadBottomHub(h) && SpliceSupport.runAt(this, PanelLayout.hubTerminal(spec(), h)) != null)
                 return true;
         }
         return false;
@@ -1000,7 +1000,13 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
     @Override
     public int hubCount() {
-        return PanelLayout.HUB_COUNT + PanelLayout.EXT_HUBS * (sections() - 1);
+        // Every knockout the panel could ever have; those of missing extensions have no run and no terminal.
+        return PanelLayout.ALL_HUBS;
+    }
+
+    @Override
+    public @Nullable ConduitSize maxConduit(int hub) {
+        return PanelLayout.sectionOfHub(hub) < sections() ? maxConduit() : null;
     }
 
     @Override

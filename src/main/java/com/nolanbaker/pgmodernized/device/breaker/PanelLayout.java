@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -49,7 +50,18 @@ public final class PanelLayout {
     public static final double FRONT_Z = 10;
     private static final AABB BODY = new AABB(1, 1, 10, 15, 15, 16);
     private static final AABB HIDDEN = new AABB(7.99, 7.99, 11.49, 8.01, 8.01, 11.51);   // a speck: a landing has no outline to show
-    private static final double[] HUB_U = {3.5, 6.5, 9.5, 12.5};
+    /** The original four knockouts across an edge, now the inner four of six, left to right as the viewer sees them. */
+    private static final double[] HUB_U = {4.7, 6.9, 9.1, 11.3};
+    /** The two added at the outer positions. */
+    private static final double[] EXTRA_U = {2.5, 13.5};
+    /**
+     * Two extra top and two extra bottom knockouts on the head, two extra bottom ones per extension,
+     * numbered after everything else, ground included, so saved panels keep every index they had.
+     */
+    public static final int HEAD_EXTRA = 4, EXT_EXTRA = 2;
+    public static final int EXTRA_HUB_BASE = HUB_COUNT + EXT_HUBS * MAX_EXT;
+    public static final int ALL_HUBS = EXTRA_HUB_BASE + HEAD_EXTRA + EXT_EXTRA * MAX_EXT;
+    private static final int HEAD_EXTRA_SIZE = HEAD_EXTRA * (1 + PER_HUB), EXT_EXTRA_SIZE = EXT_EXTRA * (1 + PER_HUB);
     private static final double[] SIDE_HUB_Y = {4, 9};
     private static final double HUB_Z1 = 12.5, HUB_Z2 = 14.5;
 
@@ -69,7 +81,7 @@ public final class PanelLayout {
     }
 
     public static int maxHubs() {
-        return HUB_COUNT + EXT_HUBS * MAX_EXT;
+        return ALL_HUBS;
     }
 
     /** Section a branch space sits in: 0 the head, 1.. the extensions below. */
@@ -78,12 +90,57 @@ public final class PanelLayout {
     }
 
     public static int sectionOfHub(int hub) {
+        if(hub >= EXTRA_HUB_BASE) {
+            int e = hub - EXTRA_HUB_BASE;
+            return e < HEAD_EXTRA ? 0 : 1 + (e - HEAD_EXTRA) / EXT_EXTRA;
+        }
         return hub < HUB_COUNT ? 0 : 1 + (hub - HUB_COUNT) / EXT_HUBS;
     }
 
     /** Section a terminal belongs to. */
     public static int sectionOf(PanelSpec spec, int terminal) {
+        var extra = extraTerminal(spec, terminal);
+        if(extra != null)
+            return extra[0];
         return terminal < extBase(spec) || terminal >= groundTerminal(spec) ? 0 : Math.min(MAX_EXT, 1 + (terminal - extBase(spec)) / extSize(spec));
+    }
+
+    // ---- the extra knockouts ----
+
+    private static int extraBase(PanelSpec spec) {
+        return groundTerminal(spec) + 1;
+    }
+
+    private static int extraCount(int section) {
+        return section == 0 ? HEAD_EXTRA : EXT_EXTRA;
+    }
+
+    private static int extraStart(PanelSpec spec, int section) {
+        return extraBase(spec) + (section == 0 ? 0 : HEAD_EXTRA_SIZE + (section - 1) * EXT_EXTRA_SIZE);
+    }
+
+    /** An extra hub's index within its section's extras, or -1 for an ordinary hub. */
+    private static int extraLocal(int hub) {
+        if(hub < EXTRA_HUB_BASE)
+            return -1;
+        int e = hub - EXTRA_HUB_BASE;
+        return e < HEAD_EXTRA ? e : (e - HEAD_EXTRA) % EXT_EXTRA;
+    }
+
+    private static int extraHub(int section, int local) {
+        return EXTRA_HUB_BASE + (section == 0 ? local : HEAD_EXTRA + (section - 1) * EXT_EXTRA + local);
+    }
+
+    /** {section, offset within that section's extra group} of a terminal in the extra region, or null. */
+    private static int @Nullable [] extraTerminal(PanelSpec spec, int terminal) {
+        int e = terminal - extraBase(spec);
+        if(e < 0)
+            return null;
+        if(e < HEAD_EXTRA_SIZE)
+            return new int[] {0, e};
+        e -= HEAD_EXTRA_SIZE;
+        int section = 1 + e / EXT_EXTRA_SIZE;
+        return section > MAX_EXT ? null : new int[] {section, e % EXT_EXTRA_SIZE};
     }
 
     /** The panel's ground point, bonded to its neutral: the last terminal, added after the extensions' so saved panels keep their indices. */
@@ -93,7 +150,7 @@ public final class PanelLayout {
 
     /** The head's bottom knockouts, which an extension covers. */
     public static boolean isHeadBottomHub(int hub) {
-        return hub >= 4 && hub < EDGE_HUBS;
+        return (hub >= 4 && hub < EDGE_HUBS) || hub == EXTRA_HUB_BASE + 2 || hub == EXTRA_HUB_BASE + 3;
     }
 
     // ---- terminal indices ----
@@ -151,6 +208,8 @@ public final class PanelLayout {
     }
 
     public static int hubTerminal(PanelSpec spec, int hub) {
+        if(hub >= EXTRA_HUB_BASE)
+            return extraStart(spec, sectionOfHub(hub)) + extraLocal(hub);
         if(hub < EDGE_HUBS)
             return hubBase(spec) + hub;
         if(hub < HUB_COUNT)
@@ -161,6 +220,9 @@ public final class PanelLayout {
 
     /** Hub index of a hub terminal, or -1. */
     public static int hubAt(PanelSpec spec, int terminal) {
+        var extra = extraTerminal(spec, terminal);
+        if(extra != null)
+            return extra[1] < extraCount(extra[0]) ? extraHub(extra[0], extra[1]) : -1;
         int i = terminal - hubBase(spec);
         if(i >= 0 && i < EDGE_HUBS)
             return i;
@@ -174,6 +236,10 @@ public final class PanelLayout {
     }
 
     public static int conductorTerminal(PanelSpec spec, int hub, int conductor) {
+        if(hub >= EXTRA_HUB_BASE) {
+            int section = sectionOfHub(hub);
+            return extraStart(spec, section) + extraCount(section) + extraLocal(hub) * PER_HUB + conductor;
+        }
         if(hub < EDGE_HUBS)
             return edgeConductorBase(spec) + hub * PER_HUB + conductor;
         if(hub < HUB_COUNT)
@@ -184,6 +250,11 @@ public final class PanelLayout {
 
     /** Hub a hidden conductor terminal belongs to, or -1. */
     public static int conductorHub(PanelSpec spec, int terminal) {
+        var extra = extraTerminal(spec, terminal);
+        if(extra != null) {
+            int off = extra[1] - extraCount(extra[0]);
+            return off >= 0 ? extraHub(extra[0], off / PER_HUB) : -1;
+        }
         int i = terminal - edgeConductorBase(spec);
         if(i >= 0 && i < EDGE_HUBS * PER_HUB)
             return i / PER_HUB;
@@ -198,6 +269,11 @@ public final class PanelLayout {
     }
 
     public static int conductorOf(PanelSpec spec, int terminal) {
+        var extra = extraTerminal(spec, terminal);
+        if(extra != null) {
+            int off = extra[1] - extraCount(extra[0]);
+            return off >= 0 ? off % PER_HUB : -1;
+        }
         int i = terminal - edgeConductorBase(spec);
         if(i >= 0 && i < EDGE_HUBS * PER_HUB)
             return i % PER_HUB;
@@ -210,7 +286,7 @@ public final class PanelLayout {
     }
 
     public static int terminalCount(PanelSpec spec) {
-        return groundTerminal(spec) + 1;
+        return extraBase(spec) + HEAD_EXTRA_SIZE + MAX_EXT * EXT_EXTRA_SIZE;
     }
 
     public static boolean isPoint(PanelSpec spec, int terminal) {
@@ -224,19 +300,27 @@ public final class PanelLayout {
     public static Component hubName(int hub) {
         String key;
         int number;
+        if(hub >= EXTRA_HUB_BASE) {
+            // The outer two of six: 1 on the viewer's left, 6 on the right; the original four are 2 to 5.
+            int section = sectionOfHub(hub), local = extraLocal(hub);
+            number = local % 2 == 0 ? 1 : 6;
+            if(section == 0)
+                return Lang.builder().translate("gui.breaker_panel.hub." + (local < 2 ? "top" : "bottom"), number).style(ChatFormatting.AQUA).component();
+            return Lang.builder().translate("gui.breaker_panel.hub.ext_bottom", section, number).style(ChatFormatting.AQUA).component();
+        }
         if(hub >= HUB_COUNT) {
             int section = sectionOfHub(hub);
             int local = (hub - HUB_COUNT) % EXT_HUBS;
             key = local < 4 ? "ext_bottom" : local < 6 ? "ext_left" : "ext_right";
-            number = local < 4 ? local + 1 : local < 6 ? local - 4 + 1 : local - 6 + 1;
+            number = local < 4 ? local + 2 : local < 6 ? local - 4 + 1 : local - 6 + 1;
             return Lang.builder().translate("gui.breaker_panel.hub." + key, section, number).style(ChatFormatting.AQUA).component();
         }
         if(hub < 4) {
             key = "top";
-            number = hub + 1;
+            number = hub + 2;
         } else if(hub < EDGE_HUBS) {
             key = "bottom";
-            number = hub - 4 + 1;
+            number = hub - 4 + 2;
         } else if(hub < EDGE_HUBS + 2) {
             key = "left";
             number = hub - EDGE_HUBS + 1;
@@ -334,6 +418,13 @@ public final class PanelLayout {
 
     /** A head hub in the head's frame; an extension hub the same, a block lower per section. */
     private static AABB hub(int hub) {
+        if(hub >= EXTRA_HUB_BASE) {
+            int section = sectionOfHub(hub), local = extraLocal(hub);
+            boolean top = section == 0 && local < 2;
+            double x = 16 - EXTRA_U[local % 2];
+            var box = top ? new AABB(x - 1, 15, HUB_Z1, x + 1, 16, HUB_Z2) : new AABB(x - 1, 0, HUB_Z1, x + 1, 1, HUB_Z2);
+            return box.move(0, -16 * section, 0);
+        }
         if(hub >= HUB_COUNT) {
             int section = sectionOfHub(hub);
             int local = (hub - HUB_COUNT) % EXT_HUBS;
@@ -358,6 +449,8 @@ public final class PanelLayout {
         var shape = box(BODY);
         for(int h = 0; h < HUB_COUNT; ++h)
             shape = Shapes.or(shape, box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub(h))));
+        for(int h = EXTRA_HUB_BASE; h < EXTRA_HUB_BASE + HEAD_EXTRA; ++h)
+            shape = Shapes.or(shape, box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub(h))));
         return shape;
     }
 
@@ -366,6 +459,8 @@ public final class PanelLayout {
         // Up to the top of its block: the model continues a pixel into the head to close the seam.
         var shape = box(new AABB(BODY.minX, BODY.minY, BODY.minZ, BODY.maxX, 16, BODY.maxZ));
         for(int h = 4; h < HUB_COUNT; ++h)
+            shape = Shapes.or(shape, box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub(h))));
+        for(int h = EXTRA_HUB_BASE + 2; h < EXTRA_HUB_BASE + HEAD_EXTRA; ++h)
             shape = Shapes.or(shape, box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub(h))));
         return shape;
     }

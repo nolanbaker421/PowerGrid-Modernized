@@ -11,7 +11,6 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -28,8 +27,7 @@ import java.util.List;
 /**
  * A trough section's half of the bargain: Power Grid asks it for terminals and gets this section's
  * own knockouts, numbered in the row's space, placed by its own patterns and facing; the splice
- * editor and goggles opened on it read the head; and it lays its own nipples to a panel above or
- * below through the head.
+ * editor and goggles opened on it read the head.
  */
 public class WireTroughExtensionBlockEntity extends SmartBlockEntity implements IElectric, IElectricDelegate, ISpliceHost, ITroughSection, IHaveGoggleInformation {
     public WireTroughExtensionBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -54,16 +52,6 @@ public class WireTroughExtensionBlockEntity extends SmartBlockEntity implements 
     @Override
     public int section() {
         return headPos().distManhattan(worldPosition);
-    }
-
-    @Override
-    public void lazyTick() {
-        super.lazyTick();
-        if(!(level instanceof ServerLevel server))
-            return;
-        var head = head();
-        if(head != null)
-            head.linkPanels(server, section());
     }
 
     // ---- electrical face ----

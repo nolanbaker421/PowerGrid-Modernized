@@ -267,11 +267,10 @@ while nothing is on it. The ends of the row take 4". Every knockout has twenty-f
 a 2-1/2", 3" or 4" run between troughs carries 18, 24 or 36 wires; to a box or a panel it still
 carries that fitting's twelve.
 
-Set a trough directly over or under a breaker panel, or under its last extension, on the same
-wall, and within a second it lays 1" **nipples** from the panel's knockouts to its own, as many as
-line up with free knockouts. Pull wire through them like any run and splice in both editors. Four
-nipples into a panel head is forty-eight wires. Taking a middle section out drops the sections to
-its right; the first section takes the whole row with it.
+Between a trough and a panel you run conduit by hand like any run: a panel has six knockouts
+along its top and six along its bottom, so a trough over a panel feeds it through up to six
+short runs, seventy-two wires. Taking a middle section out drops the sections to its right; the
+first section takes the whole row with it.
 
 ### Terminal Cabinet
 
@@ -370,7 +369,7 @@ Extension** block adds rows: place it directly under the panel, on the same wall
 grows by its row count again (twelve more spaces) on the same bus, numbered on from the head's. A
 second extension goes under the first; two is the limit, 36 spaces. Breakers may span down into an
 extension, and are installed, flipped, pulled, locked, labelled and wrench-set on whichever block
-they show on. The extension has four knockouts along its bottom and two down each side; it covers
+they show on. The extension has six knockouts along its bottom and two down each side; it covers
 the head's bottom knockouts, so those must be free before it goes on. Its front opens the same
 splice editor. Take an extension out and the breakers in it drop, with any extension below it.
 

@@ -38,7 +38,7 @@ MULTI_POLES = [2, 3]
 # Layout constants (pixels, north frame) - keep in sync with PanelLayout.java
 BODY = (1, 1, 10, 15, 15, 16)
 FRONT_Z = 10
-HUB_U = [3.5, 6.5, 9.5, 12.5]
+HUB_U = [2.5, 4.7, 6.9, 9.1, 11.3, 13.5]   # six across an edge; PanelLayout numbers the inner four first
 HUB_Z1, HUB_Z2 = 12.5, 14.5
 SIDE_HUB_Y = [4, 9]
 LEFT_U1, RIGHT_U1, COLUMN_WIDTH, ROW_TOP = 1.5, 8.5, 6, 11
@@ -289,7 +289,7 @@ def dump(path, obj):
 def panel_model(name, slots):
     elements = [element(*BODY, "#side", cull_south=True)]
     elements[0]["faces"]["north"]["texture"] = "#front"
-    # Conduit knockouts: four across the top edge, four across the bottom.
+    # Conduit knockouts: six across the top edge, six across the bottom.
     for u in HUB_U:
         x = 16 - u
         elements.append(element(x - 1, 15, HUB_Z1, x + 1, 16, HUB_Z2, "#knockout"))

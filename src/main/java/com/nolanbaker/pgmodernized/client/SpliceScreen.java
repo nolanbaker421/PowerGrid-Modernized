@@ -231,6 +231,8 @@ public class SpliceScreen extends Screen {
     /** Which side of the screen a knockout's column goes: where the knockout is on the box, as the viewer sees it. */
     private static Side side(ISpliceHost host, int hub) {
         if(host instanceof BreakerPanelBlockEntity) {
+            if(hub >= PanelLayout.EXTRA_HUB_BASE)
+                return hub < PanelLayout.EXTRA_HUB_BASE + 2 ? Side.LEFT : Side.RIGHT;
             if(hub < PanelLayout.HUB_COUNT)
                 return hub < 4 || (hub >= PanelLayout.EDGE_HUBS && hub < PanelLayout.EDGE_HUBS + 2) ? Side.LEFT : Side.RIGHT;
             int local = (hub - PanelLayout.HUB_COUNT) % PanelLayout.EXT_HUBS;
@@ -379,11 +381,18 @@ public class SpliceScreen extends Screen {
     /** The controls cabinet: its supply, then the rail, one box per slot with the module's channel pins. */
     private Centre cabinetCentre(ControlsCabinetBlockEntity cabinet, Map<Integer, SplicePoint> points) {
         var c = new Centre();
-        c.w = MOD_W;
+        // Wide enough for the longest module name on the rail, so a module reads whole.
+        int w = MOD_W;
+        for(int slot = 0; slot < cabinet.sections() * ControlsCabinetBlock.RAIL; ++slot) {
+            var module = cabinet.module(slot);
+            if(module != null)
+                w = Math.max(w, font.width((slot + 1) + " ") + font.width(Component.translatable("item.powergrid_modernized." + module.id())) + 2 * (PIN + 8));
+        }
+        c.w = w;
         int y = 0;
         var placed = new HashSet<Integer>();
 
-        c.boxes.add(new Box(0, y, MOD_W, MOD_ROW * 2 - 1, Component.translatable("powergrid.gui.splice.supply"), BOX_FILL, BOX_BORDER, TEXT));
+        c.boxes.add(new Box(0, y, c.w, MOD_ROW * 2 - 1, Component.translatable("powergrid.gui.splice.supply"), BOX_FILL, BOX_BORDER, TEXT));
         for(int terminal : new int[] {ControlsCabinetBlock.TERMINAL_LINE, ControlsCabinetBlock.TERMINAL_NEUTRAL}) {
             var point = points.get(terminal);
             if(point == null)
@@ -405,7 +414,7 @@ public class SpliceScreen extends Screen {
             Component label = module == null
                     ? Component.translatable("powergrid.gui.splice.empty_module", slot + 1)
                     : Component.literal((slot + 1) + " ").append(Component.translatable("item.powergrid_modernized." + module.id()));
-            c.boxes.add(new Box(0, y, MOD_W, rowCount * MOD_ROW - 1, label, module == null ? BOX_EMPTY : BOX_FILL, BOX_BORDER, module == null ? DIM : TEXT));
+            c.boxes.add(new Box(0, y, c.w, rowCount * MOD_ROW - 1, label, module == null ? BOX_EMPTY : BOX_FILL, BOX_BORDER, module == null ? DIM : TEXT));
             if(module != null) {
                 switch(module) {
                     case RELAY -> {
@@ -438,7 +447,7 @@ public class SpliceScreen extends Screen {
         var point = points.get(terminal);
         if(point == null)
             return;
-        c.pin(terminal, duct == Side.LEFT ? 1 : MOD_W - PIN - 1, rowY + (MOD_ROW - PIN) / 2, PIN, PIN, point, duct, false);
+        c.pin(terminal, duct == Side.LEFT ? 1 : c.w - PIN - 1, rowY + (MOD_ROW - PIN) / 2, PIN, PIN, point, duct, false);
         placed.add(terminal);
     }
 

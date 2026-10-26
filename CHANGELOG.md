@@ -4,6 +4,20 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.55.0 — 2026-10-26
+
+### Changed
+- Breaker panels have six knockouts along the top and six along the bottom, and extensions six
+  along the bottom. The two new ones on each edge are numbered after everything the panel already
+  had, so saved wiring keeps its places; the original four moved inward by up to a pixel to make
+  the six even, so a run laid on one before this release may sit a pixel off its mark until it is
+  laid again. Knockouts read 1 to 6 left to right.
+- The wire trough no longer lays nipples to a panel by itself; run conduit between them by hand.
+  Its goggles list each section's knockout patterns, and a sneak-click on the lid says how to
+  change them.
+- The controls cabinet's editor makes its rail wide enough for the longest module name, so a
+  module reads whole instead of being cut short.
+
 ## 0.54.1 — 2026-10-26
 
 ### Fixed

@@ -6,11 +6,6 @@ import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.SplicePoint;
 import com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport;
 import com.nolanbaker.pgmodernized.conduit.trough.TroughGeometry.Pattern;
-import com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlock;
-import com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlockEntity;
-import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlock;
-import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlockEntity;
-import com.nolanbaker.pgmodernized.device.breaker.PanelLayout;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -23,7 +18,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
@@ -31,12 +25,10 @@ import java.util.List;
 /**
  * The row's one host. Knockouts are numbered across the sections, {@link TroughGeometry} style;
  * the splices, the circuit and the editor are all here, and the extensions answer for their own
- * knockouts at their own positions. Every second each section looks for a breaker panel directly
- * above or below it on the same wall and lays nipples from the panel's knockouts to its own.
+ * knockouts at their own positions. Conduit between a trough and a panel is laid by hand, like
+ * any run.
  */
 public class WireTroughBlockEntity extends ElectricBlockEntity implements ISpliceHost, ITroughSection, IHaveGoggleInformation {
-    /** A panel's top knockouts, across the block as the viewer sees them; the extension's bottom four sit the same. */
-    private static final double[] PANEL_HUB_U = {3.5, 6.5, 9.5, 12.5};
     private SpliceSupport splices;
 
     public WireTroughBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -99,69 +91,6 @@ public class WireTroughBlockEntity extends ElectricBlockEntity implements ISplic
         if(!(level instanceof ServerLevel server))
             return;
         splices().prune();
-        linkPanels(server, 0);
-    }
-
-    // ---- nipples to panels ----
-
-    /** Lays what nipples a section can to a panel directly above or below it. Called by the section itself. */
-    public void linkPanels(ServerLevel server, int section) {
-        var pos = sectionPos(section);
-        linkPanel(server, section, pos, Direction.DOWN);
-        linkPanel(server, section, pos, Direction.UP);
-    }
-
-    private void linkPanel(ServerLevel server, int section, BlockPos pos, Direction dir) {
-        var there = pos.relative(dir);
-        var be = server.getBlockEntity(there);
-        BreakerPanelBlockEntity panel;
-        int[] panelHubs;
-        if(be instanceof BreakerPanelBlockEntity head) {
-            panel = head;
-            if(BreakerPanelBlock.facing(head.getBlockState()) != facing())
-                return;
-            if(dir == Direction.DOWN)
-                panelHubs = new int[] {0, 1, 2, 3};                                   // its top knockouts
-            else if(head.sections() == 1)
-                panelHubs = new int[] {4, 5, 6, 7};                                   // its bottom knockouts, no extension below
-            else
-                return;
-        } else if(be instanceof PanelExtensionBlockEntity ext && dir == Direction.UP) {
-            panel = ext.head();
-            if(panel == null || PanelExtensionBlock.facing(ext.getBlockState()) != facing() || panel.sections() != ext.section() + 1)
-                return;
-            int base = PanelLayout.HUB_COUNT + (ext.section() - 1) * PanelLayout.EXT_HUBS;
-            panelHubs = new int[] {base, base + 1, base + 2, base + 3};              // the last extension's bottom knockouts
-        } else {
-            return;
-        }
-        // Our knockouts on the face toward the panel, with where they sit across the block.
-        boolean top = dir == Direction.UP;
-        var pattern = pattern(section, top);
-        int myBase = section * TroughGeometry.HUBS_PER_SECTION + (top ? TroughGeometry.TOP_BASE : TroughGeometry.BOTTOM_BASE);
-        for(int i = 0; i < panelHubs.length; ++i) {
-            int panelHub = panelHubs[i];
-            if(panel.hubRun(panelHub) != null)
-                continue;
-            int best = -1;
-            double bestDistance = 2.0;   // never further than two pixels across
-            for(int slot = 0; slot < pattern.count(); ++slot) {
-                if(hubRun(myBase + slot) != null)
-                    continue;
-                double d = Math.abs(TroughGeometry.u(pattern, slot) - PANEL_HUB_U[i]);
-                if(d < bestDistance) {
-                    bestDistance = d;
-                    best = slot;
-                }
-            }
-            if(best < 0)
-                continue;
-            var mine = new BlockWireEndpoint(pos, TroughGeometry.hubTerminal(myBase + best));
-            var theirs = new BlockWireEndpoint(there, PanelLayout.hubTerminal(panel.spec(), panelHub));
-            var nipple = ConduitRunEntity.createNipple(server, mine, theirs, ConduitSize.ONE);
-            if(nipple != null)
-                server.tryAddFreshEntityWithPassengers(nipple);
-        }
     }
 
     // ---- splice host ----
@@ -261,6 +190,9 @@ public class WireTroughBlockEntity extends ElectricBlockEntity implements ISplic
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate("gui.trough.title", sections()).style(ChatFormatting.GRAY).forGoggles(tooltip);
+        for(int s = 0; s < sections(); ++s)
+            Lang.builder().translate("gui.trough.faces", s + 1).text(" ").add(pattern(s, true).label()).text(", ").add(pattern(s, false).label())
+                    .style(ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
         splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }

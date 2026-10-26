@@ -39,8 +39,8 @@ import org.patryk3211.powergrid.utility.Lang;
  * both ends, spliced inside like a pull box, with no terminals of its own. Troughs placed to its
  * right, as the viewer sees it, join the row as {@link WireTroughExtensionBlock}s; the row is one
  * splice host with one editor, opened from any section. Each face's knockouts are a pattern the
- * player cycles with a sneak-click: two 2", four 1" or eight 1/2". A section directly above or
- * below a breaker panel lays nipples to it by itself.
+ * player cycles with a sneak-click: two 2", four 1" or eight 1/2". Conduit to a panel above or
+ * below is laid by hand like any run.
  */
 public class WireTroughBlock extends HorizontalElectricBlock implements IBE<WireTroughBlockEntity> {
     public static final IntegerProperty SECTIONS = IntegerProperty.create("sections", 1, TroughGeometry.MAX_SECTIONS);
@@ -188,8 +188,11 @@ public class WireTroughBlock extends HorizontalElectricBlock implements IBE<Wire
     static InteractionResult interact(Level level, BlockPos pos, BlockState state, Player player, BlockHitResult hit,
                                       EnumProperty<Pattern> top, EnumProperty<Pattern> bottom) {
         if(player.isShiftKeyDown()) {
-            if(hit.getDirection() != Direction.UP && hit.getDirection() != Direction.DOWN)
-                return InteractionResult.PASS;
+            if(hit.getDirection() != Direction.UP && hit.getDirection() != Direction.DOWN) {
+                if(!level.isClientSide)
+                    player.displayClientMessage(Lang.builder().translate("message.trough.pattern_hint").style(ChatFormatting.GRAY).component(), true);
+                return InteractionResult.SUCCESS;
+            }
             if(level.isClientSide)
                 return InteractionResult.SUCCESS;
             var property = hit.getDirection() == Direction.UP ? top : bottom;
