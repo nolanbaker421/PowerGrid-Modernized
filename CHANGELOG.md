@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.53.10 — 2026-10-25
+
+### Fixed
+- Gang box cord plugs drew on the wrong side of the plate: the per-gang endpoint's plug facing is
+  the way the plug points out of the socket, and 0.53.9 gave it the way in.
+
 ## 0.53.9 — 2026-10-25
 
 ### Changed

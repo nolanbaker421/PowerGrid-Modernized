@@ -118,7 +118,8 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         var centre = GangFrame.toWorld(state, new Vec3((face.minX + face.maxX) / 32, GangLayout.PLATE_Y1 / 16, 0.5));
         var out = GangFrame.toWorld(state, new Vec3(0.5, 1, 0.5)).subtract(GangFrame.toWorld(state, new Vec3(0.5, 0, 0.5))).normalize();
         var placement = Vec3.atLowerCornerOf(pos).add(centre).add(out.scale(3 / 16.0));
-        return new AutoCordEndpoint(pos, GangLayout.point(slot, 0), GangLayout.point(slot, 1), placement, Direction.getNearest(-out.x, -out.y, -out.z));
+        // An auto endpoint's plug facing is the way the plug points out of its socket; Power Grid turns it round to draw.
+        return new AutoCordEndpoint(pos, GangLayout.point(slot, 0), GangLayout.point(slot, 1), placement, Direction.getNearest(out.x, out.y, out.z));
     }
 
     /** The plate of the receptacle gang under the cursor, for the cord's aim outline; nothing elsewhere. */
