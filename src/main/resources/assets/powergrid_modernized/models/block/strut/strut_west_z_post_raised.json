@@ -1,0 +1,77 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "steel": "powergrid_modernized:block/bus_duct",
+    "particle": "powergrid_modernized:block/bus_duct"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        7.25,
+        7.25
+      ],
+      "to": [
+        8.0,
+        8.75,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8.0,
+            7.25,
+            16,
+            8.75
+          ],
+          "texture": "#steel"
+        },
+        "south": {
+          "uv": [
+            0,
+            7.25,
+            8.0,
+            8.75
+          ],
+          "texture": "#steel"
+        },
+        "east": {
+          "uv": [
+            7.25,
+            7.25,
+            8.75,
+            8.75
+          ],
+          "texture": "#steel"
+        },
+        "west": {
+          "uv": [
+            7.25,
+            7.25,
+            8.75,
+            8.75
+          ],
+          "texture": "#steel"
+        },
+        "up": {
+          "uv": [
+            0,
+            7.25,
+            8.0,
+            8.75
+          ],
+          "texture": "#steel"
+        },
+        "down": {
+          "uv": [
+            0,
+            7.25,
+            8.0,
+            8.75
+          ],
+          "texture": "#steel"
+        }
+      }
+    }
+  ]
+}

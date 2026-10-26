@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.57.0 — 2026-10-26
+
+### Added
+- Stacked strut. Click a strut with another strut and it gains a second rail eight pixels out on
+  a post, a tier that holds a second row of runs in front of the first, with its own slot straps.
+  Click again and the lower rail comes away, leaving the raised rail on its post; again returns a
+  single. A conduit click lands on the rail nearer the click. Eight pixels is a rail and a 4" tube,
+  so two tiers fit a block with any size on both. A double drops both struts.
+
 ## 0.56.0 — 2026-10-26
 
 ### Changed

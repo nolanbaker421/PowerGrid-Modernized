@@ -31,13 +31,59 @@ import org.jetbrains.annotations.Nullable;
  * terminals. A pending conduit run clicked onto it goes straight to the nearest slot, no tracer,
  * so runs on strut are rigid, parallel and evenly spaced; the run stays one piece over any number
  * of struts and closes on a knockout as usual. FACING is the face it is mounted on; AXIS is the
- * way it runs. Sneak-click with an empty hand to cycle the slots.
+ * way it runs. Sneak-click with an empty hand to cycle the slots. A strut item clicked on a strut
+ * stacks a second rail eight pixels out, a tier that holds a second row of runs in front of the
+ * first; clicked again the lower rail comes away, leaving the upper rail on a post, and again
+ * brings it back to a single. A tier is eight pixels because a rail is three and a 4" tube five.
  */
 public class StrutBlock extends Block {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
     public static final EnumProperty<Slots> SLOTS = EnumProperty.create("slots", Slots.class);
+    public static final EnumProperty<Stack> STACK = EnumProperty.create("stack", Stack.class);
     public static final double THICK = 3, WIDTH = 3;
+    /** The upper rail's distance from the mount: a rail and the biggest tube under it. */
+    public static final double TIER = 8;
+
+    /** Which rails a strut carries: the lower on the mount, the upper a tier out, or both. */
+    public enum Stack implements net.minecraft.util.StringRepresentable {
+        SINGLE("single", true, false, 1),
+        DOUBLE("double", true, true, 2),
+        RAISED("raised", false, true, 1);
+
+        private final String id;
+        private final boolean lower, upper;
+        private final int struts;
+
+        Stack(String id, boolean lower, boolean upper, int struts) {
+            this.id = id;
+            this.lower = lower;
+            this.upper = upper;
+            this.struts = struts;
+        }
+
+        public boolean lower() {
+            return lower;
+        }
+
+        public boolean upper() {
+            return upper;
+        }
+
+        /** Strut items the state is made of. */
+        public int struts() {
+            return struts;
+        }
+
+        public Stack next() {
+            return values()[(ordinal() + 1) % values().length];
+        }
+
+        @Override
+        public String getSerializedName() {
+            return id;
+        }
+    }
 
     /** Clamp positions along the rail, in pixels, and the largest tube that sits in them without touching its neighbour. */
     public enum Slots implements net.minecraft.util.StringRepresentable {
@@ -80,12 +126,16 @@ public class StrutBlock extends Block {
 
     public StrutBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(AXIS, Direction.Axis.X).setValue(SLOTS, Slots.SIX));
+        registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(AXIS, Direction.Axis.X).setValue(SLOTS, Slots.SIX).setValue(STACK, Stack.SINGLE));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, AXIS, SLOTS);
+        builder.add(FACING, AXIS, SLOTS, STACK);
+    }
+
+    public static Stack stackOf(BlockState state) {
+        return state.hasProperty(STACK) ? state.getValue(STACK) : Stack.SINGLE;
     }
 
     /** A strut's axis is never the axis it is mounted on; the horizontal one for floors and ceilings, upright on a wall unless sneaking. */
@@ -110,23 +160,61 @@ public class StrutBlock extends Block {
 
     /** The rail in pixels: the mount's thickness off its face, the width across, the full block along. */
     public static AABB bar(Direction facing, Direction.Axis axis) {
+        return bar(facing, axis, 0);
+    }
+
+    /** The same rail a tier further out, or a post of that depth range when {@code from} and {@code to} are given. */
+    public static AABB bar(Direction facing, Direction.Axis axis, double offset) {
+        return slab(facing, axis, offset, offset + THICK, WIDTH);
+    }
+
+    private static AABB slab(Direction facing, Direction.Axis axis, double from, double to, double width) {
         double[] lo = {0, 0, 0}, hi = {16, 16, 16};
         int m = facing.getAxis().ordinal();
         if(facing.getAxisDirection() == Direction.AxisDirection.NEGATIVE) {
-            hi[m] = THICK;
+            lo[m] = from;
+            hi[m] = to;
         } else {
-            lo[m] = 16 - THICK;
+            lo[m] = 16 - to;
+            hi[m] = 16 - from;
         }
         int across = 3 - m - axisFor(facing, axis).ordinal();
-        lo[across] = 8 - WIDTH / 2;
-        hi[across] = 8 + WIDTH / 2;
+        lo[across] = 8 - width / 2;
+        hi[across] = 8 + width / 2;
         return new AABB(lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]);
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        var b = bar(state.getValue(FACING), state.getValue(AXIS));
+        var facing = state.getValue(FACING);
+        var axis = state.getValue(AXIS);
+        var stack = stackOf(state);
+        VoxelShape shape = net.minecraft.world.phys.shapes.Shapes.empty();
+        if(stack.lower())
+            shape = net.minecraft.world.phys.shapes.Shapes.or(shape, box(bar(facing, axis, 0)));
+        if(stack.upper()) {
+            shape = net.minecraft.world.phys.shapes.Shapes.or(shape, box(bar(facing, axis, TIER)));
+            shape = net.minecraft.world.phys.shapes.Shapes.or(shape, box(slab(facing, axis, stack.lower() ? THICK : 0, TIER, 1.5)));
+        }
+        return shape;
+    }
+
+    private static VoxelShape box(AABB b) {
         return Block.box(b.minX, b.minY, b.minZ, b.maxX, b.maxY, b.maxZ);
+    }
+
+    /** The tier a click lands on: the upper rail when the hit is nearer it than the lower, or the only rail there is. */
+    public static double tierOf(BlockState state, Vec3 local) {
+        var stack = stackOf(state);
+        if(!stack.upper())
+            return 0;
+        if(!stack.lower())
+            return TIER;
+        var facing = state.getValue(FACING);
+        double[] p = {local.x * 16, local.y * 16, local.z * 16};
+        int m = facing.getAxis().ordinal();
+        double depth = facing.getAxisDirection() == Direction.AxisDirection.NEGATIVE ? p[m] : 16 - p[m];
+        return depth < (THICK + TIER) / 2 ? 0 : TIER;
     }
 
     /**
@@ -145,7 +233,8 @@ public class StrutBlock extends Block {
                 best = slot;
         p[a] = best;
         p[across] = 8;
-        p[m] = facing.getAxisDirection() == Direction.AxisDirection.NEGATIVE ? THICK + tubeRadiusPx : 16 - THICK - tubeRadiusPx;
+        double seat = tierOf(state, local) + THICK + tubeRadiusPx;
+        p[m] = facing.getAxisDirection() == Direction.AxisDirection.NEGATIVE ? seat : 16 - seat;
         return new Vec3(p[0] / 16, p[1] / 16, p[2] / 16);
     }
 
@@ -163,9 +252,27 @@ public class StrutBlock extends Block {
         return net.minecraft.world.InteractionResult.SUCCESS;
     }
 
-    /** Conduit in hand: the pending run is clipped to the clamp under the click. */
+    /** Conduit in hand: the pending run is clipped to the clamp under the click. A strut in hand stacks or unstacks. */
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(stack.getItem() == asItem()) {
+            if(level.isClientSide)
+                return ItemInteractionResult.SUCCESS;
+            var now = stackOf(state);
+            var next = now.next();
+            int cost = next.struts() - now.struts();
+            if(cost > 0 && !player.isCreative()) {
+                if(stack.getCount() < cost)
+                    return ItemInteractionResult.FAIL;
+                stack.shrink(cost);
+            } else if(cost < 0 && !player.isCreative()) {
+                player.getInventory().placeItemBackInInventory(new ItemStack(asItem(), -cost));
+            }
+            level.setBlock(pos, state.setValue(STACK, next), Block.UPDATE_ALL);
+            player.displayClientMessage(org.patryk3211.powergrid.utility.Lang.builder().translate("message.strut.stack." + next.getSerializedName())
+                    .style(net.minecraft.ChatFormatting.GRAY).component(), true);
+            return ItemInteractionResult.SUCCESS;
+        }
         var size = ConduitItem.sizeOf(stack);
         if(size == null)
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
@@ -174,5 +281,14 @@ public class StrutBlock extends Block {
         var context = new UseOnContext(player, hand, hit);
         var result = ConduitPlacement.strutClick(context, clamp, axisFor(state.getValue(FACING), state.getValue(AXIS)));
         return result.consumesAction() ? ItemInteractionResult.sidedSuccess(level.isClientSide) : ItemInteractionResult.FAIL;
+    }
+
+    /** A double drops both its struts. */
+    @Override
+    protected java.util.List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
+        var drops = new java.util.ArrayList<>(super.getDrops(state, params));
+        if(stackOf(state) == Stack.DOUBLE)
+            drops.add(new ItemStack(asItem()));
+        return drops;
     }
 }
