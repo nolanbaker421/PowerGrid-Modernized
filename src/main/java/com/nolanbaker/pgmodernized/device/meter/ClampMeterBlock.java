@@ -13,7 +13,7 @@ public class ClampMeterBlock extends Rotation4ElectricBlock implements IBE<Clamp
 
     public ClampMeterBlock(Properties settings) {
         super(settings);
-        setTerminalCollection(rotation4DownTerminals(this, new TerminalBoundingBox[0], SHAPE_DOWN));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, new TerminalBoundingBox[0], SHAPE_DOWN));
     }
 
     @Override

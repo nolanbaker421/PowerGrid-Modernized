@@ -20,7 +20,7 @@ public class ConduitThreeWayBlock extends ConduitSwitchBlock {
 
     public ConduitThreeWayBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(rotation4DownTerminals(this, threeWayTerminals(), Shapes.or(box(BODY), box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(HUB)), box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(HUB2)), box(PLATE))));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, threeWayTerminals(), Shapes.or(box(BODY), box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(HUB)), box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(HUB2)), box(PLATE))));
     }
 
     private static TerminalBoundingBox[] threeWayTerminals() {

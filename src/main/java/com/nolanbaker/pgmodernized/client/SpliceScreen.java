@@ -4,6 +4,8 @@ import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceReadings;
 import com.nolanbaker.pgmodernized.conduit.splice.SplicePoint;
+import com.nolanbaker.pgmodernized.conduit.trough.ITroughSection;
+import com.nolanbaker.pgmodernized.conduit.trough.TroughGeometry;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlockEntity;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerState;
 import com.nolanbaker.pgmodernized.device.breaker.PanelLayout;
@@ -123,7 +125,7 @@ public class SpliceScreen extends Screen {
 
     /** Changes whenever a hub gains or loses a run, a run's pulled set or colours change, or the host's own structure does. */
     private static long layoutKey(ISpliceHost host) {
-        long key = host.points().size();
+        long key = host.points().size() * 131L + host.hubCount();
         for(int h = 0; h < host.hubCount(); ++h) {
             var run = host.hubRun(h);
             int pulled = 0;
@@ -240,6 +242,11 @@ public class SpliceScreen extends Screen {
             int local = (hub - ControlsCabinetBlock.HUB_COUNT) % CabinetLayout.EXT_HUBS;
             return local == 6 || local == 7 ? Side.LEFT : Side.RIGHT;
         }
+        if(host instanceof ITroughSection) {
+            // Top knockouts and the left end on the left, bottom knockouts and the right end on the right.
+            int local = hub % TroughGeometry.HUBS_PER_SECTION;
+            return local < TroughGeometry.BOTTOM_BASE || local == TroughGeometry.LEFT_END ? Side.LEFT : Side.RIGHT;
+        }
         return hub % 2 == 0 ? Side.LEFT : Side.RIGHT;
     }
 
@@ -261,7 +268,7 @@ public class SpliceScreen extends Screen {
             if(run == null)
                 continue;
             var pulled = run.conductors();
-            var label = host.hubName(hub).copy().append(Component.literal(" (" + run.size().label() + ", " + pulled.size() + " of " + run.size().conductors() + ")").withStyle(ChatFormatting.GRAY));
+            var label = host.hubName(hub).copy().append(Component.literal(" (" + run.size().label() + ", " + pulled.size() + " of " + run.capacity() + ")").withStyle(ChatFormatting.GRAY));
             headers.add(new Header(hub, x0, y, HUB_W + DUCT_W, 10, label));
             y += 12;
             if(pulled.isEmpty()) {

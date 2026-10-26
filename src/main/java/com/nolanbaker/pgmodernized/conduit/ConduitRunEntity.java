@@ -79,6 +79,12 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
     /** A short 4" run between a pull box knockout and a panel knockout, laid by the box itself. */
     @Nullable
     public static ConduitRunEntity createNipple(Level level, BlockWireEndpoint a, BlockWireEndpoint b) {
+        return createNipple(level, a, b, ConduitSize.HALF);
+    }
+
+    /** @param drawn the trade size the nipple is drawn as; it takes anything whatever it looks like */
+    @Nullable
+    public static ConduitRunEntity createNipple(Level level, BlockWireEndpoint a, BlockWireEndpoint b, ConduitSize drawn) {
         var start = IElectric.getTerminalPos(level, a.getPos(), a.getTerminal());
         var end = IElectric.getTerminalPos(level, b.getPos(), b.getTerminal());
         var path = manhattan(start, end);
@@ -86,7 +92,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
             return null;
         var entity = new ConduitRunEntity(ModEntities.CONDUIT_RUN.get(), level);
         entity.nipple = true;
-        entity.setItem(ModItems.CONDUIT.get(ConduitSize.HALF).get(), 1);
+        entity.setItem(ModItems.CONDUIT.get(drawn).get(), 1);
         entity.setColor(DEFAULT_COLOR);
         entity.setPosRaw(start.x, start.y, start.z);
         entity.segments.addAll(path);
@@ -230,8 +236,23 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         return null;
     }
 
+    /** Wires this run takes: its trade size's slots, and no more than either fitting has landings for. */
+    public int capacity() {
+        int cap = size().conductors();
+        cap = Math.min(cap, landingsAt(getEndpoint1()));
+        cap = Math.min(cap, landingsAt(getEndpoint2()));
+        return Math.max(1, cap);
+    }
+
+    private int landingsAt(@Nullable IWireEndpoint endpoint) {
+        if(!(endpoint instanceof BlockWireEndpoint end) || !(level().getBlockEntity(end.getPos()) instanceof ISpliceHost host))
+            return Integer.MAX_VALUE;
+        int hub = host.hubAt(end.getTerminal());
+        return hub < 0 ? Integer.MAX_VALUE : host.landings(hub);
+    }
+
     private int freeSlot() {
-        var taken = new boolean[size().conductors()];
+        var taken = new boolean[capacity()];
         for(var conductor : conductors()) {
             if(conductor.slot() >= 0 && conductor.slot() < taken.length)
                 taken[conductor.slot()] = true;
@@ -328,7 +349,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         var entry = WireRegistry.forItem(level(), wire.getItem());
         if(entry == null)
             return false;
-        if(slot < 0 || slot >= size().conductors() || conductor(slot) != null)
+        if(slot < 0 || slot >= capacity() || conductor(slot) != null)
             slot = freeSlot();
         if(slot < 0)
             return false;
@@ -395,9 +416,10 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         var size = size();
         var pulled = conductors();
         double used = ConduitFill.used(level(), pulled);
-        lines.add(Lang.builder().translate("gui.conduit.contents", size.label(), pulled.size(), size.conductors(),
+        int capacity = capacity();
+        lines.add(Lang.builder().translate("gui.conduit.contents", size.label(), pulled.size(), capacity,
                 ConduitFill.percent(size, used), ConduitFill.percentLimit(Math.max(1, pulled.size()))).style(ChatFormatting.GRAY).component());
-        for(int k = 0; k < size.conductors(); ++k) {
+        for(int k = 0; k < capacity; ++k) {
             ConductorEntity conductor = null;
             for(var c : pulled) {
                 if(c.slot() == k)

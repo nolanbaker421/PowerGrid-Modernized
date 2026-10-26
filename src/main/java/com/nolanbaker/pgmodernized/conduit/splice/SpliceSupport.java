@@ -76,7 +76,7 @@ public final class SpliceSupport {
             return;
         var points = host.points();
         boolean changed = false;
-        for(int k = 0; k < run.size().conductors() && k < points.size(); ++k) {
+        for(int k = 0; k < run.capacity() && k < points.size(); ++k) {
             if(run.conductor(k) == null)
                 continue;
             int point = points.get(k).terminal();
@@ -98,7 +98,7 @@ public final class SpliceSupport {
         if(run == null)
             return;
         var points = host.points();
-        for(int k = 0; k < run.size().conductors() && k < points.size(); ++k) {
+        for(int k = 0; k < run.capacity() && k < points.size(); ++k) {
             if(run.conductor(k) == null)
                 continue;
             int point = points.get(k).terminal();
@@ -210,7 +210,7 @@ public final class SpliceSupport {
             double used = ConduitFill.used(be.getLevel(), pulled);
             Lang.builder().add(host.hubName(h)).text(": ")
                     .add(run.size().coloredLabel()).text(" ")
-                    .add(Lang.builder().translate("gui.conduit.pulled_wires", pulled.size(), run.size().conductors(),
+                    .add(Lang.builder().translate("gui.conduit.pulled_wires", pulled.size(), run.capacity(),
                             ConduitFill.percent(run.size(), used), ConduitFill.percentLimit(Math.max(1, pulled.size()))).style(ChatFormatting.WHITE))
                     .forGoggles(tooltip, 1);
         }
@@ -226,6 +226,12 @@ public final class SpliceSupport {
     /** The conduit run whose end sits on the given hub terminal of the block entity, or null. Works on both sides. */
     @Nullable
     public static ConduitRunEntity runAt(SmartBlockEntity be, int hubTerminal) {
+        return runAt(be, hubTerminal, be.getBlockPos());
+    }
+
+    /** The same, looking for the run itself around {@code near}: a row's far sections sit well away from its head. */
+    @Nullable
+    public static ConduitRunEntity runAt(SmartBlockEntity be, int hubTerminal, BlockPos near) {
         Level level = be.getLevel();
         if(level == null)
             return null;
@@ -244,7 +250,7 @@ public final class SpliceSupport {
             }
         }
         // The client may not have the connection registered yet; look for the entity itself.
-        for(var run : level.getEntitiesOfClass(ConduitRunEntity.class, new AABB(pos).inflate(3.5))) {
+        for(var run : level.getEntitiesOfClass(ConduitRunEntity.class, new AABB(near).inflate(3.5))) {
             if(run.isRemoved())
                 continue;
             if(endsOn(level, run.getEndpoint1(), pos, hubTerminal) || endsOn(level, run.getEndpoint2(), pos, hubTerminal))

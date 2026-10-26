@@ -41,7 +41,7 @@ public class LineAmmeterBlock extends Rotation4ElectricBlock implements IBE<Line
 
     public LineAmmeterBlock(Properties settings) {
         super(settings);
-        setTerminalCollection(rotation4DownTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(SHAPE_DOWN, HUBS)));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(SHAPE_DOWN, HUBS)));
     }
 
     private static TerminalBoundingBox[] terminals() {

@@ -50,7 +50,7 @@ public class VfdBlock extends Rotation4ElectricBlock implements IBE<VfdBlockEnti
     public VfdBlock(Properties settings, float maxVoltage) {
         super(settings);
         this.maxVoltage = maxVoltage;
-        setTerminalCollection(rotation4DownTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(SHAPE_DOWN, HUBS)));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(SHAPE_DOWN, HUBS)));
     }
 
     public float maxVoltage() {

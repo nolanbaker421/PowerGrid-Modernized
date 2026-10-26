@@ -4,6 +4,27 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.54.0 — 2026-10-26
+
+### Added
+- **Wire Trough** (iron plates). A gutter on the wall that conduit lands on from above, below and
+  both ends, spliced inside like a pull box. Troughs placed to the viewer's right join the row, up
+  to six sections, one host and one editor for all of it. Each top and bottom face chooses its
+  knockouts with a sneak-click: two 2", four 1" or eight 1/2"; the ends take 4". A section over
+  or under a breaker panel, or under its last extension, lays 1" nipples to the panel's knockouts
+  by itself, as the pull box does.
+- Knockouts carry a landing count. The trough has twenty-four per knockout, everything else keeps
+  twelve, so nothing in a saved world moves. 2-1/2", 3" and 4" conduit carry 18, 24 and 36 wires
+  where both ends have the landings for it, and a fitting's own count elsewhere.
+
+### Fixed
+- Gang boxes, switches, sockets and every other four-way block showed their outline and
+  collision a quarter turn off on floors and ceilings. Power Grid's helper turns the shapes one
+  step differently from the terminals there; the shapes now go through the same frame as the
+  terminals and models.
+- A cord in a gang box receptacle comes out in the hand with an empty-hand click on that gang,
+  as on a socket; wire cutters are no longer the only way.
+
 ## 0.53.10 — 2026-10-25
 
 ### Fixed

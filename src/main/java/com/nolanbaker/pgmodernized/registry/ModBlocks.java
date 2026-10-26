@@ -35,6 +35,9 @@ import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlockEntity;
 import com.nolanbaker.pgmodernized.device.transformer.TapActuatorBlock;
 import com.nolanbaker.pgmodernized.device.breaker.PanelExtensionBlock;
 import com.nolanbaker.pgmodernized.conduit.PullBoxBlock;
+import com.nolanbaker.pgmodernized.conduit.trough.WireTroughBlock;
+import com.nolanbaker.pgmodernized.conduit.trough.WireTroughExtensionBlock;
+import com.nolanbaker.pgmodernized.conduit.trough.WireTroughItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitSwitchBlock;
 import com.nolanbaker.pgmodernized.conduit.DisconnectBlock;
 import com.nolanbaker.pgmodernized.conduit.CeilingConduitBoxBlock;
@@ -487,6 +490,27 @@ public class ModBlocks {
             .item()
                 .model(NonNullBiConsumer.noop())
                 .build()
+            .register();
+
+    /** A gutter on the wall that conduit lands on from above, below and both ends; sections to the right join its row. */
+    public static final BlockEntry<WireTroughBlock> WIRE_TROUGH = REGISTRATE.block("wire_trough", WireTroughBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Wire Trough")
+            .item(WireTroughItem::new)
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** A further section of a trough row; placed by the trough item, never on its own. */
+    public static final BlockEntry<WireTroughExtensionBlock> WIRE_TROUGH_EXTENSION = REGISTRATE.block("wire_trough_extension", WireTroughExtensionBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Wire Trough")
             .register();
 
     /** The pull box with twelve lugs on its door: the place big wire meets big conduit. */

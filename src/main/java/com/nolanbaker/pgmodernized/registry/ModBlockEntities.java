@@ -129,6 +129,16 @@ public class ModBlockEntities {
                     .validBlock(ModBlocks.CONDUIT_SOCKET)
                     .register();
 
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.conduit.trough.WireTroughBlockEntity> WIRE_TROUGH =
+            REGISTRATE.blockEntity("wire_trough", com.nolanbaker.pgmodernized.conduit.trough.WireTroughBlockEntity::new)
+                    .validBlock(ModBlocks.WIRE_TROUGH)
+                    .register();
+
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.conduit.trough.WireTroughExtensionBlockEntity> WIRE_TROUGH_EXTENSION =
+            REGISTRATE.blockEntity("wire_trough_extension", com.nolanbaker.pgmodernized.conduit.trough.WireTroughExtensionBlockEntity::new)
+                    .validBlock(ModBlocks.WIRE_TROUGH_EXTENSION)
+                    .register();
+
     public static final BlockEntityEntry<PullBoxBlockEntity> PULL_BOX =
             REGISTRATE.blockEntity("pull_box", PullBoxBlockEntity::new)
                     .validBlocks(ModBlocks.PULL_BOX, ModBlocks.TERMINAL_CABINET)

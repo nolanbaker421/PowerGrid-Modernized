@@ -265,10 +265,15 @@ public final class ConduitPlacement {
             message(player, "message.conduit.hub_used", ChatFormatting.RED);
             return false;
         }
+        var max = host.maxConduit(index);
+        if(max == null) {
+            message(player, "message.trough.no_knockout", ChatFormatting.RED);
+            return false;
+        }
         var size = ConduitItem.sizeOf(stack);
-        if(size != null && size.ordinal() > host.maxConduit().ordinal()) {
+        if(size != null && size.ordinal() > max.ordinal()) {
             if(player != null)
-                player.displayClientMessage(Lang.builder().translate("message.conduit.too_big", size.label(), host.maxConduit().label())
+                player.displayClientMessage(Lang.builder().translate("message.conduit.too_big", size.label(), max.label())
                         .style(ChatFormatting.RED).component(), true);
             return false;
         }

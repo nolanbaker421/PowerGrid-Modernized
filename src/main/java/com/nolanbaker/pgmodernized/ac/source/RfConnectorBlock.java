@@ -52,7 +52,7 @@ public class RfConnectorBlock extends Rotation4ElectricBlock implements IBE<RfCo
 
     public RfConnectorBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(rotation4DownTerminals(this, terminals(), Shapes.or(box(BODY), box(HUB), box(PLATE), box(PORT))));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, terminals(), Shapes.or(box(BODY), box(HUB), box(PLATE), box(PORT))));
     }
 
     private static TerminalBoundingBox[] terminals() {

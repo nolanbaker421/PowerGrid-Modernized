@@ -256,6 +256,23 @@ panel's. Pull wire through the nipple exactly as through any run, right-click it
 splice in the panel editor as usual. The nipple cannot be cut or picked up; it goes away when the
 box or the panel does. That is how feeders too big for a 2" panel knockout get in: up the gutter.
 
+### Wire Trough
+
+A gutter on the wall, eight pixels tall, that conduit lands on from above, below and both ends.
+Like a pull box it has no terminals; wires go through the conduit and are spliced inside. Troughs
+placed to the viewer's right of the first join it as one row, up to six sections, with one splice
+editor for the whole row opened from any section. Each section's top and bottom choose their own
+knockouts: sneak and click the face with an empty hand to cycle two 2", four 1" or eight 1/2",
+while nothing is on it. The ends of the row take 4". Every knockout has twenty-four landings, so
+a 2-1/2", 3" or 4" run between troughs carries 18, 24 or 36 wires; to a box or a panel it still
+carries that fitting's twelve.
+
+Set a trough directly over or under a breaker panel, or under its last extension, on the same
+wall, and within a second it lays 1" **nipples** from the panel's knockouts to its own, as many as
+line up with free knockouts. Pull wire through them like any run and splice in both editors. Four
+nipples into a panel head is forty-eight wires. Taking a middle section out drops the sections to
+its right; the first section takes the whole row with it.
+
 ### Terminal Cabinet
 
 The Pull Box with twelve colour-coded lugs on its door. Any wire hangs on a lug, 500 kcmil THHN

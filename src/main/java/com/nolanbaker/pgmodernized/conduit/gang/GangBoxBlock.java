@@ -26,7 +26,9 @@ import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
 import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
@@ -53,7 +55,7 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
     public GangBoxBlock(Properties properties, int gangs) {
         super(properties);
         this.gangs = gangs;
-        setTerminalCollection(rotation4DownTerminals(this, GangLayout.terminals(gangs), GangLayout.shape(gangs)));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, GangLayout.terminals(gangs), GangLayout.shape(gangs)));
         registerDefaultState(defaultBlockState().setValue(SOCKET, 0));
     }
 
@@ -114,12 +116,41 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         int slot = slotAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
         if(slot < 0 || be.device(slot) != GangDevice.RECEPTACLE)
             return null;
+        return cordEndpoint(pos, state, slot);
+    }
+
+    /** The cord endpoint of a receptacle gang: on its line and neutral, three pixels off the plate, plug pointing out. */
+    private AutoCordEndpoint cordEndpoint(BlockPos pos, BlockState state, int slot) {
         var face = GangLayout.slot(gangs, slot);
         var centre = GangFrame.toWorld(state, new Vec3((face.minX + face.maxX) / 32, GangLayout.PLATE_Y1 / 16, 0.5));
         var out = GangFrame.toWorld(state, new Vec3(0.5, 1, 0.5)).subtract(GangFrame.toWorld(state, new Vec3(0.5, 0, 0.5))).normalize();
         var placement = Vec3.atLowerCornerOf(pos).add(centre).add(out.scale(3 / 16.0));
         // An auto endpoint's plug facing is the way the plug points out of its socket; Power Grid turns it round to draw.
         return new AutoCordEndpoint(pos, GangLayout.point(slot, 0), GangLayout.point(slot, 1), placement, Direction.getNearest(out.x, out.y, out.z));
+    }
+
+    /** The cord plugged into a receptacle gang, or null. Server side. */
+    @Nullable
+    private static CordEntity cordOn(GangBoxBlockEntity be, int slot, AutoCordEndpoint endpoint) {
+        var behaviour = be.getBehaviour(ElectricBehaviour.TYPE);
+        if(behaviour != null) {
+            for(var entry : behaviour.getConnections().entrySet()) {
+                if(entry.getKey().getTerminal() != GangLayout.point(slot, 0))
+                    continue;
+                for(var wire : entry.getValue()) {
+                    if(wire instanceof CordEntity cord && !cord.isRemoved() && (endpoint.equals(cord.getEndpoint1()) || endpoint.equals(cord.getEndpoint2())))
+                        return cord;
+                }
+            }
+        }
+        var level = be.getLevel();
+        if(level == null)
+            return null;
+        for(var cord : level.getEntitiesOfClass(CordEntity.class, new net.minecraft.world.phys.AABB(be.getBlockPos()).inflate(24))) {
+            if(!cord.isRemoved() && (endpoint.equals(cord.getEndpoint1()) || endpoint.equals(cord.getEndpoint2())))
+                return cord;
+        }
+        return null;
     }
 
     /** The plate of the receptacle gang under the cursor, for the cord's aim outline; nothing elsewhere. */
@@ -209,6 +240,17 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
             return InteractionResult.SUCCESS;
         }
         var device = slot >= 0 ? be.device(slot) : null;
+        if(device == GangDevice.RECEPTACLE) {
+            // A cord in the receptacle comes out in the hand, as on a socket.
+            if(level.isClientSide)
+                return InteractionResult.SUCCESS;
+            var endpoint = cordEndpoint(pos, state, slot);
+            var cord = cordOn(be, slot, endpoint);
+            if(cord == null)
+                return InteractionResult.PASS;
+            boolean second = endpoint.equals(cord.getEndpoint2()) && !endpoint.equals(cord.getEndpoint1());
+            return cord.cordDetach(player, second) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+        }
         if(device == null || !device.toggles())
             return InteractionResult.PASS;
         if(!level.isClientSide)

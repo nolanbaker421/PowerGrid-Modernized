@@ -22,6 +22,17 @@ public interface ISpliceHost {
         return ConduitSize.ONE_HALF;
     }
 
+    /** The largest trade size one hub takes, or null for a knockout the fitting does not have at the moment. */
+    @Nullable
+    default ConduitSize maxConduit(int hub) {
+        return maxConduit();
+    }
+
+    /** Hidden landings behind one hub: how many wires a run on it can land. Twelve everywhere but the wire trough. */
+    default int landings(int hub) {
+        return com.nolanbaker.pgmodernized.conduit.ConductorColors.COUNT;
+    }
+
     List<SplicePoint> points();
 
     boolean isPoint(int terminal);

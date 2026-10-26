@@ -50,7 +50,7 @@ public class CamLockBoxBlock extends Rotation4ElectricBlock implements IBE<CamLo
     public CamLockBoxBlock(Properties properties, int ratedAmps) {
         super(properties);
         this.ratedAmps = ratedAmps;
-        setTerminalCollection(rotation4DownTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(shape(), HUBS)));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(shape(), HUBS)));
     }
 
     public int ratedAmps() {

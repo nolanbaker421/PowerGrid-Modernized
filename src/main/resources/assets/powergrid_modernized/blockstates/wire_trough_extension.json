@@ -1,0 +1,273 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/wire_trough/body"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "top": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/wire_trough/top_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottom": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/wire_trough/bottom_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "top": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/wire_trough/top_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottom": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/wire_trough/bottom_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "top": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/wire_trough/top_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottom": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/wire_trough/bottom_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "east"
+      },
+      "apply": {
+        "y": 90,
+        "model": "powergrid_modernized:block/wire_trough/body"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "top": "two"
+      },
+      "apply": {
+        "y": 90,
+        "model": "powergrid_modernized:block/wire_trough/top_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottom": "two"
+      },
+      "apply": {
+        "y": 90,
+        "model": "powergrid_modernized:block/wire_trough/bottom_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "top": "four"
+      },
+      "apply": {
+        "y": 90,
+        "model": "powergrid_modernized:block/wire_trough/top_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottom": "four"
+      },
+      "apply": {
+        "y": 90,
+        "model": "powergrid_modernized:block/wire_trough/bottom_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "top": "eight"
+      },
+      "apply": {
+        "y": 90,
+        "model": "powergrid_modernized:block/wire_trough/top_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottom": "eight"
+      },
+      "apply": {
+        "y": 90,
+        "model": "powergrid_modernized:block/wire_trough/bottom_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "south"
+      },
+      "apply": {
+        "y": 180,
+        "model": "powergrid_modernized:block/wire_trough/body"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "top": "two"
+      },
+      "apply": {
+        "y": 180,
+        "model": "powergrid_modernized:block/wire_trough/top_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottom": "two"
+      },
+      "apply": {
+        "y": 180,
+        "model": "powergrid_modernized:block/wire_trough/bottom_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "top": "four"
+      },
+      "apply": {
+        "y": 180,
+        "model": "powergrid_modernized:block/wire_trough/top_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottom": "four"
+      },
+      "apply": {
+        "y": 180,
+        "model": "powergrid_modernized:block/wire_trough/bottom_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "top": "eight"
+      },
+      "apply": {
+        "y": 180,
+        "model": "powergrid_modernized:block/wire_trough/top_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottom": "eight"
+      },
+      "apply": {
+        "y": 180,
+        "model": "powergrid_modernized:block/wire_trough/bottom_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "west"
+      },
+      "apply": {
+        "y": 270,
+        "model": "powergrid_modernized:block/wire_trough/body"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "top": "two"
+      },
+      "apply": {
+        "y": 270,
+        "model": "powergrid_modernized:block/wire_trough/top_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottom": "two"
+      },
+      "apply": {
+        "y": 270,
+        "model": "powergrid_modernized:block/wire_trough/bottom_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "top": "four"
+      },
+      "apply": {
+        "y": 270,
+        "model": "powergrid_modernized:block/wire_trough/top_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottom": "four"
+      },
+      "apply": {
+        "y": 270,
+        "model": "powergrid_modernized:block/wire_trough/bottom_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "top": "eight"
+      },
+      "apply": {
+        "y": 270,
+        "model": "powergrid_modernized:block/wire_trough/top_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottom": "eight"
+      },
+      "apply": {
+        "y": 270,
+        "model": "powergrid_modernized:block/wire_trough/bottom_eight"
+      }
+    }
+  ]
+}

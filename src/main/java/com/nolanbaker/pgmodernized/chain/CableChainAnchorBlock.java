@@ -56,7 +56,7 @@ public class CableChainAnchorBlock extends Rotation4ElectricBlock implements IBE
 
     public CableChainAnchorBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(rotation4DownTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(SHAPE_DOWN, HUBS)));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(SHAPE_DOWN, HUBS)));
     }
 
     private static TerminalBoundingBox[] terminals() {

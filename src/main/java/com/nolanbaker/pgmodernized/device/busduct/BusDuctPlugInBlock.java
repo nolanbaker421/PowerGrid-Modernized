@@ -64,7 +64,7 @@ public class BusDuctPlugInBlock extends Rotation4ElectricBlock implements IBE<Bu
     public BusDuctPlugInBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState().setValue(ON, false).setValue(LOCKED, false));
-        setTerminalCollection(rotation4DownTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(shape(), HUBS)));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(shape(), HUBS)));
     }
 
     public static AABB lug(int k) {

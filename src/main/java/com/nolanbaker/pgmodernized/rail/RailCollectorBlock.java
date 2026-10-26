@@ -60,7 +60,7 @@ public class RailCollectorBlock extends Rotation4ElectricBlock implements IBE<Ra
 
     public RailCollectorBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(rotation4DownTerminals(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(SHAPE_DOWN, HUBS)));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), DeviceHubs.withHubs(SHAPE_DOWN, HUBS)));
     }
 
     private static TerminalBoundingBox[] terminals() {

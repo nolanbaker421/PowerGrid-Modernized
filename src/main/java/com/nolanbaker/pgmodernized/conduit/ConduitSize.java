@@ -13,9 +13,9 @@ public enum ConduitSize {
     ONE_QUARTER("one_quarter", "1-1/4\"", 12, 1.496, 0.17f, 0x2F6FD6),
     ONE_HALF("one_half", "1-1/2\"", 12, 2.036, 0.19f, 0x3AA048),
     TWO("two", "2\"", 12, 3.356, 0.22f, 0xF08020),
-    TWO_HALF("two_half", "2-1/2\"", 12, 5.858, 0.25f, 0x9050C0),
-    THREE("three", "3\"", 12, 8.846, 0.28f, 0x7A4A24),
-    FOUR("four", "4\"", 12, 14.753, 0.32f, 0x202020);
+    TWO_HALF("two_half", "2-1/2\"", 18, 5.858, 0.25f, 0x9050C0),
+    THREE("three", "3\"", 24, 8.846, 0.28f, 0x7A4A24),
+    FOUR("four", "4\"", 36, 14.753, 0.32f, 0x202020);
 
     private final String id;
     private final String label;

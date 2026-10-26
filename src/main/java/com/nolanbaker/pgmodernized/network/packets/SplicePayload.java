@@ -41,7 +41,7 @@ public record SplicePayload(BlockPos pos, int action, int a, int b) implements C
         if(run == null)
             return new int[0];
         var points = host.points();
-        int count = Math.min(run.size().conductors(), points.size());
+        int count = Math.min(run.capacity(), points.size());
         var terminals = new int[count * 2];
         for(int k = 0; k < count; ++k) {
             terminals[k * 2] = points.get(k).terminal();

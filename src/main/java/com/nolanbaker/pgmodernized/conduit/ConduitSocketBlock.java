@@ -55,7 +55,7 @@ public class ConduitSocketBlock extends Rotation4ElectricBlock implements IBE<Co
 
     public ConduitSocketBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(rotation4DownTerminals(this, terminals(), Shapes.or(box(BODY), box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(HUB)), box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(HUB2)), box(SOCKET))));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, terminals(), Shapes.or(box(BODY), box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(HUB)), box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(HUB2)), box(SOCKET))));
     }
 
     private static TerminalBoundingBox[] terminals() {
