@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.53.6 — 2026-10-25
+
+### Changed
+- The splice editor lists only the wires actually pulled through each run, not every empty slot,
+  and each knockout's name carries the run's size and fill, such as "Left knockout (2", 3 of 12)".
+- Breaker panels and their extensions take conduit up to 4"; their knockouts wear the black 4"
+  mark. The disconnect stays at 2".
+
 ## 0.53.5 — 2026-10-25
 
 ### Fixed

@@ -135,7 +135,7 @@ public class PanelExtensionBlockEntity extends SmartBlockEntity implements IElec
 
     @Override
     public ConduitSize maxConduit() {
-        return ConduitSize.TWO;
+        return ConduitSize.FOUR;
     }
 
     @Override

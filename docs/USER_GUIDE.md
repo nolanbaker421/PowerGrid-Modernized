@@ -98,7 +98,7 @@ wire keeps its own gauge (resistance and ampacity). Nine EMT trade sizes:
 The tube itself is plain steel in every size. The **knockouts** are painted: each fitting's
 knockouts wear the colour of the largest size they take, so a 4" run is never offered to a
 green knockout. Red is 1" (socket, switch, controls cabinet), green 1-1/2" (conduit box and most
-devices), orange 2" (breaker panel, disconnect), black 4" (switchgear, pull box, cam-lock box,
+devices), orange 2" (disconnect), black 4" (breaker panel, switchgear, pull box, cam-lock box,
 rail and chain boxes, load bank, FE inverter). Goggles say the same in words.
 
 ### Laying a run
@@ -116,7 +116,7 @@ pixel or two apart, draws as one smooth offset rather than two elbows.
 
 One run per hub. A run cannot tee; if you need a branch, put a box there. Every fitting has a largest
 size it takes: a Conduit Box and the device knockouts stop at 1-1/2", a socket or switch at 1", a
-breaker panel at 2"; switchgear and the Pull Box take anything up to 4". To continue an open run,
+disconnect at 2"; breaker panels, switchgear and the Pull Box take anything up to 4". To continue an open run,
 click its free end with conduit. The route is previewed in green (or red where it cannot go) while
 a run is pending. Shift-right-click in the air cancels a pending run. Sneak and right-click a run
 with wire cutters to take the whole run back up; it drops any wire inside it.

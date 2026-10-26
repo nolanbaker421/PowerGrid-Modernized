@@ -78,6 +78,8 @@ public class SpliceScreen extends Screen {
         }
     }
 
+    /** A header on the left column is right-aligned to the column and may run left of it; the hit box follows the text. */
+
     private record Route(int a, int b, int[][] points, int rgb) {}
 
     /** Local layout of the centre column, before it is placed. */
@@ -246,30 +248,36 @@ public class SpliceScreen extends Screen {
         for(int hub : hubs) {
             var run = host.hubRun(hub);
             if(run != null)
-                h += 12 + run.size().conductors() * PITCH + 6;
+                h += 12 + Math.max(1, run.conductors().size()) * PITCH + 6;
         }
         return h;
     }
 
-    /** A column of knockouts: a clickable name, then one pin per conductor slot, pins toward the duct. */
+    /** A column of knockouts: a clickable name with the run's size and fill, then a pin per pulled wire, pins toward the duct. */
     private void placeHubs(ISpliceHost host, List<Integer> hubs, Side side, int x0, int y0) {
         int y = y0;
         for(int hub : hubs) {
             var run = host.hubRun(hub);
             if(run == null)
                 continue;
-            headers.add(new Header(hub, x0, y, HUB_W, 10, host.hubName(hub).copy().append(" " + run.size().label())));
+            var pulled = run.conductors();
+            var label = host.hubName(hub).copy().append(Component.literal(" (" + run.size().label() + ", " + pulled.size() + " of " + run.size().conductors() + ")").withStyle(ChatFormatting.GRAY));
+            headers.add(new Header(hub, x0, y, HUB_W + DUCT_W, 10, label));
             y += 12;
-            for(int k = 0; k < run.size().conductors(); ++k) {
-                var conductor = run.conductor(k);
-                int colour = conductor == null ? k : conductor.colorIndex();
-                Component name = conductor == null
-                        ? Component.translatable("powergrid.gui.splice.empty_slot", k + 1)
-                        : Component.literal((k + 1) + " ").append(ConductorColors.name(colour)).append(", ").append(conductor.getItem().getDescription());
-                if(conductor != null && !conductor.label().isEmpty())
+            if(pulled.isEmpty()) {
+                // Nothing to splice yet; the slot stays so the column reads the same.
+                y += PITCH + 6;
+                continue;
+            }
+            pulled.sort((a, b) -> Integer.compare(a.slot(), b.slot()));
+            for(var conductor : pulled) {
+                int k = conductor.slot();
+                int colour = conductor.colorIndex();
+                Component name = Component.literal((k + 1) + " ").append(ConductorColors.name(colour)).append(", ").append(conductor.getItem().getDescription());
+                if(!conductor.label().isEmpty())
                     name = name.copy().append(Component.literal(" \"" + conductor.label() + "\"").withStyle(ChatFormatting.YELLOW));
                 int px = side == Side.LEFT ? x0 + HUB_W - PIN - 2 : x0 + 2;
-                addPin(new Pin(host.conductorTerminal(hub, k), px, y + (PITCH - PIN) / 2, PIN, PIN, ConductorColors.rgb(colour), conductor != null, true, name, side, false));
+                addPin(new Pin(host.conductorTerminal(hub, k), px, y + (PITCH - PIN) / 2, PIN, PIN, ConductorColors.rgb(colour), true, true, name, side, false));
                 y += PITCH;
             }
             y += 6;
@@ -630,7 +638,10 @@ public class SpliceScreen extends Screen {
         }
         for(var header : headers) {
             boolean hot = header.contains(mouseX, my);
-            graphics.drawString(font, font.plainSubstrByWidth(header.label.getString(), header.w), header.x, header.y, hot ? LINE : 0xFF6FD3E8, false);
+            boolean leftColumn = header.x < ductLX;
+            var text = font.plainSubstrByWidth(header.label.getString(), HUB_W + DUCT_W - 4);
+            int tx = leftColumn ? Math.max(panelX + PADDING, header.x + HUB_W - font.width(text)) : header.x;
+            graphics.drawString(font, text, tx, header.y, hot ? LINE : 0xFF6FD3E8, false);
         }
         for(var note : columnNotes)
             graphics.drawString(font, note, panelX + PADDING, contentTop, DIM);

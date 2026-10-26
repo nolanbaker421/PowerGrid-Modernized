@@ -995,7 +995,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
 
     @Override
     public ConduitSize maxConduit() {
-        return ConduitSize.TWO;
+        return ConduitSize.FOUR;
     }
 
     @Override

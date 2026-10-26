@@ -303,7 +303,7 @@ def panel_model(name, slots):
         "textures": {
             "front": "%s:block/%s_front" % (MOD, name),
             "side": "%s:block/%s_side" % (MOD, name),
-            "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_two" % MOD,
+            "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_four" % MOD,
             "particle": "%s:block/%s_side" % (MOD, name),
         },
         "elements": elements,
@@ -571,7 +571,7 @@ def extension_assets():
     dump(os.path.join(ASSETS, "models", "block", name + ".json"), {
         "parent": "block/block",
         "textures": {"front": "%s:block/%s_front" % (MOD, name), "side": "%s:block/%s_side" % (MOD, name),
-                     "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_two" % MOD, "particle": "%s:block/%s_side" % (MOD, name)},
+                     "terminal": "%s:block/panel_terminal" % MOD, "knockout": "%s:block/knockout_four" % MOD, "particle": "%s:block/%s_side" % (MOD, name)},
         "elements": elements,
     })
     dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s" % (MOD, name)})

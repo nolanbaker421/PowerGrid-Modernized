@@ -4,7 +4,7 @@
     "front": "powergrid_modernized:block/breaker_panel_400_front",
     "side": "powergrid_modernized:block/breaker_panel_400_side",
     "terminal": "powergrid_modernized:block/panel_terminal",
-    "knockout": "powergrid_modernized:block/knockout_two",
+    "knockout": "powergrid_modernized:block/knockout_four",
     "particle": "powergrid_modernized:block/breaker_panel_400_side"
   },
   "elements": [
