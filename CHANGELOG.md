@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.59.7 — 2026-10-26
+
+### Fixed
+- Bends, offsets and couplings sat off a leg that had been drawn into a strut's slot, by up to a
+  pixel, since only the straight moved. The run is now drawn from one set of corner points that
+  carries the knockout and slot shifts, and everything on it follows the same line.
+- Elbows are swept in more chords, so a fat tube's bend is round rather than a few flat facets.
+
 ## 0.59.6 — 2026-10-26
 
 ### Fixed

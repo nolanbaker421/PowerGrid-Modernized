@@ -188,21 +188,36 @@ public class BodyWireRenderer extends BlockWireRenderer {
             }
         }
         boolean onBody = bodyOf(run) != null;
-        var startNudge = onBody ? Vec3.ZERO : exactNudge(run, run.getEndpoint1(), Vec3.ZERO);
-        var pos = Vec3.ZERO;
+        // The corners as laid, on Power Grid's pixel grid.
+        var raw = new Vec3[n + 1];
+        raw[0] = Vec3.ZERO;
+        for(int i = 0; i < n; ++i)
+            raw[i + 1] = raw[i].add(segs.get(i).vector());
+        // The corners as drawn. The ends sit on their knockouts' true centres, which the grid can
+        // miss by half a pixel; a leg through a strut's clamp lies in its slot, which the grid can
+        // miss by most of one; and each corner between is where the two legs' lines, so shifted,
+        // meet, so that bends, offsets and couplings all follow the same line as the straights.
+        var startNudge = onBody ? Vec3.ZERO : exactNudge(run, run.getEndpoint1(), raw[0]);
+        var endNudge = onBody ? Vec3.ZERO : exactNudge(run, run.getEndpoint2(), raw[n]);
+        var side = new Vec3[n];
+        for(int i = 0; i < n; ++i)
+            side[i] = onBody || skip[i] ? Vec3.ZERO : strutNudge(run, raw[i], raw[i + 1], segs.get(i).direction, t, i == 0 ? startNudge : Vec3.ZERO);
+        var v = new Vec3[n + 1];
+        v[0] = raw[0].add(startNudge.lengthSqr() > 0 ? startNudge : side[0]);
+        v[n] = raw[n].add(endNudge.lengthSqr() > 0 ? endNudge : side[n - 1]);
+        for(int k = 1; k < n; ++k)
+            v[k] = raw[k].add(cornerShift(side[k - 1], side[k], segs.get(k - 1).direction, segs.get(k).direction));
         double travelled = 0;
         for(int i = 0; i < n; ++i) {
             var seg = segs.get(i);
             var dir = seg.direction;
             var along = Vec3.atLowerCornerOf(dir.getNormal());
-            var end = pos.add(seg.vector());
+            var pos = v[i];
+            var end = v[i + 1];
             if(!skip[i]) {
-                // The first and last reach a pixel into their knockouts, from the knockout's true centre;
-                // a leg through a strut's clamp is drawn in the slot, which may be off the pixel grid.
-                var side = onBody ? Vec3.ZERO : strutNudge(run, pos, end, dir, t, i == 0 ? startNudge : Vec3.ZERO);
-                var endNudge = i == n - 1 && !onBody ? exactNudge(run, run.getEndpoint2(), end) : Vec3.ZERO;
-                var from = i == 0 ? pos.add(startNudge.lengthSqr() > 0 ? startNudge : side).relative(dir, -1 / 16.0) : pos.add(side).relative(dir, cutStart[i]);
-                var to = i == n - 1 ? end.add(endNudge.lengthSqr() > 0 ? endNudge : side).relative(dir, 1 / 16.0) : end.add(side).relative(dir, -cutEnd[i]);
+                // The first and last reach a pixel into their knockouts.
+                var from = i == 0 ? pos.relative(dir, -1 / 16.0) : pos.relative(dir, cutStart[i]);
+                var to = i == n - 1 ? end.relative(dir, 1 / 16.0) : end.relative(dir, -cutEnd[i]);
                 int segLight = brightest(run, run.position().add(from.add(to).scale(0.5)));
                 if(to.subtract(from).dot(along) > 1e-4) {
                     TubeDraw.straight(pose, consumer, segLight, rgb, from, to, t);
@@ -210,9 +225,7 @@ public class BodyWireRenderer extends BlockWireRenderer {
                 }
                 if(offsetSpan[i] > 0) {
                     var c1 = end;
-                    var c2 = end;
-                    for(int k = 1; k <= offsetSpan[i]; ++k)
-                        c2 = c2.add(segs.get(i + k).vector());
+                    var c2 = v[i + offsetSpan[i] + 1];
                     double m = c2.subtract(c1).length();
                     var p = c1.subtract(along.scale(m));
                     var q = c2.add(along.scale(m));
@@ -227,9 +240,24 @@ public class BodyWireRenderer extends BlockWireRenderer {
                     TubeDraw.joint(pose, consumer, segLight, rgb, end, t);
                 }
             }
-            pos = end;
             travelled += seg.length();
         }
+    }
+
+    /**
+     * Where two legs meet once each has been shifted sideways: the leg before, shifted by {@code a}
+     * square to its direction {@code da}, and the leg after, shifted by {@code b} square to
+     * {@code db}. Along each leg's own direction the other leg's shift says where the corner is;
+     * square to both, the legs ought to agree, and the first with an opinion wins.
+     */
+    private static Vec3 cornerShift(Vec3 a, Vec3 b, Direction da, Direction db) {
+        var ua = Vec3.atLowerCornerOf(da.getNormal());
+        var ub = Vec3.atLowerCornerOf(db.getNormal());
+        if(da.getAxis() == db.getAxis())
+            return a.lengthSqr() > 0 ? a : b;
+        var p = ua.cross(ub);
+        double shared = Math.abs(a.dot(p)) > 1e-9 ? a.dot(p) : b.dot(p);
+        return ua.scale(b.dot(ua)).add(ub.scale(a.dot(ub))).add(p.scale(shared));
     }
 
     private static void couplings(PoseStack.Pose pose, VertexConsumer consumer, int light, int rgb, Vec3 segStart, Vec3 along, double travelled, double length, float t) {

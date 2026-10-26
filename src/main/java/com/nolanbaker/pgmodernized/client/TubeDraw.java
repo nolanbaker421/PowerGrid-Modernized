@@ -78,7 +78,8 @@ public final class TubeDraw {
         double d = r * Math.tan(theta / 2);
         var centre = corner.subtract(u1.scale(d)).add(inward.scale(r));
         double h = t / 2;
-        int steps = Math.max(2, Math.min(8, (int) Math.ceil(r * theta / Math.max(0.01, h))));
+        // Chords no longer than half the tube's half-width, so a fat tube's elbow is not a few flat facets.
+        int steps = Math.max(3, Math.min(12, (int) Math.ceil(r * theta / Math.max(0.005, h / 2))));
         Vec3[] prev = null;
         Vec3 prevAt = null;
         float arc = 0, chord = (float) (r * theta / steps);
