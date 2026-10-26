@@ -191,9 +191,12 @@ public class BodyWireRenderer extends BlockWireRenderer {
             var along = Vec3.atLowerCornerOf(dir.getNormal());
             var end = pos.add(seg.vector());
             if(!skip[i]) {
-                // The first and last reach a pixel into their knockouts, from the knockout's true centre.
-                var from = i == 0 ? pos.add(startNudge).relative(dir, -1 / 16.0) : pos.relative(dir, cutStart[i]);
-                var to = i == n - 1 ? end.add(onBody ? Vec3.ZERO : exactNudge(run, run.getEndpoint2(), end)).relative(dir, 1 / 16.0) : end.relative(dir, -cutEnd[i]);
+                // The first and last reach a pixel into their knockouts, from the knockout's true centre;
+                // a leg through a strut's clamp is drawn in the slot, which may be off the pixel grid.
+                var side = onBody ? Vec3.ZERO : strutNudge(run, pos, end, dir, t);
+                var endNudge = i == n - 1 && !onBody ? exactNudge(run, run.getEndpoint2(), end) : Vec3.ZERO;
+                var from = i == 0 ? pos.add(startNudge.lengthSqr() > 0 ? startNudge : side).relative(dir, -1 / 16.0) : pos.add(side).relative(dir, cutStart[i]);
+                var to = i == n - 1 ? end.add(endNudge.lengthSqr() > 0 ? endNudge : side).relative(dir, 1 / 16.0) : end.add(side).relative(dir, -cutEnd[i]);
                 int segLight = brightest(run, run.position().add(from.add(to).scale(0.5)));
                 if(to.subtract(from).dot(along) > 1e-4) {
                     TubeDraw.straight(pose, consumer, segLight, rgb, from, to, t);
@@ -258,6 +261,42 @@ public class BodyWireRenderer extends BlockWireRenderer {
             return Vec3.ZERO;
         var nudge = knockout.getExactPosition(run.level()).subtract(run.position().add(runEnd));
         return nudge.lengthSqr() <= (1.5 / 16) * (1.5 / 16) ? nudge : Vec3.ZERO;
+    }
+
+    /**
+     * The sideways shift that draws a leg crossing a strut's rail in the slot it was clipped to:
+     * the slots sit where a panel's knockouts do, a fraction of a pixel off the run's pixel grid.
+     * Zero for a leg that crosses no strut, runs along one, or is not within a pixel of a slot.
+     */
+    private static Vec3 strutNudge(ConduitRunEntity run, Vec3 start, Vec3 end, Direction dir, float t) {
+        var level = run.level();
+        var origin = run.position();
+        var leg = end.subtract(start);
+        double len = leg.length();
+        if(len < 1e-6)
+            return Vec3.ZERO;
+        var along = Vec3.atLowerCornerOf(dir.getNormal());
+        BlockPos last = null;
+        for(int k = 0; k * 0.5 <= len + 0.5; ++k) {
+            var world = origin.add(start.add(leg.scale(Math.min(k * 0.5, len) / len)));
+            var bp = BlockPos.containing(world);
+            if(bp.equals(last))
+                continue;
+            last = bp;
+            var state = level.getBlockState(bp);
+            if(!(state.getBlock() instanceof com.nolanbaker.pgmodernized.conduit.StrutBlock))
+                continue;
+            var facing = state.getValue(com.nolanbaker.pgmodernized.conduit.StrutBlock.FACING);
+            var axis = com.nolanbaker.pgmodernized.conduit.StrutBlock.axisFor(facing, state.getValue(com.nolanbaker.pgmodernized.conduit.StrutBlock.AXIS));
+            if(dir.getAxis() == axis || dir.getAxis() == facing.getAxis())
+                continue;
+            var local = world.subtract(bp.getX(), bp.getY(), bp.getZ());
+            var nudge = com.nolanbaker.pgmodernized.conduit.StrutBlock.clamp(state, local, t * 16 / 2).subtract(local);
+            nudge = nudge.subtract(along.scale(nudge.dot(along)));
+            if(nudge.lengthSqr() <= (0.8 / 16) * (0.8 / 16))
+                return nudge;
+        }
+        return Vec3.ZERO;
     }
 
     /**

@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.59.2 — 2026-10-26
+
+### Fixed
+- Runs sit dead on a strut's straps. The slots lie where a panel's knockouts do, a fraction of a
+  pixel off the pixel grid a run's legs are laid on; a leg through a clamp is now drawn in its slot,
+  as a run's ends already are in their knockouts, and a jog under a pixel is not laid at all.
+
 ## 0.59.1 — 2026-10-26
 
 ### Fixed

@@ -256,10 +256,15 @@ public final class ConduitPlacement {
         return InteractionResultHolder.success(existing);
     }
 
-    /** One straight leg along an axis to a coordinate, in whole pixels, or nothing when there is nowhere to go. */
+    /**
+     * One straight leg along an axis to a coordinate, in whole pixels, or nothing when there is
+     * nowhere to go. A move under three quarters of a pixel is not worth a jog: the renderer draws
+     * the leg in its slot anyway.
+     */
     private static void leg(List<BlockWireEntity.Point> points, double[] cur, Direction.Axis axis, double to) {
         int i = axis.ordinal();
-        int px = (int) Math.round((to - cur[i]) * 16);
+        double exact = (to - cur[i]) * 16;
+        int px = Math.abs(exact) < 0.75 ? 0 : (int) Math.round(exact);
         if(px == 0)
             return;
         points.add(new BlockWireEntity.Point(Direction.fromAxisAndDirection(axis, px > 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE), Math.abs(px)));
