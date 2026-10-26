@@ -91,6 +91,18 @@ public final class TubeDraw {
         }
     }
 
+    /**
+     * A sharp joint: three short lengths of tube, one along each axis, through the corner point.
+     * Their union fills the corner the two legs' chamfers leave open without a cube's corners
+     * standing out past the tube.
+     */
+    public static void joint(PoseStack.Pose pose, VertexConsumer c, int light, int rgb, Vec3 at, float t) {
+        double h = t / 2;
+        straight(pose, c, light, rgb, at.add(-h, 0, 0), at.add(h, 0, 0), t);
+        straight(pose, c, light, rgb, at.add(0, -h, 0), at.add(0, h, 0), t);
+        straight(pose, c, light, rgb, at.add(0, 0, -h), at.add(0, 0, h), t);
+    }
+
     /** A cube of half-side {@code h} at a sharp joint, filling the corner the two legs' chamfers leave open. */
     public static void cube(PoseStack.Pose pose, VertexConsumer c, int light, int rgb, Vec3 at, double h) {
         var lo = new Vec3[] {at.add(-h, -h, -h), at.add(h, -h, -h), at.add(h, -h, h), at.add(-h, -h, h)};

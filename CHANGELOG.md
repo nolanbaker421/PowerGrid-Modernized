@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.53.5 — 2026-10-25
+
+### Fixed
+- Knockouts a few pixels apart in two or three directions, such as a box beside a panel, drew
+  their run as a stack of cube joints. An offset now runs through any sequence of up to four short
+  legs between two legs the same way, sideways in two directions and inline steps included, as
+  one diagonal with a bend at each end.
+- Where a joint still has to be sharp, it is three short lengths of tube through the corner
+  rather than a cube, so nothing stands out past the tube.
+
 ## 0.53.4 — 2026-10-25
 
 ### Fixed
