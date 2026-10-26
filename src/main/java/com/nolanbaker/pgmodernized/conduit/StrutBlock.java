@@ -35,12 +35,17 @@ import org.jetbrains.annotations.Nullable;
  * stacks a second rail eight pixels out, a tier that holds a second row of runs in front of the
  * first; clicked again the lower rail comes away, leaving the upper rail on a post, and again
  * brings it back to a single. A tier is eight pixels because a rail is three and a 4" tube five.
+ * A strut placed on the outer face of a raised or double strut stacks a tier further out: it takes
+ * the direction and slots of the one behind and a post ties the two. A wrench turns a strut to
+ * run the other way across its mount; runs already clipped to it stay where they are.
  */
-public class StrutBlock extends Block {
+public class StrutBlock extends Block implements com.simibubi.create.content.equipment.wrench.IWrenchable {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
     public static final EnumProperty<Slots> SLOTS = EnumProperty.create("slots", Slots.class);
     public static final EnumProperty<Stack> STACK = EnumProperty.create("stack", Stack.class);
+    /** A strut stacked on this one's outer face, mounted and running the same way: a post reaches out to it. */
+    public static final net.minecraft.world.level.block.state.properties.BooleanProperty LINKED = net.minecraft.world.level.block.state.properties.BooleanProperty.create("linked");
     public static final double THICK = 3, WIDTH = 3;
     /** The upper rail's distance from the mount: a rail and the biggest tube under it. */
     public static final double TIER = 8;
@@ -126,12 +131,12 @@ public class StrutBlock extends Block {
 
     public StrutBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(AXIS, Direction.Axis.X).setValue(SLOTS, Slots.SIX).setValue(STACK, Stack.SINGLE));
+        registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(AXIS, Direction.Axis.X).setValue(SLOTS, Slots.SIX).setValue(STACK, Stack.SINGLE).setValue(LINKED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, AXIS, SLOTS, STACK);
+        builder.add(FACING, AXIS, SLOTS, STACK, LINKED);
     }
 
     public static Stack stackOf(BlockState state) {
@@ -148,14 +153,56 @@ public class StrutBlock extends Block {
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         var facing = ctx.getClickedFace().getOpposite();
+        var pos = ctx.getClickedPos();
+        var behind = ctx.getLevel().getBlockState(pos.relative(facing));
         Direction.Axis axis;
-        if(facing.getAxis() == Direction.Axis.Y) {
+        var slots = Slots.SIX;
+        if(behind.getBlock() instanceof StrutBlock && behind.getValue(FACING) == facing) {
+            // Stacked on a strut's outer face: the same way and the same slots, a tier on from its rails.
+            axis = behind.getValue(AXIS);
+            slots = behind.getValue(SLOTS);
+        } else if(facing.getAxis() == Direction.Axis.Y) {
             axis = ctx.getHorizontalDirection().getAxis();
         } else {
             boolean along = ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown();
             axis = along ? (facing.getAxis() == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X) : Direction.Axis.Y;
         }
-        return defaultBlockState().setValue(FACING, facing).setValue(AXIS, axisFor(facing, axis));
+        var state = defaultBlockState().setValue(FACING, facing).setValue(AXIS, axisFor(facing, axis)).setValue(SLOTS, slots);
+        return state.setValue(LINKED, linkedOut(ctx.getLevel(), pos, state));
+    }
+
+    /** Whether the block a tier out is a strut stacked on this one: mounted the same way, running the same way. */
+    public static boolean linkedOut(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
+        var facing = state.getValue(FACING);
+        var out = level.getBlockState(pos.relative(facing.getOpposite()));
+        return out.getBlock() instanceof StrutBlock && out.getValue(FACING) == facing && out.getValue(AXIS) == state.getValue(AXIS);
+    }
+
+    @Override
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        if(direction == state.getValue(FACING).getOpposite())
+            return state.setValue(LINKED, linkedOut(level, pos, state));
+        return state;
+    }
+
+    /** The wrench turns the strut to run the other way across its mount. */
+    @Override
+    public net.minecraft.world.InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        var level = context.getLevel();
+        var pos = context.getClickedPos();
+        if(level.isClientSide)
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        var facing = state.getValue(FACING);
+        var current = state.getValue(AXIS);
+        Direction.Axis other = current;
+        for(var axis : Direction.Axis.values())
+            if(axis != facing.getAxis() && axis != current)
+                other = axis;
+        var turned = state.setValue(AXIS, other);
+        turned = turned.setValue(LINKED, linkedOut(level, pos, turned));
+        level.setBlock(pos, turned, Block.UPDATE_ALL);
+        com.simibubi.create.AllSoundEvents.WRENCH_ROTATE.playOnServer(level, pos, 1, net.minecraft.util.Mth.nextFloat(level.random, 0.65f, 0.75f));
+        return net.minecraft.world.InteractionResult.SUCCESS;
     }
 
     /** The rail in pixels: the mount's thickness off its face, the width across, the full block along. */
@@ -196,6 +243,8 @@ public class StrutBlock extends Block {
             shape = net.minecraft.world.phys.shapes.Shapes.or(shape, box(bar(facing, axis, TIER)));
             shape = net.minecraft.world.phys.shapes.Shapes.or(shape, box(slab(facing, axis, stack.lower() ? THICK : 0, TIER, 1.5)));
         }
+        if(state.hasProperty(LINKED) && state.getValue(LINKED))
+            shape = net.minecraft.world.phys.shapes.Shapes.or(shape, box(slab(facing, axis, (stack.upper() ? TIER : 0) + THICK, 16, 1.5)));
         return shape;
     }
 
@@ -222,14 +271,20 @@ public class StrutBlock extends Block {
      * centred across, and lifted off the channel by the tube's radius so the conduit sits in the clamp.
      */
     public static Vec3 clamp(BlockState state, Vec3 local, double tubeRadiusPx) {
+        return clamp(state, local, tubeRadiusPx, Double.NaN);
+    }
+
+    /** The same, snapped to the slot nearest {@code alongPx} (block-local pixels along the rail) instead of the click. */
+    public static Vec3 clamp(BlockState state, Vec3 local, double tubeRadiusPx, double alongPx) {
         var facing = state.getValue(FACING);
         var axis = axisFor(facing, state.getValue(AXIS));
         double[] p = {local.x * 16, local.y * 16, local.z * 16};
         int a = axis.ordinal(), m = facing.getAxis().ordinal(), across = 3 - a - m;
         var slots = state.hasProperty(SLOTS) ? state.getValue(SLOTS) : Slots.SIX;
+        double want = Double.isNaN(alongPx) ? p[a] : alongPx;
         double best = slots.along()[0];
         for(double slot : slots.along())
-            if(Math.abs(slot - p[a]) < Math.abs(best - p[a]))
+            if(Math.abs(slot - want) < Math.abs(best - want))
                 best = slot;
         p[a] = best;
         p[across] = 8;
@@ -277,9 +332,8 @@ public class StrutBlock extends Block {
         if(size == null)
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         var local = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
-        var clamp = clamp(state, local, size.tubeThickness() * 16 / 2);
         var context = new UseOnContext(player, hand, hit);
-        var result = ConduitPlacement.strutClick(context, clamp, axisFor(state.getValue(FACING), state.getValue(AXIS)));
+        var result = ConduitPlacement.strutClick(context, state, local, size.tubeThickness() * 16 / 2);
         return result.consumesAction() ? ItemInteractionResult.sidedSuccess(level.isClientSide) : ItemInteractionResult.FAIL;
     }
 

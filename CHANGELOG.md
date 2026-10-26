@@ -4,6 +4,23 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.59.0 — 2026-10-26
+
+### Added
+- Name tags label a breaker panel's door and a controls cabinet's door: a nameplate on the front,
+  and the name in the goggles. An open panel door shows the circuit directory on its inside, every
+  space's number with the label of the breaker in it, odd left and even right, the main at the top.
+- Strut turns with a wrench, and a strut placed on the outer face of a raised or double strut
+  stacks a tier further out: it takes the direction and slots of the one behind, and a post ties
+  the two.
+
+### Fixed
+- A run clipped to strut crosses the rail square: it goes out to the tier first, along the strut
+  to its slot, then across the rail, instead of ending with a jog along the rail inside the strut.
+  From one strut to the next parallel strut it carries straight on, to the slot in its own line,
+  so a rack across several struts no longer kinks at each strut; the click need only land on the
+  strut.
+
 ## 0.58.0 — 2026-10-26
 
 ### Changed

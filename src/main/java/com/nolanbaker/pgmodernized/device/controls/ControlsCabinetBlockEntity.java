@@ -1222,6 +1222,27 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         return wire[cell];
     }
 
+    /** The nameplate on the door. */
+    private String cabinetLabel = "";
+
+    public String cabinetLabel() {
+        return cabinetLabel;
+    }
+
+    /** A renamed name tag on the door labels the cabinet; a plain one clears the label. The tag is used up. */
+    public void labelCabinet(Player player, net.minecraft.world.item.ItemStack tag) {
+        if(level == null || level.isClientSide)
+            return;
+        String text = tag.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME) ? tag.getHoverName().getString() : "";
+        cabinetLabel = text.length() > 24 ? text.substring(0, 24) : text;
+        if(!player.isCreative())
+            tag.shrink(1);
+        level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_ADD_ITEM, net.minecraft.sounds.SoundSource.BLOCKS, 0.6f, 1.4f);
+        player.displayClientMessage(Lang.builder().translate(cabinetLabel.isEmpty() ? "message.controls.label_cleared" : "message.controls.labelled", cabinetLabel)
+                .style(ChatFormatting.GRAY).component(), true);
+        notifyUpdate();
+    }
+
     public String labelOf(int cell) {
         return cell >= 0 && cell < MAX_CELLS ? labels[cell] : "";
     }
@@ -1670,6 +1691,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         splices().write(tag);
+        tag.putString("CabinetLabel", cabinetLabel);
         var railTag = new int[MAX_RAIL];
         for(int i = 0; i < MAX_RAIL; ++i)
             railTag[i] = rail[i] == null ? -1 : rail[i].ordinal();
@@ -1745,6 +1767,7 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         splices().read(tag);
+        cabinetLabel = tag.getString("CabinetLabel");
         var railTag = tag.getIntArray("Rail");
         boolean railChanged = false;
         for(int i = 0; i < MAX_RAIL; ++i) {
@@ -1842,6 +1865,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate("gui.controls.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
+        if(!cabinetLabel.isEmpty())
+            Lang.builder().text(cabinetLabel).style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         Lang.builder().translate(powered ? "gui.controls.powered" : "gui.controls.unpowered", String.format("%.0f", volts))
                 .style(powered ? ChatFormatting.GREEN : ChatFormatting.RED).forGoggles(tooltip, 1);
         if(isEStopped())

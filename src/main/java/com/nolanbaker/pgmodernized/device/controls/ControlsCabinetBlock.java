@@ -322,6 +322,12 @@ public class ControlsCabinetBlock extends HorizontalElectricBlock implements IBE
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         if(!(level.getBlockEntity(pos) instanceof ControlsCabinetBlockEntity cabinet))
             return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+        if(stack.is(net.minecraft.world.item.Items.NAME_TAG)) {
+            if(hit.getDirection() != facing(state))
+                return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+            cabinet.labelCabinet(player, stack);
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
         var device = PanelDevice.DeviceItem.of(stack);
         if(device != null) {
             int cell = cellOf(state, pos, hit);

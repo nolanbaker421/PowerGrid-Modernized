@@ -32,6 +32,8 @@ public class ControlsCabinetRenderer extends SafeBlockEntityRenderer<ControlsCab
         ms.translate(0.5, 0.5, 0.5);
         ms.mulPose(Axis.YP.rotationDegrees(-(facing.toYRot() + 180)));
         ms.translate(-0.5, -0.5, -0.5);
+        if(!be.cabinetLabel().isEmpty())
+            DeviceDraw.nameplate(ms, buffer, light, be.cabinetLabel(), 7.5, 15.0, 10, DOOR);
         for(int cell = 0; cell < be.cells(); ++cell) {
             var device = be.device(cell);
             if(device == null)

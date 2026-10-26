@@ -169,6 +169,9 @@ public class BreakerPanelBlock extends HorizontalElectricBlock implements IBE<Br
                 return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
             return onBlockEntityUseItemOn(level, headPos, be -> be.fitCover(player, stack) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL);
         }
+        // A name tag on the closed door is the panel's nameplate.
+        if(stack.is(Items.NAME_TAG) && hit.getDirection() == facing(state) && level.getBlockEntity(headPos) instanceof BreakerPanelBlockEntity closed && closed.coverClosed())
+            return onBlockEntityUseItemOn(level, headPos, be -> be.labelCover(player, stack) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL);
         // Behind a closed door nothing goes in or out; a bare hand opens it.
         if(!stack.isEmpty() && level.getBlockEntity(headPos) instanceof BreakerPanelBlockEntity be && be.coverClosed() && hit.getDirection() == facing(state))
             return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;

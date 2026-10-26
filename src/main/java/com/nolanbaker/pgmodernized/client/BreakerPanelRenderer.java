@@ -78,7 +78,40 @@ public class BreakerPanelRenderer extends SafeBlockEntityRenderer<BreakerPanelBl
         DeviceDraw.box(ms, buffer, light, 1, bottom, front - 0.7, 15, bottom + 0.4, front, DOOR_EDGE);
         DeviceDraw.box(ms, buffer, light, 1, 14.6, front - 0.7, 15, 15, front, DOOR_EDGE);
         DeviceDraw.box(ms, buffer, light, 2.2, 6.5, front - 1.2, 3.2, 9.5, front - 0.6, HANDLE);
+        if(!be.coverLabel().isEmpty())
+            DeviceDraw.nameplate(ms, buffer, light, be.coverLabel(), 8, 12.3, 11, front - 0.6);
+        if(be.coverOpen())
+            directory(be, ms, buffer, light, bottom, front);
         ms.popPose();
+    }
+
+    private static final int CARD = 0xF0EEE6, INK = 0x202020;
+
+    /**
+     * The circuit directory on the inside of an open door: every space's number with the label of
+     * the breaker in it, odd on the left and even on the right as the spaces are, the main at the top.
+     */
+    private static void directory(BreakerPanelBlockEntity be, PoseStack ms, MultiBufferSource buffer, int light, double bottom, double front) {
+        var font = Minecraft.getInstance().font;
+        float s = 1 / 160f;
+        double top = 14, pitch = 1.1, column = 5.2;
+        int columnChars = (int) (column / 16 / s);
+        DeviceDraw.box(ms, buffer, light, 2.3, bottom + 0.8, front, 13.7, top + 0.3, front + 0.1, CARD);
+        var main = be.breaker(BreakerPanelBlockEntity.MAIN);
+        String title = net.minecraft.network.chat.Component.translatable("powergrid.gui.breaker_panel.directory_main").getString()
+                + (main.label().isEmpty() ? "" : " " + main.label());
+        DeviceDraw.text(ms, buffer, light, font.plainSubstrByWidth(title, (int) (11 / 16 / s)), 8, top - 0.7, front + 0.15, s, INK, true, 0.5);
+        int rows = (int) ((top - 1.6 - (bottom + 0.8)) / pitch);
+        for(int slot = 0; slot < be.slotCount(); ++slot) {
+            int row = slot / 2;
+            if(row >= rows)
+                break;
+            // Read from inside the door, left is low x.
+            double x = PanelLayout.rightColumn(slot) ? 8.2 : 2.6;
+            double y = top - 2.0 - row * pitch;
+            String line = (slot + 1) + " " + be.effective(slot).label();
+            DeviceDraw.text(ms, buffer, light, font.plainSubstrByWidth(line, columnChars), x, y, front + 0.15, s, INK, true, 0);
+        }
     }
 
     /**

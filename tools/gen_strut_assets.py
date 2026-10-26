@@ -96,6 +96,11 @@ def main():
                      {"parent": "block/block", "textures": tex, "elements": [element(*b, "#steel") for b in post(facing, real, THICK, TIER)]})
                 dump(os.path.join(ASSETS, "models", "block", "strut", name + "_post_raised.json"),
                      {"parent": "block/block", "textures": tex, "elements": [element(*b, "#steel") for b in post(facing, real, 0, TIER)]})
+                # The post out to a strut stacked on the outer face: from the outer rail to the block's edge.
+                dump(os.path.join(ASSETS, "models", "block", "strut", name + "_link_single.json"),
+                     {"parent": "block/block", "textures": tex, "elements": [element(*b, "#steel") for b in post(facing, real, THICK, 16)]})
+                dump(os.path.join(ASSETS, "models", "block", "strut", name + "_link_upper.json"),
+                     {"parent": "block/block", "textures": tex, "elements": [element(*b, "#steel") for b in post(facing, real, TIER + THICK, 16)]})
                 for slots, (size, _) in SLOTS.items():
                     strap_tex = {"strap": "%s:block/knockout_%s" % (MOD, size), "particle": "%s:block/bus_duct" % MOD}
                     dump(os.path.join(ASSETS, "models", "block", "strut", "%s_%s.json" % (name, slots)),
@@ -108,6 +113,8 @@ def main():
             multipart.append({"when": dict(base, stack="double|raised"), "apply": {"model": model + "_upper"}})
             multipart.append({"when": dict(base, stack="double"), "apply": {"model": model + "_post_double"}})
             multipart.append({"when": dict(base, stack="raised"), "apply": {"model": model + "_post_raised"}})
+            multipart.append({"when": dict(base, linked="true", stack="single"), "apply": {"model": model + "_link_single"}})
+            multipart.append({"when": dict(base, linked="true", stack="double|raised"), "apply": {"model": model + "_link_upper"}})
             for slots in SLOTS:
                 multipart.append({"when": dict(base, slots=slots, stack="single|double"), "apply": {"model": "%s_%s" % (model, slots)}})
                 multipart.append({"when": dict(base, slots=slots, stack="double|raised"), "apply": {"model": "%s_%s_upper" % (model, slots)}})

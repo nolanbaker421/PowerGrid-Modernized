@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -118,7 +119,7 @@ public final class ConduitPlacement {
     }
 
     /** A strut was clicked with the pending run: the run goes straight to the clamp, leg by leg, with no tracer. */
-    public static InteractionResult strutClick(UseOnContext context, Vec3 clampLocal, Direction.Axis strutAxis) {
+    public static InteractionResult strutClick(UseOnContext context, BlockState strut, Vec3 local, double tubeRadiusPx) {
         var stack = context.getItemInHand();
         var level = context.getLevel();
         var player = context.getPlayer();
@@ -132,8 +133,19 @@ public final class ConduitPlacement {
             return InteractionResult.FAIL;
         }
         var pos = context.getClickedPos();
+        var facing = strut.getValue(StrutBlock.FACING);
+        var strutAxis = StrutBlock.axisFor(facing, strut.getValue(StrutBlock.AXIS));
+        // From a clamp on a parallel strut the run carries straight on: the slot nearest the run's own
+        // line, not the click, so a rack across several struts has no kink at each one.
+        var from = BodySpace.local(level, existing);
+        var fromState = existing instanceof BlockWireEntityEndpoint ? level.getBlockState(net.minecraft.core.BlockPos.containing(from)) : null;
+        boolean rack = fromState != null && fromState.getBlock() instanceof StrutBlock && fromState.getValue(StrutBlock.FACING) == facing
+                && StrutBlock.axisFor(facing, fromState.getValue(StrutBlock.AXIS)) == strutAxis;
+        var clampLocal = rack
+                ? StrutBlock.clamp(strut, local, tubeRadiusPx, (from.get(strutAxis) - pos.get(strutAxis)) * 16)
+                : StrutBlock.clamp(strut, local, tubeRadiusPx);
         var target = new ImaginaryWireEndpoint(new Vec3(pos.getX() + clampLocal.x, pos.getY() + clampLocal.y, pos.getZ() + clampLocal.z));
-        var run = layStraight(level, stack, player, existing, target, strutAxis);
+        var run = layStraight(level, stack, player, existing, target, facing, strutAxis);
         if(run.getResult().consumesAction()) {
             var entity = run.getObject();
             if(entity != null)
@@ -144,12 +156,13 @@ public final class ConduitPlacement {
     }
 
     /**
-     * Lays the pending run to a point in straight legs: a knockout's stub first, then the axes across
-     * the strut, vertical before horizontal, and along the strut last so the tube arrives along the
-     * rail. The run stays open at the clamp, ready for the next strut or the closing knockout.
+     * Lays the pending run to a point in straight legs: a knockout's stub first, then out from the
+     * mount to the tier, along the strut to the slot, and across the rail last, so the tube crosses
+     * the rail square in its clamp. The run stays open at the clamp, ready for the next strut or
+     * the closing knockout.
      */
     private static InteractionResultHolder<ConduitRunEntity> layStraight(Level level, ItemStack stack, @Nullable Player player,
-                                                                         IWireEndpoint from, IWireEndpoint to, Direction.Axis strutAxis) {
+                                                                         IWireEndpoint from, IWireEndpoint to, Direction mount, Direction.Axis strutAxis) {
         var entry = wireEntry(level, stack, player);
         if(entry == null)
             return InteractionResultHolder.fail(null);
@@ -190,12 +203,11 @@ public final class ConduitPlacement {
             return InteractionResultHolder.fail(null);
         }
         var order = new ArrayList<Direction.Axis>();
-        if(strutAxis != Direction.Axis.Y)
-            order.add(Direction.Axis.Y);
-        for(var axis : Direction.Axis.values())
-            if(axis != strutAxis && axis != Direction.Axis.Y)
-                order.add(axis);
+        order.add(mount.getAxis());
         order.add(strutAxis);
+        for(var axis : Direction.Axis.values())
+            if(axis != strutAxis && axis != mount.getAxis())
+                order.add(axis);
         double[] cur = {last.x, last.y, last.z};
         for(var axis : order) {
             int i = axis.ordinal();

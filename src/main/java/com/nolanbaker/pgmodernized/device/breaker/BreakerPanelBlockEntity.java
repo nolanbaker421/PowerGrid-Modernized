@@ -758,6 +758,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         splices().write(tag);
         tag.putBoolean("Cover", cover);
         tag.putBoolean("CoverOpen", coverOpen);
+        tag.putString("CoverLabel", coverLabel);
         tag.put("Main", main.write(clientPacket));
         var list = new ListTag();
         for(var branch : branches)
@@ -771,6 +772,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         super.read(tag, registries, clientPacket);
         cover = tag.getBoolean("Cover");
         coverOpen = tag.getBoolean("CoverOpen");
+        coverLabel = tag.getString("CoverLabel");
         var prevMain = main.state;
         var prevBranches = new BreakerState[branches.length];
         for(int i = 0; i < branches.length; ++i)
@@ -837,6 +839,27 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     // ---- the cover ----
 
     private boolean cover, coverOpen;
+    /** The nameplate on the door. */
+    private String coverLabel = "";
+
+    public String coverLabel() {
+        return coverLabel;
+    }
+
+    /** A renamed name tag on the closed door labels the panel; a plain one clears the label. The tag is used up. */
+    public boolean labelCover(Player player, ItemStack tag) {
+        if(level == null || level.isClientSide)
+            return true;
+        String text = tag.has(DataComponents.CUSTOM_NAME) ? tag.getHoverName().getString() : "";
+        coverLabel = text.length() > 24 ? text.substring(0, 24) : text;
+        if(!player.isCreative())
+            tag.shrink(1);
+        level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.4f);
+        message(player, Lang.builder().translate(coverLabel.isEmpty() ? "message.breaker_panel.cover_label_cleared" : "message.breaker_panel.cover_labelled", coverLabel)
+                .style(ChatFormatting.GRAY).component());
+        notifyUpdate();
+        return true;
+    }
 
     public boolean hasCover() {
         return cover;
@@ -921,6 +944,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         Lang.builder().translate(spec.titleKey(), spec.rating()).style(ChatFormatting.GRAY).forGoggles(tooltip);
         if(cover)
             Lang.builder().translate(coverOpen ? "gui.breaker_panel.cover_open" : "gui.breaker_panel.cover_closed").style(ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
+        if(cover && !coverLabel.isEmpty())
+            Lang.builder().text(coverLabel).style(ChatFormatting.WHITE).forGoggles(tooltip, 1);
         goggleLine(tooltip, MAIN);
         for(int i = 0; i < slotCount(); ++i) {
             if(!branches[i].isCovered())

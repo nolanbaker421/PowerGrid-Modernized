@@ -112,6 +112,34 @@ public final class DeviceDraw {
         ms.popPose();
     }
 
+    /**
+     * A nameplate on a door's outer face in the north frame: an off-white plate with dark lettering,
+     * centred on (x, y), no wider than {@code maxWidth} pixels; {@code face} is the door's outer z.
+     */
+    public static void nameplate(PoseStack ms, MultiBufferSource buffer, int light, String label, double x, double y, double maxWidth, double face) {
+        Font font = Minecraft.getInstance().font;
+        float s = 1 / 112f;
+        String text = font.plainSubstrByWidth(label, Math.max(1, (int) ((maxWidth - 1) / 16 / s)));
+        double w = font.width(text) * s * 16 + 1;
+        box(ms, buffer, light, x - w / 2, y - 1.0, face - 0.2, x + w / 2, y + 1.0, face, 0xE8E6DE);
+        text(ms, buffer, light, text, x, y, face - 0.25, s, 0x202020, false, 0.5);
+    }
+
+    /**
+     * Text at (x, y) at depth z of the north frame, facing out (-z), or in (+z) when {@code back};
+     * {@code align} is where x falls in the text, 0 for its left edge and 0.5 for its centre.
+     */
+    public static void text(PoseStack ms, MultiBufferSource buffer, int light, String text, double x, double y, double z, float s, int color, boolean back, double align) {
+        Font font = Minecraft.getInstance().font;
+        ms.pushPose();
+        ms.translate(x / 16, y / 16, z / 16);
+        if(back)
+            ms.mulPose(Axis.YP.rotationDegrees(180));
+        ms.scale(-s, -s, s);
+        font.drawInBatch(text, (float) (-font.width(text) * align), -4.5f, color, false, ms.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, light);
+        ms.popPose();
+    }
+
     private static int dim(int rgb) {
         int r = (rgb >> 16 & 0xFF) * 3 / 10, g = (rgb >> 8 & 0xFF) * 3 / 10, b = (rgb & 0xFF) * 3 / 10;
         return r << 16 | g << 8 | b;
