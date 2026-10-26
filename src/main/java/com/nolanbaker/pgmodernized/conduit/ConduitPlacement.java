@@ -31,6 +31,7 @@ import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Placement of conduit runs, a port of Power Grid's block-wire flow (via the Cat6 cable): a hub
@@ -155,9 +156,13 @@ public final class ConduitPlacement {
         return run.getResult();
     }
 
+    /** A kick out to a strut's tier starts this far before the rail's centre line, in pixels. */
+    private static final int KICK_SETBACK_PX = 6;
+
     /**
-     * Lays the pending run to a point in straight legs: a knockout's stub first, then out from the
-     * mount to the tier, along the strut to the slot, and across the rail last, so the tube crosses
+     * Lays the pending run to a point in straight legs: a knockout's stub first, then along the
+     * strut to the slot, across towards the rail at the depth it has, a kick out to the tier just
+     * short of the rail, and across the rail last, so the tube hugs the wall on the way and crosses
      * the rail square in its clamp. The run stays open at the clamp, ready for the next strut or
      * the closing knockout.
      */
@@ -202,21 +207,16 @@ public final class ConduitPlacement {
             message(player, "message.connection_different_bodies", ChatFormatting.RED);
             return InteractionResultHolder.fail(null);
         }
-        var order = new ArrayList<Direction.Axis>();
-        order.add(mount.getAxis());
-        order.add(strutAxis);
-        for(var axis : Direction.Axis.values())
-            if(axis != strutAxis && axis != mount.getAxis())
-                order.add(axis);
+        var depthAxis = mount.getAxis();
+        var acrossAxis = Direction.Axis.values()[3 - depthAxis.ordinal() - strutAxis.ordinal()];
         double[] cur = {last.x, last.y, last.z};
-        for(var axis : order) {
-            int i = axis.ordinal();
-            int px = (int) Math.round((target.get(axis) - cur[i]) * 16);
-            if(px == 0)
-                continue;
-            points.add(new BlockWireEntity.Point(Direction.fromAxisAndDirection(axis, px > 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE), Math.abs(px)));
-            cur[i] += px / 16.0;
-        }
+        leg(points, cur, strutAxis, target.get(strutAxis));
+        int depthPx = (int) Math.round((target.get(depthAxis) - cur[depthAxis.ordinal()]) * 16);
+        int acrossPx = (int) Math.round((target.get(acrossAxis) - cur[acrossAxis.ordinal()]) * 16);
+        if(depthPx != 0 && Math.abs(acrossPx) > KICK_SETBACK_PX + 2)
+            leg(points, cur, acrossAxis, cur[acrossAxis.ordinal()] + Math.signum(acrossPx) * (Math.abs(acrossPx) - KICK_SETBACK_PX) / 16.0);
+        leg(points, cur, depthAxis, target.get(depthAxis));
+        leg(points, cur, acrossAxis, target.get(acrossAxis));
         points = new ArrayList<>(WallClearance.apply(level, runStart, RunReshape.tidy(points), ConduitSupply.tubeRadius(stack), true, false));
         if(points.isEmpty()) {
             message(player, "message.connection_failed", ChatFormatting.RED);
@@ -254,6 +254,16 @@ public final class ConduitPlacement {
         existing.sendExtraData();
         ConduitSupply.take(player, stack, newItems);
         return InteractionResultHolder.success(existing);
+    }
+
+    /** One straight leg along an axis to a coordinate, in whole pixels, or nothing when there is nowhere to go. */
+    private static void leg(List<BlockWireEntity.Point> points, double[] cur, Direction.Axis axis, double to) {
+        int i = axis.ordinal();
+        int px = (int) Math.round((to - cur[i]) * 16);
+        if(px == 0)
+            return;
+        points.add(new BlockWireEntity.Point(Direction.fromAxisAndDirection(axis, px > 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE), Math.abs(px)));
+        cur[i] += px / 16.0;
     }
 
     /** A run was clicked with a conduit item (server side): continue from its nearer free end. */

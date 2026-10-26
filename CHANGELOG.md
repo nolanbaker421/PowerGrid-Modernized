@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.59.1 — 2026-10-26
+
+### Fixed
+- A run clipped to a raised or double strut hugs the wall on the way there and kicks out to the
+  tier six pixels short of the rail, instead of kicking out at the knockout and running the whole
+  way off the wall.
+
 ## 0.59.0 — 2026-10-26
 
 ### Added
