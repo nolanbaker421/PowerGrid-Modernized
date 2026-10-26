@@ -172,6 +172,7 @@ public final class ConduitPlacement {
             points.add(new BlockWireEntity.Point(Direction.fromAxisAndDirection(axis, px > 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE), Math.abs(px)));
             cur[i] += px / 16.0;
         }
+        points = new ArrayList<>(RunReshape.tidy(points));
         if(points.isEmpty()) {
             message(player, "message.connection_failed", ChatFormatting.RED);
             return InteractionResultHolder.fail(null);
@@ -344,10 +345,13 @@ public final class ConduitPlacement {
             message(player, "message.connection_no_path", ChatFormatting.RED);
             return InteractionResultHolder.fail(null);
         }
-        var points = new ArrayList<>(stubs);
-        points.addAll(path.points());
+        var assembled = new ArrayList<>(stubs);
+        assembled.addAll(path.points());
         if(entryDir != null)
-            points.add(new BlockWireEntity.Point(entryDir.getOpposite(), Knockouts.STUB_PX));
+            assembled.add(new BlockWireEntity.Point(entryDir.getOpposite(), Knockouts.STUB_PX));
+        // The tracer can overshoot a knockout's stub point and the stub come back through it; folding
+        // the legs leaves the run it meant, with no hook at the box.
+        var points = RunReshape.tidy(assembled);
         float addedLength = 0;
         for(var point : points)
             addedLength += point.length();

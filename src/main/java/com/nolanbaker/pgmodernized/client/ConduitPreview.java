@@ -7,6 +7,7 @@ import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitSupply;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.nolanbaker.pgmodernized.conduit.Knockouts;
+import com.nolanbaker.pgmodernized.conduit.RunReshape;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
@@ -190,7 +191,7 @@ public final class ConduitPreview {
         var drawn = new ArrayList<>(prefix);
         drawn.addAll(points.points());
         drawn.addAll(suffix);
-        for(var p : drawn) {
+        for(var p : RunReshape.tidy(drawn)) {
             BlockWireRenderer.renderSegment(matrixStack, consumer, LightTexture.FULL_BRIGHT, color,
                     currentPos, p.direction, item.wireThickness(), p.length(), 0);
             currentPos = currentPos.add(p.vector());

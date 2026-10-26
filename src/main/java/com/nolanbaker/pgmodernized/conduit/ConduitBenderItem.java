@@ -25,9 +25,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -144,12 +146,30 @@ public class ConduitBenderItem extends Item {
         }
         var push = Direction.fromAxisAndDirection(pushAxis, lean > 0 ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
         boolean fixStart = run.getEndpoint1() != null, fixEnd = run.getEndpoint2() != null;
-        var result = RunReshape.slide(run.segments, index, push, step(stack), fixStart, fixEnd);
+        // Power Grid merges a knockout's stub into a straight first or last leg. Bending that leg
+        // keeps the stub's pixels where they are and bends the rest, so the split is made here.
+        var legs = new ArrayList<>(run.segments);
+        int stubStart = Math.min(Knockouts.STUB_PX, legs.get(0).gridLength);
+        int stubEnd = Math.min(Knockouts.STUB_PX, legs.get(legs.size() - 1).gridLength);
+        if(fixStart && index == 0 && legs.get(0).gridLength > Knockouts.STUB_PX) {
+            var first = legs.get(0);
+            legs.set(0, new BlockWireEntity.Point(first.direction, Knockouts.STUB_PX));
+            legs.add(1, new BlockWireEntity.Point(first.direction, first.gridLength - Knockouts.STUB_PX));
+            index = 1;
+        }
+        if(fixEnd && index == legs.size() - 1 && legs.get(index).gridLength > Knockouts.STUB_PX) {
+            var last = legs.get(index);
+            legs.set(index, new BlockWireEntity.Point(last.direction, last.gridLength - Knockouts.STUB_PX));
+            legs.add(new BlockWireEntity.Point(last.direction, Knockouts.STUB_PX));
+        }
+        var result = RunReshape.slide(legs, index, push, step(stack), fixStart, fixEnd);
         if(result == null || result.points().isEmpty())
             return InteractionResult.FAIL;
-        if(fixStart && !RunReshape.same(result.points().get(0), run.segments.get(0)))
+        var first = result.points().get(0);
+        var last = result.points().get(result.points().size() - 1);
+        if(fixStart && (first.direction != run.segments.get(0).direction || first.gridLength < stubStart))
             return fail(player, "message.conduit.bend_stub");
-        if(fixEnd && !RunReshape.same(result.points().get(result.points().size() - 1), run.segments.get(run.segments.size() - 1)))
+        if(fixEnd && (last.direction != run.segments.get(run.segments.size() - 1).direction || last.gridLength < stubEnd))
             return fail(player, "message.conduit.bend_stub");
 
         // The run grows or shrinks: sticks come from, or go back to, the player's pockets.

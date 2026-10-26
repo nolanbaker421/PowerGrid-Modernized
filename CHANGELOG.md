@@ -4,6 +4,19 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.53.1 — 2026-10-25
+
+### Fixed
+- A cord plugged into a receptacle cover hung beside the box on every facing but north. Power
+  Grid's rotated terminal keeps its origin in the north frame; the socket point is now worked out
+  in the box's own frame, three pixels in front of the receptacle face whichever way it faces.
+- Hooks and stray stubs at the ends of runs: the tracer could overshoot a knockout's stub point
+  and the stub come back through it. A laid run now folds such legs together, and the preview
+  shows the folded route.
+- The bender refused to bend a run's first or last straight ("the stub stays put"): Power Grid
+  merges the knockout stub into that straight, so the guard caught the whole leg. The first and
+  last four pixels stay; the rest of the leg bends.
+
 ## 0.53.0 — 2026-10-25
 
 ### Changed
