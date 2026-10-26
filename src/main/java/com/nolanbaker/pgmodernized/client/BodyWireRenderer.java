@@ -96,37 +96,54 @@ public class BodyWireRenderer extends BlockWireRenderer {
                 radii[i] = r >= 1 / 16f ? r : 0;
             }
         }
-        // Offsets: legs i and i+2 the same way with a short sideways leg between become one smooth S.
-        // The diagonal advances two jogs for one jog across; its kinks meet the legs a setback short.
-        boolean[] offset = new boolean[n];
-        double[] offsetCut = new double[n];
+        // A bend under a pixel and a half reads as a notch; such a corner is filled with a cube instead.
+        for(int i = 0; i < n; ++i)
+            if(radii[i] > 0 && radii[i] < 1.5f / 16)
+                radii[i] = 0;
+        // Offsets: two legs the same way with one or two short sideways legs between become one smooth
+        // S, a diagonal that advances two jogs for one jog across, its kinks a setback short of the legs.
+        int[] offsetSpan = new int[n];
+        double[] offsetCut = new double[n], startCut = new double[n];
         for(int i = 0; i + 2 < n; ++i) {
             var a = segs.get(i);
-            var b = segs.get(i + 1);
-            var c = segs.get(i + 2);
-            if(a.direction != c.direction || b.direction.getAxis() == a.direction.getAxis() || b.gridLength > OFFSET_MAX_PX)
-                continue;
-            double j = b.length(), m = j;
             var along = Vec3.atLowerCornerOf(a.direction.getNormal());
-            var diagonal = along.scale(2 * m).add(b.vector()).normalize();
-            double cut = m + TubeDraw.setback(wanted, along, diagonal);
-            double needA = cut + (i > 0 ? radii[i - 1] : 0), needC = cut + radii[i + 2];
-            if(a.length() < needA || c.length() < needC)
-                continue;
-            offset[i] = true;
-            offsetCut[i] = cut;
-            i += 2;
+            for(int span = 1; span <= 2 && i + span + 1 < n; ++span) {
+                var c = segs.get(i + span + 1);
+                boolean ok = c.direction == a.direction;
+                var jog = Vec3.ZERO;
+                for(int k = 1; k <= span && ok; ++k) {
+                    var leg = segs.get(i + k);
+                    ok = leg.direction.getAxis() != a.direction.getAxis() && leg.gridLength <= OFFSET_MAX_PX;
+                    jog = jog.add(leg.vector());
+                }
+                if(ok && span == 2)
+                    ok = segs.get(i + 1).direction.getAxis() != segs.get(i + 2).direction.getAxis();
+                if(!ok)
+                    continue;
+                double m = jog.length();
+                var diagonal = along.scale(2 * m).add(jog).normalize();
+                double cut = m + TubeDraw.setback(wanted, along, diagonal);
+                double needA = cut + Math.max(startCut[i], i > 0 ? radii[i - 1] : 0), needC = cut + radii[i + span + 1];
+                if(a.length() < needA || c.length() < needC)
+                    continue;
+                offsetSpan[i] = span;
+                offsetCut[i] = cut;
+                startCut[i + span + 1] = cut;
+                i += span;
+                break;
+            }
         }
         // What each straight gives up at each end: a bend radius, an offset's setback, or a negative cut
-        // (an overlap of half a tube) where two legs just meet.
+        // (an overlap of half a tube) where two legs just meet in a cube.
         double[] cutStart = new double[n], cutEnd = new double[n];
         boolean[] skip = new boolean[n];
         for(int i = 0; i + 1 < n; ++i) {
-            if(offset[i]) {
+            if(offsetSpan[i] > 0) {
                 cutEnd[i] = offsetCut[i];
-                skip[i + 1] = true;
-                cutStart[i + 2] = offsetCut[i];
-                ++i;
+                for(int k = 1; k <= offsetSpan[i]; ++k)
+                    skip[i + k] = true;
+                cutStart[i + offsetSpan[i] + 1] = offsetCut[i];
+                i += offsetSpan[i];
             } else if(radii[i] > 0) {
                 cutEnd[i] = radii[i];
                 cutStart[i + 1] = radii[i];
@@ -150,11 +167,12 @@ public class BodyWireRenderer extends BlockWireRenderer {
                 int segLight = brightest(run, run.position().add(from.add(to).scale(0.5)));
                 if(to.subtract(from).dot(along) > 1e-4)
                     TubeDraw.straight(pose, consumer, segLight, rgb, from, to, t);
-                if(offset[i]) {
-                    var jog = segs.get(i + 1);
-                    double m = jog.length();
+                if(offsetSpan[i] > 0) {
                     var c1 = end;
-                    var c2 = end.add(jog.vector());
+                    var c2 = end;
+                    for(int k = 1; k <= offsetSpan[i]; ++k)
+                        c2 = c2.add(segs.get(i + k).vector());
+                    double m = c2.subtract(c1).length();
                     var p = c1.subtract(along.scale(m));
                     var q = c2.add(along.scale(m));
                     var diagonal = q.subtract(p).normalize();
@@ -164,6 +182,8 @@ public class BodyWireRenderer extends BlockWireRenderer {
                     TubeDraw.bend(pose, consumer, segLight, rgb, q, diagonal, along, wanted, t);
                 } else if(i + 1 < n && radii[i] > 0) {
                     TubeDraw.bend(pose, consumer, segLight, rgb, end, along, Vec3.atLowerCornerOf(segs.get(i + 1).direction.getNormal()), radii[i], t);
+                } else if(i + 1 < n) {
+                    TubeDraw.cube(pose, consumer, segLight, rgb, end, h);
                 }
             }
             pos = end;

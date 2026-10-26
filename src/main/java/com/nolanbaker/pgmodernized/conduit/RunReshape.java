@@ -31,23 +31,34 @@ public final class RunReshape {
      */
     @Nullable
     public static Result slide(List<Point> points, int index, Direction push, int pixels, boolean fixStart, boolean fixEnd) {
-        if(index < 0 || index >= points.size() || pixels <= 0)
+        return slideRange(points, index, index, push, pixels, fixStart, fixEnd);
+    }
+
+    /**
+     * Slides the legs {@code from} to {@code to} together, as one piece, by {@code pixels} in
+     * direction {@code push}, which must be perpendicular to every one of them. A step is spliced
+     * in before the first and the opposite step after the last, unless an end is loose and moves.
+     */
+    @Nullable
+    public static Result slideRange(List<Point> points, int from, int to, Direction push, int pixels, boolean fixStart, boolean fixEnd) {
+        if(from < 0 || to >= points.size() || from > to || pixels <= 0)
             return null;
-        var segment = points.get(index);
-        if(segment.direction.getAxis() == push.getAxis())
-            return null;
+        for(int i = from; i <= to; ++i)
+            if(points.get(i).direction.getAxis() == push.getAxis())
+                return null;
         var out = new ArrayList<Point>(points.size() + 2);
         var shift = Vec3i.ZERO;
-        for(int i = 0; i < index; ++i)
+        for(int i = 0; i < from; ++i)
             out.add(points.get(i));
-        if(fixStart || index > 0)
+        if(fixStart || from > 0)
             out.add(new Point(push, pixels));
         else
             shift = push.getNormal().multiply(pixels);
-        out.add(segment);
-        if(fixEnd || index < points.size() - 1)
+        for(int i = from; i <= to; ++i)
+            out.add(points.get(i));
+        if(fixEnd || to < points.size() - 1)
             out.add(new Point(push.getOpposite(), pixels));
-        for(int i = index + 1; i < points.size(); ++i)
+        for(int i = to + 1; i < points.size(); ++i)
             out.add(points.get(i));
         return new Result(tidy(out), shift);
     }

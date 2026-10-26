@@ -93,6 +93,21 @@ public class RunReshapeTest {
     }
 
     @Test
+    public void rangeSlidesLegsTogether() {
+        // A leg along a wall and the leg it turns into move as one; the kick lands at the stubs.
+        var run = List.of(p(Direction.EAST, 4), p(Direction.EAST, 20), p(Direction.UP, 10), p(Direction.WEST, 4));
+        var result = RunReshape.slideRange(run, 1, 2, Direction.NORTH, 2, true, true);
+        Assertions.assertNotNull(result);
+        assertRun(result.points(), p(Direction.EAST, 4), p(Direction.NORTH, 2), p(Direction.EAST, 20), p(Direction.UP, 10), p(Direction.SOUTH, 2), p(Direction.WEST, 4));
+        // A leg along the push takes it up in its length instead.
+        var toWall = List.of(p(Direction.EAST, 4), p(Direction.SOUTH, 10), p(Direction.UP, 10), p(Direction.WEST, 4));
+        var lifted = RunReshape.slideRange(toWall, 2, 2, Direction.NORTH, 2, true, true);
+        Assertions.assertNotNull(lifted);
+        assertRun(lifted.points(), p(Direction.EAST, 4), p(Direction.SOUTH, 8), p(Direction.UP, 10), p(Direction.SOUTH, 2), p(Direction.WEST, 4));
+        Assertions.assertNull(RunReshape.slideRange(run, 1, 2, Direction.EAST, 2, true, true));
+    }
+
+    @Test
     public void tidyFoldsRunsOfOneAxis() {
         var messy = List.of(p(Direction.EAST, 3), p(Direction.EAST, 2), p(Direction.WEST, 5), p(Direction.UP, 1), p(Direction.UP, 0), p(Direction.NORTH, 2), p(Direction.SOUTH, 1));
         assertRun(RunReshape.tidy(messy), p(Direction.UP, 1), p(Direction.NORTH, 1));

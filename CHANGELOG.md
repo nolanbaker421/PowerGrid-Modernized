@@ -4,6 +4,17 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.53.3 — 2026-10-25
+
+### Fixed
+- Notched corners where a run turned. A leg pushed off its wall took its kick right at the corner
+  with the leg it turned into, as one or two pixel-long legs that drew as a notch. The legs either
+  side that run across the push now move with it, so the kick lands where a leg runs along the
+  push and takes it up in its length, or at a knockout as a box offset, never on a corner.
+- A kick in two directions at once, such as off a floor and off a wall together, draws as one
+  diagonal offset rather than two notches. A corner too tight for any bend is filled with a cube
+  instead of showing the gap between the two legs' chamfers.
+
 ## 0.53.2 — 2026-10-25
 
 ### Changed

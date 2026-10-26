@@ -91,6 +91,15 @@ public final class TubeDraw {
         }
     }
 
+    /** A cube of half-side {@code h} at a sharp joint, filling the corner the two legs' chamfers leave open. */
+    public static void cube(PoseStack.Pose pose, VertexConsumer c, int light, int rgb, Vec3 at, double h) {
+        var lo = new Vec3[] {at.add(-h, -h, -h), at.add(h, -h, -h), at.add(h, -h, h), at.add(-h, -h, h)};
+        var hi = new Vec3[] {at.add(-h, h, -h), at.add(h, h, -h), at.add(h, h, h), at.add(-h, h, h)};
+        sides(pose, c, light, rgb, lo, hi, 0, 1, at);
+        cap(pose, c, light, rgb, lo, at);
+        cap(pose, c, light, rgb, hi, at);
+    }
+
     /** How far short of a corner a bend of that radius and turn meets its legs. */
     public static double setback(double r, Vec3 u1, Vec3 u2) {
         double theta = Math.acos(Mth.clamp(u1.dot(u2), -1, 1));
