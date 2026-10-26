@@ -124,6 +124,7 @@ public final class ConduitPlacement {
             return InteractionResultHolder.fail(null);
         ConduitRunEntity existing = null;
         var last = BodySpace.local(level, from);
+        var runStart = last;
         var points = new ArrayList<BlockWireEntity.Point>();
         if(from instanceof BlockWireEntityEndpoint runEnd) {
             existing = runOf(level, runEnd, player);
@@ -139,6 +140,7 @@ public final class ConduitPlacement {
             }
         } else {
             last = BlockTrace.alignPosition(last);
+            runStart = last;
             if(from instanceof BlockWireEndpoint hub) {
                 if(!hubFree(level, player, hub, stack)) {
                     ConduitConnection.clear(stack);
@@ -172,7 +174,7 @@ public final class ConduitPlacement {
             points.add(new BlockWireEntity.Point(Direction.fromAxisAndDirection(axis, px > 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE), Math.abs(px)));
             cur[i] += px / 16.0;
         }
-        points = new ArrayList<>(RunReshape.tidy(points));
+        points = new ArrayList<>(WallClearance.apply(level, runStart, RunReshape.tidy(points), ConduitSupply.tubeRadius(stack), true, false));
         if(points.isEmpty()) {
             message(player, "message.connection_failed", ChatFormatting.RED);
             return InteractionResultHolder.fail(null);
@@ -316,6 +318,7 @@ public final class ConduitPlacement {
         } else {
             lastPoint = BlockTrace.alignPosition(lastPoint);
         }
+        var runStart = lastPoint;
         // A run leaves a knockout dead centre and square: a straight stub along the knockout's face
         // normal, and only then the tracer. The same at the far end, in reverse, so the tube enters
         // the target knockout the same way instead of wherever the route happened to arrive.
@@ -351,12 +354,12 @@ public final class ConduitPlacement {
             assembled.add(new BlockWireEntity.Point(entryDir.getOpposite(), Knockouts.STUB_PX));
         // The tracer can overshoot a knockout's stub point and the stub come back through it; folding
         // the legs leaves the run it meant, with no hook at the box.
-        var points = RunReshape.tidy(assembled);
+        boolean closes = to instanceof BlockWireEndpoint;
+        var points = WallClearance.apply(level, runStart, RunReshape.tidy(assembled), ConduitSupply.tubeRadius(stack), true, closes);
         float addedLength = 0;
         for(var point : points)
             addedLength += point.length();
 
-        boolean closes = to instanceof BlockWireEndpoint;
         if(existing == null) {
             int newItems = Math.max((int) Math.ceil(addedLength * entry.itemsPerMeter()), 1);
             if(!ConduitSupply.has(player, stack, newItems)) {

@@ -4,6 +4,18 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.53.2 — 2026-10-25
+
+### Changed
+- Runs stay on the wall. After tracing, every leg that would sink into a solid face beside it is
+  slid out to where the tube just touches, with a kick at each end of the leg: out of a knockout
+  that is a box offset, along a run it is the offset an electrician would bend. Legs under eight
+  pixels are left alone. The preview shows the same route.
+
+### Fixed
+- The receptacle's cord point takes the face centre from the terminal's own rotated shape, so it
+  is in front of the receptacle on every facing. 0.53.1 had it mirrored on some.
+
 ## 0.53.1 — 2026-10-25
 
 ### Fixed

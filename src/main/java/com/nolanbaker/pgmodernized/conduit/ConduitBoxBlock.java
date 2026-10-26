@@ -35,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ISocketElectric;
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
@@ -98,11 +99,11 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
         // Power Grid draws the cord's end three pixels against the block's facing, which on its own
         // sockets points into the wall. This box's facing points out of it, so the origin is pushed
         // out by twice that and the cord ends in front of the face, as it does on a Power Grid socket.
-        // The face centre is turned into the box's frame here: Power Grid's rotated terminal keeps
-        // its origin in the north frame, which put the cord beside the box on every other facing.
+        // The face centre comes from the terminal's own rotated shape, the same box the cord is
+        // clicked on, so it is right on every facing without a second opinion about rotations.
         var facing = state.getValue(FACING);
-        var face = ConduitBoxGeometry.RECEPTACLE_FACE;
-        var origin = ConduitBoxGeometry.toWorld(facing, new Vec3((face.minX + face.maxX) / 2, (face.minY + face.maxY) / 2, face.minZ)).relative(facing, out);
+        var centre = placement instanceof TerminalBoundingBox box ? box.getShape().bounds().getCenter() : placement.getOrigin();
+        var origin = centre.relative(facing, out);
         return new ITerminalPlacement() {
             @Override
             public boolean check(Vec3 pos) {
