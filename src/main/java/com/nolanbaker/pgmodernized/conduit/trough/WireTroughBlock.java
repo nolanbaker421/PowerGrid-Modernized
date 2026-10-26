@@ -39,7 +39,7 @@ import org.patryk3211.powergrid.utility.Lang;
  * both ends, spliced inside like a pull box, with no terminals of its own. Troughs placed to its
  * right, as the viewer sees it, join the row as {@link WireTroughExtensionBlock}s; the row is one
  * splice host with one editor, opened from any section. Each face's knockouts are a pattern the
- * player cycles with a sneak-click: two 2", four 1" or eight 1/2". Conduit to a panel above or
+ * player cycles with a sneak-click: two 4", four 3", six 2" or twelve 3/4". Conduit to a panel above or
  * below is laid by hand like any run.
  */
 public class WireTroughBlock extends HorizontalElectricBlock implements IBE<WireTroughBlockEntity> {
@@ -49,7 +49,7 @@ public class WireTroughBlock extends HorizontalElectricBlock implements IBE<Wire
 
     public WireTroughBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(SECTIONS, 1).setValue(TOP, Pattern.TWO).setValue(BOTTOM, Pattern.TWO));
+        registerDefaultState(defaultBlockState().setValue(SECTIONS, 1).setValue(TOP, Pattern.SIX).setValue(BOTTOM, Pattern.SIX));
         // The head's collection is its own section; the others answer for themselves through their block entities.
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
                 .forAllStates(state -> TroughGeometry.terminals(state.getValue(HORIZONTAL_FACING), state.getValue(TOP), state.getValue(BOTTOM)))

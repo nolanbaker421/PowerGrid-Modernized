@@ -5,10 +5,12 @@ import os
 from gen_breaker_panel_assets import ASSETS, DATA, MOD, dump, element, recipe
 
 BODY = (0, 4, 10, 16, 12, 16)
+SIX_U = [2.5, 4.7, 6.9, 9.1, 11.3, 13.5]   # a breaker panel's six, so a trough over a panel lines up
 PATTERNS = {
-    "two": ("two", [4, 12], [13], 1.5),
-    "four": ("one", [4, 12], [11.5, 14.5], 1.0),
-    "eight": ("half", [2, 6, 10, 14], [11.5, 14.5], 0.75),
+    "two": ("four", [4, 12], [13], 2.0),
+    "four": ("three", [2.75, 6.25, 9.75, 13.25], [13], 1.5),
+    "six": ("two", SIX_U, [13], 1.0),
+    "twelve": ("three_quarter", SIX_U, [11.5, 14.5], 0.75),
 }
 FACINGS = (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270}))
 

@@ -262,7 +262,8 @@ A gutter on the wall, eight pixels tall, that conduit lands on from above, below
 Like a pull box it has no terminals; wires go through the conduit and are spliced inside. Troughs
 placed to the viewer's right of the first join it as one row, up to six sections, with one splice
 editor for the whole row opened from any section. Each section's top and bottom choose their own
-knockouts: sneak and click the face with an empty hand to cycle two 2", four 1" or eight 1/2",
+knockouts: sneak and click the face with an empty hand to cycle six 2" (the six positions of a
+panel's edge, so a trough over a panel lines up), twelve 3/4" in two rows, four 3" or two 4",
 while nothing is on it. The ends of the row take 4". Every knockout has twenty-four landings, so
 a 2-1/2", 3" or 4" run between troughs carries 18, 24 or 36 wires; to a box or a panel it still
 carries that fitting's twelve.

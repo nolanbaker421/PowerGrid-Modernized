@@ -58,13 +58,13 @@ public class WireTroughBlockEntity extends ElectricBlockEntity implements ISplic
     /** A section's top and bottom patterns, from its own block state. */
     private Pattern pattern(int section, boolean top) {
         if(level == null)
-            return Pattern.TWO;
+            return Pattern.SIX;
         var state = level.getBlockState(sectionPos(section));
         if(state.getBlock() instanceof WireTroughBlock)
             return state.getValue(top ? WireTroughBlock.TOP : WireTroughBlock.BOTTOM);
         if(state.getBlock() instanceof WireTroughExtensionBlock)
             return state.getValue(top ? WireTroughExtensionBlock.TOP : WireTroughExtensionBlock.BOTTOM);
-        return Pattern.TWO;
+        return Pattern.SIX;
     }
 
     @Override

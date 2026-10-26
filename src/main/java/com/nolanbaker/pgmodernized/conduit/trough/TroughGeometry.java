@@ -22,14 +22,14 @@ import java.util.Map;
  * The wire trough in its north frame, in pixels: a gutter 16 wide, 8 tall and 6 deep on the back
  * wall of the block, y 4..12, with its lid to the north. A viewer at the lid has +x on their left.
  * A row of sections is one host: section {@code s} owns terminals {@code s * 450} on, eighteen
- * knockouts (eight slots on top, eight on the bottom, one on each end) each followed by its
+ * knockouts (twelve slots on top, twelve on the bottom, one on each end) each followed by its
  * twenty-four hidden landings. Which top and bottom slots exist, and what size they take, is the
  * face's {@link Pattern}; the numbering never moves. Mirrored by {@code tools/gen_trough_assets.py}.
  */
 public final class TroughGeometry {
     public static final int MAX_SECTIONS = 6;
-    public static final int FACE_SLOTS = 8;
-    public static final int TOP_BASE = 0, BOTTOM_BASE = 8, LEFT_END = 16, RIGHT_END = 17, HUBS_PER_SECTION = 18;
+    public static final int FACE_SLOTS = 12;
+    public static final int TOP_BASE = 0, BOTTOM_BASE = 12, LEFT_END = 24, RIGHT_END = 25, HUBS_PER_SECTION = 26;
     public static final int LANDINGS = 24;
     public static final int SECTION_TERMINALS = HUBS_PER_SECTION * (1 + LANDINGS);
     public static final int TERMINAL_COUNT = MAX_SECTIONS * SECTION_TERMINALS;
@@ -37,11 +37,15 @@ public final class TroughGeometry {
     private static final AABB HIDDEN = new AABB(7.99, 7.99, 15.9, 8.01, 8.01, 15.92);
     private static final String[] FACE_KEYS = {"top", "bottom", "left", "right"};
 
-    /** What a top or bottom face offers: positions across the face from the viewer's left, rows front to back. */
+    /**
+     * What a top or bottom face offers: positions across the face from the viewer's left, rows front
+     * to back. The six-across positions are a breaker panel's, so a trough over a panel lines up.
+     */
     public enum Pattern implements StringRepresentable {
-        TWO("two", ConduitSize.TWO, new double[] {4, 12}, new double[] {13}, 1.5),
-        FOUR("four", ConduitSize.ONE, new double[] {4, 12}, new double[] {11.5, 14.5}, 1.0),
-        EIGHT("eight", ConduitSize.HALF, new double[] {2, 6, 10, 14}, new double[] {11.5, 14.5}, 0.75);
+        TWO("two", ConduitSize.FOUR, new double[] {4, 12}, new double[] {13}, 2.0),
+        FOUR("four", ConduitSize.THREE, new double[] {2.75, 6.25, 9.75, 13.25}, new double[] {13}, 1.5),
+        SIX("six", ConduitSize.TWO, new double[] {2.5, 4.7, 6.9, 9.1, 11.3, 13.5}, new double[] {13}, 1.0),
+        TWELVE("twelve", ConduitSize.THREE_QUARTER, new double[] {2.5, 4.7, 6.9, 9.1, 11.3, 13.5}, new double[] {11.5, 14.5}, 0.75);
 
         private final String id;
         private final ConduitSize size;

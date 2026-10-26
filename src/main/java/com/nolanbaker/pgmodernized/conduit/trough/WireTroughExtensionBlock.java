@@ -40,7 +40,7 @@ public class WireTroughExtensionBlock extends Block implements IBE<WireTroughExt
 
     public WireTroughExtensionBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH).setValue(TOP, Pattern.TWO).setValue(BOTTOM, Pattern.TWO));
+        registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH).setValue(TOP, Pattern.SIX).setValue(BOTTOM, Pattern.SIX));
     }
 
     @Override

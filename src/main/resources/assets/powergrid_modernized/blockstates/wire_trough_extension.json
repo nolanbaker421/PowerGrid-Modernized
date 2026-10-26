@@ -47,19 +47,37 @@
     {
       "when": {
         "facing": "north",
-        "top": "eight"
+        "top": "six"
       },
       "apply": {
-        "model": "powergrid_modernized:block/wire_trough/top_eight"
+        "model": "powergrid_modernized:block/wire_trough/top_six"
       }
     },
     {
       "when": {
         "facing": "north",
-        "bottom": "eight"
+        "bottom": "six"
       },
       "apply": {
-        "model": "powergrid_modernized:block/wire_trough/bottom_eight"
+        "model": "powergrid_modernized:block/wire_trough/bottom_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "top": "twelve"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/wire_trough/top_twelve"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "bottom": "twelve"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/wire_trough/bottom_twelve"
       }
     },
     {
@@ -114,21 +132,41 @@
     {
       "when": {
         "facing": "east",
-        "top": "eight"
+        "top": "six"
       },
       "apply": {
         "y": 90,
-        "model": "powergrid_modernized:block/wire_trough/top_eight"
+        "model": "powergrid_modernized:block/wire_trough/top_six"
       }
     },
     {
       "when": {
         "facing": "east",
-        "bottom": "eight"
+        "bottom": "six"
       },
       "apply": {
         "y": 90,
-        "model": "powergrid_modernized:block/wire_trough/bottom_eight"
+        "model": "powergrid_modernized:block/wire_trough/bottom_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "top": "twelve"
+      },
+      "apply": {
+        "y": 90,
+        "model": "powergrid_modernized:block/wire_trough/top_twelve"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "bottom": "twelve"
+      },
+      "apply": {
+        "y": 90,
+        "model": "powergrid_modernized:block/wire_trough/bottom_twelve"
       }
     },
     {
@@ -183,21 +221,41 @@
     {
       "when": {
         "facing": "south",
-        "top": "eight"
+        "top": "six"
       },
       "apply": {
         "y": 180,
-        "model": "powergrid_modernized:block/wire_trough/top_eight"
+        "model": "powergrid_modernized:block/wire_trough/top_six"
       }
     },
     {
       "when": {
         "facing": "south",
-        "bottom": "eight"
+        "bottom": "six"
       },
       "apply": {
         "y": 180,
-        "model": "powergrid_modernized:block/wire_trough/bottom_eight"
+        "model": "powergrid_modernized:block/wire_trough/bottom_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "top": "twelve"
+      },
+      "apply": {
+        "y": 180,
+        "model": "powergrid_modernized:block/wire_trough/top_twelve"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "bottom": "twelve"
+      },
+      "apply": {
+        "y": 180,
+        "model": "powergrid_modernized:block/wire_trough/bottom_twelve"
       }
     },
     {
@@ -252,21 +310,41 @@
     {
       "when": {
         "facing": "west",
-        "top": "eight"
+        "top": "six"
       },
       "apply": {
         "y": 270,
-        "model": "powergrid_modernized:block/wire_trough/top_eight"
+        "model": "powergrid_modernized:block/wire_trough/top_six"
       }
     },
     {
       "when": {
         "facing": "west",
-        "bottom": "eight"
+        "bottom": "six"
       },
       "apply": {
         "y": 270,
-        "model": "powergrid_modernized:block/wire_trough/bottom_eight"
+        "model": "powergrid_modernized:block/wire_trough/bottom_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "top": "twelve"
+      },
+      "apply": {
+        "y": 270,
+        "model": "powergrid_modernized:block/wire_trough/top_twelve"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "bottom": "twelve"
+      },
+      "apply": {
+        "y": 270,
+        "model": "powergrid_modernized:block/wire_trough/bottom_twelve"
       }
     }
   ]

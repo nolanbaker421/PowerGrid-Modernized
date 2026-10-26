@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.55.1 — 2026-10-26
+
+### Changed
+- The wire trough's face patterns are six 2" at a breaker panel's six positions, which is the
+  default, twelve 3/4" in two rows, four 3", or two 4". A face holds up to twelve knockouts now,
+  which changes the row's terminal numbering: a trough placed before this release has to be
+  taken up and placed again.
+
 ## 0.55.0 — 2026-10-26
 
 ### Changed
