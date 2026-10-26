@@ -28,6 +28,11 @@ public final class TubeDraw {
         return buffer.getBuffer(RenderType.entitySolid(TUBE));
     }
 
+    /** For previews: colours carry their alpha in the high byte. */
+    public static VertexConsumer translucentBuffer(MultiBufferSource buffer) {
+        return buffer.getBuffer(RenderType.entityTranslucent(TUBE));
+    }
+
     /** A straight from {@code a} to {@code b}, flat-to-flat width {@code t}, capped at both ends. */
     public static void straight(PoseStack.Pose pose, VertexConsumer c, int light, int rgb, Vec3 a, Vec3 b, float t) {
         var u = b.subtract(a);
@@ -169,16 +174,16 @@ public final class TubeDraw {
             s3 = ss;
             t3 = ts;
         }
-        int r = rgb >> 16 & 0xFF, g = rgb >> 8 & 0xFF, b = rgb & 0xFF;
+        int r = rgb >> 16 & 0xFF, g = rgb >> 8 & 0xFF, b = rgb & 0xFF, a = rgb >>> 24 == 0 ? 255 : rgb >>> 24;
         float nx = (float) normal.x, ny = (float) normal.y, nz = (float) normal.z;
-        vertex(pose, c, light, r, g, b, p0, s0, t0, nx, ny, nz);
-        vertex(pose, c, light, r, g, b, p1, s1, t1, nx, ny, nz);
-        vertex(pose, c, light, r, g, b, p2, s2, t2, nx, ny, nz);
-        vertex(pose, c, light, r, g, b, p3, s3, t3, nx, ny, nz);
+        vertex(pose, c, light, r, g, b, a, p0, s0, t0, nx, ny, nz);
+        vertex(pose, c, light, r, g, b, a, p1, s1, t1, nx, ny, nz);
+        vertex(pose, c, light, r, g, b, a, p2, s2, t2, nx, ny, nz);
+        vertex(pose, c, light, r, g, b, a, p3, s3, t3, nx, ny, nz);
     }
 
-    private static void vertex(PoseStack.Pose pose, VertexConsumer c, int light, int r, int g, int b, Vec3 p, float u, float v, float nx, float ny, float nz) {
-        c.addVertex(pose, (float) p.x, (float) p.y, (float) p.z).setColor(r, g, b, 255).setUv(u, v)
+    private static void vertex(PoseStack.Pose pose, VertexConsumer c, int light, int r, int g, int b, int a, Vec3 p, float u, float v, float nx, float ny, float nz) {
+        c.addVertex(pose, (float) p.x, (float) p.y, (float) p.z).setColor(r, g, b, a).setUv(u, v)
                 .setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, nx, ny, nz);
     }
 }

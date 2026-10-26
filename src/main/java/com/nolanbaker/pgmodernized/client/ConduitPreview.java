@@ -55,6 +55,9 @@ public final class ConduitPreview {
     private static Pair<BlockTrace.TraceState, BlockTrace.TraceResult> trace;
     private static Vec3 origin;
     private static ItemStack stackUsed = ItemStack.EMPTY;
+    /** A knockout-to-knockout piece within a metre: drawn straight, no trace. */
+    @Nullable
+    private static Vec3 directFrom, directTo;
     /** The knockout stubs placement adds before and after the traced path. */
     private static List<BlockWireEntity.Point> prefix = List.of(), suffix = List.of();
 
@@ -74,6 +77,8 @@ public final class ConduitPreview {
     @SubscribeEvent
     public static void tick(ClientTickEvent.Post event) {
         render = false;
+        directFrom = null;
+        directTo = null;
         var mc = Minecraft.getInstance();
         var player = mc.player;
         var level = mc.level;
@@ -126,6 +131,10 @@ public final class ConduitPreview {
                     hitTerminal = electric.terminal(state, index);
                     hitPoint = IElectric.getTerminalPos(level, pos, index);
                     onHub = true;
+                    if(endpoint instanceof BlockWireEndpoint && currentPos.distanceTo(hitPoint) <= com.nolanbaker.pgmodernized.conduit.ConduitPlacement.DIRECT_MAX + 1e-6) {
+                        directFrom = currentPos;
+                        directTo = hitPoint;
+                    }
                     var entryDir = Knockouts.exit(level, new BlockWireEndpoint(pos, index));
                     if(entryDir != null) {
                         // Placement enters a knockout square, through a stub: trace to the stub's outer end.
@@ -140,6 +149,15 @@ public final class ConduitPreview {
         }
         if(currentPos.distanceTo(hitPoint) > 1000)
             return;
+        if(directFrom != null && directTo != null) {
+            origin = BlockTrace.alignPosition(directFrom);
+            render = true;
+            if(!player.isCreative()) {
+                int required = Math.max(Math.round((float) directFrom.distanceTo(directTo) * item.itemsPerMeter()), 1);
+                PlacementOverlay.setItemRequirement(ConduitSupply.item(stack), required, ConduitSupply.count(stack) >= required);
+            }
+            return;
+        }
 
         var aligned = endpoint instanceof BlockWireEntityEndpoint ? currentPos : BlockTrace.alignPosition(currentPos);
         origin = aligned;
@@ -177,7 +195,7 @@ public final class ConduitPreview {
 
     @SubscribeEvent
     public static void render(RenderLevelStageEvent event) {
-        if(event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS || !render || trace == null || trace.getSecond() == null)
+        if(event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS || !render)
             return;
         var mc = Minecraft.getInstance();
         if(mc.player == null || mc.level == null)
@@ -185,6 +203,16 @@ public final class ConduitPreview {
         var buffer = DefaultSuperRenderTypeBuffer.getInstance();
         var matrixStack = event.getPoseStack();
         var cameraPos = event.getCamera().getPosition();
+        if(directFrom != null && directTo != null && item != null) {
+            matrixStack.pushPose();
+            matrixStack.translate(directFrom.x - cameraPos.x, directFrom.y - cameraPos.y, directFrom.z - cameraPos.z);
+            TubeDraw.straight(matrixStack.last(), TubeDraw.translucentBuffer(buffer), LightTexture.FULL_BRIGHT, OK, Vec3.ZERO, directTo.subtract(directFrom), item.wireThickness());
+            matrixStack.popPose();
+            buffer.draw();
+            return;
+        }
+        if(trace == null || trace.getSecond() == null)
+            return;
         matrixStack.pushPose();
         matrixStack.translate(origin.x - cameraPos.x, origin.y - cameraPos.y, origin.z - cameraPos.z);
         var consumer = buffer.getBuffer(RenderType.entityTranslucent(item.texture()));

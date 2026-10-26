@@ -54,6 +54,8 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
     /** Laid by a pull box to the panel above or below it; never picked up, never dropped. */
     private boolean nipple;
     private int nippleTimer;
+    /** Two knockouts within a metre: drawn as one straight piece between them, an offset nipple, whatever its legs say. */
+    private boolean direct;
     public ConduitRunEntity(EntityType<?> type, Level level) {
         super(type, level);
     }
@@ -102,6 +104,15 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         return nipple;
     }
 
+    /** Drawn as one straight piece from knockout to knockout. Works on both sides. */
+    public boolean isDirect() {
+        return direct;
+    }
+
+    public void setDirect(boolean direct) {
+        this.direct = direct;
+    }
+
     /** A nipple takes anything (it is a 4" fitting) but is drawn as the thinnest tube so it hides nothing. */
     public ConduitSize size() {
         if(nipple)
@@ -136,6 +147,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         super.addAdditionalSaveData(nbt);
         ride.save(nbt);
         nbt.putBoolean("Nipple", nipple);
+        nbt.putBoolean("Direct", direct);
     }
 
     @Override
@@ -143,6 +155,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         super.readAdditionalSaveData(nbt);
         ride.load(nbt);
         nipple = nbt.getBoolean("Nipple");
+        direct = nbt.getBoolean("Direct");
         if(getColor() == 0)
             setColor(DEFAULT_COLOR); // laid before runs had a colour
     }
@@ -362,6 +375,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
      * touched here; the bender has them {@link ConductorEntity#follow} the run afterwards.
      */
     public void reshape(RunReshape.Result result) {
+        direct = false;   // bent by hand: it follows its legs from now on
         segments.clear();
         segments.addAll(result.points());
         var shift = result.startShift();

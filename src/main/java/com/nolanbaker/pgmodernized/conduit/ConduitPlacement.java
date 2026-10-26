@@ -38,6 +38,9 @@ import java.util.ArrayList;
  * {@link ConduitBenderItem}; sticks come from it through {@link ConduitSupply} either way.
  */
 public final class ConduitPlacement {
+    /** Knockouts this close, in blocks, get one straight piece between them instead of a routed run. */
+    public static final double DIRECT_MAX = 1.0;
+
     private ConduitPlacement() {}
 
     /** A hub was clicked: remember it, or finish the pending run on it. */
@@ -319,6 +322,38 @@ public final class ConduitPlacement {
             lastPoint = BlockTrace.alignPosition(lastPoint);
         }
         var runStart = lastPoint;
+        // Two knockouts within a metre of each other take one straight piece between them, an offset
+        // nipple, with no tracer: the legs are the axis-aligned path for hit boxes and wire, the tube is
+        // drawn straight from one to the other.
+        if(existing == null && from instanceof BlockWireEndpoint && to instanceof BlockWireEndpoint) {
+            var exactTo = BodySpace.local(level, to);
+            if(SableUtils.sameSubLevel(level, runStart, exactTo) && BodySpace.local(level, from).distanceTo(exactTo) <= DIRECT_MAX + 1e-6) {
+                var legs = ConduitRunEntity.manhattan(runStart, BlockTrace.alignPosition(exactTo));
+                if(legs.isEmpty()) {
+                    message(player, "message.connection_failed", ChatFormatting.RED);
+                    return InteractionResultHolder.fail(null);
+                }
+                int newItems = Math.max((int) Math.ceil(BodySpace.local(level, from).distanceTo(exactTo) * entry.itemsPerMeter()), 1);
+                if(!ConduitSupply.has(player, stack, newItems)) {
+                    message(player, "message.connection_missing_items", ChatFormatting.RED);
+                    return InteractionResultHolder.fail(null);
+                }
+                if(level.isClientSide)
+                    return InteractionResultHolder.success(null);
+                var entity = ConduitRunEntity.create(level, from, ConduitSupply.stack(stack, newItems), legs);
+                entity.setEndpoint2(to);
+                entity.setDirect(true);
+                SubLevelStick.stick(entity);
+                if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
+                    PowerGridModernized.LOGGER.error("Failed to spawn conduit run entity");
+                    message(player, "message.connection_failed", ChatFormatting.RED);
+                    return InteractionResultHolder.fail(null);
+                }
+                ConduitSupply.take(player, stack, newItems);
+                ConduitBenderItem.onClosed(level, stack, player, entity);
+                return InteractionResultHolder.success(null);
+            }
+        }
         // A run leaves a knockout dead centre and square: a straight stub along the knockout's face
         // normal, and only then the tracer. The same at the far end, in reverse, so the tube enters
         // the target knockout the same way instead of wherever the route happened to arrive.

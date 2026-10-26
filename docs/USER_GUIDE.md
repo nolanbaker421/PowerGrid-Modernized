@@ -109,6 +109,10 @@ rail and chain boxes, load bank, FE inverter). Goggles say the same in words.
 3. Click the walls, floors or ceilings the run should follow. It hugs surfaces and turns corners.
 4. Finish by clicking a hub on the other fitting.
 
+Two knockouts within a metre of each other get one straight piece between them, an offset nipple,
+however they are offset; no routing, no stubs. Bending it with the bender turns it back into a
+routed run.
+
 While a run is pending, a click on any block, including a panel, a device or another box, routes
 the run across its surface; only landing needs a hub. The preview draws the route the run will
 take, knockout stubs included. A short sideways jog in a run, such as between two knockouts a

@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.53.7 — 2026-10-25
+
+### Changed
+- Two knockouts within a metre of each other get one straight piece of conduit between them, an
+  offset nipple, drawn straight from one knockout to the other however they are offset, with no
+  routing, stubs or kicks. The preview shows the straight piece. A box beside a panel, two boxes
+  on a wall a block apart, a socket under its box: all one clean piece now. Bending such a run
+  with the bender turns it back into a routed run.
+
 ## 0.53.6 — 2026-10-25
 
 ### Changed

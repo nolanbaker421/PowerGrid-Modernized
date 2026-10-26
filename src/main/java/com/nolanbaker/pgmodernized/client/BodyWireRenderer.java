@@ -86,6 +86,22 @@ public class BodyWireRenderer extends BlockWireRenderer {
         int rgb = run.getColor() & 0xFFFFFF;
         var segs = run.segments;
         int n = segs.size();
+        if(run.isDirect()) {
+            // One straight piece from knockout to knockout, a pixel into each, whatever the legs say.
+            boolean body = bodyOf(run) != null;
+            var endPos = Vec3.ZERO;
+            for(var seg : segs)
+                endPos = endPos.add(seg.vector());
+            var from = body ? Vec3.ZERO : exactNudge(run, run.getEndpoint1(), Vec3.ZERO);
+            var to = endPos.add(body ? Vec3.ZERO : exactNudge(run, run.getEndpoint2(), endPos));
+            var dir = to.subtract(from);
+            if(dir.lengthSqr() > 1e-8) {
+                dir = dir.normalize();
+                int light2 = brightest(run, run.position().add(from.add(to).scale(0.5)));
+                TubeDraw.straight(pose, consumer, light2, rgb, from.subtract(dir.scale(1 / 16.0)), to.add(dir.scale(1 / 16.0)), t);
+            }
+            return;
+        }
         // Bend radius at each corner: one and a half tubes, never under two pixels nor over six, nor more than half of either leg.
         float wanted = Math.max(2 / 16f, Math.min(6 / 16f, 1.5f * t));
         float[] radii = new float[n];
