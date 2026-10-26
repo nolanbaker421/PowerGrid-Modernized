@@ -165,6 +165,9 @@ public final class DeviceHubs {
             return ConduitPlacement.click(context, new org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint(pos, terminal));
         }
         if(conduit) {
+            var routed = ConduitPlacement.groundClick(context);
+            if(routed != InteractionResult.PASS)
+                return routed;
             if(terminal >= 0) {
                 IElectric.sendMessage(context, Lang.builder().translate("message.conduit.needs_hub").style(ChatFormatting.RED).component());
                 return InteractionResult.FAIL;

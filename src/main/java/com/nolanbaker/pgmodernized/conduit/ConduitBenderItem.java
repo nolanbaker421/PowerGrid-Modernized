@@ -68,7 +68,7 @@ public class ConduitBenderItem extends Item {
     /** Pixels a leg moves per click. */
     public static int step(ItemStack stack) {
         var tag = tag(stack);
-        int step = tag.contains(STEP) ? tag.getInt(STEP) : STEPS[0];
+        int step = tag.contains(STEP) ? tag.getInt(STEP) : STEPS[1];
         return Math.max(1, Math.min(STEPS[STEPS.length - 1], step));
     }
 
@@ -120,22 +120,11 @@ public class ConduitBenderItem extends Item {
             return fail(player, "message.conduit.nipple");
         var eye = player.getEyePosition();
         var far = eye.add(player.getLookAngle().scale(PlayerUtilities.getReachDistance(player) + 1));
-        int index = -1;
-        double best = Double.MAX_VALUE;
-        Vec3 hit = null;
-        for(int i = 0; i < run.boundingBoxes.size() && i < run.segments.size(); ++i) {
-            var clip = run.boundingBoxes.get(i).clip(eye, far);
-            if(clip.isEmpty())
-                continue;
-            double d = clip.get().distanceToSqr(eye);
-            if(d < best) {
-                best = d;
-                index = i;
-                hit = clip.get();
-            }
-        }
-        if(index < 0)
-            return InteractionResult.FAIL;
+        var leg = run.segmentAt(eye, far);
+        if(leg == null)
+            return fail(player, "message.conduit.bend_miss");
+        int index = leg.index();
+        var hit = leg.point();
         var segment = run.segments.get(index);
         // The face that was clicked is the one the hit point leans toward, off the leg's centre line.
         var start = segment.start != null ? segment.start : run.position();
@@ -182,6 +171,7 @@ public class ConduitBenderItem extends Item {
         }
         run.incrementWireCount(delta);
         run.level().playSound(null, hit.x, hit.y, hit.z, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 0.5f, 1.6f);
+        player.displayClientMessage(Lang.builder().translate("message.conduit.bent", index + 1, step(stack), push.getName()).style(ChatFormatting.GRAY).component(), true);
         return InteractionResult.SUCCESS;
     }
 
@@ -263,6 +253,9 @@ public class ConduitBenderItem extends Item {
         if(electric != null) {
             if(level.getBlockEntity(pos) instanceof ISpliceHost)
                 return electric.onWire(state, context);
+            // A pending run routes across any electrical block like a plain one; only landing needs a hub.
+            if(ConduitConnection.has(stack))
+                return ConduitPlacement.groundClick(context);
             IElectric.sendMessage(context, Lang.builder().translate("message.conduit.needs_hub").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
         }

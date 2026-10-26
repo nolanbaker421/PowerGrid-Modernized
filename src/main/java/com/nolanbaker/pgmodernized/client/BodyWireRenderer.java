@@ -14,7 +14,9 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.BlockWireRenderer;
 
 /**
@@ -56,12 +58,18 @@ public class BodyWireRenderer extends BlockWireRenderer {
         poseStack.popPose();
     }
 
+    /** How short a sideways jog can be and still be drawn as one smooth offset instead of two elbows, in pixels. */
+    private static final int OFFSET_MAX_PX = 4;
+
     /**
      * Conduit is drawn here rather than by Power Grid's loop, which tiles its banded wire texture
-     * along every straight and runs each one half a tube past its ends. Here a straight is a plain
-     * flat-shaded tube drawn exactly from where it starts to where it stops, every corner with
-     * room for it gets a swept elbow between the shortened legs, a corner without room gets a
-     * cube. Nipples and non-conduit block wires still go through Power Grid's renderer.
+     * along every straight and runs each one half a tube past its ends. Here a straight is an
+     * octagonal tube drawn exactly from where it starts to where it stops, every corner with room
+     * for it gets a swept elbow between the shortened legs, a corner without room is a plain
+     * overlapped joint, and a short sideways jog between two legs the same way is drawn as one
+     * smooth offset. The first and last straights start and end on the exact centre of their
+     * knockouts, which Power Grid's pixel-centre snapping can miss by half a pixel. Nipples and
+     * non-conduit block wires still go through Power Grid's renderer.
      */
     private void draw(BlockWireEntity entity, float yaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int light) {
         if(!(entity instanceof ConduitRunEntity run) || run.isNipple() || run.segments.isEmpty()) {
@@ -72,6 +80,7 @@ public class BodyWireRenderer extends BlockWireRenderer {
         var pose = poseStack.last();
         var entry = run.getWireEntry();
         float t = entry != null ? entry.wireThickness() : run.size().tubeThickness();
+        float h = t / 2;
         int rgb = run.getColor() & 0xFFFFFF;
         var segs = run.segments;
         int n = segs.size();
@@ -87,28 +96,90 @@ public class BodyWireRenderer extends BlockWireRenderer {
                 radii[i] = r >= 1 / 16f ? r : 0;
             }
         }
+        // Offsets: legs i and i+2 the same way with a short sideways leg between become one smooth S.
+        // The diagonal advances two jogs for one jog across; its kinks meet the legs a setback short.
+        boolean[] offset = new boolean[n];
+        double[] offsetCut = new double[n];
+        for(int i = 0; i + 2 < n; ++i) {
+            var a = segs.get(i);
+            var b = segs.get(i + 1);
+            var c = segs.get(i + 2);
+            if(a.direction != c.direction || b.direction.getAxis() == a.direction.getAxis() || b.gridLength > OFFSET_MAX_PX)
+                continue;
+            double j = b.length(), m = j;
+            var along = Vec3.atLowerCornerOf(a.direction.getNormal());
+            var diagonal = along.scale(2 * m).add(b.vector()).normalize();
+            double cut = m + TubeDraw.setback(wanted, along, diagonal);
+            double needA = cut + (i > 0 ? radii[i - 1] : 0), needC = cut + radii[i + 2];
+            if(a.length() < needA || c.length() < needC)
+                continue;
+            offset[i] = true;
+            offsetCut[i] = cut;
+            i += 2;
+        }
+        // What each straight gives up at each end: a bend radius, an offset's setback, or a negative cut
+        // (an overlap of half a tube) where two legs just meet.
+        double[] cutStart = new double[n], cutEnd = new double[n];
+        boolean[] skip = new boolean[n];
+        for(int i = 0; i + 1 < n; ++i) {
+            if(offset[i]) {
+                cutEnd[i] = offsetCut[i];
+                skip[i + 1] = true;
+                cutStart[i + 2] = offsetCut[i];
+                ++i;
+            } else if(radii[i] > 0) {
+                cutEnd[i] = radii[i];
+                cutStart[i + 1] = radii[i];
+            } else {
+                cutEnd[i] = -h;
+                cutStart[i + 1] = -h;
+            }
+        }
+        boolean onBody = bodyOf(run) != null;
+        var startNudge = onBody ? Vec3.ZERO : exactNudge(run, run.getEndpoint1(), Vec3.ZERO);
         var pos = Vec3.ZERO;
         for(int i = 0; i < n; ++i) {
             var seg = segs.get(i);
             var dir = seg.direction;
+            var along = Vec3.atLowerCornerOf(dir.getNormal());
             var end = pos.add(seg.vector());
-            float rIn = i > 0 ? radii[i - 1] : 0, rOut = radii[i];
-            // The straight runs between its two elbows; the first and last reach a pixel into their knockouts.
-            var from = i == 0 ? pos.relative(dir, -1 / 16.0) : pos.relative(dir, rIn);
-            var to = i == n - 1 ? end.relative(dir, 1 / 16.0) : end.relative(dir, -rOut);
-            var mid = run.position().add(from.add(to).scale(0.5));
-            int segLight = brightest(run, mid);
-            if(to.subtract(from).dot(Vec3.atLowerCornerOf(dir.getNormal())) > 1e-4)
-                TubeDraw.straight(pose, consumer, segLight, rgb, from, to, t);
-            if(i + 1 < n) {
-                var next = segs.get(i + 1).direction;
-                if(rOut > 0)
-                    TubeDraw.elbow(pose, consumer, segLight, rgb, end, dir, next, rOut, t);
-                else
-                    TubeDraw.cube(pose, consumer, segLight, rgb, end, t / 2);
+            if(!skip[i]) {
+                // The first and last reach a pixel into their knockouts, from the knockout's true centre.
+                var from = i == 0 ? pos.add(startNudge).relative(dir, -1 / 16.0) : pos.relative(dir, cutStart[i]);
+                var to = i == n - 1 ? end.add(onBody ? Vec3.ZERO : exactNudge(run, run.getEndpoint2(), end)).relative(dir, 1 / 16.0) : end.relative(dir, -cutEnd[i]);
+                int segLight = brightest(run, run.position().add(from.add(to).scale(0.5)));
+                if(to.subtract(from).dot(along) > 1e-4)
+                    TubeDraw.straight(pose, consumer, segLight, rgb, from, to, t);
+                if(offset[i]) {
+                    var jog = segs.get(i + 1);
+                    double m = jog.length();
+                    var c1 = end;
+                    var c2 = end.add(jog.vector());
+                    var p = c1.subtract(along.scale(m));
+                    var q = c2.add(along.scale(m));
+                    var diagonal = q.subtract(p).normalize();
+                    double d = TubeDraw.setback(wanted, along, diagonal);
+                    TubeDraw.bend(pose, consumer, segLight, rgb, p, along, diagonal, wanted, t);
+                    TubeDraw.straight(pose, consumer, segLight, rgb, p.add(diagonal.scale(d)), q.subtract(diagonal.scale(d)), t);
+                    TubeDraw.bend(pose, consumer, segLight, rgb, q, diagonal, along, wanted, t);
+                } else if(i + 1 < n && radii[i] > 0) {
+                    TubeDraw.bend(pose, consumer, segLight, rgb, end, along, Vec3.atLowerCornerOf(segs.get(i + 1).direction.getNormal()), radii[i], t);
+                }
             }
             pos = end;
         }
+    }
+
+    /**
+     * How far the run's end sits from the true centre of its knockout, when it is on one: Power
+     * Grid snaps run ends to pixel centres, and a knockout centred on a whole pixel is half a pixel
+     * off that. Anything bigger than a pixel and a half is not that, and is left alone.
+     */
+    private static Vec3 exactNudge(ConduitRunEntity run, @Nullable IWireEndpoint endpoint, Vec3 runEnd) {
+        if(!(endpoint instanceof BlockWireEndpoint knockout) || !knockout.isValid(run.level()))
+            return Vec3.ZERO;
+        var nudge = knockout.getExactPosition(run.level()).subtract(run.position().add(runEnd));
+        return nudge.lengthSqr() <= (1.5 / 16) * (1.5 / 16) ? nudge : Vec3.ZERO;
     }
 
     /**

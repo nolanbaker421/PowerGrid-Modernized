@@ -52,6 +52,9 @@ public class ConduitItem extends WireItem {
         if(state.getBlock() instanceof ConduitBoxBlock box)
             return box.onWire(state, context);
         if(IElectric.getAt(level, pos) != null) {
+            // A pending run routes across any electrical block like a plain one; only landing needs a hub.
+            if(ConduitConnection.has(context.getItemInHand()))
+                return ConduitPlacement.groundClick(context);
             IElectric.sendMessage(context, Lang.builder().translate("message.conduit.needs_hub").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
         }

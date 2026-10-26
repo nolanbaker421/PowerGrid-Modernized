@@ -4,7 +4,10 @@ import com.nolanbaker.pgmodernized.rail.RailShoeItem;
 import com.nolanbaker.pgmodernized.chain.CableChainAnchorBlockEntity;
 import com.nolanbaker.pgmodernized.chain.CableChainPlacement;
 import com.nolanbaker.pgmodernized.chain.CableChainItem;
+import com.nolanbaker.pgmodernized.conduit.ConduitConnection;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
+import com.nolanbaker.pgmodernized.conduit.ConduitPlacement;
+import net.minecraft.world.item.context.UseOnContext;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.device.breaker.BusBarItem;
 import com.nolanbaker.pgmodernized.network.Cat6CableItem;
@@ -57,6 +60,12 @@ public final class WireGuard {
         if(conduit) {
             if(be instanceof ISpliceHost)
                 return;
+            // A pending run routes across any electrical block like a plain one; only landing needs a hub.
+            if(ConduitConnection.has(event.getItemStack())) {
+                event.setCanceled(true);
+                event.setCancellationResult(ConduitPlacement.groundClick(new UseOnContext(event.getEntity(), event.getHand(), event.getHitVec())));
+                return;
+            }
             message = "message.conduit.needs_hub";
         } else if(cat6) {
             if(be instanceof INetworkJack)

@@ -193,6 +193,10 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
             return ConduitPlacement.click(context, new BlockWireEndpoint(pos, terminal));
         }
         if(conduit) {
+            // A pending run routes across the box like any block; only landing needs a hub.
+            var routed = ConduitPlacement.groundClick(context);
+            if(routed != InteractionResult.PASS)
+                return routed;
             if(terminal >= 0) {
                 IElectric.sendMessage(context, Lang.builder().translate("message.conduit.needs_hub").style(ChatFormatting.RED).component());
                 return InteractionResult.FAIL;

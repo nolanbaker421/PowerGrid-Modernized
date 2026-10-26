@@ -4,6 +4,29 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.52.0 — 2026-10-25
+
+### Added
+- Conduit routes across devices. While a run is pending, a click on any electrical block that is
+  not a hub, a panel, a terminal cabinet, a gang box, routes the run across its surface like a
+  plain block; only landing needs a hub.
+- A Ponder scene for the Conduit Box: knockouts, laying a run, pulling wire, and the bender.
+- The bender outlines the leg under your crosshair, says which leg moved and which way on every
+  click, and starts at a 2 px step.
+
+### Changed
+- Conduit is an octagonal tube with a brushed galvanized texture running along it, so it reads
+  as steel rather than plastic raceway.
+- A short sideways jog between two legs the same way, such as between knockouts a pixel or two
+  apart, is drawn as one smooth offset instead of two elbows.
+
+### Fixed
+- The placement preview matches the run: it includes the knockout stubs at both ends and traces
+  from where the real run does.
+- Runs meet their knockouts dead centre. Power Grid snaps run ends to pixel centres, and a
+  knockout centred on a whole pixel was half a pixel off that; the first and last straights now
+  start and end on the knockout's true centre.
+
 ## 0.51.2 — 2026-10-24
 
 ### Fixed

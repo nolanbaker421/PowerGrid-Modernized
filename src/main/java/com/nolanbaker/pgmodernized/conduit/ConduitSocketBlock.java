@@ -139,8 +139,10 @@ public class ConduitSocketBlock extends Rotation4ElectricBlock implements IBE<Co
             }
             return ConduitPlacement.click(context, new BlockWireEndpoint(pos, terminal));
         }
-        if(conduit)
-            return InteractionResult.PASS;
+        if(conduit) {
+            var routed = ConduitPlacement.groundClick(context);
+            return routed != InteractionResult.PASS ? routed : InteractionResult.PASS;
+        }
         IElectric.sendMessage(context, Lang.builder().translate("message.conduit_socket.cord_only").style(ChatFormatting.RED).component());
         return InteractionResult.FAIL;
     }

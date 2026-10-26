@@ -336,6 +336,27 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         return true;
     }
 
+    /** A leg hit by a look ray, and where. */
+    public record Hit(int index, Vec3 point) {}
+
+    /** The leg under a look ray from {@code from} to {@code to}, nearest first, or null. Works on both sides. */
+    @Nullable
+    public Hit segmentAt(Vec3 from, Vec3 to) {
+        Hit best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for(int i = 0; i < boundingBoxes.size() && i < segments.size(); ++i) {
+            var clip = boundingBoxes.get(i).clip(from, to);
+            if(clip.isEmpty())
+                continue;
+            double d = clip.get().distanceToSqr(from);
+            if(d < bestDistance) {
+                bestDistance = d;
+                best = new Hit(i, clip.get());
+            }
+        }
+        return best;
+    }
+
     /**
      * New legs from the bender between the same two ends. Server side. The wires inside are not
      * touched here; the bender has them {@link ConductorEntity#follow} the run afterwards.

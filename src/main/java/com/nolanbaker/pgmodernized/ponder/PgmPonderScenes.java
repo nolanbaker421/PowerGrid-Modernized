@@ -24,5 +24,8 @@ public final class PgmPonderScenes {
                 .addStoryBoard("radio_dish_link", RadioScenes::dishLink, PgmPonderTags.RADIO);
         helper.forComponents(ModBlocks.RADIO, ModBlocks.SECTOR_ANTENNA, ModBlocks.OMNI_ANTENNA)
                 .addStoryBoard("radio_carrier", RadioScenes::carrier, PgmPonderTags.RADIO);
+
+        helper.forComponents(ModBlocks.CONDUIT_BOX)
+                .addStoryBoard("conduit", ConduitScenes::basics, PgmPonderTags.CONDUIT);
     }
 }

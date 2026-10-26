@@ -144,7 +144,17 @@ def radio_carrier():
     p.write("radio_carrier")
 
 
+def conduit():
+    p = Plot(5, 4, 5)
+    p.fill(0, 1, 4, 4, 3, 4, "minecraft:light_gray_concrete")
+    for x in (1, 3):
+        for y in (1, 2):
+            p.set(x, y, 3, m("conduit_box"), facing="north", cover="blank")
+    p.write("conduit")
+
+
 if __name__ == "__main__":
     breaker_panel()
     radio_dish_link()
     radio_carrier()
+    conduit()

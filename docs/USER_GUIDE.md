@@ -109,6 +109,11 @@ rail and chain boxes, load bank, FE inverter). Goggles say the same in words.
 3. Click the walls, floors or ceilings the run should follow. It hugs surfaces and turns corners.
 4. Finish by clicking a hub on the other fitting.
 
+While a run is pending, a click on any block, including a panel, a device or another box, routes
+the run across its surface; only landing needs a hub. The preview draws the route the run will
+take, knockout stubs included. A short sideways jog in a run, such as between two knockouts a
+pixel or two apart, draws as one smooth offset rather than two elbows.
+
 One run per hub. A run cannot tee; if you need a branch, put a box there. Every fitting has a largest
 size it takes: a Conduit Box and the device knockouts stop at 1-1/2", a socket or switch at 1", a
 breaker panel at 2"; switchgear and the Pull Box take anything up to 4". To continue an open run,
@@ -844,10 +849,11 @@ The **Conduit Bender** (an iron plate over two iron ingots on the diagonal) resh
 is laid. Click a leg and it slides one step away from the face you clicked. The legs either side
 grow or shrink to follow; a leg that shrinks to nothing goes and its two corners become one, and a
 push across a neighbour that runs on another axis puts in a new leg and a new corner. A few clicks
-make an offset, a kick or a saddle around a beam. The step is 1 px; sneak and use the bender in
-the air to cycle it through 2, 4 and 8. Sticks come out of your inventory as the run grows and go
-back as it shrinks, and the wires inside follow the new path. The stubs into the knockouts never
-move: bend the leg after them.
+make an offset, a kick or a saddle around a beam. The leg under your crosshair is outlined while
+you hold the bender, and each click says which leg moved and which way. The step is 2 px; sneak
+and use the bender in the air to cycle it through 4, 8 and 1. Sticks come out of your inventory as
+the run grows and go back as it shrinks, and the wires inside follow the new path. The stubs into
+the knockouts never move: bend the leg after them.
 
 Sneak-click a run to pick the whole run up into the bender, sticks and wires alike, with each
 wire's colour and label. The loaded bender lays conduit exactly like the conduit item, from a

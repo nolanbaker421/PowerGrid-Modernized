@@ -6,6 +6,7 @@ import com.nolanbaker.pgmodernized.conduit.ConduitConnection;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitSupply;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
+import com.nolanbaker.pgmodernized.conduit.Knockouts;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
@@ -23,8 +24,13 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntityEndpoint;
 import org.patryk3211.powergrid.electricity.wire.BlockWireRenderer;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
@@ -46,6 +52,8 @@ public final class ConduitPreview {
     private static WireItemEntry item;
     private static Pair<BlockTrace.TraceState, BlockTrace.TraceResult> trace;
     private static Vec3 origin;
+    /** The knockout stubs placement adds before and after the traced path. */
+    private static List<BlockWireEntity.Point> prefix = List.of(), suffix = List.of();
 
     private ConduitPreview() {}
 
@@ -100,6 +108,7 @@ public final class ConduitPreview {
 
         var hitPoint = target.getLocation();
         ITerminalPlacement hitTerminal = null;
+        BlockWireEntity.Point endStub = null;
         if(target instanceof BlockHitResult blockHit) {
             var pos = blockHit.getBlockPos();
             var local = hitPoint.subtract(pos.getX(), pos.getY(), pos.getZ());
@@ -113,6 +122,13 @@ public final class ConduitPreview {
                     hitTerminal = electric.terminal(state, index);
                     hitPoint = IElectric.getTerminalPos(level, pos, index);
                     onHub = true;
+                    var entryDir = Knockouts.exit(level, new BlockWireEndpoint(pos, index));
+                    if(entryDir != null) {
+                        // Placement enters a knockout square, through a stub: trace to the stub's outer end.
+                        hitPoint = BlockTrace.alignPosition(hitPoint).relative(entryDir, Knockouts.STUB_PX / 16.0);
+                        hitTerminal = null;
+                        endStub = new BlockWireEntity.Point(entryDir.getOpposite(), Knockouts.STUB_PX);
+                    }
                 }
             }
             if(!onHub)
@@ -123,11 +139,27 @@ public final class ConduitPreview {
 
         var aligned = endpoint instanceof BlockWireEntityEndpoint ? currentPos : BlockTrace.alignPosition(currentPos);
         origin = aligned;
+        var startStubs = new ArrayList<BlockWireEntity.Point>();
+        if(endpoint instanceof BlockWireEndpoint hub) {
+            // Placement leaves a knockout square, through a stub, and traces from the stub's end.
+            var exit = Knockouts.exit(level, hub);
+            if(exit != null) {
+                startStubs.add(new BlockWireEntity.Point(exit, Knockouts.STUB_PX));
+                aligned = aligned.relative(exit, Knockouts.STUB_PX / 16.0);
+                continueDir = exit;
+            }
+        }
         trace = BlockTrace.findPathWithState(level, aligned, hitPoint, hitTerminal, continueDir);
         if(trace == null)
             return;
+        prefix = startStubs;
+        suffix = endStub != null ? List.of(endStub) : List.of();
         render = true;
         float length = 0;
+        for(var p : prefix)
+            length += p.length();
+        for(var p : suffix)
+            length += p.length();
         var points = trace.getSecond();
         if(points != null) {
             for(var p : points.points())
@@ -155,7 +187,10 @@ public final class ConduitPreview {
         var points = trace.getSecond();
         int color = points.reachedTarget() ? OK : BAD;
         var currentPos = Vec3.ZERO;
-        for(var p : points.points()) {
+        var drawn = new ArrayList<>(prefix);
+        drawn.addAll(points.points());
+        drawn.addAll(suffix);
+        for(var p : drawn) {
             BlockWireRenderer.renderSegment(matrixStack, consumer, LightTexture.FULL_BRIGHT, color,
                     currentPos, p.direction, item.wireThickness(), p.length(), 0);
             currentPos = currentPos.add(p.vector());

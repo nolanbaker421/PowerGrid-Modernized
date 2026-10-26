@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 public final class PgmPonderTags {
     public static final ResourceLocation DISTRIBUTION = id("distribution");
     public static final ResourceLocation RADIO = id("radio");
+    public static final ResourceLocation CONDUIT = id("conduit");
 
     private PgmPonderTags() {}
 
@@ -27,6 +28,12 @@ public final class PgmPonderTags {
                 .title("Radio Links")
                 .description("Dishes, sectors and omnis: Cat6 across the air, from point-to-point hops to a carrier network of towers")
                 .item(ModBlocks.DISH_ANTENNA.get(), true, false)
+                .addToIndex()
+                .register();
+        helper.registerTag(CONDUIT)
+                .title("Conduit and Wiring")
+                .description("Boxes, conduit, pulled wire and the bender: raceway from a panel to every device, the way it is done on a job")
+                .item(ModBlocks.CONDUIT_BOX.get(), true, false)
                 .addToIndex()
                 .register();
     }
