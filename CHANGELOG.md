@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.52.1 — 2026-10-25
+
+### Changed
+- The wall Conduit Box wears Luna-Terra's models: a detailed 32x32 texture, an open box with a
+  bezel and interior, a blank cover with keyhole screws, the node plate, and a lamp fixture for
+  the light covers. The receptacle cover uses her blank cover under our receptacle face. The
+  body, nub grid and knockout positions are unchanged, so nothing about placement, terminals or
+  existing runs moves; the knockout marks are still drawn from the terminal geometry. The ceiling
+  tile box keeps the old look for now.
+
 ## 0.52.0 — 2026-10-25
 
 ### Added

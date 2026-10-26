@@ -1,13 +1,9 @@
 {
   "parent": "block/block",
   "textures": {
-    "box": "powergrid_modernized:block/conduit_box",
-    "terminal": "powergrid_modernized:block/panel_terminal",
-    "open": "powergrid_modernized:block/conduit_box_open",
+    "box": "powergrid_modernized:block/conduit_box_detail",
     "knockout": "powergrid_modernized:block/knockout_one_half",
     "particle": "powergrid_modernized:block/conduit_box",
-    "lamp_off": "powergrid_modernized:block/lamp_off",
-    "lamp_on": "powergrid_modernized:block/lamp_on",
     "receptacle": "powergrid_modernized:block/receptacle"
   },
   "elements": [
@@ -15,7 +11,7 @@
       "from": [
         4,
         4,
-        13.5
+        13
       ],
       "to": [
         12,
@@ -23,62 +19,205 @@
         16
       ],
       "faces": {
-        "north": {
+        "east": {
           "uv": [
-            4,
-            4,
-            12,
-            12
+            12.0,
+            12.0,
+            16.0,
+            13.5
           ],
-          "texture": "#open"
+          "texture": "#box",
+          "rotation": 270
         },
         "south": {
           "uv": [
-            4,
-            4,
-            12,
-            12
+            12.0,
+            0.0,
+            16.0,
+            4.0
           ],
           "texture": "#box",
-          "cullface": "south"
+          "rotation": 270
         },
+        "west": {
+          "uv": [
+            12.0,
+            12.0,
+            16.0,
+            13.5
+          ],
+          "texture": "#box",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            12.0,
+            12.0,
+            16.0,
+            13.5
+          ],
+          "texture": "#box",
+          "rotation": 180
+        },
+        "down": {
+          "uv": [
+            12.0,
+            12.0,
+            16.0,
+            13.5
+          ],
+          "texture": "#box"
+        }
+      },
+      "name": "exterior"
+    },
+    {
+      "from": [
+        11,
+        11,
+        14
+      ],
+      "to": [
+        5,
+        5,
+        13
+      ],
+      "faces": {
         "east": {
           "uv": [
-            0,
-            4,
-            2.5,
-            12
+            13.5,
+            7.0,
+            14.0,
+            4.5
           ],
           "texture": "#box"
         },
         "west": {
           "uv": [
+            14.0,
+            4.5,
             13.5,
-            4,
-            16,
-            12
+            7.0
           ],
           "texture": "#box"
         },
         "up": {
           "uv": [
-            4,
+            14.0,
+            4.5,
             13.5,
-            12,
-            16
+            7.0
           ],
           "texture": "#box"
         },
         "down": {
           "uv": [
-            4,
-            0,
-            12,
-            2.5
+            14.0,
+            4.5,
+            13.5,
+            7.0
           ],
           "texture": "#box"
         }
-      }
+      },
+      "name": "bezel liner"
+    },
+    {
+      "from": [
+        4,
+        4,
+        13
+      ],
+      "to": [
+        12,
+        12,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12.0,
+            8.0,
+            16.0,
+            12.0
+          ],
+          "texture": "#box"
+        },
+        "south": {
+          "uv": [
+            12.0,
+            8.0,
+            16.0,
+            12.0
+          ],
+          "texture": "#box",
+          "rotation": 270
+        }
+      },
+      "name": "bezel"
+    },
+    {
+      "from": [
+        11.5,
+        11.5,
+        16
+      ],
+      "to": [
+        4.5,
+        4.5,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12.0,
+            0.0,
+            16.0,
+            4.0
+          ],
+          "texture": "#box"
+        },
+        "east": {
+          "uv": [
+            12.0,
+            12.0,
+            16.0,
+            13.5
+          ],
+          "texture": "#box",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            12.0,
+            12.0,
+            16.0,
+            13.5
+          ],
+          "texture": "#box",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            12.0,
+            12.0,
+            16.0,
+            13.5
+          ],
+          "texture": "#box",
+          "rotation": 180
+        },
+        "down": {
+          "uv": [
+            12.0,
+            12.0,
+            16.0,
+            13.5
+          ],
+          "texture": "#box"
+        }
+      },
+      "name": "interior"
     },
     {
       "from": [

@@ -7,6 +7,7 @@ Run from the repository root:  python tools/gen_conduit_assets.py
 Geometry mirrors ConduitBoxGeometry.java; change both. North frame: the box sits against the wall
 at z = 16 with its cover facing north; a viewer at the front has +x on their left.
 """
+import json
 import math
 import os
 
@@ -116,26 +117,22 @@ def textures():
         write_png(os.path.join(ASSETS, "textures", "block", "knockout_%s.png" % sid), ko)
 
 
+# Luna-Terra's box: one element list per cover variant, imported by import_bbmodel.py from the
+# .bbmodel, on a 32x32 texture. Body, nub grid and knockout positions match the geometry here.
+LUNA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "conduit_box_luna.json")
+LUNA_VARIANT = {"open": "open", "blank": "blank", "node": "node", "light_off": "light", "light_on": "light", "receptacle": "blank"}
+
+
 def box_model():
-    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD,
-           "open": "%s:block/conduit_box_open" % MOD, "knockout": "%s:block/knockout_one_half" % MOD, "particle": "%s:block/conduit_box" % MOD,
-           "lamp_off": "%s:block/lamp_off" % MOD, "lamp_on": "%s:block/lamp_on" % MOD, "receptacle": "%s:block/receptacle" % MOD}
+    tex = {"box": "%s:block/conduit_box_detail" % MOD, "knockout": "%s:block/knockout_one_half" % MOD,
+           "particle": "%s:block/conduit_box" % MOD, "receptacle": "%s:block/receptacle" % MOD}
+    with open(LUNA, encoding="utf-8") as f:
+        luna = json.load(f)["variants"]
     for cover in COVERS:
-        if cover == "open":
-            # No front: the body is set back and its open face shows the interior.
-            x1, y1, z1, x2, y2, z2 = BODY
-            elements = [element(x1, y1, z1 + 0.5, x2, y2, z2, "#box", cull_south=True)]
-            elements[0]["faces"]["north"]["texture"] = "#open"
-        else:
-            elements = [element(*BODY, "#box", cull_south=True)]
+        elements = [dict(e) for e in luna[LUNA_VARIANT[cover]]]
+        # Knockouts come from the terminal geometry, so a run meets its mark dead centre.
         for hub in HUBS:
             elements.append(element(*hub, "#knockout"))
-        for k in range(NUBS[cover]):
-            x = 16 - COLUMNS_U[k % 4]
-            y = ROWS_Y[k // 4]
-            elements.append(element(x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2, "#terminal"))
-        if cover.startswith("light"):
-            elements.append(element(*LAMP_HOLDER, "#box"))   # the bulb itself is drawn by the block entity renderer
         if cover == "receptacle":
             elements.append(receptacle_face(RECEPTACLE_FACE))
         dump(os.path.join(ASSETS, "models", "block", "conduit_box_%s.json" % cover), {"parent": "block/block", "textures": tex, "elements": elements})

@@ -415,3 +415,7 @@ Every release is listed in [CHANGELOG.md](CHANGELOG.md), newest first.
 - `docs/legacy-inline-changes.patch` is the exact diff the blocks had against upstream Power Grid before the split.
 - Lang keys used by the device GUIs still use the `powergrid.` prefix because the code goes through
   Power Grid's `Lang` helper, which hardcodes that namespace.
+
+## Credits
+
+- **Luna-Terra**: conduit box models and textures (the open box, blank, node and light covers).

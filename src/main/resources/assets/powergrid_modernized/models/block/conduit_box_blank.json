@@ -1,13 +1,9 @@
 {
   "parent": "block/block",
   "textures": {
-    "box": "powergrid_modernized:block/conduit_box",
-    "terminal": "powergrid_modernized:block/panel_terminal",
-    "open": "powergrid_modernized:block/conduit_box_open",
+    "box": "powergrid_modernized:block/conduit_box_detail",
     "knockout": "powergrid_modernized:block/knockout_one_half",
     "particle": "powergrid_modernized:block/conduit_box",
-    "lamp_off": "powergrid_modernized:block/lamp_off",
-    "lamp_on": "powergrid_modernized:block/lamp_on",
     "receptacle": "powergrid_modernized:block/receptacle"
   },
   "elements": [
@@ -25,60 +21,64 @@
       "faces": {
         "north": {
           "uv": [
-            4,
-            4,
-            12,
-            12
+            12.0,
+            4.0,
+            16.0,
+            8.0
           ],
           "texture": "#box"
-        },
-        "south": {
-          "uv": [
-            4,
-            4,
-            12,
-            12
-          ],
-          "texture": "#box",
-          "cullface": "south"
         },
         "east": {
           "uv": [
-            0,
-            4,
-            3,
-            12
+            12.0,
+            12.0,
+            16.0,
+            13.5
           ],
-          "texture": "#box"
+          "texture": "#box",
+          "rotation": 270
+        },
+        "south": {
+          "uv": [
+            12.0,
+            0.0,
+            16.0,
+            4.0
+          ],
+          "texture": "#box",
+          "rotation": 270
         },
         "west": {
           "uv": [
-            13,
-            4,
-            16,
-            12
+            12.0,
+            12.0,
+            16.0,
+            13.5
           ],
-          "texture": "#box"
+          "texture": "#box",
+          "rotation": 90
         },
         "up": {
           "uv": [
-            4,
-            13,
-            12,
-            16
+            12.0,
+            12.0,
+            16.0,
+            13.5
           ],
-          "texture": "#box"
+          "texture": "#box",
+          "rotation": 180
         },
         "down": {
           "uv": [
-            4,
-            0,
-            12,
-            3
+            12.0,
+            12.0,
+            16.0,
+            13.5
           ],
           "texture": "#box"
         }
-      }
+      },
+      "name": "blank cover"
     },
     {
       "from": [
