@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.53.8 — 2026-10-25
+
+### Fixed
+- Runs laid in several clicks got a joint at the corner where one click's legs met the next.
+  The wall clearance ran over the new legs alone and held the first of them still as if it were
+  a knockout stub, so the kick landed on that corner as a one-pixel step. A run that grows or
+  closes is now cleared off its walls as a whole, old legs and new, so only the real stubs stay
+  put and the kicks land at the knockouts.
+
 ## 0.53.7 — 2026-10-25
 
 ### Changed

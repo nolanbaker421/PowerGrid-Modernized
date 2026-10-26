@@ -390,7 +390,11 @@ public final class ConduitPlacement {
         // The tracer can overshoot a knockout's stub point and the stub come back through it; folding
         // the legs leaves the run it meant, with no hook at the box.
         boolean closes = to instanceof BlockWireEndpoint;
-        var points = WallClearance.apply(level, runStart, RunReshape.tidy(assembled), ConduitSupply.tubeRadius(stack), true, closes);
+        // A new run is cleared off its walls here; a run being extended is cleared whole, below, so
+        // the join with its old legs is a leg like any other and the kicks land only at the stubs.
+        var points = existing == null
+                ? WallClearance.apply(level, runStart, RunReshape.tidy(assembled), ConduitSupply.tubeRadius(stack), true, closes)
+                : RunReshape.tidy(assembled);
         float addedLength = 0;
         for(var point : points)
             addedLength += point.length();
@@ -417,14 +421,24 @@ public final class ConduitPlacement {
                 ConduitBenderItem.onClosed(level, stack, player, entity);
             return InteractionResultHolder.success(closes ? null : entity);
         } else {
-            int newItems = (int) Math.ceil((existing.getTotalLength() + addedLength) * entry.itemsPerMeter() - existing.getWireCount());
+            // The whole run, old legs and new, cleared off its walls together.
+            var whole = new ArrayList<>(existing.segments);
+            whole.addAll(points);
+            var cleared = WallClearance.apply(level, BodySpace.local(existing, existing.position()), RunReshape.tidy(whole),
+                    ConduitSupply.tubeRadius(stack), existing.getEndpoint1() != null, closes);
+            float total = 0;
+            for(var point : cleared)
+                total += point.length();
+            int newItems = (int) Math.ceil(total * entry.itemsPerMeter() - existing.getWireCount());
             if(!ConduitSupply.has(player, stack, newItems)) {
                 message(player, "message.connection_missing_items", ChatFormatting.RED);
                 return InteractionResultHolder.fail(null);
             }
             if(level.isClientSide)
                 return InteractionResultHolder.success(null);
-            existing.extend(points, newItems);
+            existing.segments.clear();
+            existing.segments.addAll(cleared);
+            existing.extend(java.util.List.of(), Math.max(0, newItems));
             if(closes)
                 existing.setEndpoint2(to);
             existing.sendExtraData();
