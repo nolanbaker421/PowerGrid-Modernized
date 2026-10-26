@@ -4,6 +4,20 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.53.0 — 2026-10-25
+
+### Changed
+- The splice editor is a schematic of the box instead of rows of pins. Knockouts with runs stand
+  in two columns, left and right, where they are on the box. A breaker panel shows its main, its
+  two columns of breakers with a lug pin on the outer edge of each space, and a neutral bar on the
+  left and a ground bar on the right with a landing slot per wire, so neutrals no longer pile onto
+  one pin. A controls cabinet shows its supply and its rail, one box per module with its channel
+  pins on the sides. Every other host is a plain column. Wires run through a duct down each side
+  and a gutter above and below, each in a lane of its own, so nothing crosses that does not have
+  to. Breakers show their rating and state; empty spaces and empty rail slots show as such. The
+  window scrolls when a panel is taller than the screen. Clicks, landing, recolouring and
+  labelling work as before; nothing about the stored wiring changed.
+
 ## 0.52.2 — 2026-10-25
 
 ### Fixed

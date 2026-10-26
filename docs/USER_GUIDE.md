@@ -123,6 +123,17 @@ with wire cutters to take the whole run back up; it drops any wire inside it.
 
 ### Pulling wire
 
+The splice editor draws the box as a schematic. Knockouts with runs stand in two columns, left and
+right, where they are on the box, with a pin per pulled conductor. Between them the box's own
+terminals are laid out the way it is built: a breaker panel shows its main, its two columns of
+breakers with a lug pin on the outer edge of each space, a neutral bar on the left and a ground
+bar on the right with a landing slot per wire; a controls cabinet shows its supply and its rail,
+one box per module with the channel pins on the sides; everything else is a plain column. Wires
+run through a duct down each side and a gutter above and below, each in its own lane, so nothing
+crosses that does not have to. Click a pin, then another, to splice; click a knockout's name to
+land its wires by number; right-click a wire to recolour it, shift and right-click to label it.
+The window scrolls when a panel is taller than the screen.
+
 Right-click a **closed** run (a hub on both ends) with any Power Grid wire item. One conductor of that
 wire goes through, consuming that wire's usual items per metre. Repeat with the same or a different
 wire until the conduit is full. Pulled wires are numbered and coloured in US order:
