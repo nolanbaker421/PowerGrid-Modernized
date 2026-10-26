@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.59.6 — 2026-10-26
+
+### Fixed
+- A run arriving at a strut's mount, up a wall to a ceiling strut, made its sideways jog to the
+  slot at the corner, leaving the elbow off the leg with sharp joints. The jog is made at the
+  start of the leg now, a box offset, and the corner is two clean legs.
+
 ## 0.59.5 — 2026-10-26
 
 ### Changed

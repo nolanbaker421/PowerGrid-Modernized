@@ -164,8 +164,8 @@ public final class ConduitPlacement {
      * Coming square at the rail: along the strut to the slot, across towards the rail at the depth
      * it has, a kick out to the tier just short of the rail, and across the rail last, so the tube
      * hugs the wall on the way and crosses the rail square in its clamp. Coming at the mount, up a
-     * wall to a ceiling strut say: on to the tier's depth first, then along to the slot, then across,
-     * so it turns the corner even with the strut. Running along the rail: onto the rail's line first,
+     * wall to a ceiling strut say: a jog along the strut's line to its slot at the start, on to the
+     * tier's depth, then across, so it turns the corner even with the strut in two clean legs. Running along the rail: onto the rail's line first,
      * then along to the slot. The run stays open at the clamp, ready for the next strut or the
      * closing knockout.
      */
@@ -217,8 +217,9 @@ public final class ConduitPlacement {
         var acrossAxis = Direction.Axis.values()[3 - depthAxis.ordinal() - strutAxis.ordinal()];
         double[] cur = {last.x, last.y, last.z};
         if(incoming != null && incoming.getAxis() == depthAxis) {
-            leg(points, cur, depthAxis, target.get(depthAxis));
+            // The sideways jog to the slot goes at the start, a box offset, so the corner is two long legs.
             leg(points, cur, strutAxis, target.get(strutAxis));
+            leg(points, cur, depthAxis, target.get(depthAxis));
             leg(points, cur, acrossAxis, target.get(acrossAxis));
         } else if(incoming != null && incoming.getAxis() == strutAxis) {
             leg(points, cur, depthAxis, target.get(depthAxis));
