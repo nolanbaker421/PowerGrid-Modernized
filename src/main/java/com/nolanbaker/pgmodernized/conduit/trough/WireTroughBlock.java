@@ -87,13 +87,20 @@ public class WireTroughBlock extends HorizontalElectricBlock implements IBE<Wire
     @Nullable
     public static BlockPos headPos(BlockGetter level, BlockPos pos) {
         var state = level.getBlockState(pos);
-        Direction facing;
         if(state.getBlock() instanceof WireTroughBlock)
             return pos;
         if(state.getBlock() instanceof WireTroughExtensionBlock)
-            facing = WireTroughExtensionBlock.facing(state);
-        else
-            return null;
+            return headPos(level, pos, WireTroughExtensionBlock.facing(state));
+        return null;
+    }
+
+    /**
+     * The head of the row for an extension at that position with that facing, walking to the
+     * viewer's left without reading the block at the position itself: a block being removed is
+     * already air when its removal hook runs.
+     */
+    @Nullable
+    public static BlockPos headPos(BlockGetter level, BlockPos pos, Direction facing) {
         var step = rowDirection(facing).getOpposite();
         var at = pos;
         for(int i = 1; i < TroughGeometry.MAX_SECTIONS; ++i) {

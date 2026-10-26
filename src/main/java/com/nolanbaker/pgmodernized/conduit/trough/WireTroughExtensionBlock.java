@@ -76,7 +76,7 @@ public class WireTroughExtensionBlock extends Block implements IBE<WireTroughExt
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
         if(!state.is(newState.getBlock()) && !level.isClientSide) {
-            var headPos = WireTroughBlock.headPos(level, pos);
+            var headPos = WireTroughBlock.headPos(level, pos, facing(state));
             if(headPos != null) {
                 var headState = level.getBlockState(headPos);
                 int keep = pos.distManhattan(headPos);

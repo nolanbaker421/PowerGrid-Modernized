@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.55.2 — 2026-10-26
+
+### Fixed
+- Breaking a trough section did not shorten its row: the section looked its row up from its own
+  position after it had already become air. The head now shortens and the sections to the right
+  drop, as intended.
+
 ## 0.55.1 — 2026-10-26
 
 ### Changed
