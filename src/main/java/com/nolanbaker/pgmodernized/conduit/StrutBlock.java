@@ -24,25 +24,68 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Strut channel: a 3 px square rail on any face, running along one axis, with a clamp position
- * every four pixels. It is not an electrical block and has no terminals. A pending conduit run
- * clicked onto it goes straight to the nearest clamp, no tracer, so runs on strut are rigid,
- * parallel and evenly spaced; the run stays one piece over any number of struts and closes on a
- * knockout as usual. FACING is the face it is mounted on; AXIS is the way it runs.
+ * Strut channel: a 3 px square rail on any face, running along one axis, with clamp slots along
+ * it in a pattern the player chooses, each marked by a strap across the rail. The patterns are
+ * the wire trough's, so a rack of runs off a trough stays in line: six 2" at a breaker panel's six
+ * positions, four 3", two 4", or eight for 1/2" and 3/4". It is not an electrical block and has no
+ * terminals. A pending conduit run clicked onto it goes straight to the nearest slot, no tracer,
+ * so runs on strut are rigid, parallel and evenly spaced; the run stays one piece over any number
+ * of struts and closes on a knockout as usual. FACING is the face it is mounted on; AXIS is the
+ * way it runs. Sneak-click with an empty hand to cycle the slots.
  */
 public class StrutBlock extends Block {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
-    public static final double THICK = 3, WIDTH = 3, CLAMP_PITCH = 4, CLAMP_FIRST = 2;
+    public static final EnumProperty<Slots> SLOTS = EnumProperty.create("slots", Slots.class);
+    public static final double THICK = 3, WIDTH = 3;
+
+    /** Clamp positions along the rail, in pixels, and the largest tube that sits in them without touching its neighbour. */
+    public enum Slots implements net.minecraft.util.StringRepresentable {
+        TWO("two", ConduitSize.FOUR, 4, 12),
+        FOUR("four", ConduitSize.THREE, 2.75, 6.25, 9.75, 13.25),
+        SIX("six", ConduitSize.TWO, 2.5, 4.7, 6.9, 9.1, 11.3, 13.5),
+        EIGHT("eight", ConduitSize.THREE_QUARTER, 1.5, 3.5, 5.5, 7.5, 9.5, 11.5, 13.5, 15.5);
+
+        private final String id;
+        private final ConduitSize size;
+        private final double[] along;
+
+        Slots(String id, ConduitSize size, double... along) {
+            this.id = id;
+            this.size = size;
+            this.along = along;
+        }
+
+        public double[] along() {
+            return along;
+        }
+
+        public ConduitSize size() {
+            return size;
+        }
+
+        public Slots next() {
+            return values()[(ordinal() + 1) % values().length];
+        }
+
+        public net.minecraft.network.chat.Component label() {
+            return org.patryk3211.powergrid.utility.Lang.builder().translate("gui.strut.slots." + id).component();
+        }
+
+        @Override
+        public String getSerializedName() {
+            return id;
+        }
+    }
 
     public StrutBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(AXIS, Direction.Axis.X));
+        registerDefaultState(defaultBlockState().setValue(FACING, Direction.DOWN).setValue(AXIS, Direction.Axis.X).setValue(SLOTS, Slots.SIX));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, AXIS);
+        builder.add(FACING, AXIS, SLOTS);
     }
 
     /** A strut's axis is never the axis it is mounted on; the horizontal one for floors and ceilings, upright on a wall unless sneaking. */
@@ -87,19 +130,37 @@ public class StrutBlock extends Block {
     }
 
     /**
-     * The run centre line for a click: snapped along the axis to the nearest clamp, centred across,
-     * and lifted off the channel by the tube's radius so the conduit sits in the clamp.
+     * The run centre line for a click: snapped along the axis to the nearest slot of the pattern,
+     * centred across, and lifted off the channel by the tube's radius so the conduit sits in the clamp.
      */
     public static Vec3 clamp(BlockState state, Vec3 local, double tubeRadiusPx) {
         var facing = state.getValue(FACING);
         var axis = axisFor(facing, state.getValue(AXIS));
         double[] p = {local.x * 16, local.y * 16, local.z * 16};
         int a = axis.ordinal(), m = facing.getAxis().ordinal(), across = 3 - a - m;
-        double along = Math.round((p[a] - CLAMP_FIRST) / CLAMP_PITCH) * CLAMP_PITCH + CLAMP_FIRST;
-        p[a] = Math.max(CLAMP_FIRST, Math.min(16 - CLAMP_FIRST, along));
+        var slots = state.hasProperty(SLOTS) ? state.getValue(SLOTS) : Slots.SIX;
+        double best = slots.along()[0];
+        for(double slot : slots.along())
+            if(Math.abs(slot - p[a]) < Math.abs(best - p[a]))
+                best = slot;
+        p[a] = best;
         p[across] = 8;
         p[m] = facing.getAxisDirection() == Direction.AxisDirection.NEGATIVE ? THICK + tubeRadiusPx : 16 - THICK - tubeRadiusPx;
         return new Vec3(p[0] / 16, p[1] / 16, p[2] / 16);
+    }
+
+    /** Sneak and an empty hand: the next slot pattern. Runs already clipped stay where they are. */
+    @Override
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if(!player.isShiftKeyDown() || !player.getMainHandItem().isEmpty())
+            return net.minecraft.world.InteractionResult.PASS;
+        if(level.isClientSide)
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        var next = state.getValue(SLOTS).next();
+        level.setBlock(pos, state.setValue(SLOTS, next), Block.UPDATE_ALL);
+        player.displayClientMessage(org.patryk3211.powergrid.utility.Lang.builder().translate("message.strut.slots", next.label())
+                .style(net.minecraft.ChatFormatting.GRAY).component(), true);
+        return net.minecraft.world.InteractionResult.SUCCESS;
     }
 
     /** Conduit in hand: the pending run is clipped to the clamp under the click. */

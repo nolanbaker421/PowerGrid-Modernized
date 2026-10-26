@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.56.0 — 2026-10-26
+
+### Changed
+- Strut clamps runs in slot patterns, each slot marked by a strap across the rail in the colour of
+  the size it takes, so you can see where a click will land. Sneak-click with an empty hand to cycle
+  the pattern: six 2" at a breaker panel's six positions, the default, which lines up with a wire
+  trough; four 3"; two 4"; or eight for 1/2" and 3/4". Runs already clipped stay where they are.
+
 ## 0.55.2 — 2026-10-26
 
 ### Fixed

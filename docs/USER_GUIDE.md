@@ -864,7 +864,9 @@ Conduit runs leave and enter every knockout straight and on centre, bend through
 ### Strut channel
 
 **Strut Channel** (five iron plates for six) is a 3 px rail on any face, running along one axis, with
-a clamp every four pixels. Placed on a floor or ceiling it runs the way you face; on a wall it stands
+clamp slots along it, each marked by a strap in the colour of the size it takes. Sneak and click the
+strut with an empty hand to cycle the slot pattern: six 2" at a breaker panel's six positions, which
+is the default and lines up with a wire trough too, four 3", two 4", or eight for 1/2" and 3/4". Placed on a floor or ceiling it runs the way you face; on a wall it stands
 upright, or runs along the wall if you sneak while placing. It has no terminals and carries no
 power: it is what conduit clips to. Start a run at a knockout, then click the strut where the run
 should clip, and the run goes there in straight legs with no path finding, across the strut first

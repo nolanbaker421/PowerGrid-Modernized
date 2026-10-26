@@ -1,0 +1,145 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "strap": "powergrid_modernized:block/knockout_four",
+    "particle": "powergrid_modernized:block/bus_duct"
+  },
+  "elements": [
+    {
+      "from": [
+        6.5,
+        12.7,
+        3.5
+      ],
+      "to": [
+        9.5,
+        13.0,
+        4.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.5,
+            3.0,
+            9.5,
+            3.3000000000000007
+          ],
+          "texture": "#strap"
+        },
+        "south": {
+          "uv": [
+            6.5,
+            3.0,
+            9.5,
+            3.3000000000000007
+          ],
+          "texture": "#strap"
+        },
+        "east": {
+          "uv": [
+            11.5,
+            3.0,
+            12.5,
+            3.3000000000000007
+          ],
+          "texture": "#strap"
+        },
+        "west": {
+          "uv": [
+            3.5,
+            3.0,
+            4.5,
+            3.3000000000000007
+          ],
+          "texture": "#strap"
+        },
+        "up": {
+          "uv": [
+            6.5,
+            3.5,
+            9.5,
+            4.5
+          ],
+          "texture": "#strap"
+        },
+        "down": {
+          "uv": [
+            6.5,
+            11.5,
+            9.5,
+            12.5
+          ],
+          "texture": "#strap"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        12.7,
+        11.5
+      ],
+      "to": [
+        9.5,
+        13.0,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.5,
+            3.0,
+            9.5,
+            3.3000000000000007
+          ],
+          "texture": "#strap"
+        },
+        "south": {
+          "uv": [
+            6.5,
+            3.0,
+            9.5,
+            3.3000000000000007
+          ],
+          "texture": "#strap"
+        },
+        "east": {
+          "uv": [
+            3.5,
+            3.0,
+            4.5,
+            3.3000000000000007
+          ],
+          "texture": "#strap"
+        },
+        "west": {
+          "uv": [
+            11.5,
+            3.0,
+            12.5,
+            3.3000000000000007
+          ],
+          "texture": "#strap"
+        },
+        "up": {
+          "uv": [
+            6.5,
+            11.5,
+            9.5,
+            12.5
+          ],
+          "texture": "#strap"
+        },
+        "down": {
+          "uv": [
+            6.5,
+            3.5,
+            9.5,
+            4.5
+          ],
+          "texture": "#strap"
+        }
+      }
+    }
+  ]
+}

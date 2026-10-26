@@ -1,58 +1,886 @@
 {
-  "variants": {
-    "axis=x,facing=down": {
-      "model": "powergrid_modernized:block/strut/strut_down_x"
+  "multipart": [
+    {
+      "when": {
+        "facing": "down",
+        "axis": "x"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_x"
+      }
     },
-    "axis=y,facing=down": {
-      "model": "powergrid_modernized:block/strut/strut_down_x"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "x",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_x_two"
+      }
     },
-    "axis=z,facing=down": {
-      "model": "powergrid_modernized:block/strut/strut_down_z"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "x",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_x_four"
+      }
     },
-    "axis=x,facing=up": {
-      "model": "powergrid_modernized:block/strut/strut_up_x"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "x",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_x_six"
+      }
     },
-    "axis=y,facing=up": {
-      "model": "powergrid_modernized:block/strut/strut_up_x"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "x",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_x_eight"
+      }
     },
-    "axis=z,facing=up": {
-      "model": "powergrid_modernized:block/strut/strut_up_z"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "y"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_x"
+      }
     },
-    "axis=x,facing=north": {
-      "model": "powergrid_modernized:block/strut/strut_north_x"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "y",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_x_two"
+      }
     },
-    "axis=y,facing=north": {
-      "model": "powergrid_modernized:block/strut/strut_north_y"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "y",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_x_four"
+      }
     },
-    "axis=z,facing=north": {
-      "model": "powergrid_modernized:block/strut/strut_north_y"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "y",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_x_six"
+      }
     },
-    "axis=x,facing=south": {
-      "model": "powergrid_modernized:block/strut/strut_south_x"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "y",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_x_eight"
+      }
     },
-    "axis=y,facing=south": {
-      "model": "powergrid_modernized:block/strut/strut_south_y"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_z"
+      }
     },
-    "axis=z,facing=south": {
-      "model": "powergrid_modernized:block/strut/strut_south_y"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "z",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_z_two"
+      }
     },
-    "axis=x,facing=west": {
-      "model": "powergrid_modernized:block/strut/strut_west_y"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "z",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_z_four"
+      }
     },
-    "axis=y,facing=west": {
-      "model": "powergrid_modernized:block/strut/strut_west_y"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "z",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_z_six"
+      }
     },
-    "axis=z,facing=west": {
-      "model": "powergrid_modernized:block/strut/strut_west_z"
+    {
+      "when": {
+        "facing": "down",
+        "axis": "z",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_down_z_eight"
+      }
     },
-    "axis=x,facing=east": {
-      "model": "powergrid_modernized:block/strut/strut_east_y"
+    {
+      "when": {
+        "facing": "up",
+        "axis": "x"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_x"
+      }
     },
-    "axis=y,facing=east": {
-      "model": "powergrid_modernized:block/strut/strut_east_y"
+    {
+      "when": {
+        "facing": "up",
+        "axis": "x",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_x_two"
+      }
     },
-    "axis=z,facing=east": {
-      "model": "powergrid_modernized:block/strut/strut_east_z"
+    {
+      "when": {
+        "facing": "up",
+        "axis": "x",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_x_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "x",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_x_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "x",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_x_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "y"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_x"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "y",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_x_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "y",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_x_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "y",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_x_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "y",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_x_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_z"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "z",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_z_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "z",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_z_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "z",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_z_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "axis": "z",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_up_z_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "x"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_x"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "x",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_x_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "x",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_x_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "x",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_x_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "x",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_x_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "y"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_y"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "y",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_y_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "y",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_y_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "y",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_y_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "y",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_y_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_y"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "z",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_y_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "z",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_y_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "z",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_y_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "axis": "z",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_north_y_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "x"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_x"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "x",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_x_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "x",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_x_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "x",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_x_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "x",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_x_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "y"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_y"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "y",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_y_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "y",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_y_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "y",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_y_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "y",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_y_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_y"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "z",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_y_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "z",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_y_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "z",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_y_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "axis": "z",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_south_y_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "x"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_y"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "x",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_y_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "x",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_y_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "x",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_y_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "x",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_y_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "y"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_y"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "y",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_y_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "y",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_y_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "y",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_y_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "y",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_y_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_z"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "z",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_z_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "z",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_z_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "z",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_z_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "axis": "z",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_west_z_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "x"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_y"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "x",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_y_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "x",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_y_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "x",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_y_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "x",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_y_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "y"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_y"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "y",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_y_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "y",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_y_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "y",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_y_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "y",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_y_eight"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_z"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "z",
+        "slots": "two"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_z_two"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "z",
+        "slots": "four"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_z_four"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "z",
+        "slots": "six"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_z_six"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "axis": "z",
+        "slots": "eight"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/strut/strut_east_z_eight"
+      }
     }
-  }
+  ]
 }
