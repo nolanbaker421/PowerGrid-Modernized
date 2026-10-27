@@ -50,21 +50,27 @@ for _a in HUB_ALONG:
              (_x - 1, 3, 13.5, _x + 1, 4, 15.5), (12, _x - 1, 13.5, 13, _x + 1, 15.5)]
 COLUMNS_U = [5, 7, 9, 11]
 # Every cover state, and the cover terminals each shows as nubs; the light socket's lamp holder and bulb (ConduitBoxGeometry).
-COVERS = ("open", "blank", "node", "light_off", "light_on", "receptacle", "smoke", "smoke_alarm", "horn_off", "horn_on")
-NUBS = {"open": 0, "blank": 0, "node": 12, "light_off": 2, "light_on": 2, "receptacle": 2, "smoke": 2, "smoke_alarm": 2, "horn_off": 2, "horn_on": 2}
+COVERS = ("open", "blank", "node", "light_off", "light_on", "receptacle", "smoke", "smoke_alarm", "horn_off", "horn_on", "heat", "heat_alarm", "pull", "pull_pulled")
+NUBS = {"open": 0, "blank": 0, "node": 12, "light_off": 2, "light_on": 2, "receptacle": 2, "smoke": 2, "smoke_alarm": 2, "horn_off": 2, "horn_on": 2,
+        "heat": 2, "heat_alarm": 2, "pull": 2, "pull_pulled": 2}
+PULL_BODY, PULL_HANDLE = (6, 5, 11, 10, 11, 13), {"pull": (6.5, 8, 10.3, 9.5, 9, 11), "pull_pulled": (6.5, 5.5, 10.3, 9.5, 6.5, 11)}
 # The smoke detector's puck and light, the horn strobe's body and lens (ConduitBoxGeometry); textures from gen_fire_alarm_assets.py.
 SMOKE_PUCK, SMOKE_LED = (5, 5, 11.5, 11, 11, 13), (7.5, 6, 11.2, 8.5, 7, 11.5)
 HORN_BODY, HORN_LENS = (6, 4.5, 11, 10, 11.5, 13), (7, 8.5, 10.5, 9, 10.5, 11)
 FIRE_TEX = {"detector": "%s:block/smoke_detector" % MOD, "led_green": "%s:block/led_green" % MOD, "led_red": "%s:block/led_red" % MOD,
-            "horn": "%s:block/horn_strobe" % MOD, "lens_off": "%s:block/lens_off" % MOD, "lens_on": "%s:block/lens_on" % MOD}
+            "horn": "%s:block/horn_strobe" % MOD, "lens_off": "%s:block/lens_off" % MOD, "lens_on": "%s:block/lens_on" % MOD,
+            "heat": "%s:block/heat_detector" % MOD, "pull": "%s:block/pull_station" % MOD, "handle": "%s:block/pull_handle" % MOD}
 
 
 def fire_elements(cover, transform=lambda b: b):
     """The device on a smoke detector or horn strobe cover, in the given frame."""
-    if cover.startswith("smoke"):
-        return [element(*transform(SMOKE_PUCK), "#detector"), element(*transform(SMOKE_LED), "#led_red" if cover == "smoke_alarm" else "#led_green")]
+    if cover.startswith("smoke") or cover.startswith("heat"):
+        puck = "#heat" if cover.startswith("heat") else "#detector"
+        return [element(*transform(SMOKE_PUCK), puck), element(*transform(SMOKE_LED), "#led_red" if cover.endswith("alarm") else "#led_green")]
     if cover.startswith("horn"):
         return [element(*transform(HORN_BODY), "#horn"), element(*transform(HORN_LENS), "#lens_on" if cover == "horn_on" else "#lens_off")]
+    if cover.startswith("pull"):
+        return [element(*transform(PULL_BODY), "#pull"), element(*transform(PULL_HANDLE[cover]), "#handle")]
     return []
 LAMP_HOLDER = (6.5, 6.5, 11, 9.5, 9.5, 13)
 BULB = (6, 6, 8.5, 10, 10, 11)
@@ -136,7 +142,8 @@ def textures():
 # .bbmodel, on a 32x32 texture. Body, nub grid and knockout positions match the geometry here.
 LUNA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "conduit_box_luna.json")
 LUNA_VARIANT = {"open": "open", "blank": "blank", "node": "node", "light_off": "light", "light_on": "light", "receptacle": "blank",
-                "smoke": "blank", "smoke_alarm": "blank", "horn_off": "blank", "horn_on": "blank"}
+                "smoke": "blank", "smoke_alarm": "blank", "horn_off": "blank", "horn_on": "blank",
+                "heat": "blank", "heat_alarm": "blank", "pull": "blank", "pull_pulled": "blank"}
 
 
 def box_model():
@@ -154,7 +161,7 @@ def box_model():
         if cover == "receptacle":
             elements.append(receptacle_face(RECEPTACLE_FACE))
         elements += fire_elements(cover)
-        if cover == "receptacle" or cover.startswith(("light", "smoke", "horn")):
+        if cover == "receptacle" or cover.startswith(("light", "smoke", "horn", "heat", "pull")):
             for screw in SCREWS:
                 elements.append(element(*screw, "#terminal"))
         # Cutout: the detail texture has transparent pixels where the plate is open.
@@ -410,7 +417,7 @@ def gang_device_items():
     """Item icons for the gang devices: a plate with the device on it."""
     plate = (0xd8, 0xd8, 0xd8)
     dark = (0x2a, 0x2a, 0x2a)
-    for device in ("blank", "switch", "switch_3way", "switch_4way", "button", "receptacle"):
+    for device in ("blank", "switch", "switch_3way", "switch_4way", "button", "receptacle", "pull_station", "horn_strobe"):
         img = canvas(16, 16)
         fill(img, 3, 1, 13, 15, plate)
         fill(img, 3, 14, 13, 15, shade(plate, 0.7))
@@ -432,6 +439,15 @@ def gang_device_items():
                 fill(img, 6, y, 7, y + 2, dark)
                 fill(img, 9, y, 10, y + 2, dark)
                 fill(img, 7, y + 3, 9, y + 4, dark)
+        elif device == "pull_station":
+            fill(img, 5, 3, 11, 13, (0xb3, 0x1b, 0x1b))
+            fill(img, 6, 6, 10, 7, (0xf0, 0xf0, 0xec))
+            fill(img, 7, 7, 9, 11, (0xf0, 0xf0, 0xec))
+        elif device == "horn_strobe":
+            fill(img, 5, 3, 11, 13, (0xb3, 0x1b, 0x1b))
+            fill(img, 6, 4, 10, 7, (0xff, 0xff, 0xf0))
+            for y in range(8, 12, 2):
+                fill(img, 6, y, 10, y + 1, (0x60, 0x10, 0x10))
         write_png(os.path.join(ITEM_TEX_DIR, "gang_%s.png" % device), img)
         dump(os.path.join(ASSETS, "models", "item", "gang_%s.json" % device), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/gang_%s" % (MOD, device)}})
 
@@ -574,6 +590,8 @@ def recipes():
     recipe_shapeless("gang_switch_4way", [lever, lever, lever, nugget], 1, {"items": "%s:gang_switch_3way" % MOD})
     recipe_shapeless("gang_button", [{"item": "minecraft:stone_button"}, nugget], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_receptacle", [{"tag": "c:ingots/copper"}, nugget, nugget], 1, {"items": "%s:gang_box_1" % MOD})
+    recipe_shapeless("gang_pull_station", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}], 1, {"items": "%s:gang_box_1" % MOD})
+    recipe_shapeless("gang_horn_strobe", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"tag": "c:nuggets/copper"}], 1, {"items": "%s:gang_box_1" % MOD})
     # The old single blocks turn into their device.
     for old, device in (("conduit_switch", "gang_switch"), ("conduit_button", "gang_button"), ("conduit_switch_3way", "gang_switch_3way"), ("conduit_socket", "gang_receptacle")):
         dump(os.path.join(DATA, "recipe", "crafting", device + "_from_" + old + ".json"), {

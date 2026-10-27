@@ -4,6 +4,20 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.66.0 — 2026-10-26
+
+### Added
+- Fire alarm system, second part. A heat detector cover for the conduit box: the smoke
+  detector's puck with a red ring, on the initiating loop, that trips only on fire or lava in
+  the blocks beside it, for forges and kitchens where smoke is normal.
+- A pull station cover for the conduit box: a red station with a white handle, on the initiating
+  loop. A bare hand pulls it and the loop closes until a wrench resets it; the panel will not
+  reset while it is pulled.
+- Both as gang box devices too: the Pull Station and the Horn Strobe drop into any gang with the
+  switches and receptacles, with Loop + and Loop - as their points. The gang horn strobe sounds
+  and flashes like the cover, and a wrench on a pulled station resets it before it turns the box.
+- A Ponder scene for the fire alarm panel.
+
 ## 0.65.0 — 2026-10-26
 
 ### Added

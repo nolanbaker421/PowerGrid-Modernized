@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity> {
     private static final int TOGGLE = 0xE0E0E0, TOGGLE_EDGE = 0x9A9A9A, BUTTON = 0xC83030, BUTTON_RING = 0x404040;
     private static final int FACE = 0xE8E4DA, SLOT = 0x2A2A2A, BLANK = 0xD8D8D8;
+    private static final int ALARM_RED = 0xB31B1B, HANDLE = 0xF0F0EC, LENS_OFF = 0xC8C8C0, LENS_ON = 0xFFFFF0;
 
     public GangBoxRenderer(BlockEntityRendererProvider.Context context) {}
 
@@ -53,6 +54,22 @@ public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity>
                         DeviceDraw.box(ms, buffer, light, cx + 0.5, top + 0.8, z, cx + 0.9, top + 0.85, z + 1.1, SLOT);
                         DeviceDraw.box(ms, buffer, light, cx - 0.25, top + 0.8, z + 1.3, cx + 0.25, top + 0.85, z + 1.8, SLOT);
                     }
+                }
+                case PULL_STATION -> {
+                    // A red station with a white handle across it: up when set, down when pulled.
+                    DeviceDraw.box(ms, buffer, light, cx - 1.5, top, 5.75, cx + 1.5, top + 1.2, 10.25, ALARM_RED);
+                    double z = on ? 8.6 : 6.6;
+                    DeviceDraw.box(ms, buffer, light, cx - 1.1, top + 1.2, z, cx + 1.1, top + 1.6, z + 0.8, HANDLE);
+                }
+                case HORN_STROBE -> {
+                    // A red horn with a lens above its grille; the lens flashes full bright while strobing.
+                    DeviceDraw.box(ms, buffer, light, cx - 1.5, top, 5.75, cx + 1.5, top + 1.4, 10.25, ALARM_RED);
+                    for(double z = 8.2; z < 10; z += 0.6)
+                        DeviceDraw.box(ms, buffer, light, cx - 1.1, top + 1.4, z, cx + 1.1, top + 1.5, z + 0.3, 0x601010);
+                    boolean strobing = be.hornVolts(slot) >= com.nolanbaker.pgmodernized.conduit.ConduitBoxBlockEntity.STROBE_VOLTS;
+                    boolean flash = strobing && be.getLevel() != null && (be.getLevel().getGameTime() / 5) % 4 == 0;
+                    DeviceDraw.box(ms, buffer, flash ? net.minecraft.client.renderer.LightTexture.FULL_BRIGHT : light,
+                            cx - 1, top + 1.4, 6.2, cx + 1, top + (flash ? 2.0 : 1.8), 7.6, flash ? LENS_ON : LENS_OFF);
                 }
                 case BLANK -> DeviceDraw.box(ms, buffer, light, cx - 1.6, top, 5.75, cx + 1.6, top + 0.3, 10.25, BLANK);
             }

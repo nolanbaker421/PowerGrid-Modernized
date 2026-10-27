@@ -251,11 +251,30 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
             boolean second = endpoint.equals(cord.getEndpoint2()) && !endpoint.equals(cord.getEndpoint1());
             return cord.cordDetach(player, second) ? InteractionResult.SUCCESS : InteractionResult.PASS;
         }
+        if(device == GangDevice.PULL_STATION) {
+            if(!level.isClientSide)
+                be.pull(slot, player);
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if(device == null || !device.toggles())
             return InteractionResult.PASS;
         if(!level.isClientSide)
             be.toggle(slot, player);
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    /** A wrench on a pulled station resets it; anywhere else it turns the box. */
+    @Override
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        var level = context.getLevel();
+        var pos = context.getClickedPos();
+        int slot = slotAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        if(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && slot >= 0 && be.device(slot) == GangDevice.PULL_STATION && be.isOn(slot)) {
+            if(!level.isClientSide && context.getPlayer() != null)
+                be.resetPull(slot, context.getPlayer());
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        return super.onWrenched(state, context);
     }
 
     @Override

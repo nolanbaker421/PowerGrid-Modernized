@@ -61,10 +61,12 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     /** Bulb data read before the filament wire existed; applied when the circuit is next built. */
     @Nullable
     private CompoundTag pendingBulb;
-    /** The alarm contact of a smoke detector cover, closed in alarm; null under any other cover. */
+    /** The alarm contact of a detector or pull station cover, closed in alarm; null under any other cover. */
     private SwitchedWire detector;
     private boolean smokeAlarm;
     private int smokeClearTicks;
+    /** A pull station's handle, down until a wrench resets it. */
+    private boolean pulled;
     /** The load of a horn strobe cover; null under any other cover. */
     private org.patryk3211.powergrid.electricity.sim.ElectricWire horn;
     private float hornVolts;
@@ -93,11 +95,11 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
             bulb.read(pendingBulb);
             pendingBulb = null;
         }
-        // A smoke detector: a supervisory resistor the panel sees it by, and a contact that closes in alarm.
+        // A detector or a pull station: a supervisory resistor the panel sees it by, and a contact that closes in alarm.
         detector = null;
-        if(cover().isSmoke()) {
+        if(cover().isInitiating()) {
             builder.connect(resistance("supervisory"), builder.terminalNode(0), builder.terminalNode(1));
-            detector = builder.connectSwitch(resistance("detector"), builder.terminalNode(0), builder.terminalNode(1), smokeAlarm);
+            detector = builder.connectSwitch(resistance("detector"), builder.terminalNode(0), builder.terminalNode(1), contactClosed());
         }
         // A horn strobe: a load the panel supervises at two volts and drives at twenty-four.
         horn = cover().isHorn() ? builder.connect(resistance("horn"), builder.terminalNode(0), builder.terminalNode(1)) : null;
@@ -109,13 +111,59 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
         return smokeAlarm;
     }
 
+    public boolean pulled() {
+        return pulled;
+    }
+
+    /** Whether the cover's contact across the loop is closed: a tripped detector or a pulled station. */
+    private boolean contactClosed() {
+        return cover().isPull() ? pulled : smokeAlarm;
+    }
+
+    /** Server side: the pull station's handle comes down and the loop closes. */
+    public boolean pull(Player player) {
+        if(level == null || level.isClientSide || !cover().isPull())
+            return false;
+        if(pulled) {
+            player.displayClientMessage(Lang.translate("message.conduit_box.pull_reset_wrench").style(ChatFormatting.GRAY).component(), true);
+            return true;
+        }
+        pulled = true;
+        if(detector != null)
+            detector.setState(true);
+        var state = getBlockState();
+        level.setBlock(worldPosition, state.setValue(ConduitBoxBlock.COVER, ConduitCover.PULL_PULLED), Block.UPDATE_ALL);
+        level.playSound(null, worldPosition, net.minecraft.sounds.SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.8f, 0.5f);
+        player.displayClientMessage(Lang.translate("message.conduit_box.pulled").style(ChatFormatting.RED).component(), true);
+        setChanged();
+        sendData();
+        return true;
+    }
+
+    /** Server side: a wrench resets a pulled station. */
+    public boolean resetPull(Player player) {
+        if(level == null || level.isClientSide || !cover().isPull() || !pulled)
+            return false;
+        pulled = false;
+        if(detector != null)
+            detector.setState(false);
+        var state = getBlockState();
+        level.setBlock(worldPosition, state.setValue(ConduitBoxBlock.COVER, ConduitCover.PULL), Block.UPDATE_ALL);
+        level.playSound(null, worldPosition, net.minecraft.sounds.SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.8f, 0.7f);
+        player.displayClientMessage(Lang.translate("message.conduit_box.pull_reset").style(ChatFormatting.GREEN).component(), true);
+        setChanged();
+        sendData();
+        return true;
+    }
+
     public float hornVolts() {
         return hornVolts;
     }
 
-    /** Every second: fire, lit campfires, lava or anything burning within range trips the detector; it holds ten seconds past the last. */
+    /** Every second: fire within range trips the detector, four blocks and anything burning for smoke, the next block over for heat; it holds ten seconds past the last. */
     private void smokeTick() {
-        boolean fire = smokeNearby();
+        boolean heat = cover().isHeat();
+        boolean fire = smokeNearby(heat ? 1 : SMOKE_RANGE, !heat);
         if(fire)
             smokeClearTicks = SMOKE_HOLD;
         else if(smokeClearTicks > 0)
@@ -127,22 +175,26 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
         if(detector != null)
             detector.setState(smokeAlarm);
         var state = getBlockState();
-        if(state.getBlock() instanceof ConduitBoxBlock && ConduitBoxBlock.cover(state).isSmoke())
-            level.setBlock(worldPosition, state.setValue(ConduitBoxBlock.COVER, smokeAlarm ? ConduitCover.SMOKE_ALARM : ConduitCover.SMOKE), Block.UPDATE_ALL);
+        if(state.getBlock() instanceof ConduitBoxBlock && ConduitBoxBlock.cover(state).isDetector()) {
+            var shown = heat ? (smokeAlarm ? ConduitCover.HEAT_ALARM : ConduitCover.HEAT) : (smokeAlarm ? ConduitCover.SMOKE_ALARM : ConduitCover.SMOKE);
+            level.setBlock(worldPosition, state.setValue(ConduitBoxBlock.COVER, shown), Block.UPDATE_ALL);
+        }
         setChanged();
         sendData();
     }
 
-    private boolean smokeNearby() {
-        var from = worldPosition.offset(-SMOKE_RANGE, -SMOKE_RANGE, -SMOKE_RANGE);
-        var to = worldPosition.offset(SMOKE_RANGE, SMOKE_RANGE, SMOKE_RANGE);
+    private boolean smokeNearby(int range, boolean burningThings) {
+        var from = worldPosition.offset(-range, -range, -range);
+        var to = worldPosition.offset(range, range, range);
         for(var pos : BlockPos.betweenClosed(from, to)) {
             var state = level.getBlockState(pos);
             if(state.is(net.minecraft.tags.BlockTags.FIRE) || state.is(net.minecraft.world.level.block.Blocks.LAVA)
-                    || (state.getBlock() instanceof net.minecraft.world.level.block.CampfireBlock && state.getValue(net.minecraft.world.level.block.CampfireBlock.LIT)))
+                    || (burningThings && state.getBlock() instanceof net.minecraft.world.level.block.CampfireBlock && state.getValue(net.minecraft.world.level.block.CampfireBlock.LIT)))
                 return true;
         }
-        var box = new net.minecraft.world.phys.AABB(worldPosition).inflate(SMOKE_RANGE);
+        if(!burningThings)
+            return false;
+        var box = new net.minecraft.world.phys.AABB(worldPosition).inflate(range);
         return !level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, box, net.minecraft.world.entity.Entity::isOnFire).isEmpty();
     }
 
@@ -285,7 +337,7 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
                 syncedWatts = lampWatts;
                 sendData();
             }
-            if(cover().isSmoke())
+            if(cover().isDetector())
                 smokeTick();
         }
     }
@@ -319,7 +371,7 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
             if(level != null && !level.isClientSide)
                 splices().prune();
         }
-        boolean rewire = before.isLight() != after.isLight() || before.isSmoke() != after.isSmoke() || before.isHorn() != after.isHorn();
+        boolean rewire = before.isLight() != after.isLight() || before.isInitiating() != after.isInitiating() || before.isHorn() != after.isHorn();
         if(rewire && level != null && !level.isClientSide && electricBehaviour != null)
             electricBehaviour.rebuildCircuit(false);
     }
@@ -329,8 +381,8 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
         if(points == null) {
             points = new ArrayList<>();
             var cover = cover();
-            if(cover.isSmoke() || cover.isHorn()) {
-                String device = cover.isSmoke() ? "smoke" : "horn";
+            if(cover.isInitiating() || cover.isHorn()) {
+                String device = cover.isHorn() ? "horn" : cover.isPull() ? "pull" : "detector";
                 points.add(new SplicePoint(0, Lang.builder().translate("conduit_box." + device + "_plus").style(ChatFormatting.RED).component(), com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlock.LOOP_PLUS_RGB));
                 points.add(new SplicePoint(1, Lang.builder().translate("conduit_box." + device + "_minus").style(ChatFormatting.DARK_GRAY).component(), com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlock.LOOP_MINUS_RGB));
             } else if(cover.isDevice()) {
@@ -419,6 +471,7 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
         tag.putBoolean("BulbKept", true);
         tag.putBoolean("SmokeAlarm", smokeAlarm);
         tag.putInt("SmokeClear", smokeClearTicks);
+        tag.putBoolean("Pulled", pulled);
         tag.putFloat("HornVolts", hornVolts);
     }
 
@@ -432,9 +485,10 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
         powerLevel = tag.getInt("PowerLevel");
         smokeAlarm = tag.getBoolean("SmokeAlarm");
         smokeClearTicks = tag.getInt("SmokeClear");
+        pulled = tag.getBoolean("Pulled");
         hornVolts = tag.getFloat("HornVolts");
         if(detector != null)
-            detector.setState(smokeAlarm);
+            detector.setState(contactClosed());
         if(clientPacket)
             lampWatts = tag.getFloat("LampWatts");
         if(tag.contains("Bulb")) {
@@ -473,8 +527,10 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
                             .style(lit ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY))
                     .forGoggles(tooltip, 1);
         }
-        if(cover().isSmoke())
+        if(cover().isDetector())
             Lang.builder().translate(smokeAlarm ? "gui.conduit_box.smoke_alarm" : "gui.conduit_box.smoke_normal").style(smokeAlarm ? ChatFormatting.RED : ChatFormatting.GREEN).forGoggles(tooltip, 1);
+        if(cover().isPull())
+            Lang.builder().translate(pulled ? "gui.conduit_box.pull_pulled" : "gui.conduit_box.pull_set").style(pulled ? ChatFormatting.RED : ChatFormatting.GREEN).forGoggles(tooltip, 1);
         if(cover().isHorn()) {
             String key = hornVolts >= HORN_VOLTS ? "gui.conduit_box.horn_sounding" : hornVolts >= STROBE_VOLTS ? "gui.conduit_box.horn_strobe" : "gui.conduit_box.horn_quiet";
             Lang.builder().translate(key, String.format("%.0f", hornVolts)).style(hornVolts >= STROBE_VOLTS ? ChatFormatting.RED : ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);

@@ -27,5 +27,7 @@ public final class PgmPonderScenes {
 
         helper.forComponents(ModBlocks.CONDUIT_BOX)
                 .addStoryBoard("conduit", ConduitScenes::basics, PgmPonderTags.CONDUIT);
+        helper.forComponents(ModBlocks.FIRE_ALARM_PANEL)
+                .addStoryBoard("fire_alarm", FireAlarmScenes::basics, PgmPonderTags.CONDUIT);
     }
 }

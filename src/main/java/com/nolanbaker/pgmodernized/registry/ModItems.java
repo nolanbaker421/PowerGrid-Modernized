@@ -202,6 +202,14 @@ public class ModItems {
             .model(NonNullBiConsumer.noop())
             .lang("Horn Strobe Cover")
             .register();
+    public static final ItemEntry<ConduitCoverItem> CONDUIT_COVER_HEAT = REGISTRATE.item("conduit_cover_heat", p -> new ConduitCoverItem(p, ConduitCover.HEAT))
+            .model(NonNullBiConsumer.noop())
+            .lang("Heat Detector Cover")
+            .register();
+    public static final ItemEntry<ConduitCoverItem> CONDUIT_COVER_PULL = REGISTRATE.item("conduit_cover_pull", p -> new ConduitCoverItem(p, ConduitCover.PULL))
+            .model(NonNullBiConsumer.noop())
+            .lang("Pull Station Cover")
+            .register();
 
     /** The plate item that comes off a box with that cover. */
     public static ItemStack coverPlate(ConduitCover cover) {
@@ -211,6 +219,8 @@ public class ModItems {
             case RECEPTACLE -> CONDUIT_COVER_RECEPTACLE.asStack();
             case SMOKE -> CONDUIT_COVER_SMOKE.asStack();
             case HORN_OFF -> CONDUIT_COVER_HORN.asStack();
+            case HEAT -> CONDUIT_COVER_HEAT.asStack();
+            case PULL -> CONDUIT_COVER_PULL.asStack();
             default -> CONDUIT_COVER_BLANK.asStack();
         };
     }

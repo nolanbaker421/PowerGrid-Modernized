@@ -153,8 +153,18 @@ def conduit():
     p.write("conduit")
 
 
+def fire_alarm():
+    p = Plot(5, 4, 5)
+    p.fill(0, 1, 4, 4, 3, 4, "minecraft:light_gray_concrete")
+    p.set(2, 1, 3, m("fire_alarm_panel"), facing="north")
+    p.set(2, 2, 3, m("conduit_box"), facing="south", cover="smoke")
+    p.set(0, 1, 3, m("conduit_box"), facing="south", cover="horn_off")
+    p.write("fire_alarm")
+
+
 if __name__ == "__main__":
     breaker_panel()
     radio_dish_link()
     radio_carrier()
     conduit()
+    fire_alarm()

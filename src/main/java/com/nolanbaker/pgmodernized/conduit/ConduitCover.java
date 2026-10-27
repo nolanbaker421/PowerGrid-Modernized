@@ -20,7 +20,13 @@ public enum ConduitCover implements StringRepresentable {
     SMOKE_ALARM("smoke_alarm", 2),
     /** A horn strobe on the plate: cover terminals 0 (+) and 1 (-) are the fire alarm panel's notification loop. */
     HORN_OFF("horn_off", 2),
-    HORN_ON("horn_on", 2);
+    HORN_ON("horn_on", 2),
+    /** A heat detector on the plate, on the initiating loop: trips on fire or lava against the block beside it. */
+    HEAT("heat", 2),
+    HEAT_ALARM("heat_alarm", 2),
+    /** A pull station on the plate, on the initiating loop: pulled by hand, reset with a wrench. */
+    PULL("pull", 2),
+    PULL_PULLED("pull_pulled", 2);
 
     private final String name;
     private final int terminals;
@@ -65,13 +71,38 @@ public enum ConduitCover implements StringRepresentable {
         return this == HORN_OFF || this == HORN_ON;
     }
 
-    /** A plate whose two terminals are a device on the plate rather than bare terminals. */
-    public boolean isDevice() {
-        return isLight() || this == RECEPTACLE || isSmoke() || isHorn();
+    public boolean isHeat() {
+        return this == HEAT || this == HEAT_ALARM;
     }
 
-    /** The state a plate item fits: a light socket goes on dark, a detector quiet, a horn strobe off. */
+    /** A smoke or heat detector: trips by itself. */
+    public boolean isDetector() {
+        return isSmoke() || isHeat();
+    }
+
+    public boolean isPull() {
+        return this == PULL || this == PULL_PULLED;
+    }
+
+    /** A detector or a pull station: a contact across the initiating loop, with a supervisory resistor. */
+    public boolean isInitiating() {
+        return isDetector() || isPull();
+    }
+
+    /** A plate whose two terminals are a device on the plate rather than bare terminals. */
+    public boolean isDevice() {
+        return isLight() || this == RECEPTACLE || isInitiating() || isHorn();
+    }
+
+    /** The state a plate item fits: a light socket goes on dark, a detector quiet, a pull station set, a horn strobe off. */
     public ConduitCover itemCover() {
-        return this == LIGHT_ON ? LIGHT_OFF : this == SMOKE_ALARM ? SMOKE : this == HORN_ON ? HORN_OFF : this;
+        return switch(this) {
+            case LIGHT_ON -> LIGHT_OFF;
+            case SMOKE_ALARM -> SMOKE;
+            case HEAT_ALARM -> HEAT;
+            case PULL_PULLED -> PULL;
+            case HORN_ON -> HORN_OFF;
+            default -> this;
+        };
     }
 }

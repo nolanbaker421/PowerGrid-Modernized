@@ -2,6 +2,7 @@ package com.nolanbaker.pgmodernized.conduit.gang;
 
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
+import com.nolanbaker.pgmodernized.conduit.ConduitBoxBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.SplicePoint;
 import com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport;
@@ -46,6 +47,11 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     private int[] hold;
     /** Up to four contacts a gang, by device: [line-load], [common-A, common-B], [inA-outA, inB-outB, inA-outB, inB-outA]. */
     private SwitchedWire[][] contacts;
+    /** A horn strobe's load in each gang that has one, and the volts across it. */
+    private org.patryk3211.powergrid.electricity.sim.ElectricWire[] horns;
+    private float[] hornVolts;
+    private boolean[] strobing;
+    private int hornTimer;
     private List<SplicePoint> points;
 
     public GangBoxBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -59,7 +65,16 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             on = new boolean[GangLayout.MAX_GANGS];
             hold = new int[GangLayout.MAX_GANGS];
             contacts = new SwitchedWire[GangLayout.MAX_GANGS][];
+            horns = new org.patryk3211.powergrid.electricity.sim.ElectricWire[GangLayout.MAX_GANGS];
+            hornVolts = new float[GangLayout.MAX_GANGS];
+            strobing = new boolean[GangLayout.MAX_GANGS];
         }
+    }
+
+    /** The volts across a horn strobe's load in that gang, zero for any other device. Works on both sides. */
+    public float hornVolts(int slot) {
+        ensureArrays();
+        return slot >= 0 && slot < GangLayout.MAX_GANGS ? hornVolts[slot] : 0;
     }
 
     public int gangs() {
@@ -96,6 +111,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
             var device = devices[slot];
             contacts[slot] = null;
+            horns[slot] = null;
             if(device == null)
                 continue;
             var p = new int[GangDevice.MAX_POINTS];
@@ -112,6 +128,12 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                         builder.connectSwitch(r, builder.terminalNode(p[1]), builder.terminalNode(p[3]), !on[slot]),
                         builder.connectSwitch(r, builder.terminalNode(p[0]), builder.terminalNode(p[3]), on[slot]),
                         builder.connectSwitch(r, builder.terminalNode(p[1]), builder.terminalNode(p[2]), on[slot])};
+                case PULL_STATION -> {
+                    builder.connect(resistance("supervisory"), builder.terminalNode(p[0]), builder.terminalNode(p[1]));
+                    contacts[slot] = new SwitchedWire[] {
+                            builder.connectSwitch(resistance("detector"), builder.terminalNode(p[0]), builder.terminalNode(p[1]), on[slot])};
+                }
+                case HORN_STROBE -> horns[slot] = builder.connect(resistance("horn"), builder.terminalNode(p[0]), builder.terminalNode(p[1]));
                 case RECEPTACLE -> {
                     if(!cordWired) {
                         builder.connect(SpliceSupport.SPLICE_RESISTANCE, builder.terminalNode(GangLayout.CORD_A), builder.terminalNode(p[0]));
@@ -132,7 +154,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             return;
         boolean state = on[slot];
         switch(device) {
-            case SWITCH, BUTTON -> wires[0].setState(state);
+            case SWITCH, BUTTON, PULL_STATION -> wires[0].setState(state);
             case THREE_WAY -> {
                 wires[0].setState(!state);
                 wires[1].setState(state);
@@ -239,6 +261,71 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         }
     }
 
+    /** Server side: a pull station's handle comes down and stays; a wrench resets it. */
+    public void pull(int slot, Player player) {
+        ensureArrays();
+        if(device(slot) != GangDevice.PULL_STATION || level == null || level.isClientSide)
+            return;
+        if(on[slot]) {
+            player.displayClientMessage(Lang.translate("message.conduit_box.pull_reset_wrench").style(ChatFormatting.GRAY).component(), true);
+            return;
+        }
+        on[slot] = true;
+        applyContacts(slot);
+        level.playSound(null, worldPosition, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.8f, 0.5f);
+        player.displayClientMessage(Lang.translate("message.conduit_box.pulled").style(ChatFormatting.RED).component(), true);
+        setChanged();
+        sendData();
+    }
+
+    /** Server side: a wrench on a pulled station resets it. True when there was one to reset. */
+    public boolean resetPull(int slot, Player player) {
+        ensureArrays();
+        if(device(slot) != GangDevice.PULL_STATION || !on[slot] || level == null || level.isClientSide)
+            return false;
+        on[slot] = false;
+        applyContacts(slot);
+        level.playSound(null, worldPosition, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.8f, 0.7f);
+        player.displayClientMessage(Lang.translate("message.conduit_box.pull_reset").style(ChatFormatting.GREEN).component(), true);
+        setChanged();
+        sendData();
+        return true;
+    }
+
+    /** Every tick: the volts at each horn strobe set its strobe and horn; one three-pulse pattern plays for the box. */
+    private void hornTick() {
+        boolean anySound = false, changed = false;
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
+            var horn = horns[slot];
+            if(horn == null) {
+                if(hornVolts[slot] != 0 || strobing[slot])
+                    changed = true;
+                hornVolts[slot] = 0;
+                strobing[slot] = false;
+                continue;
+            }
+            if(horn.isConverged()) {
+                double v = Math.abs(horn.current()) * horn.getResistance();
+                hornVolts[slot] = Float.isFinite((float) v) ? (float) v : 0;
+            }
+            boolean strobe = hornVolts[slot] >= ConduitBoxBlockEntity.STROBE_VOLTS;
+            if(strobe != strobing[slot]) {
+                strobing[slot] = strobe;
+                changed = true;
+            }
+            anySound |= hornVolts[slot] >= ConduitBoxBlockEntity.HORN_VOLTS;
+        }
+        if(changed)
+            sendData();
+        if(!anySound) {
+            hornTimer = 0;
+            return;
+        }
+        int t = hornTimer++ % 80;
+        if(t < 60 && t % 20 < 10 && t % 4 == 0)
+            level.playSound(null, worldPosition, com.nolanbaker.pgmodernized.registry.ModSounds.FIRE_ALARM_HORN.get(), SoundSource.BLOCKS, 2.0f, 0.5f);
+    }
+
     /** Server side: a switch flips; a button closes for its hold time. */
     public void toggle(int slot, Player player) {
         ensureArrays();
@@ -273,6 +360,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             if(hold[slot] > 0 && --hold[slot] == 0 && on[slot])
                 setOn(slot, false);
         }
+        hornTick();
     }
 
     @Override
@@ -373,6 +461,10 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         }
         tag.put("Devices", list);
         tag.putInt("On", bits);
+        var volts = new int[GangLayout.MAX_GANGS];
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
+            volts[slot] = Math.round(hornVolts[slot] * 10);
+        tag.putIntArray("HornVolts", volts);
     }
 
     @Override
@@ -405,6 +497,9 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             devices[slot] = device;
             on[slot] = (bits & 1 << slot) != 0;
         }
+        var volts = tag.getIntArray("HornVolts");
+        for(int slot = 0; slot < GangLayout.MAX_GANGS && slot < volts.length; ++slot)
+            hornVolts[slot] = volts[slot] / 10f;
         points = null;
         if(changed && !clientPacket && level != null && !level.isClientSide && electricBehaviour != null) {
             electricBehaviour.rebuildCircuit(false);
@@ -430,8 +525,13 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                 line.add(Lang.builder().translate("gang.empty").style(ChatFormatting.DARK_GRAY));
             } else {
                 line.add(Lang.builder().text(device.label()).style(ChatFormatting.WHITE));
-                if(device.toggles())
-                    line.text(" ").add(Lang.builder().translate(stateKey(device, on[slot])).style(on[slot] ? ChatFormatting.GREEN : ChatFormatting.RED));
+                if(device.toggles() || device == GangDevice.PULL_STATION)
+                    line.text(" ").add(Lang.builder().translate(stateKey(device, on[slot])).style(on[slot] == (device == GangDevice.PULL_STATION) ? ChatFormatting.RED : ChatFormatting.GREEN));
+                if(device == GangDevice.HORN_STROBE) {
+                    float v = hornVolts[slot];
+                    String key = v >= ConduitBoxBlockEntity.HORN_VOLTS ? "gang.horn_sounding" : v >= ConduitBoxBlockEntity.STROBE_VOLTS ? "gang.horn_strobe" : "gang.horn_quiet";
+                    line.text(" ").add(Lang.builder().translate(key).style(v >= ConduitBoxBlockEntity.STROBE_VOLTS ? ChatFormatting.RED : ChatFormatting.DARK_GRAY));
+                }
             }
         }
         line.forGoggles(tooltip, 1);
@@ -443,6 +543,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         return switch(device) {
             case THREE_WAY -> on ? "gui.conduit_switch.to_b" : "gui.conduit_switch.to_a";
             case FOUR_WAY -> on ? "gang.crossed" : "gang.straight";
+            case PULL_STATION -> on ? "gang.pulled" : "gang.set";
             default -> on ? "gui.conduit_switch.on" : "gui.conduit_switch.off";
         };
     }

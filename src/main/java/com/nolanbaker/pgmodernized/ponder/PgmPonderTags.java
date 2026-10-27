@@ -34,6 +34,7 @@ public final class PgmPonderTags {
                 .title("Conduit and Wiring")
                 .description("Boxes, conduit, pulled wire and the bender: raceway from a panel to every device, the way it is done on a job")
                 .item(ModBlocks.CONDUIT_BOX.get(), true, false)
+                .item(ModBlocks.FIRE_ALARM_PANEL.get(), true, false)
                 .addToIndex()
                 .register();
     }

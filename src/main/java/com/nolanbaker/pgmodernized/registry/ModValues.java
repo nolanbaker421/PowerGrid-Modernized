@@ -47,7 +47,7 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         resistance("conduit_switch", "contact", 0.001);
         resistance("conduit_button", "contact", 0.001);
         for(int gangs = 1; gangs <= 4; ++gangs)
-            resistance("gang_box_" + gangs, "contact", 0.001);
+            resistance("gang_box_" + gangs, "contact", 0.001, "supervisory", 20000, "detector", 1000, "horn", 80);
         resistance("conduit_switch_3way", "contact", 0.001);
         resistance("disconnect", "contact", 0.0005);
         // Conduit boxes: the lamp of a light socket cover, sixty watts at 120 V.

@@ -94,21 +94,46 @@ def cover_textures():
     write_png(os.path.join(block, "horn_strobe.png"), horn)
     write_png(os.path.join(block, "lens_off.png"), canvas(16, 16, (0xc8, 0xc8, 0xc0, 255)))
     write_png(os.path.join(block, "lens_on.png"), canvas(16, 16, (0xff, 0xff, 0xf0, 255)))
+    # The heat detector: the same puck with a red ring; the pull station: red with a white handle.
+    heat = canvas(16, 16, white + (255,))
+    for i in range(2, 14, 3):
+        fill(heat, 2, i, 14, i + 1, shade(white, 0.85))
+    fill(heat, 1, 1, 15, 2, RED)
+    fill(heat, 1, 14, 15, 15, RED)
+    fill(heat, 1, 1, 2, 15, RED)
+    fill(heat, 14, 1, 15, 15, RED)
+    fill(heat, 0, 15, 16, 16, shade(white, 0.7))
+    write_png(os.path.join(block, "heat_detector.png"), heat)
+    pull = canvas(16, 16, RED + (255,))
+    fill(pull, 0, 0, 16, 1, shade(RED, 1.2))
+    fill(pull, 0, 15, 16, 16, shade(RED, 0.6))
+    fill(pull, 3, 3, 13, 5, (0xf0, 0xf0, 0xec))
+    write_png(os.path.join(block, "pull_station.png"), pull)
+    write_png(os.path.join(block, "pull_handle.png"), canvas(16, 16, (0xf0, 0xf0, 0xec, 255)))
 
 
 def cover_items():
     item = os.path.join(ASSETS, "textures", "item")
     plate = (0x86, 0x8a, 0x8e)
-    for name in ("conduit_cover_smoke", "conduit_cover_horn"):
+    for name in ("conduit_cover_smoke", "conduit_cover_horn", "conduit_cover_heat", "conduit_cover_pull"):
         img = canvas(16, 16)
         fill(img, 2, 2, 14, 14, plate)
         fill(img, 2, 2, 14, 3, shade(plate, 1.2))
         fill(img, 2, 13, 14, 14, shade(plate, 0.6))
-        if name.endswith("smoke"):
+        if name.endswith(("smoke", "heat")):
             fill(img, 5, 5, 11, 11, (0xf2, 0xf2, 0xee))
             fill(img, 6, 6, 10, 10, (0xd8, 0xd8, 0xd2))
             fill(img, 7, 7, 9, 9, (0xf2, 0xf2, 0xee))
             fill(img, 7, 10, 8, 11, (0x30, 0xe0, 0x50))
+            if name.endswith("heat"):
+                fill(img, 5, 5, 11, 6, RED)
+                fill(img, 5, 10, 11, 11, RED)
+                fill(img, 5, 5, 6, 11, RED)
+                fill(img, 10, 5, 11, 11, RED)
+        elif name.endswith("pull"):
+            fill(img, 5, 4, 11, 12, RED)
+            fill(img, 6, 7, 10, 8, (0xf0, 0xf0, 0xec))
+            fill(img, 7, 8, 9, 11, (0xf0, 0xf0, 0xec))
         else:
             fill(img, 5, 4, 11, 12, RED)
             fill(img, 6, 5, 10, 8, (0xff, 0xff, 0xf0))
@@ -120,6 +145,10 @@ def cover_items():
     recipe_shapeless("conduit_cover_smoke", [blank, {"item": "minecraft:redstone"}, {"item": "minecraft:glass_pane"}, {"tag": "c:nuggets/copper"}], 1,
                      {"items": "%s:conduit_cover_blank" % MOD})
     recipe_shapeless("conduit_cover_horn", [blank, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"tag": "c:nuggets/copper"}], 1,
+                     {"items": "%s:conduit_cover_blank" % MOD})
+    recipe_shapeless("conduit_cover_heat", [blank, {"item": "minecraft:redstone"}, {"tag": "c:nuggets/copper"}, {"tag": "c:nuggets/iron"}], 1,
+                     {"items": "%s:conduit_cover_blank" % MOD})
+    recipe_shapeless("conduit_cover_pull", [blank, {"item": "minecraft:lever"}, {"tag": "c:dyes/red"}], 1,
                      {"items": "%s:conduit_cover_blank" % MOD})
 
 

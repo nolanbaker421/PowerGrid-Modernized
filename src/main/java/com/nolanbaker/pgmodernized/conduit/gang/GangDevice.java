@@ -15,7 +15,11 @@ public enum GangDevice {
     THREE_WAY("switch_3way", "3-Way Switch", "common", "traveller_a", "traveller_b"),
     FOUR_WAY("switch_4way", "4-Way Switch", "in_a", "in_b", "out_a", "out_b"),
     BUTTON("button", "Push Button", "line", "load"),
-    RECEPTACLE("receptacle", "Duplex Receptacle", "line", "neutral");
+    RECEPTACLE("receptacle", "Duplex Receptacle", "line", "neutral"),
+    /** On the fire alarm panel's initiating loop: pulled by hand, reset with a wrench. */
+    PULL_STATION("pull_station", "Pull Station", "loop_plus", "loop_minus"),
+    /** On the fire alarm panel's notification loop: sounds and flashes from sixteen volts, flashes from eight. */
+    HORN_STROBE("horn_strobe", "Horn Strobe", "loop_plus", "loop_minus");
 
     public static final int MAX_POINTS = 4;
     private static final int YELLOW = 0xC8A000, WHITE = 0xF0F0F0;
@@ -56,6 +60,10 @@ public enum GangDevice {
         var key = points[k];
         if(key.equals("neutral"))
             return WHITE;
+        if(key.equals("loop_plus"))
+            return com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlock.LOOP_PLUS_RGB;
+        if(key.equals("loop_minus"))
+            return com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlock.LOOP_MINUS_RGB;
         return switch(k) {
             case 0 -> ConductorColors.hotRgb(0);
             case 1 -> ConductorColors.hotRgb(1);
@@ -72,6 +80,11 @@ public enum GangDevice {
     /** Closed only while pressed. */
     public boolean momentary() {
         return this == BUTTON;
+    }
+
+    /** A detector or pull station's contact across the initiating loop, with its supervisory resistor. */
+    public boolean initiating() {
+        return this == PULL_STATION;
     }
 
     public static GangDevice byId(String id) {

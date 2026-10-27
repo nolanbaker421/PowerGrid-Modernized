@@ -270,6 +270,12 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
             level.playSound(null, pos, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.6f, 1.2f);
             return InteractionResult.SUCCESS;
         }
+        // A pull station: a bare hand pulls it; a wrench resets it.
+        if(cover(state).isPull() && hand == InteractionHand.MAIN_HAND && player.getMainHandItem().isEmpty()) {
+            if(!level.isClientSide && level.getBlockEntity(pos) instanceof ConduitBoxBlockEntity be)
+                be.pull(player);
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         // A cord in the receptacle comes out in the hand, as on Power Grid's own socket.
         if(cover(state) == ConduitCover.RECEPTACLE && hand == InteractionHand.MAIN_HAND && player.getMainHandItem().isEmpty()) {
             var endpoint = new SocketEndpoint(pos);
@@ -284,6 +290,18 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
         if(level.isClientSide)
             ClientHooks.openSplices(pos);
         return InteractionResult.SUCCESS;
+    }
+
+    /** A wrench resets a pulled station; on anything else it does what it does to any box. */
+    @Override
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        if(cover(state) == ConduitCover.PULL_PULLED) {
+            var level = context.getLevel();
+            if(!level.isClientSide && level.getBlockEntity(context.getClickedPos()) instanceof ConduitBoxBlockEntity be && context.getPlayer() != null)
+                be.resetPull(context.getPlayer());
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        return super.onWrenched(state, context);
     }
 
     @Override

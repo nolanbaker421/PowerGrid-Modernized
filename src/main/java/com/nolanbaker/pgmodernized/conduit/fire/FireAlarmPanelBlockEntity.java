@@ -101,6 +101,14 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         return silenced;
     }
 
+    /** For Ponder: a client-side panel shown in a state, with its lights. */
+    public void demo(State shown, boolean silencedShown) {
+        powered = true;
+        state = shown;
+        alarm = shown == State.ALARM;
+        silenced = silencedShown;
+    }
+
     @Override
     public void electricalTick() {
         if(level == null || level.isClientSide || feed == null)
