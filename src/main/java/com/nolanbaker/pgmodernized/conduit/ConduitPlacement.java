@@ -125,14 +125,12 @@ public final class ConduitPlacement {
         var level = context.getLevel();
         var player = context.getPlayer();
         var existing = ConduitConnection.get(stack, level);
-        if(existing == null) {
-            message(player, "message.conduit.strut_first", ChatFormatting.RED);
-            return InteractionResult.FAIL;
-        }
         if(FlexConduitItem.isFlex(stack)) {
             message(player, "message.conduit.strut_no_flex", ChatFormatting.RED);
             return InteractionResult.FAIL;
         }
+        if(existing == null)
+            return startOnStrut(context, strut, local, tubeRadiusPx);
         var pos = context.getClickedPos();
         var facing = strut.getValue(StrutBlock.FACING);
         var strutAxis = StrutBlock.axisFor(facing, strut.getValue(StrutBlock.AXIS));
@@ -154,6 +152,48 @@ public final class ConduitPlacement {
             return InteractionResult.SUCCESS;
         }
         return run.getResult();
+    }
+
+    /**
+     * A click on a strut with no run pending starts one there, ahead of any panel: a short piece
+     * clamped in the slot, crossing the rail six pixels either side, open at both ends. The run
+     * carries on from the far end, and later from the near end by clicking the run there.
+     */
+    private static InteractionResult startOnStrut(UseOnContext context, BlockState strut, Vec3 local, double tubeRadiusPx) {
+        var stack = context.getItemInHand();
+        var level = context.getLevel();
+        var player = context.getPlayer();
+        var entry = wireEntry(level, stack, player);
+        if(entry == null)
+            return InteractionResult.FAIL;
+        var pos = context.getClickedPos();
+        var facing = strut.getValue(StrutBlock.FACING);
+        var strutAxis = StrutBlock.axisFor(facing, strut.getValue(StrutBlock.AXIS));
+        var acrossAxis = Direction.Axis.values()[3 - facing.getAxis().ordinal() - strutAxis.ordinal()];
+        var clampLocal = StrutBlock.clamp(strut, local, tubeRadiusPx);
+        var clamp = new Vec3(pos.getX() + clampLocal.x, pos.getY() + clampLocal.y, pos.getZ() + clampLocal.z);
+        boolean nearSide = local.get(acrossAxis) * 16 < 8;
+        var toward = Direction.fromAxisAndDirection(acrossAxis, nearSide ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
+        var start = clamp.relative(toward.getOpposite(), MIN_CROSS_PX / 16.0);
+        var legs = List.of(new BlockWireEntity.Point(toward, 2 * MIN_CROSS_PX));
+        int newItems = Math.max((int) Math.ceil(2 * MIN_CROSS_PX / 16.0 * entry.itemsPerMeter()), 1);
+        if(!ConduitSupply.has(player, stack, newItems)) {
+            message(player, "message.connection_missing_items", ChatFormatting.RED);
+            return InteractionResult.FAIL;
+        }
+        if(level.isClientSide)
+            return InteractionResult.SUCCESS;
+        var entity = ConduitRunEntity.create(level, new ImaginaryWireEndpoint(start), ConduitSupply.stack(stack, newItems), legs);
+        SubLevelStick.stick(entity);
+        if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
+            PowerGridModernized.LOGGER.error("Failed to spawn conduit run entity");
+            message(player, "message.connection_failed", ChatFormatting.RED);
+            return InteractionResult.FAIL;
+        }
+        ConduitSupply.take(player, stack, newItems);
+        ConduitConnection.set(stack, new BlockWireEntityEndpoint(entity, true), level);
+        message(player, "message.conduit.strut_started", ChatFormatting.GRAY);
+        return InteractionResult.SUCCESS;
     }
 
     /** A kick out to a strut's tier starts this far before the rail's centre line, in pixels. */
@@ -325,12 +365,19 @@ public final class ConduitPlacement {
         boolean atStart = reference.distanceToSqr(start) < reference.distanceToSqr(end);
 
         if(atStart) {
-            if(run.getEndpoint1() != null) {
+            // A start in the air, a run begun on a strut, is as open as no endpoint at all.
+            if(run.getEndpoint1() != null && !(run.getEndpoint1() instanceof ImaginaryWireEndpoint)) {
                 message(player, "message.conduit.no_tee", ChatFormatting.RED);
                 return InteractionResult.FAIL;
             }
             run = (ConduitRunEntity) run.flip();
-        } else if(run.getEndpoint2() != null) {
+            if(run.getEndpoint2() instanceof ImaginaryWireEndpoint) {
+                run.setEndpoint2(null);
+                if(run.getEndpoint1() == null)
+                    run.setEndpoint1(new ImaginaryWireEndpoint(run.position()));
+                run.sendExtraData();
+            }
+        } else if(run.getEndpoint2() != null && !(run.getEndpoint2() instanceof ImaginaryWireEndpoint)) {
             message(player, "message.conduit.no_tee", ChatFormatting.RED);
             return InteractionResult.FAIL;
         }

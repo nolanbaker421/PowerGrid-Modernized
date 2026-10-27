@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.61.0 — 2026-10-26
+
+### Added
+- A conduit run can start on a strut. With no run pending, a click on a strut lays a short piece
+  clamped in the slot, crossing the rail six pixels either side and open at both ends; the run
+  carries on from the far end, and the near end takes a continuation later when the run is clicked
+  there. Racks can be laid ahead of their panel.
+
 ## 0.60.1 — 2026-10-26
 
 ### Fixed
