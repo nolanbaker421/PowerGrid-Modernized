@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.60.0 — 2026-10-26
+
+### Changed
+- A strut forces the run's direction through its clamp: the last leg into a clamp always crosses
+  the rail, from at least six pixels off its centre line. A run arriving head on at the mount, or
+  along the rail, steps off to the side the click is on and comes back across, as a box offset at
+  the start, so a run can no longer stop dead against a rail or climb along it from a clamp. The
+  open end at the clamp points across the rail, and the next leg leaves that way.
+
 ## 0.59.10 — 2026-10-26
 
 ### Fixed

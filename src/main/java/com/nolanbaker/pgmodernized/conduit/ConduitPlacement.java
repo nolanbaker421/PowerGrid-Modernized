@@ -146,7 +146,7 @@ public final class ConduitPlacement {
                 ? StrutBlock.clamp(strut, local, tubeRadiusPx, (from.get(strutAxis) - pos.get(strutAxis)) * 16)
                 : StrutBlock.clamp(strut, local, tubeRadiusPx);
         var target = new ImaginaryWireEndpoint(new Vec3(pos.getX() + clampLocal.x, pos.getY() + clampLocal.y, pos.getZ() + clampLocal.z));
-        var run = layStraight(level, stack, player, existing, target, facing, strutAxis);
+        var run = layStraight(level, stack, player, existing, target, facing, strutAxis, local);
         if(run.getResult().consumesAction()) {
             var entity = run.getObject();
             if(entity != null)
@@ -158,19 +158,23 @@ public final class ConduitPlacement {
 
     /** A kick out to a strut's tier starts this far before the rail's centre line, in pixels. */
     private static final int KICK_SETBACK_PX = 6;
+    /** The last leg into a clamp crosses the rail from at least this far off its centre line, in pixels. */
+    private static final int MIN_CROSS_PX = 6;
 
     /**
-     * Lays the pending run to a point in straight legs, in an order that suits the way it arrives.
-     * Coming square at the rail: along the strut to the slot, across towards the rail at the depth
-     * it has, a kick out to the tier just short of the rail, and across the rail last, so the tube
-     * hugs the wall on the way and crosses the rail square in its clamp. Coming at the mount, up a
-     * wall to a ceiling strut say: a jog along the strut's line to its slot at the start, on to the
-     * tier's depth, then across, so it turns the corner even with the strut in two clean legs. Running along the rail: onto the rail's line first,
-     * then along to the slot. The run stays open at the clamp, ready for the next strut or the
+     * Lays the pending run to a point in straight legs, in an order that suits the way it arrives,
+     * and always crossing the rail last: a clamp holds a tube that crosses the rail, so the strut
+     * forces the run's direction through it. Coming square at the rail: along the strut to the
+     * slot, across towards the rail at the depth it has, a kick out to the tier just short of the
+     * rail, and across the rail, so the tube hugs the wall on the way. Coming any other way, at
+     * the mount up a wall to a ceiling strut, or along the rail: a step off to the side it is
+     * coming from if it is near the rail's line, a jog along the strut's line to its slot, both at
+     * the start as a box offset, on to the tier's depth, along to the slot, then across the rail.
+     * The run stays open at the clamp, pointing across the rail, ready for the next strut or the
      * closing knockout.
      */
     private static InteractionResultHolder<ConduitRunEntity> layStraight(Level level, ItemStack stack, @Nullable Player player,
-                                                                         IWireEndpoint from, IWireEndpoint to, Direction mount, Direction.Axis strutAxis) {
+                                                                         IWireEndpoint from, IWireEndpoint to, Direction mount, Direction.Axis strutAxis, Vec3 clickLocal) {
         var entry = wireEntry(level, stack, player);
         if(entry == null)
             return InteractionResultHolder.fail(null);
@@ -216,15 +220,17 @@ public final class ConduitPlacement {
         var depthAxis = mount.getAxis();
         var acrossAxis = Direction.Axis.values()[3 - depthAxis.ordinal() - strutAxis.ordinal()];
         double[] cur = {last.x, last.y, last.z};
-        if(incoming != null && incoming.getAxis() == depthAxis) {
-            // The sideways jog to the slot goes at the start, a box offset, so the corner is two long legs.
+        if(incoming == null || incoming.getAxis() != acrossAxis) {
+            // Near the rail's line already: step off to the side the click is on, so there is a crossing.
+            double acrossPx = (target.get(acrossAxis) - cur[acrossAxis.ordinal()]) * 16;
+            if(Math.abs(acrossPx) < MIN_CROSS_PX) {
+                double sign = Math.abs(acrossPx) >= 1 ? -Math.signum(acrossPx) : (clickLocal.get(acrossAxis) * 16 < 8 ? -1 : 1);
+                leg(points, cur, acrossAxis, cur[acrossAxis.ordinal()] + sign * (MIN_CROSS_PX - Math.abs(acrossPx)) / 16.0);
+            }
+            // The jog to the slot goes at the start too, a box offset, so the corner is two long legs.
             leg(points, cur, strutAxis, target.get(strutAxis));
             leg(points, cur, depthAxis, target.get(depthAxis));
             leg(points, cur, acrossAxis, target.get(acrossAxis));
-        } else if(incoming != null && incoming.getAxis() == strutAxis) {
-            leg(points, cur, depthAxis, target.get(depthAxis));
-            leg(points, cur, acrossAxis, target.get(acrossAxis));
-            leg(points, cur, strutAxis, target.get(strutAxis));
         } else {
             leg(points, cur, strutAxis, target.get(strutAxis));
             int depthPx = (int) Math.round((target.get(depthAxis) - cur[depthAxis.ordinal()]) * 16);
