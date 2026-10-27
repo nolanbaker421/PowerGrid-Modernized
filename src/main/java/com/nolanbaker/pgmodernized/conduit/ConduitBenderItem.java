@@ -290,11 +290,7 @@ public class ConduitBenderItem extends Item {
     private static ConduitRunEntity.Hit legUnder(ConduitRunEntity run, Player player) {
         var eye = player.getEyePosition();
         var far = eye.add(player.getLookAngle().scale(PlayerUtilities.getReachDistance(player) + 1));
-        var hit = run.segmentAt(eye, far);
-        if(hit == null)
-            com.nolanbaker.pgmodernized.PowerGridModernized.LOGGER.info("Bender missed run {} at {}: eye {} to {}, {} legs, {} boxes, first {}",
-                    run.getId(), run.position(), eye, far, run.segments.size(), run.boundingBoxes.size(), run.boundingBoxes.isEmpty() ? null : run.boundingBoxes.get(0));
-        return hit;
+        return run.segmentAt(eye, far);
     }
 
     /**

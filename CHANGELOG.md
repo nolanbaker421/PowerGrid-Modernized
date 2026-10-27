@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.63.1 — 2026-10-26
+
+### Fixed
+- The bender answered every tap with "Aim at a leg of the run". Power Grid keeps a run's leg
+  hitboxes relative to the run, and the look ray was tested against them in the level's
+  coordinates, so nothing was ever hit; the same lookup has been wrong since the first bender.
+  The ray is now taken into the run's frame, and the overlay's outlines are drawn where the legs
+  are rather than near the world origin.
+
 ## 0.63.0 — 2026-10-26
 
 ### Added

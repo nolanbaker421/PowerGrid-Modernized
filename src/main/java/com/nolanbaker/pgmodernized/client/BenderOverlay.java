@@ -43,7 +43,7 @@ public final class BenderOverlay {
             if(diagonal) {
                 mark = ConduitBenderItem.pointOnLeg(grabbed, leg, ConduitBenderItem.grabbedPx(stack));
             } else if(leg < grabbed.boundingBoxes.size()) {
-                held = grabbed.boundingBoxes.get(leg);
+                held = grabbed.legBox(leg);
                 if(mc.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
                     var shift = ConduitBenderItem.targetShift(grabbed, leg, hit);
                     if(shift != null && !shift.equals(Vec3i.ZERO))
@@ -56,7 +56,7 @@ public final class BenderOverlay {
             var far = eye.add(player.getLookAngle().scale(PlayerUtilities.getReachDistance(player) + 1));
             var leg = run.segmentAt(eye, far);
             if(leg != null && leg.index() < run.boundingBoxes.size()) {
-                hover = run.boundingBoxes.get(leg.index());
+                hover = run.legBox(leg.index());
                 if(mark != null && run == grabbed)
                     to = ConduitBenderItem.pointOnLeg(run, leg.index(), ConduitBenderItem.pxAlong(run, leg.index(), leg.point()));
             }

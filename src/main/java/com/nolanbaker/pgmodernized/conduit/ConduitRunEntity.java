@@ -20,6 +20,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedTags;
@@ -435,19 +436,28 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
     /** The leg under a look ray from {@code from} to {@code to}, nearest first, or null. Works on both sides. */
     @Nullable
     public Hit segmentAt(Vec3 from, Vec3 to) {
+        // Power Grid keeps the legs' boxes relative to the run; the ray comes in the level's coordinates.
+        var origin = position();
+        var start = from.subtract(origin);
+        var end = to.subtract(origin);
         Hit best = null;
         double bestDistance = Double.MAX_VALUE;
         for(int i = 0; i < boundingBoxes.size() && i < segments.size(); ++i) {
-            var clip = boundingBoxes.get(i).clip(from, to);
+            var clip = boundingBoxes.get(i).clip(start, end);
             if(clip.isEmpty())
                 continue;
-            double d = clip.get().distanceToSqr(from);
+            double d = clip.get().distanceToSqr(start);
             if(d < bestDistance) {
                 bestDistance = d;
-                best = new Hit(i, clip.get());
+                best = new Hit(i, clip.get().add(origin));
             }
         }
         return best;
+    }
+
+    /** The hitbox of leg {@code index} in the level's coordinates. */
+    public AABB legBox(int index) {
+        return boundingBoxes.get(index).move(position());
     }
 
     /**
