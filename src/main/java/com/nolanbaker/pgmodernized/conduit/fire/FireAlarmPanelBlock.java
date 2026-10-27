@@ -70,7 +70,10 @@ public class FireAlarmPanelBlock extends HorizontalElectricBlock implements IBE<
     public static final int CONTACT_COUNT = 3;
     public static final int CONTACT_ALARM = 0, CONTACT_TROUBLE = 1, CONTACT_SILENCED = 2;
     private static final int[] POINTS = points();
-    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUBS.length, POINTS, CONTACT_COUNT * 2);
+    /** The contacts, then the network jack on the panel's right side, after the knockouts' landings. */
+    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUBS.length, POINTS, CONTACT_COUNT * 2 + 1);
+    public static final int JACK = LAYOUT.extraBase() + CONTACT_COUNT * 2;
+    private static final AABB JACK_BOX = new AABB(13, 3, 12.5, 14, 5, 14.5);
     private static final String[] CONTACT_KEYS = {"alarm", "trouble", "silenced"};
 
     private static int[] points() {
@@ -95,8 +98,10 @@ public class FireAlarmPanelBlock extends HorizontalElectricBlock implements IBE<
             contacts[c * 2] = terminal("fire_alarm.contact_" + CONTACT_KEYS[c] + "_com", ChatFormatting.GOLD, 0xC8A000);
             contacts[c * 2 + 1] = terminal("fire_alarm.contact_" + CONTACT_KEYS[c] + "_no", ChatFormatting.GOLD, 0xE0C040);
         }
-        var terminals = DeviceHubs.withExtras(DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), contacts);
-        setTerminalCollection(StateTerminals.horizontalNorth(this, DeviceHubs.withHubs(BODY, HUBS), state -> terminals));
+        var jack = com.nolanbaker.pgmodernized.network.JackTerminals.jack(JACK_BOX.minX, JACK_BOX.minY, JACK_BOX.minZ, JACK_BOX.maxX, JACK_BOX.maxY, JACK_BOX.maxZ);
+        var terminals = DeviceHubs.withExtras(DeviceHubs.withExtras(DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), contacts), jack);
+        var shape = net.minecraft.world.phys.shapes.Shapes.or(DeviceHubs.withHubs(BODY, HUBS), box(JACK_BOX.minX, JACK_BOX.minY, JACK_BOX.minZ, JACK_BOX.maxX, JACK_BOX.maxY, JACK_BOX.maxZ));
+        setTerminalCollection(StateTerminals.horizontalNorth(this, shape, state -> terminals));
     }
 
     private static TerminalBoundingBox[] terminals() {
@@ -148,13 +153,13 @@ public class FireAlarmPanelBlock extends HorizontalElectricBlock implements IBE<
         return false;
     }
 
-    /** Conduit on the knockouts; nothing else lands anywhere. */
+    /** Conduit on the knockouts, Cat6 on the jack; nothing else lands anywhere. */
     @Override
     public InteractionResult onWire(BlockState state, UseOnContext context) {
-        return DeviceHubs.onWire(this, LAYOUT, state, context, (s, c) -> {
-            IElectric.sendMessage(c, Lang.translate("message.fire_alarm.conduit_only").style(ChatFormatting.RED).component());
+        return DeviceHubs.onWire(this, LAYOUT, state, context, (s, c) -> com.nolanbaker.pgmodernized.network.JackTerminals.onWire(this, JACK, s, c, (s2, c2) -> {
+            IElectric.sendMessage(c2, Lang.translate("message.fire_alarm.conduit_only").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
-        });
+        }));
     }
 
     @Override

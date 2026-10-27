@@ -139,6 +139,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     private List<BlockPos> stations = new ArrayList<>();
     /** Redstone ports found over the Cat6, by position; the PLC writes their levels as RS<n>. */
     private List<BlockPos> ports = new ArrayList<>();
+    /** Fire alarm panels found over the Cat6, by position; the first loaded one answers the FA tags. */
+    private List<BlockPos> firePanels = new ArrayList<>();
     private boolean[] drivesHertz = new boolean[0];
     // The PLC: its program, the compiled form, what it told the VFD modules, and the devices it can see.
     private PlcGraph graph = new PlcGraph();
@@ -1014,6 +1016,60 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         }
     }
 
+    /** The fire alarm panel found over the Cat6 that is loaded right now, or null. */
+    @Nullable
+    public com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity firePanel() {
+        if(level == null)
+            return null;
+        for(var at : firePanels)
+            if(level.isLoaded(at) && level.getBlockEntity(at) instanceof com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity panel)
+                return panel;
+        return null;
+    }
+
+    /**
+     * The fire alarm panel's tags: FA or FA.ALARM, FA.TROUBLE, FA.SILENCED, FA.POWER, FA.DRILL,
+     * and FA.n for the device at address n, 1 tripped or pulled. NaN with no panel on the network.
+     */
+    private double readFireTag(String name) {
+        var panel = firePanel();
+        if(panel == null)
+            return Double.NaN;
+        if(name.equals("FA"))
+            return panel.inAlarm() ? 1 : 0;
+        if(!name.startsWith("FA."))
+            return Double.NaN;
+        var what = name.substring(3);
+        switch(what) {
+            case "ALARM": return panel.inAlarm() ? 1 : 0;
+            case "TROUBLE": return panel.state() == com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity.State.TROUBLE ? 1 : 0;
+            case "SILENCED": return panel.silenced() ? 1 : 0;
+            case "POWER": return panel.powered() ? 1 : 0;
+            case "DRILL": return panel.drill() ? 1 : 0;
+            default: break;
+        }
+        try {
+            return panel.deviceTripped(Integer.parseInt(what));
+        } catch(NumberFormatException e) {
+            return Double.NaN;
+        }
+    }
+
+    /** Writable fire alarm tags: FA.SILENCE, FA.RESET and FA.DRILL, each acting on a nonzero value. */
+    private boolean writeFireTag(String name, double value) {
+        var panel = firePanel();
+        if(panel == null || !name.startsWith("FA."))
+            return false;
+        boolean probe = Double.isNaN(value);
+        switch(name.substring(3)) {
+            case "SILENCE" -> { if(!probe && value != 0) panel.plcSilence(); }
+            case "RESET" -> { if(!probe && value != 0) panel.plcReset(); }
+            case "DRILL" -> { if(!probe) panel.plcDrill(value != 0); }
+            default -> { return false; }
+        }
+        return true;
+    }
+
     private final class PlcIo implements PlcProgram.Io {
         @Override
         public long dayTime() {
@@ -1024,6 +1080,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         public double read(String name) {
             if(name.equals("E"))
                 return isEStopped() ? 1 : 0;
+            if(name.startsWith("FA"))
+                return readFireTag(name);
             if(name.startsWith("RS")) {
                 var port = portOf(name);
                 return port == null ? Double.NaN : port.output();
@@ -1103,6 +1161,8 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         @Override
         public boolean write(String name, double value) {
             boolean probe = Double.isNaN(value);
+            if(name.startsWith("FA"))
+                return writeFireTag(name, value);
             if(name.startsWith("RS")) {
                 var port = portOf(name);
                 if(port == null)
@@ -1613,6 +1673,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
         var foundPorts = DriveLink.discoverAll(level, jack, RedstonePortBlockEntity.class);
         if(!foundPorts.equals(ports))
             ports = foundPorts;
+        var foundPanels = DriveLink.discoverAll(level, jack, com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity.class);
+        if(!foundPanels.equals(firePanels))
+            firePanels = foundPanels;
         if(hasPlc() || !plcDevices.isEmpty())
             refreshPlcDevices();
     }

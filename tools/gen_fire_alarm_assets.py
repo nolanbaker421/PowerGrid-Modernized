@@ -54,10 +54,11 @@ def panel_textures():
 
 def panel_model():
     tex = {"front": "%s:block/fire_alarm_panel_front" % MOD, "side": "%s:block/fire_alarm_panel_side" % MOD,
-           "knockout": "%s:block/knockout_one" % MOD, "particle": "%s:block/fire_alarm_panel_side" % MOD}
+           "knockout": "%s:block/knockout_one" % MOD, "jack": "%s:block/jack_pin" % MOD, "particle": "%s:block/fire_alarm_panel_side" % MOD}
     body = element(*BODY, "#side")
     body["faces"]["north"]["texture"] = "#front"
     elements = [body] + [element(*hub, "#knockout") for hub in HUBS]
+    elements.append(element(13, 3, 12.5, 14, 5, 14.5, "#jack"))   # the network jack on the right side (FireAlarmPanelBlock.JACK_BOX)
     dump(os.path.join(ASSETS, "models", "block", "fire_alarm_panel.json"), {"parent": "block/block", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "models", "item", "fire_alarm_panel.json"), {"parent": "%s:block/fire_alarm_panel" % MOD})
     dump(os.path.join(ASSETS, "blockstates", "fire_alarm_panel.json"), {"variants": {

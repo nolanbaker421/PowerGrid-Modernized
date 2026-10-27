@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.69.0 — 2026-10-26
+
+### Added
+- The fire alarm panel has a network jack on its right side. A controls cabinet whose Cat6
+  network reaches it reads it in the PLC: FA or FA.ALARM, FA.TROUBLE, FA.SILENCED, FA.POWER and
+  FA.DRILL, and FA.n for the device at address n, 1 while that detector is tripped or that
+  station pulled. A program writes FA.SILENCE and FA.RESET, which act like the buttons, and
+  FA.DRILL, which puts the panel in alarm with no device for as long as it is held and resets
+  it after, so a drill can run on a schedule. The door shows DRILL.
+
 ## 0.68.0 — 2026-10-26
 
 ### Added

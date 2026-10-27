@@ -4,6 +4,7 @@
     "front": "powergrid_modernized:block/fire_alarm_panel_front",
     "side": "powergrid_modernized:block/fire_alarm_panel_side",
     "knockout": "powergrid_modernized:block/knockout_one",
+    "jack": "powergrid_modernized:block/jack_pin",
     "particle": "powergrid_modernized:block/fire_alarm_panel_side"
   },
   "elements": [
@@ -344,6 +345,74 @@
             3.5
           ],
           "texture": "#knockout"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        3,
+        12.5
+      ],
+      "to": [
+        14,
+        5,
+        14.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            11,
+            3,
+            13
+          ],
+          "texture": "#jack"
+        },
+        "south": {
+          "uv": [
+            13,
+            11,
+            14,
+            13
+          ],
+          "texture": "#jack"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            11,
+            3.5,
+            13
+          ],
+          "texture": "#jack"
+        },
+        "west": {
+          "uv": [
+            12.5,
+            11,
+            14.5,
+            13
+          ],
+          "texture": "#jack"
+        },
+        "up": {
+          "uv": [
+            13,
+            12.5,
+            14,
+            14.5
+          ],
+          "texture": "#jack"
+        },
+        "down": {
+          "uv": [
+            13,
+            1.5,
+            14,
+            3.5
+          ],
+          "texture": "#jack"
         }
       }
     }

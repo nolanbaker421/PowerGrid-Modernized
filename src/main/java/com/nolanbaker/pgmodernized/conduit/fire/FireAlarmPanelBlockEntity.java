@@ -32,7 +32,7 @@ import static com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlock.*;
  * loop with nothing on it draws none. The notification loop idles at two volts, enough to see a
  * horn strobe's load without waking it, and goes to twenty-four in alarm, or twelve once silenced.
  */
-public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements IDeviceSpliceHost, IHaveGoggleInformation {
+public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements IDeviceSpliceHost, IHaveGoggleInformation, com.nolanbaker.pgmodernized.network.INetworkJack {
     public enum State { NORMAL, ALARM, TROUBLE }
 
     public static final float LOOP_VOLTS = 24, SILENCED_VOLTS = 12, SUPERVISORY_VOLTS = 2;
@@ -43,6 +43,10 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
     private ProvidedVoltageSourceCoupling idc, nac;
     /** The three dry contacts: Alarm, Trouble, Silenced. */
     private org.patryk3211.powergrid.electricity.sim.SwitchedWire[] contacts;
+    /** The network jack a controls cabinet reaches the panel through. */
+    private final com.nolanbaker.pgmodernized.network.JackSupport jack = new com.nolanbaker.pgmodernized.network.JackSupport(this, false);
+    /** A drill: alarm with no device, started by a PLC or a test, cleared by Reset. */
+    private boolean drill;
     private AcReadings.Filter feedReading;
     private float feedVolts, idcVolts, nacVolts, idcAmps, nacAmps;
     private boolean powered, alarm, silenced, idcOpen, nacOpen;
@@ -76,6 +80,95 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
     @Override
     public ConduitSize maxConduit() {
         return ConduitSize.ONE;
+    }
+
+    // ---- the jack ----
+
+    @Override
+    public void tick() {
+        super.tick();
+        jack.tick();
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        jack.remove();
+    }
+
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        jack.unload();
+    }
+
+    @Override
+    public com.nolanbaker.pgmodernized.network.JackSupport networkJack() {
+        return jack;
+    }
+
+    @Override
+    public net.minecraft.world.phys.Vec3 jackPosition(int port) {
+        return org.patryk3211.powergrid.electricity.base.IElectric.getTerminalPos(level, worldPosition, JACK);
+    }
+
+    @Override
+    public int jackTerminalIndex() {
+        return JACK;
+    }
+
+    // ---- what a PLC reads and writes over the jack ----
+
+    public boolean drill() {
+        return drill;
+    }
+
+    /** A device's state by address: 1 tripped or pulled, 0 quiet, NaN for no such device. */
+    public double deviceTripped(int address) {
+        var device = devices.get(address);
+        if(device == null)
+            return Double.NaN;
+        return device.status() == FireDevice.Status.ALARM ? 1 : 0;
+    }
+
+    /** Server side: a PLC silences the horns. */
+    public void plcSilence() {
+        if(alarm && !silenced) {
+            silenced = true;
+            applyContacts();
+            setChanged();
+            sendData();
+        }
+    }
+
+    /** Server side: a PLC resets the panel; refused while a device still holds the loop. True when it cleared. */
+    public boolean plcReset() {
+        if(!alarm)
+            return true;
+        if(idcAmps >= ALARM_AMPS)
+            return false;
+        alarm = false;
+        silenced = false;
+        drill = false;
+        applyContacts();
+        alarmChanged();
+        return true;
+    }
+
+    /** Server side: a PLC starts or ends a drill, an alarm with no device; ending it is a reset. */
+    public void plcDrill(boolean on) {
+        if(on == drill)
+            return;
+        drill = on;
+        if(on) {
+            boolean was = alarm;
+            alarm = true;
+            applyContacts();
+            if(!was)
+                alarmChanged();
+        } else {
+            plcReset();
+        }
     }
 
     @Override
@@ -265,7 +358,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
             nacOpen = false;
             state = State.TROUBLE;
         } else {
-            if(idcAmps >= ALARM_AMPS)
+            if(idcAmps >= ALARM_AMPS || drill)
                 alarm = true;
             idcOpen = idcAmps < SUPERVISED_AMPS;
             nacOpen = !alarm && nacAmps < SUPERVISED_AMPS;
@@ -316,6 +409,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         }
         alarm = false;
         silenced = false;
+        drill = false;
         applyContacts();
         level.playSound(null, worldPosition, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.5f, 1.2f);
         message(player, "message.fire_alarm.reset", ChatFormatting.GREEN);
@@ -356,6 +450,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         deviceHubs().write(tag, registries, clientPacket);
         tag.putBoolean("Alarm", alarm);
         tag.putBoolean("Silenced", silenced);
+        tag.putBoolean("Drill", drill);
         tag.putInt("State", state.ordinal());
         tag.putBoolean("Powered", powered);
         tag.putFloat("FeedVolts", feedVolts);
@@ -372,6 +467,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         deviceHubs().write(tag, registries, false);
         tag.putBoolean("Alarm", alarm);
         tag.putBoolean("Silenced", silenced);
+        tag.putBoolean("Drill", drill);
         writeDevices(tag);
     }
 
@@ -389,6 +485,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         deviceHubs().read(tag, registries, clientPacket);
         alarm = tag.getBoolean("Alarm");
         silenced = tag.getBoolean("Silenced");
+        drill = tag.getBoolean("Drill");
         devices.clear();
         var list = tag.getList("Devices", net.minecraft.nbt.Tag.TAG_COMPOUND);
         for(int i = 0; i < list.size(); ++i) {
@@ -424,6 +521,10 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         Lang.builder().translate("gui.fire_alarm.state_" + state.name().toLowerCase()).style(stateStyle).forGoggles(tooltip, 1);
         if(silenced)
             Lang.builder().translate("gui.fire_alarm.silenced").style(ChatFormatting.YELLOW).forGoggles(tooltip, 1);
+        if(drill)
+            Lang.builder().translate("gui.fire_alarm.drill").style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
+        if(!jack.cables().isEmpty())
+            Lang.builder().translate("gui.fire_alarm.networked").style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         if(powered) {
             Lang.builder().translate(idcOpen ? "gui.fire_alarm.idc_open" : "gui.fire_alarm.idc", String.format("%.1f", idcAmps * 1000))
                     .style(idcOpen ? ChatFormatting.YELLOW : ChatFormatting.WHITE).forGoggles(tooltip, 1);
