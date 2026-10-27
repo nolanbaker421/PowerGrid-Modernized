@@ -400,9 +400,16 @@ public class BodyWireRenderer extends BlockWireRenderer {
             var local = world.subtract(bp.getX(), bp.getY(), bp.getZ());
             var nudge = com.nolanbaker.pgmodernized.conduit.StrutBlock.clamp(state, local, t * 16 / 2).subtract(local);
             nudge = nudge.subtract(along.scale(nudge.dot(along)));
+            // The seat off the mount is three pixels and the tube's radius, which the grid can miss
+            // by a full half pixel (3/4" sits at 4.0); that part is judged on its own, and the part
+            // along the rail against the slot, relative to a knockout's own centring on a first leg.
+            var mountAxis = Vec3.atLowerCornerOf(facing.getNormal());
+            double seat = nudge.dot(mountAxis);
+            var slot = nudge.subtract(mountAxis.scale(seat));
             boolean fromKnockout = startNudge.lengthSqr() > 0;
             double limit = (fromKnockout ? 0.5 : 0.9) / 16;
-            if(nudge.subtract(fromKnockout ? startNudge : Vec3.ZERO).lengthSqr() <= limit * limit)
+            var reference = fromKnockout ? startNudge.subtract(mountAxis.scale(startNudge.dot(mountAxis))) : Vec3.ZERO;
+            if(Math.abs(seat) <= 0.6 / 16 && slot.subtract(reference).lengthSqr() <= limit * limit + 1e-9)
                 return nudge;
         }
         return Vec3.ZERO;

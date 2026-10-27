@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.60.1 — 2026-10-26
+
+### Fixed
+- 3/4" conduit sat half a pixel off a strut's rail while 1/2" sat right. The clamp seat is three
+  pixels plus the tube's radius off the mount, exactly 4.0 for 3/4", which the pixel grid rounds
+  to 4.5, and that half pixel was just over the slot nudge's limit. The seat part of the nudge
+  is judged on its own now.
+
 ## 0.60.0 — 2026-10-26
 
 ### Changed
