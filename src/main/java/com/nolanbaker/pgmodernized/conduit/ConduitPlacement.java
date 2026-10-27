@@ -275,6 +275,21 @@ public final class ConduitPlacement {
     }
 
     /**
+     * The target with each coordinate square to {@code entry} replaced by the line's where the true
+     * target lies within a pixel of that line.
+     */
+    private static Vec3 onLine(Vec3 line, Vec3 target, Vec3 exactTarget, Direction.Axis entry) {
+        double[] out = {target.x, target.y, target.z};
+        for(var axis : Direction.Axis.values()) {
+            if(axis == entry)
+                continue;
+            if(Math.abs(exactTarget.get(axis) - line.get(axis)) <= 1 / 16.0 + 1e-6)
+                out[axis.ordinal()] = line.get(axis);
+        }
+        return new Vec3(out[0], out[1], out[2]);
+    }
+
+    /**
      * One straight leg along an axis to a coordinate, in whole pixels, or nothing when there is
      * nowhere to go. A move under a pixel is not worth a jog: a knockout at 11.3 starts a run on the
      * pixel grid at 10.5, and the renderer draws the leg in its slot anyway.
@@ -448,7 +463,12 @@ public final class ConduitPlacement {
         ITerminalPlacement terminal = to instanceof BlockWireEndpoint hub ? hub.getTerminalPlacement(level) : null;
         Direction entryDir = to instanceof BlockWireEndpoint hub ? Knockouts.exit(level, hub) : null;
         if(entryDir != null) {
+            // A knockout within a pixel of the run's line is taken as on it: the grid can put the two
+            // a whole pixel apart when their true centres are a fraction apart, and the tube is drawn
+            // to the knockout's true centre either way. A one-pixel jog at the box is worse than nothing.
+            var exactTarget = targetPoint;
             targetPoint = BlockTrace.alignPosition(targetPoint).relative(entryDir, Knockouts.STUB_PX / 16.0);
+            targetPoint = onLine(lastPoint, targetPoint, exactTarget, entryDir.getAxis());
             terminal = null;
         }
 

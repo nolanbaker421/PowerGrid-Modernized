@@ -99,6 +99,7 @@ public class PowerGridModernized {
             NeoForge.EVENT_BUS.register(Cat6Preview.class);
             NeoForge.EVENT_BUS.register(ConduitPreview.class);
             NeoForge.EVENT_BUS.register(com.nolanbaker.pgmodernized.client.BenderOverlay.class);
+            NeoForge.EVENT_BUS.register(com.nolanbaker.pgmodernized.client.ConduitHandOverlay.class);
             NeoForge.EVENT_BUS.register(BreakerPlacementOutline.class);
             NeoForge.EVENT_BUS.register(com.nolanbaker.pgmodernized.client.CoverageSurvey.class);
             com.nolanbaker.pgmodernized.client.PonderSetup.init();

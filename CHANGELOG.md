@@ -4,6 +4,19 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.59.9 — 2026-10-26
+
+### Changed
+- The goggle tooltip stays off while conduit or a bender is in either hand, so a panel's block of
+  lines no longer covers the spot the next click goes to.
+
+### Fixed
+- A knockout's four-pixel stub was slanted by the knockout's centring, which moved only its far
+  end; the whole stub moves now and the long leg before it takes the pixel.
+- A run closing on a knockout within a pixel of its own line no longer lays a one-pixel jog at
+  the box, which showed as an S right above a gang box. The grid could put the two a whole pixel
+  apart when their true centres were a fraction apart.
+
 ## 0.59.8 — 2026-10-26
 
 ### Fixed

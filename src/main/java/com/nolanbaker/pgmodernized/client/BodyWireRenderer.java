@@ -235,6 +235,13 @@ public class BodyWireRenderer extends BlockWireRenderer {
         var side = new Vec3[n];
         for(int i = 0; i < n; ++i)
             side[i] = onBody || skip[i] ? Vec3.ZERO : strutNudge(run, raw[i], raw[i + 1], segs.get(i).direction, t, i == 0 ? startNudge : Vec3.ZERO);
+        // A knockout's centring moves its whole stub, not just the stub's end: a stub is four pixels
+        // long and a pixel's correction over four would read as a slant, while the long leg before
+        // it takes that pixel without showing it.
+        if(side[0].lengthSqr() == 0)
+            side[0] = square(startNudge, segs.get(0).direction);
+        if(side[n - 1].lengthSqr() == 0)
+            side[n - 1] = square(endNudge, segs.get(n - 1).direction);
         var v = new Vec3[n + 1];
         v[0] = raw[0].add(startNudge.lengthSqr() > 0 ? startNudge : side[0]);
         v[n] = raw[n].add(endNudge.lengthSqr() > 0 ? endNudge : side[n - 1]);
@@ -282,6 +289,12 @@ public class BodyWireRenderer extends BlockWireRenderer {
             }
             travelled += seg.length();
         }
+    }
+
+    /** The part of a shift that is square to a leg's direction: what moves the leg's line rather than its end. */
+    private static Vec3 square(Vec3 shift, Direction dir) {
+        var u = Vec3.atLowerCornerOf(dir.getNormal());
+        return shift.subtract(u.scale(shift.dot(u)));
     }
 
     /** The index of the leg drawn after leg {@code i}, past any absorbed ones; {@code n} when there is none. */
