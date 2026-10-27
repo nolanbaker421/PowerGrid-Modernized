@@ -218,6 +218,15 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
+        // A name tag names the fire alarm device in the gang under the click.
+        if(stack.is(net.minecraft.world.item.Items.NAME_TAG) && level.getBlockEntity(pos) instanceof GangBoxBlockEntity be) {
+            int slot = slotAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+            if(slot < 0 || be.fireKind(slot) == null)
+                return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+            if(!level.isClientSide)
+                be.label(slot, player, stack);
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
         return stack.isEmpty() ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
 

@@ -4,6 +4,22 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.67.0 — 2026-10-26
+
+### Added
+- Addressable fire alarm devices. The panel walks the conduit from its knockouts every three
+  seconds, box to box, and gathers every detector, pull station and horn strobe it reaches; each
+  new one gets the next free loop address, 1 to 159, which it keeps. Goggles on a device show
+  its kind, address and name.
+- A renamed name tag on a detector box, a pull station or a horn strobe, or on the gang holding
+  one, names it: a room, a stair, a door. A plain tag clears the name.
+- The panel keeps a device list with each one's state: normal, in alarm, strobing, sounding,
+  not spliced, or missing once a run to it is gone. Missing or unspliced devices put the panel
+  in Trouble; a device gone five minutes is forgotten. Goggles on the panel list the devices that
+  need attention.
+- A two-line display on the door, under the lights: the state, then the first device that
+  matters the way a panel prints it, "003 SMOKE KITCHEN", with a count of any more in alarm.
+
 ## 0.66.0 — 2026-10-26
 
 ### Added

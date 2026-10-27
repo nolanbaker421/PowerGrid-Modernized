@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.ProvidedVoltageSourceCoupling;
@@ -47,6 +48,15 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
     private State syncedState = State.NORMAL;
     private boolean syncedPowered, syncedSilenced;
     private float syncedIdc, syncedNac;
+    /** Every device the panel has found along its conduit, by address, as of the last survey. */
+    private final java.util.TreeMap<Integer, FireDevice> devices = new java.util.TreeMap<>();
+    private int nextAddress = 1;
+    private int surveyTimer;
+    private boolean deviceTrouble;
+    /** Boxes and gangs a survey will look through at most; a mall is not a loop. */
+    private static final int MAX_HOSTS = 512, MAX_ADDRESS = 159;
+    /** Ticks between surveys, and how long a device stays listed as missing before it is forgotten. */
+    private static final int SURVEY_TICKS = 60, FORGET_TICKS = 6000;
 
     public FireAlarmPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -101,6 +111,118 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         return silenced;
     }
 
+    /** The panel's devices by address, as of the last survey. Works on both sides. */
+    public java.util.Collection<FireDevice> devices() {
+        return devices.values();
+    }
+
+    /**
+     * Walks the conduit from the panel's knockouts, box to box, and gathers every fire alarm device
+     * it reaches: a new one gets the next free address, a known one its state, and one no longer
+     * reached is marked missing until it has been gone a while.
+     */
+    private void survey() {
+        long now = level.getGameTime();
+        var seen = new java.util.HashSet<BlockPos>();
+        var queue = new java.util.ArrayDeque<BlockPos>();
+        queue.add(worldPosition);
+        seen.add(worldPosition);
+        var found = new java.util.ArrayList<FireDevice>();
+        while(!queue.isEmpty() && seen.size() < MAX_HOSTS) {
+            var pos = queue.poll();
+            if(!(level.getBlockEntity(pos) instanceof com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost host))
+                continue;
+            if(host instanceof IFireDevice device)
+                gather(device, pos, now, found);
+            for(int hub = 0; hub < host.hubCount(); ++hub) {
+                var run = host.hubRun(hub);
+                if(run == null)
+                    continue;
+                for(var endpoint : new org.patryk3211.powergrid.electricity.wire.IWireEndpoint[] {run.getEndpoint1(), run.getEndpoint2()}) {
+                    if(endpoint instanceof org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint b && seen.add(b.getPos()))
+                        queue.add(b.getPos());
+                }
+            }
+        }
+        // Addresses: a device keeps the one it has unless another found device holds it too.
+        var taken = new java.util.HashSet<Integer>();
+        var fresh = new java.util.TreeMap<Integer, FireDevice>();
+        for(var device : found) {
+            int address = device.address();
+            if(address <= 0 || address > MAX_ADDRESS || taken.contains(address)) {
+                address = nextFree(taken);
+                if(address < 0)
+                    continue;
+                device = device.withAddress(address);
+                if(level.getBlockEntity(device.pos()) instanceof IFireDevice holder)
+                    holder.setFireAddress(device.slot(), address);
+            }
+            taken.add(address);
+            fresh.put(address, device);
+        }
+        for(var old : devices.values()) {
+            if(fresh.containsKey(old.address()))
+                continue;
+            if(now - old.lastSeen() < FORGET_TICKS)
+                fresh.put(old.address(), old.with(FireDevice.Status.MISSING, old.lastSeen()));
+        }
+        boolean changed = !fresh.equals(devices);
+        devices.clear();
+        devices.putAll(fresh);
+        deviceTrouble = devices.values().stream().anyMatch(d -> d.status().trouble());
+        if(changed) {
+            setChanged();
+            sendData();
+        }
+    }
+
+    private void gather(IFireDevice holder, BlockPos pos, long now, java.util.List<FireDevice> out) {
+        for(int slot = 0; slot < holder.fireSlots(); ++slot) {
+            var kind = holder.fireKind(slot);
+            if(kind == null)
+                continue;
+            FireDevice.Status status;
+            if(!holder.fireSpliced(slot))
+                status = FireDevice.Status.NOT_SPLICED;
+            else if(kind.initiating())
+                status = holder.fireTripped(slot) ? FireDevice.Status.ALARM : FireDevice.Status.NORMAL;
+            else {
+                float v = holder.fireHornVolts(slot);
+                status = v >= com.nolanbaker.pgmodernized.conduit.ConduitBoxBlockEntity.HORN_VOLTS ? FireDevice.Status.SOUNDING
+                        : v >= com.nolanbaker.pgmodernized.conduit.ConduitBoxBlockEntity.STROBE_VOLTS ? FireDevice.Status.STROBING : FireDevice.Status.NORMAL;
+            }
+            out.add(new FireDevice(pos, slot, holder.fireAddress(slot), kind, holder.fireLabel(slot), status, now));
+        }
+    }
+
+    private int nextFree(java.util.Set<Integer> taken) {
+        for(int i = 0; i < MAX_ADDRESS; ++i) {
+            int candidate = (nextAddress - 1 + i) % MAX_ADDRESS + 1;
+            if(!taken.contains(candidate) && !devices.containsKey(candidate)) {
+                nextAddress = candidate % MAX_ADDRESS + 1;
+                return candidate;
+            }
+        }
+        return -1;
+    }
+
+    /** The first device in the given status, by address, or null. Works on both sides. */
+    @Nullable
+    public FireDevice first(java.util.function.Predicate<FireDevice.Status> which) {
+        for(var device : devices.values())
+            if(which.test(device.status()))
+                return device;
+        return null;
+    }
+
+    public int count(java.util.function.Predicate<FireDevice.Status> which) {
+        int n = 0;
+        for(var device : devices.values())
+            if(which.test(device.status()))
+                ++n;
+        return n;
+    }
+
     /** For Ponder: a client-side panel shown in a state, with its lights. */
     public void demo(State shown, boolean silencedShown) {
         powered = true;
@@ -133,7 +255,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
                 alarm = true;
             idcOpen = idcAmps < SUPERVISED_AMPS;
             nacOpen = !alarm && nacAmps < SUPERVISED_AMPS;
-            state = alarm ? State.ALARM : idcOpen || nacOpen ? State.TROUBLE : State.NORMAL;
+            state = alarm ? State.ALARM : idcOpen || nacOpen || deviceTrouble ? State.TROUBLE : State.NORMAL;
             idcVolts = LOOP_VOLTS;
             nacVolts = alarm ? (silenced ? SILENCED_VOLTS : LOOP_VOLTS) : SUPERVISORY_VOLTS;
         }
@@ -193,6 +315,11 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         if(level == null || level.isClientSide)
             return;
         deviceHubs().lazyTick();
+        surveyTimer += 10;
+        if(surveyTimer >= SURVEY_TICKS) {
+            surveyTimer = 0;
+            survey();
+        }
         if(state != syncedState || powered != syncedPowered || silenced != syncedSilenced
                 || Math.abs(idcAmps - syncedIdc) > 0.001f || Math.abs(nacAmps - syncedNac) > 0.005f) {
             syncedState = state;
@@ -219,6 +346,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         tag.putFloat("NacAmps", nacAmps);
         tag.putBoolean("IdcOpen", idcOpen);
         tag.putBoolean("NacOpen", nacOpen);
+        writeDevices(tag);
     }
 
     @Override
@@ -227,6 +355,15 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         deviceHubs().write(tag, registries, false);
         tag.putBoolean("Alarm", alarm);
         tag.putBoolean("Silenced", silenced);
+        writeDevices(tag);
+    }
+
+    private void writeDevices(CompoundTag tag) {
+        var list = new net.minecraft.nbt.ListTag();
+        for(var device : devices.values())
+            list.add(device.write());
+        tag.put("Devices", list);
+        tag.putInt("NextAddress", nextAddress);
     }
 
     @Override
@@ -235,6 +372,14 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         deviceHubs().read(tag, registries, clientPacket);
         alarm = tag.getBoolean("Alarm");
         silenced = tag.getBoolean("Silenced");
+        devices.clear();
+        var list = tag.getList("Devices", net.minecraft.nbt.Tag.TAG_COMPOUND);
+        for(int i = 0; i < list.size(); ++i) {
+            var device = FireDevice.read(list.getCompound(i));
+            devices.put(device.address(), device);
+        }
+        nextAddress = Math.max(1, tag.getInt("NextAddress"));
+        deviceTrouble = devices.values().stream().anyMatch(d -> d.status().trouble());
         if(clientPacket) {
             int s = tag.getInt("State");
             state = s >= 0 && s < State.values().length ? State.values()[s] : State.NORMAL;
@@ -267,6 +412,18 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
                     .style(idcOpen ? ChatFormatting.YELLOW : ChatFormatting.WHITE).forGoggles(tooltip, 1);
             Lang.builder().translate(nacOpen ? "gui.fire_alarm.nac_open" : "gui.fire_alarm.nac", String.format("%.1f", nacAmps * 1000))
                     .style(nacOpen ? ChatFormatting.YELLOW : ChatFormatting.WHITE).forGoggles(tooltip, 1);
+        }
+        Lang.builder().translate("gui.fire_alarm.devices", devices.size()).style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
+        int shown = 0;
+        for(var device : devices.values()) {
+            if(device.status() == FireDevice.Status.NORMAL || shown >= (isPlayerSneaking ? 12 : 4))
+                continue;
+            var style = switch(device.status()) {
+                case ALARM, SOUNDING, STROBING -> ChatFormatting.RED;
+                default -> ChatFormatting.YELLOW;
+            };
+            Lang.builder().text(device.display()).text(" ").add(Lang.builder().translate("gui.fire_alarm.status_" + device.status().name().toLowerCase())).style(style).forGoggles(tooltip, 1);
+            ++shown;
         }
         deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;

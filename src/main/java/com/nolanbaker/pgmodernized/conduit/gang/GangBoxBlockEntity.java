@@ -37,7 +37,7 @@ import java.util.List;
  * and load, a 3-way from common to one traveller or the other, a 4-way straight or crossed. The
  * first receptacle is tied to the cord poles so a power cord in the plate reaches it.
  */
-public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHost, IHaveGoggleInformation {
+public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHost, IHaveGoggleInformation, com.nolanbaker.pgmodernized.conduit.fire.IFireDevice {
     private static final int HOLD_TICKS = 10;
 
     private SpliceSupport splices;
@@ -52,6 +52,9 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     private float[] hornVolts;
     private boolean[] strobing;
     private int hornTimer;
+    /** Per gang: the loop address a fire alarm panel gave a pull station or horn strobe there, and its name. */
+    private int[] fireAddresses;
+    private String[] fireLabels;
     private List<SplicePoint> points;
 
     public GangBoxBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -68,7 +71,85 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             horns = new org.patryk3211.powergrid.electricity.sim.ElectricWire[GangLayout.MAX_GANGS];
             hornVolts = new float[GangLayout.MAX_GANGS];
             strobing = new boolean[GangLayout.MAX_GANGS];
+            fireAddresses = new int[GangLayout.MAX_GANGS];
+            fireLabels = new String[GangLayout.MAX_GANGS];
+            java.util.Arrays.fill(fireLabels, "");
         }
+    }
+
+    // ---- as fire alarm devices ----
+
+    @Override
+    public int fireSlots() {
+        return gangs();
+    }
+
+    @Override
+    public @Nullable com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind fireKind(int slot) {
+        var device = device(slot);
+        if(device == GangDevice.PULL_STATION)
+            return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.PULL;
+        if(device == GangDevice.HORN_STROBE)
+            return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.HORN;
+        return null;
+    }
+
+    @Override
+    public int fireAddress(int slot) {
+        ensureArrays();
+        return slot >= 0 && slot < GangLayout.MAX_GANGS ? fireAddresses[slot] : 0;
+    }
+
+    @Override
+    public void setFireAddress(int slot, int address) {
+        ensureArrays();
+        if(slot < 0 || slot >= GangLayout.MAX_GANGS || fireAddresses[slot] == address)
+            return;
+        fireAddresses[slot] = address;
+        setChanged();
+        sendData();
+    }
+
+    @Override
+    public String fireLabel(int slot) {
+        ensureArrays();
+        return slot >= 0 && slot < GangLayout.MAX_GANGS ? fireLabels[slot] : "";
+    }
+
+    @Override
+    public boolean fireTripped(int slot) {
+        return device(slot) == GangDevice.PULL_STATION && isOn(slot);
+    }
+
+    @Override
+    public float fireHornVolts(int slot) {
+        return device(slot) == GangDevice.HORN_STROBE ? hornVolts(slot) : 0;
+    }
+
+    @Override
+    public boolean fireSpliced(int slot) {
+        int a = GangLayout.point(slot, 0), b = GangLayout.point(slot, 1);
+        for(var splice : splices().list())
+            if(splice[0] == a || splice[1] == a || splice[0] == b || splice[1] == b)
+                return true;
+        return false;
+    }
+
+    /** A renamed name tag names the fire alarm device in that gang; a plain one clears the name. The tag is used up. Server side. */
+    public boolean label(int slot, Player player, ItemStack tag) {
+        ensureArrays();
+        if(level == null || level.isClientSide || fireKind(slot) == null)
+            return false;
+        String text = tag.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME) ? tag.getHoverName().getString() : "";
+        fireLabels[slot] = text.length() > 24 ? text.substring(0, 24) : text;
+        if(!player.isCreative())
+            tag.shrink(1);
+        level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.4f);
+        player.displayClientMessage(Lang.builder().translate(fireLabels[slot].isEmpty() ? "message.fire_alarm.label_cleared" : "message.fire_alarm.labelled", fireLabels[slot])
+                .style(ChatFormatting.GRAY).component(), true);
+        setChanged();
+        sendData();
+        return true;
     }
 
     /** The volts across a horn strobe's load in that gang, zero for any other device. Works on both sides. */
@@ -225,6 +306,8 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         devices[slot] = device;
         on[slot] = false;
         hold[slot] = 0;
+        fireAddresses[slot] = 0;
+        fireLabels[slot] = "";
         if(!player.isCreative())
             stack.shrink(1);
         level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.2f);
@@ -465,6 +548,11 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
             volts[slot] = Math.round(hornVolts[slot] * 10);
         tag.putIntArray("HornVolts", volts);
+        tag.putIntArray("FireAddresses", fireAddresses.clone());
+        var labels = new ListTag();
+        for(var label : fireLabels)
+            labels.add(StringTag.valueOf(label));
+        tag.put("FireLabels", labels);
     }
 
     @Override
@@ -500,6 +588,12 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         var volts = tag.getIntArray("HornVolts");
         for(int slot = 0; slot < GangLayout.MAX_GANGS && slot < volts.length; ++slot)
             hornVolts[slot] = volts[slot] / 10f;
+        var addresses = tag.getIntArray("FireAddresses");
+        for(int slot = 0; slot < GangLayout.MAX_GANGS && slot < addresses.length; ++slot)
+            fireAddresses[slot] = addresses[slot];
+        var labels = tag.getList("FireLabels", Tag.TAG_STRING);
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
+            fireLabels[slot] = slot < labels.size() ? labels.getString(slot) : "";
         points = null;
         if(changed && !clientPacket && level != null && !level.isClientSide && electricBehaviour != null) {
             electricBehaviour.rebuildCircuit(false);
@@ -527,6 +621,12 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                 line.add(Lang.builder().text(device.label()).style(ChatFormatting.WHITE));
                 if(device.toggles() || device == GangDevice.PULL_STATION)
                     line.text(" ").add(Lang.builder().translate(stateKey(device, on[slot])).style(on[slot] == (device == GangDevice.PULL_STATION) ? ChatFormatting.RED : ChatFormatting.GREEN));
+                if(fireKind(slot) != null) {
+                    if(fireAddresses[slot] > 0)
+                        line.text(" ").add(Lang.builder().text(String.format("%03d", fireAddresses[slot])).style(ChatFormatting.AQUA));
+                    if(!fireLabels[slot].isEmpty())
+                        line.text(" ").add(Lang.builder().text(fireLabels[slot]).style(ChatFormatting.YELLOW));
+                }
                 if(device == GangDevice.HORN_STROBE) {
                     float v = hornVolts[slot];
                     String key = v >= ConduitBoxBlockEntity.HORN_VOLTS ? "gang.horn_sounding" : v >= ConduitBoxBlockEntity.STROBE_VOLTS ? "gang.horn_strobe" : "gang.horn_quiet";

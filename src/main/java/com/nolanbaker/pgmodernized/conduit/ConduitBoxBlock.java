@@ -224,6 +224,12 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
                 level.playSound(null, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.4f);
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
+        // A name tag names the fire alarm device under the cover.
+        if(stack.is(net.minecraft.world.item.Items.NAME_TAG) && (cover(state).isInitiating() || cover(state).isHorn())) {
+            if(!level.isClientSide && level.getBlockEntity(pos) instanceof ConduitBoxBlockEntity be)
+                be.label(player, stack);
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
         if(stack.getItem() instanceof ConduitCoverItem plate) {
             if(cover(state).isPlate()) {
                 if(!level.isClientSide)

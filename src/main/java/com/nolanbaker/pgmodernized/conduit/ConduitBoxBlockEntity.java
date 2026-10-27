@@ -34,7 +34,7 @@ import java.util.List;
  * light socket cover puts a lamp between cover terminals 0 and 1 that lights the block from ten
  * watts and goes dark under five.
  */
-public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISpliceHost, IHaveGoggleInformation, IFixtureEntity {
+public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISpliceHost, IHaveGoggleInformation, IFixtureEntity, com.nolanbaker.pgmodernized.conduit.fire.IFireDevice {
     /** Written by every box saved since the facing turned to point into its mount; a save without it gets turned once. */
     private static final String MOUNT_FACING_KEY = "MountFacing";
     private boolean flipFacing;
@@ -67,6 +67,9 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     private int smokeClearTicks;
     /** A pull station's handle, down until a wrench resets it. */
     private boolean pulled;
+    /** The loop address a fire alarm panel gave the device under the cover, and the name a name tag gave it. */
+    private int fireAddress;
+    private String fireLabel = "";
     /** The load of a horn strobe cover; null under any other cover. */
     private org.patryk3211.powergrid.electricity.sim.ElectricWire horn;
     private float hornVolts;
@@ -118,6 +121,80 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     /** Whether the cover's contact across the loop is closed: a tripped detector or a pulled station. */
     private boolean contactClosed() {
         return cover().isPull() ? pulled : smokeAlarm;
+    }
+
+    // ---- as a fire alarm device ----
+
+    @Override
+    public int fireSlots() {
+        return 1;
+    }
+
+    @Override
+    public @Nullable com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind fireKind(int slot) {
+        var cover = cover();
+        if(cover.isSmoke())
+            return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.SMOKE;
+        if(cover.isHeat())
+            return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.HEAT;
+        if(cover.isPull())
+            return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.PULL;
+        if(cover.isHorn())
+            return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.HORN;
+        return null;
+    }
+
+    @Override
+    public int fireAddress(int slot) {
+        return fireAddress;
+    }
+
+    @Override
+    public void setFireAddress(int slot, int address) {
+        if(fireAddress == address)
+            return;
+        fireAddress = address;
+        setChanged();
+        sendData();
+    }
+
+    @Override
+    public String fireLabel(int slot) {
+        return fireLabel;
+    }
+
+    @Override
+    public boolean fireTripped(int slot) {
+        return contactClosed();
+    }
+
+    @Override
+    public float fireHornVolts(int slot) {
+        return cover().isHorn() ? hornVolts : 0;
+    }
+
+    @Override
+    public boolean fireSpliced(int slot) {
+        for(var splice : splices().list())
+            if(splice[0] <= 1 || splice[1] <= 1)
+                return true;
+        return false;
+    }
+
+    /** A renamed name tag names the device under the cover; a plain one clears the name. The tag is used up. Server side. */
+    public boolean label(Player player, ItemStack tag) {
+        if(level == null || level.isClientSide || fireKind(0) == null)
+            return false;
+        String text = tag.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME) ? tag.getHoverName().getString() : "";
+        fireLabel = text.length() > 24 ? text.substring(0, 24) : text;
+        if(!player.isCreative())
+            tag.shrink(1);
+        level.playSound(null, worldPosition, net.minecraft.sounds.SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.4f);
+        player.displayClientMessage(Lang.builder().translate(fireLabel.isEmpty() ? "message.fire_alarm.label_cleared" : "message.fire_alarm.labelled", fireLabel)
+                .style(ChatFormatting.GRAY).component(), true);
+        setChanged();
+        sendData();
+        return true;
     }
 
     /** Server side: the pull station's handle comes down and the loop closes. */
@@ -473,6 +550,8 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
         tag.putInt("SmokeClear", smokeClearTicks);
         tag.putBoolean("Pulled", pulled);
         tag.putFloat("HornVolts", hornVolts);
+        tag.putInt("FireAddress", fireAddress);
+        tag.putString("FireLabel", fireLabel);
     }
 
     @Override
@@ -487,6 +566,8 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
         smokeClearTicks = tag.getInt("SmokeClear");
         pulled = tag.getBoolean("Pulled");
         hornVolts = tag.getFloat("HornVolts");
+        fireAddress = tag.getInt("FireAddress");
+        fireLabel = tag.getString("FireLabel");
         if(detector != null)
             detector.setState(contactClosed());
         if(clientPacket)
@@ -526,6 +607,16 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
                     .add(Lang.builder().translate(lit ? "gui.conduit_box.lamp_lit" : "gui.conduit_box.lamp_dark", String.format("%.0f", lampWatts))
                             .style(lit ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY))
                     .forGoggles(tooltip, 1);
+        }
+        if(fireKind(0) != null) {
+            var line = Lang.builder().add(fireKind(0).title().copy()).style(ChatFormatting.WHITE).text(" ");
+            if(fireAddress > 0)
+                line.add(Lang.builder().translate("gui.fire_alarm.address", String.format("%03d", fireAddress)).style(ChatFormatting.AQUA));
+            else
+                line.add(Lang.builder().translate("gui.fire_alarm.no_address").style(ChatFormatting.DARK_GRAY));
+            if(!fireLabel.isEmpty())
+                line.text(" ").add(Lang.builder().text(fireLabel).style(ChatFormatting.YELLOW));
+            line.forGoggles(tooltip, 1);
         }
         if(cover().isDetector())
             Lang.builder().translate(smokeAlarm ? "gui.conduit_box.smoke_alarm" : "gui.conduit_box.smoke_normal").style(smokeAlarm ? ChatFormatting.RED : ChatFormatting.GREEN).forGoggles(tooltip, 1);

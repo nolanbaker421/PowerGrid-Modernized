@@ -41,7 +41,41 @@ public class FireAlarmPanelRenderer extends SafeBlockEntityRenderer<FireAlarmPan
         led(ms, buffer, light, LIGHT_X[0], power, z);
         led(ms, buffer, light, LIGHT_X[1], alarm, z);
         led(ms, buffer, light, LIGHT_X[2], trouble, z);
+        display(be, ms, buffer, powered, z);
         ms.popPose();
+    }
+
+    /** The two-line display under the lights: the state, and the first device that matters, as a panel prints it. */
+    private static void display(FireAlarmPanelBlockEntity be, PoseStack ms, MultiBufferSource buffer, boolean powered, double z) {
+        if(!powered)
+            return;
+        float s = 1 / 192f;
+        var font = net.minecraft.client.Minecraft.getInstance().font;
+        int chars = (int) (7.5 / 16 / s);
+        String line1, line2 = "";
+        int color;
+        switch(be.state()) {
+            case ALARM -> {
+                var first = be.first(st -> st == com.nolanbaker.pgmodernized.conduit.fire.FireDevice.Status.ALARM);
+                int more = be.count(st -> st == com.nolanbaker.pgmodernized.conduit.fire.FireDevice.Status.ALARM) - 1;
+                line1 = be.silenced() ? "ALARM  SILENCED" : "ALARM";
+                line2 = first == null ? "LOOP CURRENT" : first.display() + (more > 0 ? " +" + more : "");
+                color = 0xFF4040;
+            }
+            case TROUBLE -> {
+                var first = be.first(com.nolanbaker.pgmodernized.conduit.fire.FireDevice.Status::trouble);
+                line1 = "TROUBLE";
+                line2 = first == null ? "LOOP OPEN" : first.display() + " " + (first.status() == com.nolanbaker.pgmodernized.conduit.fire.FireDevice.Status.MISSING ? "MISSING" : "UNWIRED");
+                color = 0xFFC040;
+            }
+            default -> {
+                line1 = "NORMAL";
+                line2 = be.devices().size() + " DEVICES";
+                color = 0x40E060;
+            }
+        }
+        DeviceDraw.text(ms, buffer, LightTexture.FULL_BRIGHT, font.plainSubstrByWidth(line1, chars), 8, 10.6, z - 0.05, s, color, false, 0.5);
+        DeviceDraw.text(ms, buffer, LightTexture.FULL_BRIGHT, font.plainSubstrByWidth(line2, chars), 8, 9.3, z - 0.05, s, color, false, 0.5);
     }
 
     private static void led(PoseStack ms, MultiBufferSource buffer, int light, double x, int rgb, double z) {
