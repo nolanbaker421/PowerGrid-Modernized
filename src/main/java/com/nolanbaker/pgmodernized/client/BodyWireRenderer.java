@@ -65,6 +65,8 @@ public class BodyWireRenderer extends BlockWireRenderer {
     private static final double COUPLING_EVERY = 3;
     /** Short legs an offset may run through: sideways in two directions and an inline step between. */
     private static final int OFFSET_MAX_LEGS = 4;
+    /** A leg this short between two legs square to each other and to it is a nudged corner, not a leg: one bend absorbs it. */
+    private static final int ABSORB_MAX_PX = 2;
 
     /**
      * Conduit is drawn here rather than by Power Grid's loop, which tiles its banded wire texture
@@ -168,23 +170,54 @@ public class BodyWireRenderer extends BlockWireRenderer {
             startCut[i + span + 1] = cut;
             i += span;
         }
+        // A leg of a pixel or two between two long legs square to each other and to it is a corner
+        // the grid has pushed sideways, not a leg of its own: its two corners, too short for bends,
+        // would be a pair of sharp joints. It is absorbed, and the legs either side meet in one bend
+        // at its middle.
+        boolean[] inOffset = new boolean[n], absorbed = new boolean[n];
+        for(int i = 0; i < n; ++i)
+            if(offsetSpan[i] > 0)
+                for(int k = 0; k <= offsetSpan[i] + 1 && i + k < n; ++k)
+                    inOffset[i + k] = true;
+        for(int i = 1; i + 1 < n; ++i) {
+            var a = segs.get(i - 1);
+            var b = segs.get(i);
+            var c = segs.get(i + 1);
+            if(b.gridLength > ABSORB_MAX_PX || inOffset[i - 1] || inOffset[i] || inOffset[i + 1] || absorbed[i - 1])
+                continue;
+            if(a.gridLength <= ABSORB_MAX_PX || c.gridLength <= ABSORB_MAX_PX)
+                continue;
+            if(a.direction.getAxis() == c.direction.getAxis() || b.direction.getAxis() == a.direction.getAxis() || b.direction.getAxis() == c.direction.getAxis())
+                continue;
+            absorbed[i] = true;
+            float r = Math.min(wanted, Math.min(a.length() / 2, c.length() / 2));
+            radii[i - 1] = r >= 1.5f / 16 ? r : 0;
+            radii[i] = 0;
+        }
         // What each straight gives up at each end: a bend radius, an offset's setback, or a negative cut
         // (an overlap of half a tube) where two legs just meet in a cube.
         double[] cutStart = new double[n], cutEnd = new double[n];
         boolean[] skip = new boolean[n];
         for(int i = 0; i + 1 < n; ++i) {
+            if(absorbed[i]) {
+                skip[i] = true;
+                continue;
+            }
+            int j = nextDrawn(absorbed, i, n);
             if(offsetSpan[i] > 0) {
                 cutEnd[i] = offsetCut[i];
                 for(int k = 1; k <= offsetSpan[i]; ++k)
                     skip[i + k] = true;
                 cutStart[i + offsetSpan[i] + 1] = offsetCut[i];
                 i += offsetSpan[i];
+            } else if(j >= n) {
+                break;
             } else if(radii[i] > 0) {
                 cutEnd[i] = radii[i];
-                cutStart[i + 1] = radii[i];
+                cutStart[j] = radii[i];
             } else {
                 cutEnd[i] = -h;
-                cutStart[i + 1] = -h;
+                cutStart[j] = -h;
             }
         }
         boolean onBody = bodyOf(run) != null;
@@ -207,6 +240,13 @@ public class BodyWireRenderer extends BlockWireRenderer {
         v[n] = raw[n].add(endNudge.lengthSqr() > 0 ? endNudge : side[n - 1]);
         for(int k = 1; k < n; ++k)
             v[k] = raw[k].add(cornerShift(side[k - 1], side[k], segs.get(k - 1).direction, segs.get(k).direction));
+        for(int i = 1; i + 1 < n; ++i) {
+            if(!absorbed[i])
+                continue;
+            var mid = v[i].add(v[i + 1]).scale(0.5);
+            v[i] = mid;
+            v[i + 1] = mid;
+        }
         double travelled = 0;
         for(int i = 0; i < n; ++i) {
             var seg = segs.get(i);
@@ -234,14 +274,22 @@ public class BodyWireRenderer extends BlockWireRenderer {
                     TubeDraw.bend(pose, consumer, segLight, rgb, p, along, diagonal, wanted, t);
                     TubeDraw.straight(pose, consumer, segLight, rgb, p.add(diagonal.scale(d)), q.subtract(diagonal.scale(d)), t);
                     TubeDraw.bend(pose, consumer, segLight, rgb, q, diagonal, along, wanted, t);
-                } else if(i + 1 < n && radii[i] > 0) {
-                    TubeDraw.bend(pose, consumer, segLight, rgb, end, along, Vec3.atLowerCornerOf(segs.get(i + 1).direction.getNormal()), radii[i], t);
-                } else if(i + 1 < n) {
+                } else if(nextDrawn(absorbed, i, n) < n && radii[i] > 0) {
+                    TubeDraw.bend(pose, consumer, segLight, rgb, end, along, Vec3.atLowerCornerOf(segs.get(nextDrawn(absorbed, i, n)).direction.getNormal()), radii[i], t);
+                } else if(nextDrawn(absorbed, i, n) < n) {
                     TubeDraw.joint(pose, consumer, segLight, rgb, end, t);
                 }
             }
             travelled += seg.length();
         }
+    }
+
+    /** The index of the leg drawn after leg {@code i}, past any absorbed ones; {@code n} when there is none. */
+    private static int nextDrawn(boolean[] absorbed, int i, int n) {
+        int j = i + 1;
+        while(j < n && absorbed[j])
+            ++j;
+        return j;
     }
 
     /**

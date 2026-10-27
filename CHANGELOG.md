@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.59.8 — 2026-10-26
+
+### Fixed
+- A leg of a pixel or two between two long legs square to each other, left by grid rounding at a
+  knockout, was drawn as a pair of sharp joints, a lump at the corner before the stub. Such a leg
+  is absorbed and the two long legs meet in one bend at its middle.
+
 ## 0.59.7 — 2026-10-26
 
 ### Fixed
