@@ -490,7 +490,6 @@ public final class ConduitPlacement {
                     return InteractionResultHolder.fail(null);
                 }
                 ConduitSupply.take(player, stack, newItems);
-                ConduitBenderItem.onClosed(level, stack, player, entity);
                 return InteractionResultHolder.success(null);
             }
         }
@@ -571,8 +570,6 @@ public final class ConduitPlacement {
                 return InteractionResultHolder.fail(null);
             }
             ConduitSupply.take(player, stack, newItems);
-            if(closes)
-                ConduitBenderItem.onClosed(level, stack, player, entity);
             return InteractionResultHolder.success(closes ? null : entity);
         } else {
             // The whole run, old legs and new, cleared off its walls together.
@@ -597,8 +594,6 @@ public final class ConduitPlacement {
                 existing.setEndpoint2(to);
             existing.sendExtraData();
             ConduitSupply.take(player, stack, newItems);
-            if(closes)
-                ConduitBenderItem.onClosed(level, stack, player, existing);
             return InteractionResultHolder.success(closes ? null : existing);
         }
     }
@@ -690,8 +685,6 @@ public final class ConduitPlacement {
             entity1.setEndpoint2(farEnd);
         entity1.sendExtraData();
         ConduitSupply.take(player, stack, newItems);
-        if(farEnd != null)
-            ConduitBenderItem.onClosed(level, stack, player, entity1);
         return InteractionResultHolder.success(farEnd == null ? entity1 : null);
     }
 

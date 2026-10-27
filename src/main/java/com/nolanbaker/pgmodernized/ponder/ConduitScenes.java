@@ -76,7 +76,7 @@ public final class ConduitScenes {
         scene.idle(100);
 
         scene.overlay().showText(80)
-                .text("Sneak-click a run with the bender to pick the whole run up, sticks and wires together, and lay it again somewhere else; the wires go back in when it closes")
+                .text("Tap a leg with the bender to grab it and tap a face to move it there; sneak-click a leg to cut the run in two, so a mistake costs one piece")
                 .pointAt(lowMid).placeNearTarget().attachKeyFrame();
         scene.idle(90);
         scene.markAsFinished();

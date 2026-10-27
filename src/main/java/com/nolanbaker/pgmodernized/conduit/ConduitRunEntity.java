@@ -582,11 +582,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         if(stack.getItem() instanceof ConduitBenderItem) {
             if(client)
                 return InteractionResult.SUCCESS;
-            if(player.isShiftKeyDown())
-                return ConduitBenderItem.pickUp(this, player, stack);
-            if(ConduitBenderItem.loaded(stack))
-                return nipple ? fail(player, "message.conduit.no_tee") : ConduitPlacement.attach(this, player, stack);
-            return ConduitBenderItem.nudge(this, player, stack);
+            return player.isShiftKeyDown() ? ConduitBenderItem.cut(this, player, stack) : ConduitBenderItem.tap(this, player, stack);
         }
         if(stack.getItem() instanceof ConduitItem)
             return client ? InteractionResult.SUCCESS : nipple ? fail(player, "message.conduit.no_tee") : ConduitPlacement.attach(this, player, stack);

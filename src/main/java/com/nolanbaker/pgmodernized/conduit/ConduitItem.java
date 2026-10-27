@@ -31,17 +31,15 @@ public class ConduitItem extends WireItem {
         return size;
     }
 
-    /** Conduit in hand, or a bender holding a picked-up run, which lays conduit the same way. */
+    /** Conduit in hand. */
     public static boolean isConduit(ItemStack stack) {
-        return stack.getItem() instanceof ConduitItem || ConduitBenderItem.loaded(stack);
+        return stack.getItem() instanceof ConduitItem;
     }
 
     /** The trade size that stack lays, or null for anything that is not conduit. */
     @Nullable
     public static ConduitSize sizeOf(ItemStack stack) {
-        if(stack.getItem() instanceof ConduitItem conduit)
-            return conduit.size();
-        return ConduitBenderItem.conduitItem(stack) instanceof ConduitItem conduit ? conduit.size() : null;
+        return stack.getItem() instanceof ConduitItem conduit ? conduit.size() : null;
     }
 
     @Override

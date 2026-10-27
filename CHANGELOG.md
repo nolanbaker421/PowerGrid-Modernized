@@ -4,6 +4,22 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.62.0 — 2026-10-26
+
+### Changed
+- The bender works in two taps: tap a leg to grab it, then tap a block face where it should go,
+  and the leg slides there, resting on that face a tube's radius off it, where the click landed
+  along it. The legs beside it follow as before. A grabbed leg keeps an orange outline and a
+  green one shows where the next tap would put it. Tap the grabbed leg again, or sneak-use in
+  the air, to let go. The step setting is gone; the click point is the step.
+- Sneak-click a leg with the bender to cut the run in two there, a cut within two pixels of a
+  corner made at the corner. Both pieces are open at the cut, the wires in the run come out and
+  drop, and the sticks split by length. A mistake costs the bad piece, not the whole run.
+
+### Removed
+- Picking a run up into the bender, and laying conduit from a loaded bender. The wire cutters
+  take a run away, and a cut takes away a piece.
+
 ## 0.61.2 — 2026-10-26
 
 ### Changed
