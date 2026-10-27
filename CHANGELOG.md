@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.64.1 — 2026-10-26
+
+### Changed
+- A grabbed diagonal can be shortened: tap the diagonal itself and its nearer end moves to where
+  the tap fell along it, mapped back onto the legs it stands in for. The green line shows it
+  first. Letting go is sneak-use in the air.
+
 ## 0.64.0 — 2026-10-26
 
 ### Added

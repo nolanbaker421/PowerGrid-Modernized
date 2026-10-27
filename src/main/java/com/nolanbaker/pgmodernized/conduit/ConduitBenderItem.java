@@ -159,12 +159,10 @@ public class ConduitBenderItem extends Item {
         var held = grabbed(run.level(), stack);
         var over = run.diagonalOver(leg.index());
         if(held == run && grabbedDiagonal(stack) >= 0) {
-            // A diagonal is grabbed: a tap on it lets go, a tap on a leg moves its nearer end there.
-            if(over != null && over.legA() == grabbedDiagonal(stack)) {
-                release(stack);
-                player.displayClientMessage(Lang.translate("message.conduit.bend_release").style(ChatFormatting.GRAY).component(), true);
-                return InteractionResult.SUCCESS;
-            }
+            // A diagonal is grabbed: a tap on a leg moves its nearer end there; a tap on the diagonal
+            // itself shortens it, the nearer end moving to where the tap fell along it.
+            if(over != null && over.legA() == grabbedDiagonal(stack))
+                return shortenDiagonal(run, player, stack, over);
             if(over == null)
                 return moveDiagonalEnd(run, player, stack, leg);
         }
@@ -224,6 +222,57 @@ public class ConduitBenderItem extends Item {
             }
         }
         return new ConduitRunEntity.Diagonal(a, pa, b, pb);
+    }
+
+    /**
+     * Where along a diagonal, 0 at its first end and 1 at its second, the player's look ray passes
+     * nearest: the closest point of the diagonal's line to the ray, clamped to the diagonal.
+     */
+    public static double alongDiagonal(ConduitRunEntity run, ConduitRunEntity.Diagonal d, Vec3 eye, Vec3 look) {
+        var p = pointOnLeg(run, d.legA(), d.pxA());
+        var q = pointOnLeg(run, d.legB(), d.pxB());
+        var u = q.subtract(p);
+        var v = look.subtract(eye);
+        var w = p.subtract(eye);
+        double a = u.dot(u), b = u.dot(v), c = v.dot(v), dd = u.dot(w), e = v.dot(w);
+        double denom = a * c - b * b;
+        double t = Math.abs(denom) < 1e-9 ? 0 : (b * e - c * dd) / denom;
+        return Math.max(0, Math.min(1, t));
+    }
+
+    /** The leg and pixels along it at {@code pixels} along the run from its start. */
+    public static int[] legAtRunPixels(ConduitRunEntity run, int pixels) {
+        int left = Math.max(0, pixels);
+        for(int k = 0; k < run.segments.size(); ++k) {
+            int len = run.segments.get(k).gridLength;
+            if(left <= len || k == run.segments.size() - 1)
+                return new int[] {k, Math.min(len, left)};
+            left -= len;
+        }
+        return new int[] {0, 0};
+    }
+
+    /** With a diagonal grabbed, a tap on it: the nearer end moves to where the tap fell along it. Server side. */
+    private static InteractionResult shortenDiagonal(ConduitRunEntity run, Player player, ItemStack stack, ConduitRunEntity.Diagonal held) {
+        var eye = player.getEyePosition();
+        var far = eye.add(player.getLookAngle().scale(PlayerUtilities.getReachDistance(player) + 1));
+        double t = alongDiagonal(run, held, eye, far);
+        int distA = run.runPixels(held.legA(), held.pxA()), distB = run.runPixels(held.legB(), held.pxB());
+        int at = (int) Math.round(distA + t * (distB - distA));
+        var where = legAtRunPixels(run, at);
+        boolean startEnd = t <= 0.5;
+        var moved = startEnd ? tidyDiagonal(run, player, where[0], where[1], held.legB(), held.pxB(), held) : tidyDiagonal(run, player, held.legA(), held.pxA(), where[0], where[1], held);
+        if(moved == null)
+            return InteractionResult.FAIL;
+        var list = new ArrayList<>(run.diagonals());
+        list.remove(held);
+        list.add(moved);
+        list.sort(java.util.Comparator.comparingInt(ConduitRunEntity.Diagonal::legA));
+        run.setDiagonals(list);
+        var point = pointOnLeg(run, where[0], where[1]);
+        run.level().playSound(null, point.x, point.y, point.z, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 0.5f, 1.4f);
+        player.displayClientMessage(Lang.translate("message.conduit.diag_moved").style(ChatFormatting.GRAY).component(), true);
+        return InteractionResult.SUCCESS;
     }
 
     /** With a diagonal grabbed, a tap on a leg: the end nearer along the run moves to the tap. Server side. */

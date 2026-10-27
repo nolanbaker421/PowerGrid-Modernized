@@ -390,7 +390,7 @@
   "powergrid.message.conduit.diag_overlap": "That crosses another diagonal",
   "powergrid.message.conduit.diag_removed": "Diagonal taken out",
   "powergrid.message.conduit.diag_none": "No diagonal here",
-  "powergrid.message.conduit.diag_grab": "Diagonal grabbed; tap a point on a leg to move its nearer end there, tap it again to let go, or sneak-click it to take it out",
+  "powergrid.message.conduit.diag_grab": "Diagonal grabbed; tap a leg to move the nearer end there, tap the diagonal to pull that end back to the tap, sneak-use in the air to let go",
   "powergrid.message.conduit.diag_moved": "Diagonal end moved",
   "powergrid.message.conduit.diag_edge": "Keep a bit of straight leg at each end of the run",
   "block.powergrid_modernized.panel_extension": "Panel Extension",

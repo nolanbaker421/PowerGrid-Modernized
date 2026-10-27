@@ -66,7 +66,16 @@ public final class BenderOverlay {
             var leg = run.segmentAt(eye, far);
             if(leg != null && leg.index() < run.boundingBoxes.size()) {
                 hover = run.legBox(leg.index());
-                if(heldDiag != null && run == grabbed && run.diagonalOver(leg.index()) == null) {
+                var overDiag = run.diagonalOver(leg.index());
+                if(heldDiag != null && run == grabbed && overDiag != null && overDiag.legA() == heldDiag.legA()) {
+                    // On the grabbed diagonal: the nearer end would move to where the crosshair falls along it.
+                    double t = ConduitBenderItem.alongDiagonal(run, heldDiag, eye, far);
+                    int distA = run.runPixels(heldDiag.legA(), heldDiag.pxA()), distB = run.runPixels(heldDiag.legB(), heldDiag.pxB());
+                    var where = ConduitBenderItem.legAtRunPixels(run, (int) Math.round(distA + t * (distB - distA)));
+                    to = ConduitBenderItem.pointOnLeg(run, where[0], where[1]);
+                    mark = t <= 0.5 ? mark2 : mark;
+                    hover = null;
+                } else if(heldDiag != null && run == grabbed && overDiag == null) {
                     int px = ConduitBenderItem.pxAlong(run, leg.index(), leg.point());
                     int at = run.runPixels(leg.index(), px);
                     boolean startEnd = Math.abs(at - run.runPixels(heldDiag.legA(), heldDiag.pxA())) <= Math.abs(at - run.runPixels(heldDiag.legB(), heldDiag.pxB()));
