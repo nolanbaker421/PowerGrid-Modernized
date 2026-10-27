@@ -42,9 +42,27 @@ import java.util.List;
  * Sneak-click a leg to cut the run there into two runs, each open at the cut, a cut within two
  * pixels of a corner made at the corner. The wires pulled through it come out and drop. A mistake
  * costs the bad piece, which the wire cutters take, not the whole run.
+ * <p>
+ * Sneak-use in the air with nothing grabbed switches the bender to diagonal mode and back. In
+ * diagonal mode a tap marks a point on a leg and a second tap on a later leg of the same run has
+ * the tube drawn straight between the two points, in place of the corners between; the legs
+ * underneath stay as laid, so the hitbox follows the corners. Sneak-click a diagonal to take it
+ * out. Bending or cutting a run drops its diagonals.
  */
 public class ConduitBenderItem extends Item {
-    private static final String GRAB_ID = "GrabId", GRAB_UUID = "GrabUuid", GRAB_LEG = "GrabLeg";
+    private static final String GRAB_ID = "GrabId", GRAB_UUID = "GrabUuid", GRAB_LEG = "GrabLeg", GRAB_PX = "GrabPx", MODE = "Mode";
+
+    public enum Mode { BEND, DIAGONAL }
+
+    public static Mode mode(ItemStack stack) {
+        return tag(stack).getInt(MODE) == 1 ? Mode.DIAGONAL : Mode.BEND;
+    }
+
+    private static void setMode(ItemStack stack, Mode mode) {
+        var tag = tag(stack);
+        tag.putInt(MODE, mode.ordinal());
+        store(stack, tag);
+    }
     /** A cut this close to a corner, in pixels, is made at the corner. */
     private static final int CORNER_SNAP_PX = 2;
 
@@ -75,6 +93,11 @@ public class ConduitBenderItem extends Item {
         return tag(stack).getInt(GRAB_LEG);
     }
 
+    /** Pixels along the grabbed leg of the point marked in diagonal mode. */
+    public static int grabbedPx(ItemStack stack) {
+        return tag(stack).getInt(GRAB_PX);
+    }
+
     /** The run whose leg is grabbed, if it is still there with that leg. Works on both sides. */
     @Nullable
     public static ConduitRunEntity grabbed(Level level, ItemStack stack) {
@@ -87,11 +110,12 @@ public class ConduitBenderItem extends Item {
         return null;
     }
 
-    private static void grab(ItemStack stack, ConduitRunEntity run, int leg) {
+    private static void grab(ItemStack stack, ConduitRunEntity run, int leg, int px) {
         var tag = tag(stack);
         tag.putInt(GRAB_ID, run.getId());
         tag.putUUID(GRAB_UUID, run.getUUID());
         tag.putInt(GRAB_LEG, leg);
+        tag.putInt(GRAB_PX, px);
         store(stack, tag);
     }
 
@@ -100,6 +124,7 @@ public class ConduitBenderItem extends Item {
         tag.remove(GRAB_ID);
         tag.remove(GRAB_UUID);
         tag.remove(GRAB_LEG);
+        tag.remove(GRAB_PX);
         store(stack, tag);
     }
 
@@ -112,13 +137,87 @@ public class ConduitBenderItem extends Item {
         var leg = legUnder(run, player);
         if(leg == null)
             return fail(player, "message.conduit.bend_miss");
+        if(mode(stack) == Mode.DIAGONAL)
+            return diagonalTap(run, player, stack, leg);
         if(grabbed(run.level(), stack) == run && grabbedLeg(stack) == leg.index()) {
             release(stack);
             player.displayClientMessage(Lang.translate("message.conduit.bend_release").style(ChatFormatting.GRAY).component(), true);
             return InteractionResult.SUCCESS;
         }
-        grab(stack, run, leg.index());
+        grab(stack, run, leg.index(), 0);
         player.displayClientMessage(Lang.builder().translate("message.conduit.bend_grab", leg.index() + 1).style(ChatFormatting.GRAY).component(), true);
+        return InteractionResult.SUCCESS;
+    }
+
+    /** A sneak-click on a run: a cut in bend mode, a diagonal taken out in diagonal mode. Server side. */
+    public static InteractionResult sneakTap(ConduitRunEntity run, Player player, ItemStack stack) {
+        return mode(stack) == Mode.DIAGONAL ? removeDiagonal(run, player, stack) : cut(run, player, stack);
+    }
+
+    /** Pixels along leg {@code index} of the point of the run nearest {@code point}, clamped to the leg. */
+    public static int pxAlong(ConduitRunEntity run, int index, Vec3 point) {
+        var seg = run.segments.get(index);
+        var along = Vec3.atLowerCornerOf(seg.direction.getNormal());
+        int px = (int) Math.round(point.subtract(legStart(run, index)).dot(along) * 16);
+        return Math.max(0, Math.min(seg.gridLength, px));
+    }
+
+    /** The point {@code px} pixels along leg {@code index}, in the level's coordinates. */
+    public static Vec3 pointOnLeg(ConduitRunEntity run, int index, int px) {
+        var seg = run.segments.get(index);
+        return legStart(run, index).add(Vec3.atLowerCornerOf(seg.direction.getNormal()).scale(px / 16.0));
+    }
+
+    /** In diagonal mode: the first tap marks a point, the second makes the diagonal to it. Server side. */
+    private static InteractionResult diagonalTap(ConduitRunEntity run, Player player, ItemStack stack, ConduitRunEntity.Hit hit) {
+        int px = pxAlong(run, hit.index(), hit.point());
+        var held = grabbed(run.level(), stack);
+        if(held != run) {
+            grab(stack, run, hit.index(), px);
+            player.displayClientMessage(Lang.translate("message.conduit.diag_first").style(ChatFormatting.GRAY).component(), true);
+            return InteractionResult.SUCCESS;
+        }
+        int a = grabbedLeg(stack), pa = grabbedPx(stack), b = hit.index(), pb = px;
+        if(a == b && pa == pb) {
+            release(stack);
+            player.displayClientMessage(Lang.translate("message.conduit.bend_release").style(ChatFormatting.GRAY).component(), true);
+            return InteractionResult.SUCCESS;
+        }
+        if(a > b) {
+            int swap = a; a = b; b = swap;
+            swap = pa; pa = pb; pb = swap;
+        }
+        if(a == b || (b == a + 1 && pa == run.segments.get(a).gridLength && pb == 0))
+            return fail(player, "message.conduit.diag_same");
+        var list = new ArrayList<>(run.diagonals());
+        for(var d : list) {
+            boolean before = b < d.legA() || (b == d.legA() && pb <= d.pxA());
+            boolean after = a > d.legB() || (a == d.legB() && pa >= d.pxB());
+            if(!before && !after)
+                return fail(player, "message.conduit.diag_overlap");
+        }
+        list.add(new ConduitRunEntity.Diagonal(a, pa, b, pb));
+        list.sort(java.util.Comparator.comparingInt(ConduitRunEntity.Diagonal::legA));
+        run.setDiagonals(list);
+        release(stack);
+        var at = pointOnLeg(run, a, pa);
+        run.level().playSound(null, at.x, at.y, at.z, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 0.5f, 1.4f);
+        player.displayClientMessage(Lang.translate("message.conduit.diag_made").style(ChatFormatting.GRAY).component(), true);
+        return InteractionResult.SUCCESS;
+    }
+
+    /** A sneak-click in diagonal mode: the diagonal through the leg under the crosshair comes out. Server side. */
+    private static InteractionResult removeDiagonal(ConduitRunEntity run, Player player, ItemStack stack) {
+        var leg = legUnder(run, player);
+        if(leg == null)
+            return fail(player, "message.conduit.bend_miss");
+        var list = new ArrayList<>(run.diagonals());
+        boolean removed = list.removeIf(d -> d.legA() <= leg.index() && leg.index() <= d.legB());
+        if(!removed)
+            return fail(player, "message.conduit.diag_none");
+        run.setDiagonals(list);
+        run.level().playSound(null, leg.point().x, leg.point().y, leg.point().z, SoundEvents.CHAIN_BREAK, SoundSource.BLOCKS, 0.5f, 1.4f);
+        player.displayClientMessage(Lang.translate("message.conduit.diag_removed").style(ChatFormatting.GRAY).component(), true);
         return InteractionResult.SUCCESS;
     }
 
@@ -401,11 +500,11 @@ public class ConduitBenderItem extends Item {
 
     // ------------------------------------------------------------------ in hand
 
-    /** With a leg grabbed, a tap on a block face moves the leg there. */
+    /** With a leg grabbed in bend mode, a tap on a block face moves the leg there. */
     @Override
     public InteractionResult useOn(UseOnContext context) {
         var stack = context.getItemInHand();
-        if(!holding(stack))
+        if(!holding(stack) || mode(stack) != Mode.BEND)
             return InteractionResult.PASS;
         var level = context.getLevel();
         if(level.isClientSide)
@@ -414,15 +513,21 @@ public class ConduitBenderItem extends Item {
         return move(level, context.getPlayer(), stack, hit);
     }
 
-    /** Sneak-use in the air lets go of a grabbed leg. */
+    /** Sneak-use in the air lets go of a grabbed leg, or with nothing grabbed switches the mode. */
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
-        if(!player.isShiftKeyDown() || !holding(stack))
+        if(!player.isShiftKeyDown())
             return InteractionResultHolder.pass(stack);
         if(!level.isClientSide) {
-            release(stack);
-            player.displayClientMessage(Lang.translate("message.conduit.bend_release").style(ChatFormatting.GRAY).component(), true);
+            if(holding(stack)) {
+                release(stack);
+                player.displayClientMessage(Lang.translate("message.conduit.bend_release").style(ChatFormatting.GRAY).component(), true);
+            } else {
+                var next = mode(stack) == Mode.BEND ? Mode.DIAGONAL : Mode.BEND;
+                setMode(stack, next);
+                player.displayClientMessage(Lang.translate(next == Mode.BEND ? "message.conduit.mode_bend" : "message.conduit.mode_diagonal").style(ChatFormatting.GRAY).component(), true);
+            }
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }
@@ -430,6 +535,7 @@ public class ConduitBenderItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
+        tooltip.add(Lang.translate(mode(stack) == Mode.BEND ? "bender.mode.bend" : "bender.mode.diagonal").style(ChatFormatting.GRAY).component());
         if(holding(stack))
             tooltip.add(Lang.builder().translate("bender.holding", grabbedLeg(stack) + 1).style(ChatFormatting.AQUA).component());
     }

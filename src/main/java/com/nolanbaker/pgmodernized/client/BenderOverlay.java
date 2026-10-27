@@ -12,7 +12,6 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 /**
@@ -36,10 +35,14 @@ public final class BenderOverlay {
         if(!(stack.getItem() instanceof ConduitBenderItem))
             return;
         AABB held = null, ghost = null, hover = null;
+        net.minecraft.world.phys.Vec3 mark = null, to = null;
+        boolean diagonal = ConduitBenderItem.mode(stack) == ConduitBenderItem.Mode.DIAGONAL;
         var grabbed = ConduitBenderItem.grabbed(level, stack);
         if(grabbed != null) {
             int leg = ConduitBenderItem.grabbedLeg(stack);
-            if(leg < grabbed.boundingBoxes.size()) {
+            if(diagonal) {
+                mark = ConduitBenderItem.pointOnLeg(grabbed, leg, ConduitBenderItem.grabbedPx(stack));
+            } else if(leg < grabbed.boundingBoxes.size()) {
                 held = grabbed.boundingBoxes.get(leg);
                 if(mc.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
                     var shift = ConduitBenderItem.targetShift(grabbed, leg, hit);
@@ -48,9 +51,17 @@ public final class BenderOverlay {
                 }
             }
         }
-        if(mc.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof ConduitRunEntity run)
-            hover = legBox(run, player);
-        if(held == null && ghost == null && hover == null)
+        if(mc.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof ConduitRunEntity run) {
+            var eye = player.getEyePosition();
+            var far = eye.add(player.getLookAngle().scale(PlayerUtilities.getReachDistance(player) + 1));
+            var leg = run.segmentAt(eye, far);
+            if(leg != null && leg.index() < run.boundingBoxes.size()) {
+                hover = run.boundingBoxes.get(leg.index());
+                if(mark != null && run == grabbed)
+                    to = ConduitBenderItem.pointOnLeg(run, leg.index(), ConduitBenderItem.pxAlong(run, leg.index(), leg.point()));
+            }
+        }
+        if(held == null && ghost == null && hover == null && mark == null)
             return;
         var camera = event.getCamera().getPosition();
         var poseStack = event.getPoseStack();
@@ -64,15 +75,24 @@ public final class BenderOverlay {
             LevelRenderer.renderLineBox(poseStack, lines, held, 1f, 0.55f, 0.1f, 1f);
         if(ghost != null)
             LevelRenderer.renderLineBox(poseStack, lines, ghost, 0.3f, 1f, 0.4f, 1f);
+        if(mark != null) {
+            double m = 1.5 / 16;
+            LevelRenderer.renderLineBox(poseStack, lines, new AABB(mark.x - m, mark.y - m, mark.z - m, mark.x + m, mark.y + m, mark.z + m), 1f, 0.55f, 0.1f, 1f);
+            if(to != null)
+                line(poseStack, lines, mark, to, 0.3f, 1f, 0.4f);
+        }
         buffer.endBatch(RenderType.lines());
         poseStack.popPose();
     }
 
-    @Nullable
-    private static AABB legBox(ConduitRunEntity run, net.minecraft.world.entity.player.Player player) {
-        var eye = player.getEyePosition();
-        var far = eye.add(player.getLookAngle().scale(PlayerUtilities.getReachDistance(player) + 1));
-        var leg = run.segmentAt(eye, far);
-        return leg == null || leg.index() >= run.boundingBoxes.size() ? null : run.boundingBoxes.get(leg.index());
+    private static void line(com.mojang.blaze3d.vertex.PoseStack poseStack, com.mojang.blaze3d.vertex.VertexConsumer lines,
+                             net.minecraft.world.phys.Vec3 a, net.minecraft.world.phys.Vec3 b, float r, float g, float bl) {
+        var n = b.subtract(a);
+        if(n.lengthSqr() < 1e-8)
+            return;
+        n = n.normalize();
+        var pose = poseStack.last();
+        lines.addVertex(pose, (float) a.x, (float) a.y, (float) a.z).setColor(r, g, bl, 1f).setNormal(pose, (float) n.x, (float) n.y, (float) n.z);
+        lines.addVertex(pose, (float) b.x, (float) b.y, (float) b.z).setColor(r, g, bl, 1f).setNormal(pose, (float) n.x, (float) n.y, (float) n.z);
     }
 }

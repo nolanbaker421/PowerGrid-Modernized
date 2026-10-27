@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.63.0 — 2026-10-26
+
+### Added
+- The bender has a diagonal mode, reached by sneak-use in the air with nothing grabbed. Tap a
+  point on one leg and a point on a later leg of the same run, and the tube is drawn straight
+  between the two points in place of the corners between, with a swept bend at each end. A
+  green line previews it from the first point to the crosshair. Sneak-click a diagonal to take
+  it out. The legs underneath stay as laid, so the hitbox follows the corners, and bending or
+  cutting a run drops its diagonals.
+
 ## 0.62.1 — 2026-10-26
 
 ### Fixed

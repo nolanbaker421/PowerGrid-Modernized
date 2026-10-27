@@ -56,6 +56,44 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
     private int nippleTimer;
     /** Two knockouts within a metre: drawn as one straight piece between them, an offset nipple, whatever its legs say. */
     private boolean direct;
+    /**
+     * Straight tubes drawn from a point on one leg to a point on a later leg in place of the
+     * corners between, set with the bender. The legs underneath stay as laid; this is drawing.
+     */
+    private static final net.minecraft.network.syncher.EntityDataAccessor<CompoundTag> DIAGONALS =
+            net.minecraft.network.syncher.SynchedEntityData.defineId(ConduitRunEntity.class, net.minecraft.network.syncher.EntityDataSerializers.COMPOUND_TAG);
+
+    /** A straight tube from {@code pxA} pixels along leg {@code legA} to {@code pxB} pixels along leg {@code legB}. */
+    public record Diagonal(int legA, int pxA, int legB, int pxB) {}
+
+    @Override
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DIAGONALS, new CompoundTag());
+    }
+
+    /** The run's diagonals, first leg first. Works on both sides. */
+    public List<Diagonal> diagonals() {
+        var array = getEntityData().get(DIAGONALS).getIntArray("D");
+        var out = new ArrayList<Diagonal>();
+        for(int i = 0; i + 3 < array.length; i += 4)
+            out.add(new Diagonal(array[i], array[i + 1], array[i + 2], array[i + 3]));
+        return out;
+    }
+
+    public void setDiagonals(List<Diagonal> list) {
+        var array = new int[list.size() * 4];
+        for(int i = 0; i < list.size(); ++i) {
+            var d = list.get(i);
+            array[i * 4] = d.legA();
+            array[i * 4 + 1] = d.pxA();
+            array[i * 4 + 2] = d.legB();
+            array[i * 4 + 3] = d.pxB();
+        }
+        var tag = new CompoundTag();
+        tag.putIntArray("D", array);
+        getEntityData().set(DIAGONALS, tag);
+    }
     public ConduitRunEntity(EntityType<?> type, Level level) {
         super(type, level);
     }
@@ -172,6 +210,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         ride.save(nbt);
         nbt.putBoolean("Nipple", nipple);
         nbt.putBoolean("Direct", direct);
+        nbt.put("Diagonals", getEntityData().get(DIAGONALS).copy());
     }
 
     @Override
@@ -180,6 +219,8 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         ride.load(nbt);
         nipple = nbt.getBoolean("Nipple");
         direct = nbt.getBoolean("Direct");
+        if(nbt.contains("Diagonals"))
+            getEntityData().set(DIAGONALS, nbt.getCompound("Diagonals"));
         if(getColor() == 0)
             setColor(DEFAULT_COLOR); // laid before runs had a colour
     }
@@ -415,6 +456,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
      */
     public void reshape(RunReshape.Result result) {
         direct = false;   // bent by hand: it follows its legs from now on
+        setDiagonals(List.of());   // they named legs that are no more
         segments.clear();
         segments.addAll(result.points());
         var shift = result.startShift();
@@ -557,6 +599,15 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         }
         entity.setPosRaw(pos.x, pos.y, pos.z);
         entity.bakeBoundingBoxes();
+        // The diagonals, read from the other end.
+        var flipped = new ArrayList<Diagonal>();
+        int n = segments.size();
+        for(var d : diagonals()) {
+            if(d.legA() >= n || d.legB() >= n)
+                continue;
+            flipped.add(0, new Diagonal(n - 1 - d.legB(), segments.get(d.legB()).gridLength - d.pxB(), n - 1 - d.legA(), segments.get(d.legA()).gridLength - d.pxA()));
+        }
+        entity.setDiagonals(flipped);
         entity.setYRot(0);
         entity.setXRot(0);
         entity.setOldPosAndRot();
@@ -582,7 +633,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         if(stack.getItem() instanceof ConduitBenderItem) {
             if(client)
                 return InteractionResult.SUCCESS;
-            return player.isShiftKeyDown() ? ConduitBenderItem.cut(this, player, stack) : ConduitBenderItem.tap(this, player, stack);
+            return player.isShiftKeyDown() ? ConduitBenderItem.sneakTap(this, player, stack) : ConduitBenderItem.tap(this, player, stack);
         }
         if(stack.getItem() instanceof ConduitItem)
             return client ? InteractionResult.SUCCESS : nipple ? fail(player, "message.conduit.no_tee") : ConduitPlacement.attach(this, player, stack);

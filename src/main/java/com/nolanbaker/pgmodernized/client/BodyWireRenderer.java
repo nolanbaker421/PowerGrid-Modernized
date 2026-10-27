@@ -111,6 +111,22 @@ public class BodyWireRenderer extends BlockWireRenderer {
         }
         // Bend radius at each corner: one and a half tubes, never under two pixels nor over six, nor more than half of either leg.
         float wanted = Math.max(2 / 16f, Math.min(6 / 16f, 1.5f * t));
+        // Diagonals set with the bender: a straight tube from a point on one leg to a point on a
+        // later leg, the legs between it not drawn at all; offsets and absorbed corners keep out.
+        var diagAt = new ConduitRunEntity.Diagonal[n];
+        boolean[] inDiag = new boolean[n];
+        for(var d : run.diagonals()) {
+            if(d.legA() < 0 || d.legB() >= n || d.legA() >= d.legB() || diagAt[d.legA()] != null)
+                continue;
+            boolean clear = true;
+            for(int k = d.legA(); k <= d.legB(); ++k)
+                clear &= !inDiag[k];
+            if(!clear)
+                continue;
+            diagAt[d.legA()] = d;
+            for(int k = d.legA(); k <= d.legB(); ++k)
+                inDiag[k] = true;
+        }
         float[] radii = new float[n];
         for(int i = 0; i + 1 < n; ++i) {
             var a = segs.get(i);
@@ -131,6 +147,8 @@ public class BodyWireRenderer extends BlockWireRenderer {
         int[] offsetSpan = new int[n];
         double[] offsetCut = new double[n], startCut = new double[n];
         for(int i = 0; i + 2 < n; ++i) {
+            if(inDiag[i])
+                continue;
             var a = segs.get(i);
             var along = Vec3.atLowerCornerOf(a.direction.getNormal());
             int span = 0;
@@ -138,6 +156,8 @@ public class BodyWireRenderer extends BlockWireRenderer {
             boolean ok = false;
             for(int k = i + 1; k < n && span < OFFSET_MAX_LEGS; ++k) {
                 var leg = segs.get(k);
+                if(inDiag[k])
+                    break;
                 if(leg.direction == a.direction) {
                     ok = span > 0;
                     break;
@@ -185,6 +205,8 @@ public class BodyWireRenderer extends BlockWireRenderer {
             var c = segs.get(i + 1);
             if(b.gridLength > ABSORB_MAX_PX || inOffset[i - 1] || inOffset[i] || inOffset[i + 1] || absorbed[i - 1])
                 continue;
+            if(inDiag[i - 1] || inDiag[i] || inDiag[i + 1])
+                continue;
             if(a.gridLength <= ABSORB_MAX_PX || c.gridLength <= ABSORB_MAX_PX)
                 continue;
             if(a.direction.getAxis() == c.direction.getAxis() || b.direction.getAxis() == a.direction.getAxis() || b.direction.getAxis() == c.direction.getAxis())
@@ -201,6 +223,14 @@ public class BodyWireRenderer extends BlockWireRenderer {
         for(int i = 0; i + 1 < n; ++i) {
             if(absorbed[i]) {
                 skip[i] = true;
+                continue;
+            }
+            if(diagAt[i] != null) {
+                // The legs between are not drawn; this leg's end and the far leg's start are cut
+                // once the drawn corners are known. The loop goes on from the far leg.
+                for(int k = i + 1; k < diagAt[i].legB(); ++k)
+                    skip[k] = true;
+                i = diagAt[i].legB() - 1;
                 continue;
             }
             int j = nextDrawn(absorbed, i, n);
@@ -254,6 +284,33 @@ public class BodyWireRenderer extends BlockWireRenderer {
             v[i] = mid;
             v[i + 1] = mid;
         }
+        // Each diagonal from its drawn points: a bend out of the first leg, the straight, a bend
+        // into the far leg, with as much radius as the legs leave room for, else sharp joints.
+        var diagDraw = new DiagDraw[n];
+        for(int a = 0; a < n; ++a) {
+            var d = diagAt[a];
+            if(d == null)
+                continue;
+            int b = d.legB();
+            var alongA = Vec3.atLowerCornerOf(segs.get(a).direction.getNormal());
+            var alongB = Vec3.atLowerCornerOf(segs.get(b).direction.getNormal());
+            var p = v[a].add(alongA.scale(d.pxA() / 16.0));
+            var q = v[b].add(alongB.scale(d.pxB() / 16.0));
+            var u = q.subtract(p);
+            double length = u.length();
+            if(length < 0.5 / 16)
+                continue;
+            u = u.scale(1 / length);
+            double roomA = d.pxA() / 16.0 - Math.max(0, cutStart[a]);
+            double roomB = (segs.get(b).gridLength - d.pxB()) / 16.0 - Math.max(0, cutEnd[b]);
+            float r = (float) Math.min(wanted, Math.min(length / 2, Math.min(roomA, roomB)));
+            if(r < 1.5f / 16)
+                r = 0;
+            double dA = r > 0 ? TubeDraw.setback(r, alongA, u) : 0, dB = r > 0 ? TubeDraw.setback(r, u, alongB) : 0;
+            cutEnd[a] = (segs.get(a).gridLength - d.pxA()) / 16.0 + dA;
+            cutStart[b] = d.pxB() / 16.0 + dB;
+            diagDraw[a] = new DiagDraw(p, q, u, alongA, alongB, r, dA, dB);
+        }
         double travelled = 0;
         for(int i = 0; i < n; ++i) {
             var seg = segs.get(i);
@@ -270,7 +327,19 @@ public class BodyWireRenderer extends BlockWireRenderer {
                     TubeDraw.straight(pose, consumer, segLight, rgb, from, to, t);
                     couplings(pose, consumer, segLight, rgb, pos, along, travelled, seg.length(), t, cutStart[i], cutEnd[i]);
                 }
-                if(offsetSpan[i] > 0 && across(v[i + offsetSpan[i] + 1].subtract(end), along).length() < 0.25 / 16) {
+                if(diagDraw[i] != null) {
+                    var dd = diagDraw[i];
+                    int diagLight = brightest(run, run.position().add(dd.p.add(dd.q).scale(0.5)));
+                    if(dd.r > 0) {
+                        TubeDraw.bend(pose, consumer, diagLight, rgb, dd.p, dd.alongA, dd.u, dd.r, t);
+                        TubeDraw.straight(pose, consumer, diagLight, rgb, dd.p.add(dd.u.scale(dd.dA)), dd.q.subtract(dd.u.scale(dd.dB)), t);
+                        TubeDraw.bend(pose, consumer, diagLight, rgb, dd.q, dd.u, dd.alongB, dd.r, t);
+                    } else {
+                        TubeDraw.joint(pose, consumer, diagLight, rgb, dd.p, t);
+                        TubeDraw.straight(pose, consumer, diagLight, rgb, dd.p, dd.q, t);
+                        TubeDraw.joint(pose, consumer, diagLight, rgb, dd.q, t);
+                    }
+                } else if(offsetSpan[i] > 0 && across(v[i + offsetSpan[i] + 1].subtract(end), along).length() < 0.25 / 16) {
                     // A jog the knockout's or a slot's centring has cancelled: one straight carries
                     // through to the next leg, where the S would have been.
                     int j = i + offsetSpan[i] + 1;
@@ -306,6 +375,9 @@ public class BodyWireRenderer extends BlockWireRenderer {
     private static Vec3 across(Vec3 vector, Vec3 along) {
         return vector.subtract(along.scale(vector.dot(along)));
     }
+
+    /** A diagonal ready to draw: its ends, its direction, the legs' directions, the bend radius and the setbacks. */
+    private record DiagDraw(Vec3 p, Vec3 q, Vec3 u, Vec3 alongA, Vec3 alongB, float r, double dA, double dB) {}
 
     /** The index of the leg drawn after leg {@code i}, past any absorbed ones; {@code n} when there is none. */
     private static int nextDrawn(boolean[] absorbed, int i, int n) {
