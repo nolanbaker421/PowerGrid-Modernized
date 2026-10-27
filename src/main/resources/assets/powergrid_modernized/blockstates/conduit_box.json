@@ -30,6 +30,18 @@
     "facing=south,cover=horn_on": {
       "model": "powergrid_modernized:block/conduit_box_horn_on"
     },
+    "facing=south,cover=heat": {
+      "model": "powergrid_modernized:block/conduit_box_heat"
+    },
+    "facing=south,cover=heat_alarm": {
+      "model": "powergrid_modernized:block/conduit_box_heat_alarm"
+    },
+    "facing=south,cover=pull": {
+      "model": "powergrid_modernized:block/conduit_box_pull"
+    },
+    "facing=south,cover=pull_pulled": {
+      "model": "powergrid_modernized:block/conduit_box_pull_pulled"
+    },
     "facing=north,cover=open": {
       "model": "powergrid_modernized:block/conduit_box_open",
       "y": 180
@@ -68,6 +80,22 @@
     },
     "facing=north,cover=horn_on": {
       "model": "powergrid_modernized:block/conduit_box_horn_on",
+      "y": 180
+    },
+    "facing=north,cover=heat": {
+      "model": "powergrid_modernized:block/conduit_box_heat",
+      "y": 180
+    },
+    "facing=north,cover=heat_alarm": {
+      "model": "powergrid_modernized:block/conduit_box_heat_alarm",
+      "y": 180
+    },
+    "facing=north,cover=pull": {
+      "model": "powergrid_modernized:block/conduit_box_pull",
+      "y": 180
+    },
+    "facing=north,cover=pull_pulled": {
+      "model": "powergrid_modernized:block/conduit_box_pull_pulled",
       "y": 180
     },
     "facing=west,cover=open": {
@@ -110,6 +138,22 @@
       "model": "powergrid_modernized:block/conduit_box_horn_on",
       "y": 90
     },
+    "facing=west,cover=heat": {
+      "model": "powergrid_modernized:block/conduit_box_heat",
+      "y": 90
+    },
+    "facing=west,cover=heat_alarm": {
+      "model": "powergrid_modernized:block/conduit_box_heat_alarm",
+      "y": 90
+    },
+    "facing=west,cover=pull": {
+      "model": "powergrid_modernized:block/conduit_box_pull",
+      "y": 90
+    },
+    "facing=west,cover=pull_pulled": {
+      "model": "powergrid_modernized:block/conduit_box_pull_pulled",
+      "y": 90
+    },
     "facing=east,cover=open": {
       "model": "powergrid_modernized:block/conduit_box_open",
       "y": 270
@@ -148,6 +192,22 @@
     },
     "facing=east,cover=horn_on": {
       "model": "powergrid_modernized:block/conduit_box_horn_on",
+      "y": 270
+    },
+    "facing=east,cover=heat": {
+      "model": "powergrid_modernized:block/conduit_box_heat",
+      "y": 270
+    },
+    "facing=east,cover=heat_alarm": {
+      "model": "powergrid_modernized:block/conduit_box_heat_alarm",
+      "y": 270
+    },
+    "facing=east,cover=pull": {
+      "model": "powergrid_modernized:block/conduit_box_pull",
+      "y": 270
+    },
+    "facing=east,cover=pull_pulled": {
+      "model": "powergrid_modernized:block/conduit_box_pull_pulled",
       "y": 270
     },
     "facing=down,cover=open": {
@@ -190,6 +250,22 @@
       "model": "powergrid_modernized:block/conduit_box_horn_on",
       "x": 270
     },
+    "facing=down,cover=heat": {
+      "model": "powergrid_modernized:block/conduit_box_heat",
+      "x": 270
+    },
+    "facing=down,cover=heat_alarm": {
+      "model": "powergrid_modernized:block/conduit_box_heat_alarm",
+      "x": 270
+    },
+    "facing=down,cover=pull": {
+      "model": "powergrid_modernized:block/conduit_box_pull",
+      "x": 270
+    },
+    "facing=down,cover=pull_pulled": {
+      "model": "powergrid_modernized:block/conduit_box_pull_pulled",
+      "x": 270
+    },
     "facing=up,cover=open": {
       "model": "powergrid_modernized:block/conduit_box_open",
       "x": 90
@@ -228,6 +304,22 @@
     },
     "facing=up,cover=horn_on": {
       "model": "powergrid_modernized:block/conduit_box_horn_on",
+      "x": 90
+    },
+    "facing=up,cover=heat": {
+      "model": "powergrid_modernized:block/conduit_box_heat",
+      "x": 90
+    },
+    "facing=up,cover=heat_alarm": {
+      "model": "powergrid_modernized:block/conduit_box_heat_alarm",
+      "x": 90
+    },
+    "facing=up,cover=pull": {
+      "model": "powergrid_modernized:block/conduit_box_pull",
+      "x": 90
+    },
+    "facing=up,cover=pull_pulled": {
+      "model": "powergrid_modernized:block/conduit_box_pull_pulled",
       "x": 90
     }
   }

@@ -29,6 +29,18 @@
     },
     "cover=horn_on": {
       "model": "powergrid_modernized:block/ceiling_tile_conduit_box_horn_on"
+    },
+    "cover=heat": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_heat"
+    },
+    "cover=heat_alarm": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_heat_alarm"
+    },
+    "cover=pull": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_pull"
+    },
+    "cover=pull_pulled": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_pull_pulled"
     }
   }
 }

@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.67.1 — 2026-10-26
+
+### Fixed
+- The heat detector and pull station covers, and the gang box pull station and horn strobe
+  items, had no models or textures: the generators for them never ran in 0.66.0. They do now.
+
 ## 0.67.0 — 2026-10-26
 
 ### Added

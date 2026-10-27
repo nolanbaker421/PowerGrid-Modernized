@@ -15,7 +15,10 @@
     "led_red": "powergrid_modernized:block/led_red",
     "horn": "powergrid_modernized:block/horn_strobe",
     "lens_off": "powergrid_modernized:block/lens_off",
-    "lens_on": "powergrid_modernized:block/lens_on"
+    "lens_on": "powergrid_modernized:block/lens_on",
+    "heat": "powergrid_modernized:block/heat_detector",
+    "pull": "powergrid_modernized:block/pull_station",
+    "handle": "powergrid_modernized:block/pull_handle"
   },
   "elements": [
     {
