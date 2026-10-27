@@ -48,7 +48,9 @@ import java.util.List;
  * take, not the whole run. Bending or cutting a run drops its diagonals.
  */
 public class ConduitBenderItem extends Item {
-    private static final String GRAB_ID = "GrabId", GRAB_UUID = "GrabUuid", GRAB_LEG = "GrabLeg", GRAB_PX = "GrabPx";
+    private static final String GRAB_ID = "GrabId", GRAB_UUID = "GrabUuid", GRAB_LEG = "GrabLeg", GRAB_PX = "GrabPx", STANDOFF = "Standoff";
+    /** The furthest a moved leg can be held off the face it is put on, in pixels. */
+    public static final int MAX_STANDOFF = 16;
     /** A cut this close to a corner, in pixels, is made at the corner. */
     private static final int CORNER_SNAP_PX = 2;
 
@@ -84,6 +86,17 @@ public class ConduitBenderItem extends Item {
         return tag(stack).getInt(GRAB_PX);
     }
 
+    /** How far off the face a moved leg lands, in pixels: set by scrolling with a leg grabbed, zero on a fresh grab. */
+    public static int standoff(ItemStack stack) {
+        return Math.max(0, Math.min(MAX_STANDOFF, tag(stack).getInt(STANDOFF)));
+    }
+
+    public static void setStandoff(ItemStack stack, int pixels) {
+        var tag = tag(stack);
+        tag.putInt(STANDOFF, Math.max(0, Math.min(MAX_STANDOFF, pixels)));
+        store(stack, tag);
+    }
+
     /** The run whose leg is grabbed, if it is still there with that leg. Works on both sides. */
     @Nullable
     public static ConduitRunEntity grabbed(Level level, ItemStack stack) {
@@ -102,6 +115,7 @@ public class ConduitBenderItem extends Item {
         tag.putUUID(GRAB_UUID, run.getUUID());
         tag.putInt(GRAB_LEG, leg);
         tag.putInt(GRAB_PX, px);
+        tag.remove(STANDOFF);
         store(stack, tag);
     }
 
@@ -111,6 +125,7 @@ public class ConduitBenderItem extends Item {
         tag.remove(GRAB_UUID);
         tag.remove(GRAB_LEG);
         tag.remove(GRAB_PX);
+        tag.remove(STANDOFF);
         store(stack, tag);
     }
 
@@ -212,7 +227,7 @@ public class ConduitBenderItem extends Item {
             return fail(player, "message.conduit.bend_nothing");
         }
         int index = grabbedLeg(stack);
-        var shift = targetShift(run, index, hit);
+        var shift = targetShift(run, index, hit, standoff(stack));
         if(shift == null)
             return fail(player, "message.conduit.bend_miss");
         if(shift.equals(Vec3i.ZERO)) {
@@ -228,19 +243,19 @@ public class ConduitBenderItem extends Item {
 
     /**
      * How far, in pixels on each axis, the leg would move for a tap on that block face: square to
-     * the face it comes to rest on the face, a tube's radius off it on the pixel grid and never
-     * into it; the other way across it goes where the click landed, on the grid. Nothing along
-     * its own axis. Works on both sides, so the overlay can show the result first.
+     * the face it comes to rest on the face, a tube's radius and the standoff off it on the pixel
+     * grid and never into it; the other way across it goes where the click landed, on the grid.
+     * Nothing along its own axis. Works on both sides, so the overlay can show the result first.
      */
     @Nullable
-    public static Vec3i targetShift(ConduitRunEntity run, int index, BlockHitResult hit) {
+    public static Vec3i targetShift(ConduitRunEntity run, int index, BlockHitResult hit, int standoffPx) {
         if(index < 0 || index >= run.segments.size())
             return null;
         var seg = run.segments.get(index);
         var start = legStart(run, index);
         var face = hit.getDirection();
         var p = hit.getLocation();
-        double radius = run.size().tubeThickness() / 2;
+        double radius = run.size().tubeThickness() / 2 + standoffPx / 16.0;
         int[] shift = new int[3];
         for(var axis : Direction.Axis.values()) {
             if(axis == seg.direction.getAxis())
@@ -508,8 +523,11 @@ public class ConduitBenderItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
-        if(holding(stack))
+        if(holding(stack)) {
             tooltip.add(Lang.builder().translate("bender.holding", grabbedLeg(stack) + 1).style(ChatFormatting.AQUA).component());
+            if(standoff(stack) > 0)
+                tooltip.add(Lang.builder().translate("message.conduit.bend_standoff", standoff(stack)).style(ChatFormatting.GRAY).component());
+        }
     }
 
     @Override

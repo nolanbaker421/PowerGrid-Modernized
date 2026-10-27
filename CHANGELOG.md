@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.63.3 — 2026-10-26
+
+### Added
+- With a leg grabbed in the bender, the scroll wheel sets how far off the face the leg will
+  land, a pixel a notch up to sixteen, instead of changing the hotbar slot. The green outline
+  follows at once, and the standoff shows in the tooltip. A fresh grab starts at zero, the tube
+  resting on the face.
+
 ## 0.63.2 — 2026-10-26
 
 ### Changed

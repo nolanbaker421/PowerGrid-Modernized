@@ -45,7 +45,7 @@ public final class BenderOverlay {
                 held = grabbed.legBox(leg);
                 mark = ConduitBenderItem.pointOnLeg(grabbed, leg, ConduitBenderItem.grabbedPx(stack));
                 if(mc.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
-                    var shift = ConduitBenderItem.targetShift(grabbed, leg, hit);
+                    var shift = ConduitBenderItem.targetShift(grabbed, leg, hit, ConduitBenderItem.standoff(stack));
                     if(shift != null && !shift.equals(Vec3i.ZERO))
                         ghost = held.move(shift.getX() / 16.0, shift.getY() / 16.0, shift.getZ() / 16.0);
                 }
