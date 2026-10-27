@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.62.1 — 2026-10-26
+
+### Fixed
+- A run routed by the tracer no longer dodges a strut in its way with a block-wide detour: the
+  tracer sees through struts, as a run crosses a rail in a clamp. Players, their clicks and
+  their feet still meet the rails.
+- A coupling ring sits at least six pixels clear of a bend, not three.
+- The bender finds a moved leg again after a fold of the legs around it, and says so when it
+  cannot instead of asking you to aim at a leg. A missed tap is noted in the log.
+
 ## 0.62.0 — 2026-10-26
 
 ### Changed

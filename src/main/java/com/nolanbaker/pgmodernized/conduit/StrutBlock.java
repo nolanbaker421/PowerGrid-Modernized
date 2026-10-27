@@ -233,6 +233,10 @@ public class StrutBlock extends Block implements com.simibubi.create.content.equ
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        // Power Grid's tracer asks with no context, and a run must route through a strut, not
+        // round it: it crosses the rail in a clamp. Players and their clicks still meet the rails.
+        if(context == CollisionContext.empty())
+            return net.minecraft.world.phys.shapes.Shapes.empty();
         var facing = state.getValue(FACING);
         var axis = state.getValue(AXIS);
         var stack = stackOf(state);

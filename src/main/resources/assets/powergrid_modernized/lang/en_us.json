@@ -378,6 +378,7 @@
   "powergrid.message.conduit.bend_release": "Let go",
   "powergrid.message.conduit.bend_nothing": "Nothing grabbed; tap a leg first",
   "powergrid.message.conduit.bend_same": "The leg is there already",
+  "powergrid.message.conduit.bend_lost": "That move folds the run; try a smaller one",
   "powergrid.message.conduit.bend_moved": "Leg moved %1$s px",
   "powergrid.message.conduit.cut_done": "Cut; both pieces are open at the cut",
   "powergrid.message.conduit.cut_wires": "Cut; %1$s wires came out",

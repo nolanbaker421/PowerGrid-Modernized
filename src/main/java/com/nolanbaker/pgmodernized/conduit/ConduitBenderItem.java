@@ -191,7 +191,11 @@ public class ConduitBenderItem extends Item {
     private static ConduitRunEntity.Hit legUnder(ConduitRunEntity run, Player player) {
         var eye = player.getEyePosition();
         var far = eye.add(player.getLookAngle().scale(PlayerUtilities.getReachDistance(player) + 1));
-        return run.segmentAt(eye, far);
+        var hit = run.segmentAt(eye, far);
+        if(hit == null)
+            com.nolanbaker.pgmodernized.PowerGridModernized.LOGGER.info("Bender missed run {} at {}: eye {} to {}, {} legs, {} boxes, first {}",
+                    run.getId(), run.position(), eye, far, run.segments.size(), run.boundingBoxes.size(), run.boundingBoxes.isEmpty() ? null : run.boundingBoxes.get(0));
+        return hit;
     }
 
     /**
@@ -216,29 +220,17 @@ public class ConduitBenderItem extends Item {
             legs.set(index, new BlockWireEntity.Point(last.direction, last.gridLength - Knockouts.STUB_PX));
             legs.add(new BlockWireEntity.Point(last.direction, Knockouts.STUB_PX));
         }
-        var moving = legs.get(index);
-        var origin = run.position();
-        var legStart = origin;
+        var legStart = run.position();
         for(int k = 0; k < index; ++k)
             legStart = legStart.add(legs.get(k).vector());
-        List<BlockWireEntity.Point> points = legs;
-        var total = Vec3i.ZERO;
-        var applied = Vec3.ZERO;
-        for(var axis : Direction.Axis.values()) {
-            int px = shift.get(axis);
-            if(px == 0)
-                continue;
-            var push = Direction.fromAxisAndDirection(axis, px > 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
-            var result = RunReshape.slide(points, index, push, Math.abs(px), fixStart, fixEnd);
-            if(result == null || result.points().isEmpty())
-                return fail(player, "message.conduit.bend_miss");
-            total = total.offset(result.startShift());
-            applied = applied.add(Vec3.atLowerCornerOf(push.getNormal()).scale(Math.abs(px) / 16.0));
-            points = result.points();
-            index = findLeg(points, origin.add(total.getX() / 16.0, total.getY() / 16.0, total.getZ() / 16.0), legStart.add(applied), moving);
-            if(index < 0)
-                return fail(player, "message.conduit.bend_miss");
+        var plan = plan(legs, index, shift, fixStart, fixEnd);
+        if(plan == null) {
+            com.nolanbaker.pgmodernized.PowerGridModernized.LOGGER.warn("Bender could not move leg {} of {} by {}", index, legs, shift);
+            return fail(player, "message.conduit.bend_lost");
         }
+        var points = plan.points();
+        var total = plan.startShift();
+        var applied = new Vec3(shift.getX() / 16.0, shift.getY() / 16.0, shift.getZ() / 16.0);
         var first = points.get(0);
         var last = points.get(points.size() - 1);
         if(fixStart && (first.direction != run.segments.get(0).direction || first.gridLength < stubStart))
@@ -271,16 +263,64 @@ public class ConduitBenderItem extends Item {
         return InteractionResult.SUCCESS;
     }
 
-    /** The leg in {@code points} that is {@code moving}, now starting at {@code expectedStart}; -1 when it is gone. */
+    /** The legs after a move, how far the run's start moved, and where the moved leg now sits. */
+    public record Plan(List<BlockWireEntity.Point> points, Vec3i startShift, int index) {}
+
+    /**
+     * Slides leg {@code index} of {@code legs} by {@code shift} pixels, one axis after the other,
+     * the legs beside it following, and finds the leg again after each slide. Null when the leg
+     * cannot be found again, which a fold of the legs around it could cause.
+     */
+    @Nullable
+    public static Plan plan(List<BlockWireEntity.Point> legs, int index, Vec3i shift, boolean fixStart, boolean fixEnd) {
+        var moving = legs.get(index);
+        var legStart = Vec3.ZERO;
+        for(int k = 0; k < index; ++k)
+            legStart = legStart.add(legs.get(k).vector());
+        List<BlockWireEntity.Point> points = legs;
+        var total = Vec3i.ZERO;
+        var applied = Vec3.ZERO;
+        for(var axis : Direction.Axis.values()) {
+            int px = shift.get(axis);
+            if(px == 0)
+                continue;
+            var push = Direction.fromAxisAndDirection(axis, px > 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
+            var result = RunReshape.slide(points, index, push, Math.abs(px), fixStart, fixEnd);
+            if(result == null || result.points().isEmpty())
+                return null;
+            total = total.offset(result.startShift());
+            applied = applied.add(Vec3.atLowerCornerOf(push.getNormal()).scale(Math.abs(px) / 16.0));
+            points = result.points();
+            index = findLeg(points, new Vec3(total.getX() / 16.0, total.getY() / 16.0, total.getZ() / 16.0), legStart.add(applied), moving);
+            if(index < 0)
+                return null;
+        }
+        return new Plan(points, total, index);
+    }
+
+    /**
+     * The leg in {@code points} that is {@code moving}, now lying on the line through
+     * {@code expectedStart}: the same way, and its start on that line, whatever its length, since
+     * a fold may have lengthened it. -1 when it is gone.
+     */
     private static int findLeg(List<BlockWireEntity.Point> points, Vec3 origin, Vec3 expectedStart, BlockWireEntity.Point moving) {
+        var along = Vec3.atLowerCornerOf(moving.direction.getNormal());
         var at = origin;
+        int best = -1;
+        double bestOff = 1e-4;
         for(int i = 0; i < points.size(); ++i) {
             var point = points.get(i);
-            if(point.direction == moving.direction && point.gridLength == moving.gridLength && at.distanceToSqr(expectedStart) < 1e-6)
-                return i;
+            if(point.direction == moving.direction) {
+                var off = at.subtract(expectedStart);
+                double across = off.subtract(along.scale(off.dot(along))).lengthSqr();
+                if(across < bestOff) {
+                    bestOff = across;
+                    best = i;
+                }
+            }
             at = at.add(point.vector());
         }
-        return -1;
+        return best;
     }
 
     /** Sneak-click: the run is cut at the leg under the crosshair into two runs. Server side. */

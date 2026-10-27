@@ -344,7 +344,7 @@ public class BodyWireRenderer extends BlockWireRenderer {
                                   double travelled, double length, float t, double cutStart, double cutEnd) {
         int r = (int) ((rgb >> 16 & 0xFF) * 0.93), g = (int) ((rgb >> 8 & 0xFF) * 0.93), b = (int) ((rgb & 0xFF) * 0.93);
         int shade = r << 16 | g << 8 | b;
-        double margin = 3 / 16.0;
+        double margin = 6 / 16.0;
         for(double at = Math.ceil(travelled / COUPLING_EVERY) * COUPLING_EVERY; at <= travelled + length; at += COUPLING_EVERY) {
             if(at <= 0)
                 continue;
