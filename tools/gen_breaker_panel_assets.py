@@ -188,6 +188,15 @@ def shared_textures():
     fill(handle, 7, 5, 9, 11, (0xe8, 0xe8, 0xe8))              # grip stripe / rating stamp
     write_png(os.path.join(tex, "breaker_handle.png"), handle)
 
+    # The flag that shows beside the handle, the mechanical indicator on a moulded-case breaker:
+    # the left half red for ON, the right half orange for TRIPPED. Off shows no flag at all.
+    flag = canvas(16, 16, (0xc8, 0x28, 0x28, 255))
+    fill(flag, 8, 0, 16, 16, (0xf0, 0x80, 0x20))
+    fill(flag, 0, 0, 8, 1, (0xe0, 0x50, 0x50))
+    fill(flag, 8, 0, 16, 1, (0xf8, 0xa0, 0x50))
+    fill(flag, 0, 15, 16, 16, (0x80, 0x30, 0x10))
+    write_png(os.path.join(tex, "breaker_flag.png"), flag)
+
 
 def breaker_item_texture(rating, poles=1):
     img = canvas(16, 16)
@@ -324,17 +333,23 @@ def breaker_models():
     # Unit-cube breaker, scaled by the renderer to the slot size. Front is -z; the handle sticks
     # out of the front. Handle position encodes the state: right = on, left = off, middle = tripped.
     handles = {"on": (10, 15), "off": (1, 6), "tripped": (5.5, 10.5)}
+    # The flag beside the handle, proud of the face where the handle is not: red over the outer
+    # side when on, orange both sides of a tripped handle, nothing when off. Big enough to read
+    # from across the room once the model is squeezed into its two-pixel space.
+    flags = {"on": [(1, 9, 0, 8)], "off": [], "tripped": [(1, 5, 8, 16), (11, 15, 8, 16)]}
     for state, (hx1, hx2) in handles.items():
+        elements = [element(0, 0, 4, 16, 16, 16, "#body"), element(hx1, 3, 0, hx2, 13, 8, "#handle")]
+        for x1, x2, u1, u2 in flags[state]:
+            elements.append({"from": [x1, 2.5, 3.4], "to": [x2, 13.5, 4],
+                             "faces": {f: {"uv": [u1, 0, u2, 16], "texture": "#flag"} for f in ("north", "up", "down", "east", "west")}})
         model = {
             "textures": {
                 "body": "%s:block/breaker_body_%s" % (MOD, state),
                 "handle": "%s:block/breaker_handle" % MOD,
+                "flag": "%s:block/breaker_flag" % MOD,
                 "particle": "%s:block/breaker_body_%s" % (MOD, state),
             },
-            "elements": [
-                element(0, 0, 4, 16, 16, 16, "#body"),
-                element(hx1, 3, 0, hx2, 13, 8, "#handle"),
-            ],
+            "elements": elements,
         }
         dump(os.path.join(ASSETS, "models", "block", "breaker", state + ".json"), model)
 

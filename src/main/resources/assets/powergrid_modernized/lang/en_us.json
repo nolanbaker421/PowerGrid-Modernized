@@ -910,7 +910,7 @@
   "item.powergrid_modernized.conduit_cover_heat": "Heat Detector Cover",
   "item.powergrid_modernized.conduit_cover_pull": "Pull Station Cover",
   "powergrid.conduit_cover.heat": "Closes a conduit box with a heat detector: splice the fire alarm panel's initiating loop to it, and it trips on fire or lava in the blocks beside it, where a smoke detector would cry wolf over a forge",
-  "powergrid.conduit_cover.pull": "Closes a conduit box with a pull station: splice the fire alarm panel's initiating loop to it; a bare hand pulls it and a wrench resets it",
+  "powergrid.conduit_cover.pull": "Closes a conduit box with a pull station: splice the fire alarm panel's initiating loop to it. A bare hand on the handle pulls it, anywhere else on the station opens the splices, and a wrench resets it",
   "powergrid.gui.conduit_box.cover_heat": "Heat detector, quiet",
   "powergrid.gui.conduit_box.cover_heat_alarm": "Heat detector, in alarm",
   "powergrid.gui.conduit_box.cover_pull": "Pull station, set",

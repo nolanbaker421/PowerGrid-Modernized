@@ -2,6 +2,7 @@
   "textures": {
     "body": "powergrid_modernized:block/breaker_body_on",
     "handle": "powergrid_modernized:block/breaker_handle",
+    "flag": "powergrid_modernized:block/breaker_flag",
     "particle": "powergrid_modernized:block/breaker_body_on"
   },
   "elements": [
@@ -138,6 +139,65 @@
             16
           ],
           "texture": "#handle"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        2.5,
+        3.4
+      ],
+      "to": [
+        9,
+        13.5,
+        4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            16
+          ],
+          "texture": "#flag"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            16
+          ],
+          "texture": "#flag"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            8,
+            16
+          ],
+          "texture": "#flag"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            16
+          ],
+          "texture": "#flag"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            16
+          ],
+          "texture": "#flag"
         }
       }
     }

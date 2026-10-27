@@ -4,6 +4,36 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.73.0 — 2026-10-27
+
+### Added
+- Breakers in a panel show a flag beside the handle, the way a moulded-case breaker's window
+  does: red when on, orange when tripped, nothing when off. Readable from across the room, where
+  the handle alone was not.
+- A conduit box goes on the underside of a ceiling tile: right-click the tile from the room below
+  with a box and it mounts up into the tile, in the room, for a light, a detector or a receptacle
+  under the ceiling. The top face still puts the box in the plenum as before.
+
+### Changed
+- The box on a ceiling tile wears Luna-Terra's conduit box models, turned onto the tile: the
+  detailed open box, the covers, the lamp fixture, with the knockouts where they were.
+- Runs leave a ceiling tile box sideways, out of the knockout, instead of climbing four pixels
+  first: the tube now runs across the tiles at the knockouts' height, which is where the tracer
+  put it anyway, and enters the next box square on. The vertical stub that stood off-centre at
+  each knockout is gone. Runs laid before keep their legs.
+- A pull station pulls by its handle. A bare hand anywhere else on the station, cover or gang
+  device, opens the splice editor like any other cover, so a station can be wired after it is
+  fitted. A bare hand on a gang box's frame, an empty gang, or a device with nothing to press
+  (a horn strobe, a monitor module) opens the editor too, as on a conduit box.
+- The splice editor lifts black and brown wires off its dark panel, so a black conductor is a
+  grey line and not a hole in the drawing, lit or dimmed. Point names that ran to the width of
+  the column, "Cover Orange", get their room.
+
+### Fixed
+- An offset that jogged in two directions at once, or a bender diagonal out of the plane of its
+  legs, drew its straight square to the axes between two bends whose rings were not, so the tube
+  stepped at both kinks. The S and the diagonal keep one turn of the octagon end to end.
+
 ## 0.72.0 — 2026-10-27
 
 ### Added

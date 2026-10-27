@@ -350,9 +350,10 @@ public class BodyWireRenderer extends BlockWireRenderer {
                     var dd = diagDraw[i];
                     int diagLight = brightest(run, run.position().add(dd.p.add(dd.q).scale(0.5)));
                     if(dd.r > 0) {
-                        TubeDraw.bend(pose, consumer, diagLight, rgb, dd.p, dd.alongA, dd.u, dd.r, t);
-                        TubeDraw.straight(pose, consumer, diagLight, rgb, dd.p.add(dd.u.scale(dd.dA)), dd.q.subtract(dd.u.scale(dd.dB)), t);
-                        TubeDraw.bend(pose, consumer, diagLight, rgb, dd.q, dd.u, dd.alongB, dd.r, t);
+                        // One turn of the octagon from leg to leg, so neither bend steps against the diagonal.
+                        var flat = TubeDraw.bend(pose, consumer, diagLight, rgb, dd.p, dd.alongA, dd.u, dd.r, t, null);
+                        TubeDraw.straight(pose, consumer, diagLight, rgb, dd.p.add(dd.u.scale(dd.dA)), dd.q.subtract(dd.u.scale(dd.dB)), t, flat);
+                        TubeDraw.bend(pose, consumer, diagLight, rgb, dd.q, dd.u, dd.alongB, dd.r, t, flat);
                     } else {
                         TubeDraw.joint(pose, consumer, diagLight, rgb, dd.p, t);
                         TubeDraw.straight(pose, consumer, diagLight, rgb, dd.p, dd.q, t);
@@ -372,9 +373,12 @@ public class BodyWireRenderer extends BlockWireRenderer {
                     var q = c2.add(along.scale(m));
                     var diagonal = q.subtract(p).normalize();
                     double d = TubeDraw.setback(wanted, along, diagonal);
-                    TubeDraw.bend(pose, consumer, segLight, rgb, p, along, diagonal, wanted, t);
-                    TubeDraw.straight(pose, consumer, segLight, rgb, p.add(diagonal.scale(d)), q.subtract(diagonal.scale(d)), t);
-                    TubeDraw.bend(pose, consumer, segLight, rgb, q, diagonal, along, wanted, t);
+                    // The S keeps one turn of the octagon from end to end: a jog in two directions
+                    // at once leans the kinks' rings off the axes, and a straight drawn square to
+                    // the axes between them would step against both.
+                    var flat = TubeDraw.bend(pose, consumer, segLight, rgb, p, along, diagonal, wanted, t, null);
+                    TubeDraw.straight(pose, consumer, segLight, rgb, p.add(diagonal.scale(d)), q.subtract(diagonal.scale(d)), t, flat);
+                    TubeDraw.bend(pose, consumer, segLight, rgb, q, diagonal, along, wanted, t, flat);
                 } else if(nextDrawn(absorbed, i, n) < n && radii[i] > 0) {
                     TubeDraw.bend(pose, consumer, segLight, rgb, end, along, Vec3.atLowerCornerOf(segs.get(nextDrawn(absorbed, i, n)).direction.getNormal()), radii[i], t);
                 } else if(nextDrawn(absorbed, i, n) < n) {

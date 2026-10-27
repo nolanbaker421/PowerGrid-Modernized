@@ -21,9 +21,8 @@ public final class Knockouts {
     /** The way a run should leave that knockout, or null when it is not a knockout we can read. */
     @Nullable
     public static Direction exit(Level level, BlockWireEndpoint endpoint) {
-        // A box on a ceiling tile sits inside the tile's block: its runs leave upward, over the tiles.
-        if(level.getBlockState(endpoint.getPos()).getBlock() instanceof CeilingConduitBoxBlock)
-            return Direction.UP;
+        // A box on a ceiling tile is no different: its knockouts face sideways, a pixel and a half
+        // over the tile, which is the height the tracer runs a tube across the tiles at anyway.
         return normal(level, endpoint);
     }
 

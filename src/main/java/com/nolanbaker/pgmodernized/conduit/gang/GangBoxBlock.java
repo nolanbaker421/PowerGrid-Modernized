@@ -230,7 +230,12 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         return stack.isEmpty() ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
 
-    /** Empty hand: a click flips the switch or presses the button in that gang; sneaking takes the device out, or opens the splice screen on an empty gang. */
+    /**
+     * Empty hand: a click flips the switch or presses the button in that gang, pulls a station by
+     * its handle, and anywhere else, the box, an empty gang, a device with nothing to press, the
+     * rest of a pull station, opens the splice editor as on a conduit box. Sneaking takes the
+     * device out, or opens the editor on an empty gang.
+     */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(hand != InteractionHand.MAIN_HAND || !player.getMainHandItem().isEmpty())
@@ -280,12 +285,21 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
             return cord.cordDetach(player, second) ? InteractionResult.SUCCESS : InteractionResult.PASS;
         }
         if(device == GangDevice.PULL_STATION) {
-            if(!level.isClientSide)
-                be.pull(slot, player);
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            // The handle pulls; the rest of the station opens the editor, so the station can be wired.
+            var frame = GangFrame.toFrame(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ())).scale(16);
+            double cx = GangLayout.slotCentreX(gangs, slot), hz = be.isOn(slot) ? 8.6 : 6.6;
+            if(Math.abs(frame.x - cx) <= 1.4 && frame.z >= hz - 0.7 && frame.z <= hz + 1.5) {
+                if(!level.isClientSide)
+                    be.pull(slot, player);
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+            device = null;
         }
-        if(device == null || !device.toggles())
-            return InteractionResult.PASS;
+        if(device == null || !device.toggles()) {
+            if(level.isClientSide)
+                ClientHooks.openSplices(pos);
+            return InteractionResult.SUCCESS;
+        }
         if(!level.isClientSide)
             be.toggle(slot, player);
         return InteractionResult.sidedSuccess(level.isClientSide);

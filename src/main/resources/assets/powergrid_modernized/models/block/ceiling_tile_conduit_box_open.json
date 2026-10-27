@@ -1,15 +1,14 @@
 {
   "parent": "block/block",
+  "render_type": "minecraft:cutout",
   "textures": {
-    "box": "powergrid_modernized:block/conduit_box",
-    "terminal": "powergrid_modernized:block/panel_terminal",
-    "open": "powergrid_modernized:block/conduit_box_open",
-    "tile": "powergrid:block/ceiling_tile/ceiling_tile",
+    "box": "powergrid_modernized:block/conduit_box_detail",
     "knockout": "powergrid_modernized:block/knockout_one_half",
     "particle": "powergrid_modernized:block/conduit_box",
-    "lamp_off": "powergrid_modernized:block/lamp_off",
-    "lamp_on": "powergrid_modernized:block/lamp_on",
+    "plate": "powergrid_modernized:block/conduit_box",
+    "terminal": "powergrid_modernized:block/panel_terminal",
     "receptacle": "powergrid_modernized:block/receptacle",
+    "tile": "powergrid:block/ceiling_tile/ceiling_tile",
     "detector": "powergrid_modernized:block/smoke_detector",
     "led_green": "powergrid_modernized:block/led_green",
     "led_red": "powergrid_modernized:block/led_red",
@@ -158,6 +157,7 @@
       }
     },
     {
+      "name": "exterior",
       "from": [
         4,
         2,
@@ -165,61 +165,200 @@
       ],
       "to": [
         12,
-        4.5,
+        5,
         12
       ],
       "faces": {
-        "north": {
+        "east": {
           "uv": [
-            4,
-            11.5,
-            12,
-            14
+            16.0,
+            13.5,
+            12.0,
+            12.0
+          ],
+          "texture": "#box"
+        },
+        "down": {
+          "uv": [
+            16.0,
+            4.0,
+            12.0,
+            0.0
+          ],
+          "texture": "#box",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            16.0,
+            13.5,
+            12.0,
+            12.0
           ],
           "texture": "#box"
         },
         "south": {
           "uv": [
-            4,
-            11.5,
-            12,
-            14
+            16.0,
+            13.5,
+            12.0,
+            12.0
+          ],
+          "texture": "#box"
+        },
+        "north": {
+          "uv": [
+            16.0,
+            13.5,
+            12.0,
+            12.0
+          ],
+          "texture": "#box"
+        }
+      }
+    },
+    {
+      "name": "bezel liner",
+      "from": [
+        11,
+        4,
+        5
+      ],
+      "to": [
+        5,
+        5,
+        11
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            13.5,
+            7.0,
+            14.0,
+            4.5
+          ],
+          "texture": "#box",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            13.5,
+            7.0,
+            14.0,
+            4.5
+          ],
+          "texture": "#box",
+          "rotation": 90
+        },
+        "north": {
+          "uv": [
+            13.5,
+            7.0,
+            14.0,
+            4.5
+          ],
+          "texture": "#box"
+        },
+        "south": {
+          "uv": [
+            14.0,
+            4.5,
+            13.5,
+            7.0
+          ],
+          "texture": "#box"
+        }
+      }
+    },
+    {
+      "name": "bezel",
+      "from": [
+        4,
+        4,
+        4
+      ],
+      "to": [
+        12,
+        5,
+        12
+      ],
+      "faces": {
+        "up": {
+          "uv": [
+            16.0,
+            12.0,
+            12.0,
+            8.0
+          ],
+          "texture": "#box"
+        },
+        "down": {
+          "uv": [
+            16.0,
+            12.0,
+            12.0,
+            8.0
+          ],
+          "texture": "#box",
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "name": "interior",
+      "from": [
+        11.5,
+        2.0199999999999996,
+        4.5
+      ],
+      "to": [
+        4.5,
+        5,
+        11.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            16.0,
+            4.0,
+            12.0,
+            0.0
           ],
           "texture": "#box"
         },
         "east": {
           "uv": [
-            4,
-            11.5,
-            12,
-            14
+            12.0,
+            12.0,
+            16.0,
+            13.5
           ],
           "texture": "#box"
         },
         "west": {
           "uv": [
-            4,
-            11.5,
-            12,
-            14
+            12.0,
+            12.0,
+            16.0,
+            13.5
           ],
           "texture": "#box"
         },
-        "up": {
+        "north": {
           "uv": [
-            4,
-            4,
-            12,
-            12
+            12.0,
+            12.0,
+            16.0,
+            13.5
           ],
-          "texture": "#open"
+          "texture": "#box"
         },
-        "down": {
+        "south": {
           "uv": [
-            4,
-            4,
-            12,
-            12
+            12.0,
+            12.0,
+            16.0,
+            13.5
           ],
           "texture": "#box"
         }

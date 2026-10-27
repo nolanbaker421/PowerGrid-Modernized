@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Octagonal tube, drawn as lit quads over a brushed galvanized texture that runs along the tube:
@@ -33,14 +34,23 @@ public final class TubeDraw {
         return buffer.getBuffer(RenderType.entityTranslucent(TUBE));
     }
 
-    /** A straight from {@code a} to {@code b}, flat-to-flat width {@code t}, capped at both ends. */
+    /** A straight from {@code a} to {@code b}, flat-to-flat width {@code t}, capped at both ends, flats square to the axes where it can. */
     public static void straight(PoseStack.Pose pose, VertexConsumer c, int light, int rgb, Vec3 a, Vec3 b, float t) {
+        straight(pose, c, light, rgb, a, b, t, null);
+    }
+
+    /**
+     * The same with the octagon turned so one flat faces {@code flat}, when given: the straight
+     * between an offset's two kinks, or a diagonal's two bends, keeps the turn the bends' rings
+     * have, so the tube shows no step where they meet.
+     */
+    public static void straight(PoseStack.Pose pose, VertexConsumer c, int light, int rgb, Vec3 a, Vec3 b, float t, @Nullable Vec3 flat) {
         var u = b.subtract(a);
         double len = u.length();
         if(len < 1e-5)
             return;
         u = u.scale(1 / len);
-        var v = perpendicular(u);
+        var v = flat(u, flat);
         var w = u.cross(v);
         double h = t / 2;
         // In pieces no longer than a block, so the texture never has to wrap along the tube.
@@ -65,14 +75,26 @@ public final class TubeDraw {
      * {@code r·tan(θ/2)} short of the corner, swept as a few chords of tube with every ring square
      * to the arc. A right angle meets its legs {@code r} short; an offset's shallow kink much less.
      */
-    public static void bend(PoseStack.Pose pose, VertexConsumer c, int light, int rgb, Vec3 corner, Vec3 u1, Vec3 u2, double r, float t) {
+    public static Vec3 bend(PoseStack.Pose pose, VertexConsumer c, int light, int rgb, Vec3 corner, Vec3 u1, Vec3 u2, double r, float t) {
+        return bend(pose, c, light, rgb, corner, u1, u2, r, t, null);
+    }
+
+    /**
+     * The same with the rings' turn given: {@code flat0} is the way a flat of the arriving leg
+     * faces (an axis tube's own when null), and the rings turn with the arc from there, so the
+     * first ring matches the leg before and the tube does not step at the joint. Returns the way
+     * that flat faces at the end, for the leg after. A plain axis elbow needs none of this: a
+     * quarter turn takes an axis tube's flats to an axis tube's flats.
+     */
+    public static Vec3 bend(PoseStack.Pose pose, VertexConsumer c, int light, int rgb, Vec3 corner, Vec3 u1, Vec3 u2, double r, float t, @Nullable Vec3 flat0) {
         double cos = Mth.clamp(u1.dot(u2), -1, 1);
         double theta = Math.acos(cos);
+        var v0 = flat(u1, flat0);
         if(theta < 1e-3)
-            return;
+            return v0;
         var inward = u2.subtract(u1.scale(cos));
         if(inward.lengthSqr() < 1e-10)
-            return;
+            return v0;
         inward = inward.normalize();
         var n = u1.cross(u2).normalize();
         double d = r * Math.tan(theta / 2);
@@ -86,8 +108,10 @@ public final class TubeDraw {
         for(int k = 0; k <= steps; ++k) {
             double a = theta * k / steps;
             var radial = inward.scale(-Math.cos(a)).add(u1.scale(Math.sin(a)));
+            var tangent = u1.scale(Math.cos(a)).add(inward.scale(Math.sin(a)));
             var at = centre.add(radial.scale(r));
-            var ring = ring(at, radial, n, h);
+            var v = turned(v0, n, a);
+            var ring = ring(at, v, tangent.cross(v), h);
             if(prev != null) {
                 sides(pose, c, light, rgb, prev, ring, arc, arc + chord, prevAt.add(at).scale(0.5));
                 arc += chord;
@@ -95,6 +119,23 @@ public final class TubeDraw {
             prev = ring;
             prevAt = at;
         }
+        return turned(v0, n, theta);
+    }
+
+    /** The way one flat of a tube along {@code u} faces: {@code wanted} squared to the tube when it can be, else the axis-square default. */
+    public static Vec3 flat(Vec3 u, @Nullable Vec3 wanted) {
+        if(wanted != null) {
+            var v = wanted.subtract(u.scale(u.dot(wanted)));
+            if(v.lengthSqr() > 1e-8)
+                return v.normalize();
+        }
+        return perpendicular(u);
+    }
+
+    /** {@code v} turned by {@code angle} about the unit axis {@code n}. */
+    private static Vec3 turned(Vec3 v, Vec3 n, double angle) {
+        double cos = Math.cos(angle), sin = Math.sin(angle);
+        return v.scale(cos).add(n.cross(v).scale(sin)).add(n.scale(n.dot(v) * (1 - cos)));
     }
 
     /**

@@ -248,37 +248,120 @@ def on_tile(box):
     return (x1, 16 + TILE_LIFT - z2, y1, x2, 16 + TILE_LIFT - z1, y2)
 
 
+# Turning the north frame onto the tile, as on_tile() does: a quarter turn about x, so -z (the
+# box's front) becomes +y and +y becomes +z, plus the lift. Elements are turned by baking them the
+# way Minecraft does (a quad per face from from/to and the face's uv, rotation and inversion),
+# turning the quads, and searching for the face key, uv order and rotation that bake to the same
+# quads in the turned element. So the turned box is right by construction, inverted elements and
+# all, and a mistake fails the generator instead of showing in the world.
+def _tile_point(p):
+    x, y, z = p
+    return (x, 16 + TILE_LIFT - z, y)
+
+
+def _tile_dir(v):
+    x, y, z = v
+    return (x, -z, y)
+
+
+# Minecraft's FaceInfo: per face, four vertices as (x, y, z) picks, 0 from "from" and 1 from "to".
+FACE_INFO = {
+    "down": [(0, 0, 1), (0, 0, 0), (1, 0, 0), (1, 0, 1)],
+    "up": [(0, 1, 0), (0, 1, 1), (1, 1, 1), (1, 1, 0)],
+    "north": [(1, 1, 0), (1, 0, 0), (0, 0, 0), (0, 1, 0)],
+    "south": [(0, 1, 1), (0, 0, 1), (1, 0, 1), (1, 1, 1)],
+    "west": [(0, 1, 0), (0, 0, 0), (0, 0, 1), (0, 1, 1)],
+    "east": [(1, 1, 1), (1, 0, 1), (1, 0, 0), (1, 1, 0)],
+}
+TILE_FACE = {"north": "up", "up": "south", "south": "down", "down": "north", "east": "east", "west": "west"}
+
+
+def _bake_face(frm, to, face, uv, rotation):
+    """The face's quad as Minecraft bakes it: (position, (u, v)) per vertex, in winding order."""
+    u1, v1, u2, v2 = uv
+    out = []
+    for i, sel in enumerate(FACE_INFO[face]):
+        p = tuple(round((to if s else frm)[k], 4) for k, s in enumerate(sel))
+        j = (i + rotation // 90) % 4
+        out.append((p, (round(u1 if j in (0, 1) else u2, 4), round(v1 if j in (0, 3) else v2, 4))))
+    return out
+
+
+def _same_cycle(a, b):
+    return any(a == b[k:] + b[:k] for k in range(4))
+
+
+def tile_element(e):
+    """A north-frame element in the tile frame, faces and textures turned with it."""
+    assert "rotation" not in e, "a turned element needs more than this"
+    frm, to = e["from"], e["to"]
+    want = {}
+    for face, data in e["faces"].items():
+        baked = _bake_face(frm, to, face, data["uv"], data.get("rotation", 0))
+        want[face] = [(tuple(round(c, 4) for c in _tile_point(p)), uv) for p, uv in baked]
+    lo = [min(frm[k], to[k]) for k in range(3)]
+    hi = [max(frm[k], to[k]) for k in range(3)]
+    a, b = _tile_point(lo), _tile_point(hi)
+    slo = [min(a[k], b[k]) for k in range(3)]
+    shi = [max(a[k], b[k]) for k in range(3)]
+    for inv in range(8):
+        nfrm = [shi[k] if inv >> k & 1 else slo[k] for k in range(3)]
+        nto = [slo[k] if inv >> k & 1 else shi[k] for k in range(3)]
+        faces = {}
+        for face, data in e["faces"].items():
+            u1, v1, u2, v2 = data["uv"]
+            lu, hu, lv, hv = min(u1, u2), max(u1, u2), min(v1, v2), max(v1, v2)
+            found = None
+            for key in FACE_INFO:
+                for rotation in (0, 90, 180, 270):
+                    for fu in (False, True):
+                        for fv in (False, True):
+                            uv = [hu if fu else lu, hv if fv else lv, lu if fu else hu, lv if fv else hv]
+                            if found is None and _same_cycle(_bake_face(nfrm, nto, key, uv, rotation), want[face]):
+                                found = (key, uv, rotation)
+            if not found:
+                break
+            out = dict(data)
+            out["uv"] = found[1]
+            if found[2]:
+                out["rotation"] = found[2]
+            else:
+                out.pop("rotation", None)
+            if "cullface" in out:
+                out["cullface"] = TILE_FACE[out["cullface"]]
+            faces[found[0]] = out
+        if len(faces) == len(e["faces"]):
+            turned = {k: v for k, v in e.items() if k not in ("from", "to", "faces")}
+            turned["from"] = nfrm
+            turned["to"] = nto
+            turned["faces"] = faces
+            return turned
+    raise AssertionError("no turn of %s bakes to the turned quads" % e.get("name", e["from"]))
+
+
 def ceiling_box_models():
-    """The box on a ceiling tile: the tile, then the box in the tile frame, one model per cover."""
-    tex = {"box": "%s:block/conduit_box" % MOD, "terminal": "%s:block/panel_terminal" % MOD,
-           "open": "%s:block/conduit_box_open" % MOD, "tile": TILE_TEXTURE, "knockout": "%s:block/knockout_one_half" % MOD,
-           "particle": "%s:block/conduit_box" % MOD, "lamp_off": "%s:block/lamp_off" % MOD, "lamp_on": "%s:block/lamp_on" % MOD,
-           "receptacle": "%s:block/receptacle" % MOD}
+    """The box on a ceiling tile: the tile, then Luna-Terra's box turned onto it, one model per cover."""
+    tex = {"box": "%s:block/conduit_box_detail" % MOD, "knockout": "%s:block/knockout_one_half" % MOD,
+           "particle": "%s:block/conduit_box" % MOD, "plate": "%s:block/conduit_box" % MOD,
+           "terminal": "%s:block/panel_terminal" % MOD, "receptacle": "%s:block/receptacle" % MOD, "tile": TILE_TEXTURE}
     tex.update(FIRE_TEX)
+    with open(LUNA, encoding="utf-8") as f:
+        luna = json.load(f)["variants"]
     for cover in COVERS:
         elements = [dict(e) for e in TILE_ELEMENTS]
-        if cover == "open":
-            x1, y1, z1, x2, y2, z2 = BODY
-            body = element(*on_tile((x1, y1, z1 + 0.5, x2, y2, z2)), "#box")
-            body["faces"]["up"]["texture"] = "#open"
-        else:
-            body = element(*on_tile(BODY), "#box")
-        elements.append(body)
+        elements += [tile_element(e) for e in luna[LUNA_VARIANT[cover]]]
         for hub in HUBS:
             elements.append(element(*on_tile(hub), "#knockout"))
-        for k in range(NUBS[cover]):
-            x = 16 - COLUMNS_U[k % 4]
-            y = ROWS_Y[k // 4]
-            elements.append(element(*on_tile((x - NUB, y - NUB, NUB_Z1, x + NUB, y + NUB, NUB_Z2)), "#terminal"))
-        if cover.startswith("light"):
-            elements.append(element(*on_tile(LAMP_HOLDER), "#box"))
         if cover == "receptacle":
-            e = element(*on_tile(RECEPTACLE_FACE), "#box")
+            e = element(*on_tile(RECEPTACLE_FACE), "#plate")
             e["faces"]["up"] = {"uv": [0, 0, 16, 16], "texture": "#receptacle"}
             elements.append(e)
         elements += fire_elements(cover, on_tile)
+        if cover == "receptacle" or cover.startswith(("light", "smoke", "horn", "heat", "pull")):
+            for screw in SCREWS:
+                elements.append(element(*on_tile(screw), "#terminal"))
         dump(os.path.join(ASSETS, "models", "block", "ceiling_tile_conduit_box_%s.json" % cover),
-             {"parent": "block/block", "textures": tex, "elements": elements})
+             {"parent": "block/block", "render_type": "minecraft:cutout", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "blockstates", "ceiling_tile_conduit_box.json"),
          {"variants": {"cover=%s" % cover: {"model": "%s:block/ceiling_tile_conduit_box_%s" % (MOD, cover)} for cover in COVERS}})
     # Breaking it drops the tile and the box.

@@ -228,11 +228,17 @@ Splices to a wire that is pulled out go away by themselves.
 Goggles on a box show how many runs land on it and a splice count; sneak to list every run with
 its size and fill. Open the editor to see the splices.
 
-**On a ceiling tile.** Right-click a Power Grid Ceiling Tile with a conduit box and the box sits
-on top of the tile, in the plenum above the ceiling, the way a tile takes a Wire Connector or a
-Cord Junction. It is the same box: twelve hubs, cover plates, the splice editor. Conduit runs
-across the tiles from box to box without a wall in sight. A wrench takes the box (and its
-plate) off and leaves the tile; breaking it drops both.
+**On a ceiling tile.** Right-click the top of a Power Grid Ceiling Tile with a conduit box and
+the box sits on top of the tile, in the plenum above the ceiling, the way a tile takes a Wire
+Connector or a Cord Junction. It is the same box: twelve hubs, cover plates, the splice editor.
+Runs leave its knockouts sideways, a pixel and a half over the tiles, and cross the tiles from
+box to box without a wall in sight. A wrench takes the box (and its plate) off and leaves the
+tile; breaking it drops both. Right-click the tile's underside from the room below instead and
+the box mounts up into the tile in the room, as on a wall, for a light, a detector or a
+receptacle under the ceiling.
+
+**Pull stations.** A bare hand on the handle pulls the station; anywhere else on it opens the
+splice editor, so a station is wired like any other cover or gang device. A wrench resets it.
 
 ### Conduit Socket
 

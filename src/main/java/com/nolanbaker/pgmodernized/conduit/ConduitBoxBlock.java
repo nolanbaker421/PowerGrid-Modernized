@@ -276,8 +276,10 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
             level.playSound(null, pos, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.6f, 1.2f);
             return InteractionResult.SUCCESS;
         }
-        // A pull station: a bare hand pulls it; a wrench resets it.
-        if(cover(state).isPull() && hand == InteractionHand.MAIN_HAND && player.getMainHandItem().isEmpty()) {
+        // A pull station: a bare hand on the handle pulls it; the rest of the station opens the
+        // editor like any cover, so the station can be wired. A wrench resets it.
+        if(cover(state).isPull() && hand == InteractionHand.MAIN_HAND && player.getMainHandItem().isEmpty()
+                && onPullHandle(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()))) {
             if(!level.isClientSide && level.getBlockEntity(pos) instanceof ConduitBoxBlockEntity be)
                 be.pull(player);
             return InteractionResult.sidedSuccess(level.isClientSide);
@@ -296,6 +298,29 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
         if(level.isClientSide)
             ClientHooks.openSplices(pos);
         return InteractionResult.SUCCESS;
+    }
+
+    /** Whether a block-local click lands on the pull station's handle: its box in the frame, with a pixel of slack round it. */
+    public boolean onPullHandle(BlockState state, Vec3 local) {
+        var handle = cover(state) == ConduitCover.PULL_PULLED ? ConduitBoxGeometry.PULL_HANDLE_PULLED : ConduitBoxGeometry.PULL_HANDLE_SET;
+        return handle.inflate(0.6, 1.0, 1.5).contains(toFrame(state, local).scale(16));
+    }
+
+    /**
+     * A block-local point in the box's north frame, undoing the turn the facing gives the model and
+     * the terminals: the same turns {@code ConduitBoxRenderer} makes, run backwards about the centre.
+     */
+    public Vec3 toFrame(BlockState state, Vec3 local) {
+        var p = local.subtract(0.5, 0.5, 0.5);
+        var q = switch(front(state)) {
+            case SOUTH -> new Vec3(-p.x, p.y, -p.z);
+            case EAST -> new Vec3(p.z, p.y, -p.x);
+            case WEST -> new Vec3(-p.z, p.y, p.x);
+            case UP -> new Vec3(p.x, p.z, -p.y);
+            case DOWN -> new Vec3(p.x, -p.z, p.y);
+            default -> p;
+        };
+        return q.add(0.5, 0.5, 0.5);
     }
 
     /** A wrench resets a pulled station; on anything else it does what it does to any box. */

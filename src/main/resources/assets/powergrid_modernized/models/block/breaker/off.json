@@ -2,6 +2,7 @@
   "textures": {
     "body": "powergrid_modernized:block/breaker_body_off",
     "handle": "powergrid_modernized:block/breaker_handle",
+    "flag": "powergrid_modernized:block/breaker_flag",
     "particle": "powergrid_modernized:block/breaker_body_off"
   },
   "elements": [

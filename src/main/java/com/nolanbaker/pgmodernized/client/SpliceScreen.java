@@ -475,7 +475,7 @@ public class SpliceScreen extends Screen {
         var c = new Centre();
         int w = 60;
         for(var point : host.points())
-            w = Math.max(w, PIN + 6 + font.width(point.name()));
+            w = Math.max(w, PIN + 12 + font.width(point.name()));
         c.w = Math.min(170, w);
         int y = 0;
         for(var point : host.points()) {
@@ -665,7 +665,7 @@ public class SpliceScreen extends Screen {
             // Generic hosts: the point names beside their pins.
             for(var pin : pins) {
                 if(!pin.conductor && !pin.bar)
-                    graphics.drawString(font, font.plainSubstrByWidth(pin.name.getString(), ductRX - pin.x - PIN - 8), pin.x + PIN + 4, pin.y, TEXT, false);
+                    graphics.drawString(font, font.plainSubstrByWidth(pin.name.getString(), ductRX - pin.x - PIN - 4), pin.x + PIN + 4, pin.y, TEXT, false);
             }
         }
         // Conductor numbers beside their pins, away from the duct, with the wire's label after the number.
@@ -697,7 +697,7 @@ public class SpliceScreen extends Screen {
 
         for(var route : routes) {
             boolean joined = lit.contains(route.a);
-            int color = lit.isEmpty() ? route.rgb | 0xFF000000 : joined ? GLOW : dim(route.rgb);
+            int color = lit.isEmpty() ? 0xFF000000 | shown(route.rgb) : joined ? GLOW : dim(route.rgb);
             for(int i = 0; i + 1 < route.points.length; ++i)
                 line(graphics, route.points[i][0], route.points[i][1], route.points[i + 1][0], route.points[i + 1][1], color);
         }
@@ -708,13 +708,13 @@ public class SpliceScreen extends Screen {
             int outline = pin.terminal == selected ? LINE : glow ? GLOW : hot ? 0xFFFFFFFF : 0xFF3A3D42;
             if(pin.bar) {
                 graphics.fill(pin.x, pin.y, pin.x + pin.w, pin.y + pin.h, 0xFF000000 | dim(pin.rgb));
-                graphics.fill(pin.x + 2, pin.y + 8, pin.x + pin.w - 2, pin.y + pin.h - 2, 0xFF000000 | pin.rgb);
+                graphics.fill(pin.x + 2, pin.y + 8, pin.x + pin.w - 2, pin.y + pin.h - 2, 0xFF000000 | shown(pin.rgb));
                 graphics.drawString(font, pin.name.getString().substring(0, 1), pin.x + 2, pin.y + 1, 0xFF000000, false);
                 graphics.renderOutline(pin.x, pin.y, pin.w, pin.h, outline);
                 continue;
             }
             if(pin.usable)
-                graphics.fill(pin.x, pin.y, pin.x + pin.w, pin.y + pin.h, 0xFF000000 | pin.rgb);
+                graphics.fill(pin.x, pin.y, pin.x + pin.w, pin.y + pin.h, 0xFF000000 | shown(pin.rgb));
             else
                 graphics.fill(pin.x + 2, pin.y + 2, pin.x + pin.w - 2, pin.y + pin.h - 2, 0xFF2A2C30);
             graphics.renderOutline(pin.x - 1, pin.y - 1, pin.w + 2, pin.h + 2, outline);
@@ -743,8 +743,20 @@ public class SpliceScreen extends Screen {
         }
     }
 
+    /** A wire colour as drawn: black and brown are lifted off the dark panel, so a black wire is not a hole in it. */
+    private static int shown(int rgb) {
+        int r = rgb >> 16 & 0xFF, g = rgb >> 8 & 0xFF, b = rgb & 0xFF;
+        int lum = (r * 3 + g * 6 + b) / 10;
+        if(lum >= 0x60)
+            return rgb;
+        int lift = 0x60 - lum;
+        return Math.min(255, r + lift) << 16 | Math.min(255, g + lift) << 8 | Math.min(255, b + lift);
+    }
+
+    /** The same colour out of focus: well under the lit wires, but still clear of the panel behind it. */
     private static int dim(int rgb) {
-        int r = (rgb >> 16 & 0xFF) * 2 / 5, g = (rgb >> 8 & 0xFF) * 2 / 5, b = (rgb & 0xFF) * 2 / 5;
+        int c = shown(rgb);
+        int r = (c >> 16 & 0xFF) * 2 / 5 + 0x1a, g = (c >> 8 & 0xFF) * 2 / 5 + 0x1a, b = (c & 0xFF) * 2 / 5 + 0x1a;
         return 0xFF000000 | r << 16 | g << 8 | b;
     }
 

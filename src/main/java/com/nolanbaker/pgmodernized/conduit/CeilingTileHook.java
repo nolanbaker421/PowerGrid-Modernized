@@ -1,6 +1,7 @@
 package com.nolanbaker.pgmodernized.conduit;
 
 import com.nolanbaker.pgmodernized.registry.ModBlocks;
+import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -10,7 +11,9 @@ import org.patryk3211.powergrid.collections.ModdedBlocks;
 /**
  * Lets a Power Grid ceiling tile take a conduit box the way it takes a wire connector: right-click
  * the tile with the box and the tile becomes a tile with the box on top. The tile's own click
- * handler only knows Power Grid's attachments, so this runs ahead of it.
+ * handler only knows Power Grid's attachments, so this runs ahead of it. The tile's underside is
+ * left alone: a box placed against it goes in the room below, mounted up into the tile, as on a
+ * wall, for a light or a detector under the ceiling.
  */
 public final class CeilingTileHook {
     private CeilingTileHook() {}
@@ -23,7 +26,7 @@ public final class CeilingTileHook {
         if(!ModdedBlocks.CEILING_TILE.has(level.getBlockState(pos)) || !ModBlocks.CONDUIT_BOX.isIn(stack))
             return;
         var player = event.getEntity();
-        if(player.isShiftKeyDown() || !player.mayBuild())
+        if(player.isShiftKeyDown() || !player.mayBuild() || event.getFace() == Direction.DOWN)
             return;
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide));

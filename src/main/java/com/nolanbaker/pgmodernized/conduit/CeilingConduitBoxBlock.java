@@ -60,6 +60,12 @@ public class CeilingConduitBoxBlock extends ConduitBoxBlock implements CeilingBl
                 .build());
     }
 
+    /** The tile frame is {@link #ON_TILE}, not a turn about the centre: the back wall sits on the tile. */
+    @Override
+    public net.minecraft.world.phys.Vec3 toFrame(BlockState state, net.minecraft.world.phys.Vec3 local) {
+        return new net.minecraft.world.phys.Vec3(local.x, local.z, (16 + LIFT) / 16 - local.y);
+    }
+
     /** The tile box faces down into its tile as Power Grid's sockets face their mount, so the cord needs no shift. */
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
