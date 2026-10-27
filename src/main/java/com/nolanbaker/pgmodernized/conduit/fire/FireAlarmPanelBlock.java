@@ -167,7 +167,10 @@ public class FireAlarmPanelBlock extends HorizontalElectricBlock implements IBE<
         return stack.isEmpty() ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
 
-    /** An empty hand on the door: Silence on the viewer's left, Reset on the right; sneaking, or any other face, opens the splice editor. */
+    /** Below this height on the door, in 16ths, are the two buttons; above it the display, which opens the screen. */
+    private static final double BUTTONS_BELOW = 7.5;
+
+    /** An empty hand on the door: the display opens the panel's screen; Silence and Reset sit below it, left and right; sneaking, or any other face, opens the splice editor. */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(hand != InteractionHand.MAIN_HAND)
@@ -178,6 +181,11 @@ public class FireAlarmPanelBlock extends HorizontalElectricBlock implements IBE<
             return InteractionResult.SUCCESS;
         }
         var p = toNorthFrame(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        if(p.y >= BUTTONS_BELOW) {
+            if(level.isClientSide)
+                ClientHooks.openFireAlarm(pos);
+            return InteractionResult.SUCCESS;
+        }
         // The viewer sees +x on their left.
         boolean silence = p.x >= 8;
         if(!level.isClientSide && level.getBlockEntity(pos) instanceof FireAlarmPanelBlockEntity panel) {

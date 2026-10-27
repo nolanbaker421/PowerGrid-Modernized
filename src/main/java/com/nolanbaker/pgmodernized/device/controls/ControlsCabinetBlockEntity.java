@@ -1049,6 +1049,10 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
             default: break;
         }
         try {
+            if(what.startsWith("Z")) {
+                int zone = Integer.parseInt(what.substring(1));
+                return zone >= 1 && zone <= com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity.MAX_ZONES ? (panel.zoneAlarm(zone) ? 1 : 0) : Double.NaN;
+            }
             return panel.deviceTripped(Integer.parseInt(what));
         } catch(NumberFormatException e) {
             return Double.NaN;

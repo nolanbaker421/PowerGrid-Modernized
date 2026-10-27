@@ -21,6 +21,11 @@ public final class ClientHooks {
         Minecraft.getInstance().setScreen(new SpliceScreen(pos));
     }
 
+    /** Opens the fire alarm panel's screen: its devices, their zones, and the buttons. */
+    public static void openFireAlarm(BlockPos pos) {
+        Minecraft.getInstance().setScreen(new FireAlarmScreen(pos));
+    }
+
     /** Opens a controls cabinet: its rail, its door and the wiring between them. */
     public static void openControls(BlockPos pos) {
         Minecraft.getInstance().setScreen(new ControlsCabinetScreen(pos));

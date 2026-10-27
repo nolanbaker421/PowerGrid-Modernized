@@ -47,6 +47,10 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
     private final com.nolanbaker.pgmodernized.network.JackSupport jack = new com.nolanbaker.pgmodernized.network.JackSupport(this, false);
     /** A drill: alarm with no device, started by a PLC or a test, cleared by Reset. */
     private boolean drill;
+    /** Zones: named groups of devices, by number; each device address belongs to one zone or none. */
+    public static final int MAX_ZONES = 16;
+    private final String[] zoneNames = new String[MAX_ZONES + 1];
+    private final java.util.Map<Integer, Integer> zoneOf = new java.util.HashMap<>();
     private AcReadings.Filter feedReading;
     private float feedVolts, idcVolts, nacVolts, idcAmps, nacAmps;
     private boolean powered, alarm, silenced, idcOpen, nacOpen;
@@ -67,6 +71,64 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
     public FireAlarmPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         setLazyTickRate(10);
+        java.util.Arrays.fill(zoneNames, "");
+    }
+
+    // ---- zones ----
+
+    public String zoneName(int zone) {
+        return zone >= 1 && zone <= MAX_ZONES && zoneNames[zone] != null ? zoneNames[zone] : "";
+    }
+
+    /** The zone a device address belongs to, or 0 for none. */
+    public int zoneOf(int address) {
+        return zoneOf.getOrDefault(address, 0);
+    }
+
+    public int zoneCount(int zone) {
+        int n = 0;
+        for(var device : devices.values())
+            if(zoneOf(device.address()) == zone)
+                ++n;
+        return n;
+    }
+
+    /** Whether any device in the zone is in alarm. Works on both sides. */
+    public boolean zoneAlarm(int zone) {
+        for(var device : devices.values())
+            if(zoneOf(device.address()) == zone && device.status() == FireDevice.Status.ALARM)
+                return true;
+        return false;
+    }
+
+    /** Server side: puts a device in a zone, or in none with zero. */
+    public void setZone(int address, int zone) {
+        if(level == null || level.isClientSide || zone < 0 || zone > MAX_ZONES)
+            return;
+        if(zone == 0)
+            zoneOf.remove(address);
+        else
+            zoneOf.put(address, zone);
+        setChanged();
+        sendData();
+    }
+
+    /** Server side. */
+    public void setZoneName(int zone, String name) {
+        if(level == null || level.isClientSide || zone < 1 || zone > MAX_ZONES)
+            return;
+        zoneNames[zone] = name == null ? "" : name;
+        setChanged();
+        sendData();
+    }
+
+    /** The display's name for a device's zone, or empty. */
+    public String zoneDisplay(int address) {
+        int zone = zoneOf(address);
+        if(zone <= 0)
+            return "";
+        var name = zoneName(zone);
+        return "ZONE " + zone + (name.isEmpty() ? "" : " " + name.toUpperCase());
     }
 
     @Override
@@ -477,6 +539,17 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
             list.add(device.write());
         tag.put("Devices", list);
         tag.putInt("NextAddress", nextAddress);
+        var names = new net.minecraft.nbt.ListTag();
+        for(int z = 1; z <= MAX_ZONES; ++z)
+            names.add(net.minecraft.nbt.StringTag.valueOf(zoneName(z)));
+        tag.put("ZoneNames", names);
+        var zones = new int[zoneOf.size() * 2];
+        int i = 0;
+        for(var entry : zoneOf.entrySet()) {
+            zones[i++] = entry.getKey();
+            zones[i++] = entry.getValue();
+        }
+        tag.putIntArray("Zones", zones);
     }
 
     @Override
@@ -494,6 +567,13 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         }
         nextAddress = Math.max(1, tag.getInt("NextAddress"));
         deviceTrouble = devices.values().stream().anyMatch(d -> d.status().trouble());
+        var names = tag.getList("ZoneNames", net.minecraft.nbt.Tag.TAG_STRING);
+        for(int z = 1; z <= MAX_ZONES; ++z)
+            zoneNames[z] = z - 1 < names.size() ? names.getString(z - 1) : "";
+        zoneOf.clear();
+        var zones = tag.getIntArray("Zones");
+        for(int i = 0; i + 1 < zones.length; i += 2)
+            zoneOf.put(zones[i], zones[i + 1]);
         if(clientPacket) {
             int s = tag.getInt("State");
             state = s >= 0 && s < State.values().length ? State.values()[s] : State.NORMAL;
@@ -540,7 +620,10 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
                 case ALARM, SOUNDING, STROBING -> ChatFormatting.RED;
                 default -> ChatFormatting.YELLOW;
             };
-            Lang.builder().text(device.display()).text(" ").add(Lang.builder().translate("gui.fire_alarm.status_" + device.status().name().toLowerCase())).style(style).forGoggles(tooltip, 1);
+            var line = Lang.builder().text(device.display()).text(" ").add(Lang.builder().translate("gui.fire_alarm.status_" + device.status().name().toLowerCase())).style(style);
+            if(zoneOf(device.address()) > 0)
+                line.text(" ").add(Lang.builder().text(zoneDisplay(device.address())).style(ChatFormatting.AQUA));
+            line.forGoggles(tooltip, 1);
             ++shown;
         }
         deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);

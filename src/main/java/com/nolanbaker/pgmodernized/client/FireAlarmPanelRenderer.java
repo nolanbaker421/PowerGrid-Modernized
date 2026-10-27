@@ -59,7 +59,8 @@ public class FireAlarmPanelRenderer extends SafeBlockEntityRenderer<FireAlarmPan
                 var first = be.first(st -> st == com.nolanbaker.pgmodernized.conduit.fire.FireDevice.Status.ALARM);
                 int more = be.count(st -> st == com.nolanbaker.pgmodernized.conduit.fire.FireDevice.Status.ALARM) - 1;
                 line1 = be.silenced() ? "ALARM  SILENCED" : "ALARM";
-                line2 = first == null ? (be.drill() ? "DRILL" : "LOOP CURRENT") : first.display() + (more > 0 ? " +" + more : "");
+                boolean showZone = first != null && !be.zoneDisplay(first.address()).isEmpty() && be.getLevel() != null && (be.getLevel().getGameTime() / 40) % 2 == 1;
+                line2 = first == null ? (be.drill() ? "DRILL" : "LOOP CURRENT") : showZone ? be.zoneDisplay(first.address()) : first.display() + (more > 0 ? " +" + more : "");
                 color = 0xFF4040;
             }
             case TROUBLE -> {

@@ -21,6 +21,7 @@ public final class ModPackets {
         registrar.playToServer(CellLabelPayload.TYPE, CellLabelPayload.STREAM_CODEC, CellLabelPayload::handle);
         registrar.playToServer(SettingsPayload.TYPE, SettingsPayload.STREAM_CODEC, SettingsPayload::handle);
         registrar.playToServer(BenderStandoffPayload.TYPE, BenderStandoffPayload.STREAM_CODEC, BenderStandoffPayload::handle);
+        registrar.playToServer(FireAlarmPayload.TYPE, FireAlarmPayload.STREAM_CODEC, FireAlarmPayload::handle);
         registrar.playToClient(HelmStatePayload.TYPE, HelmStatePayload.STREAM_CODEC, HelmStatePayload::handle);
     }
 }

@@ -4,6 +4,17 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.70.0 — 2026-10-26
+
+### Added
+- The fire alarm panel's screen: click the display on the door. It shows the state, the power,
+  Silence and Reset, every device by address with its kind, name and state, and the zones. The
+  arrows beside a device put it in a zone, one to sixteen, so a big room's several detectors
+  count as one place; Find outlines the device's box in the world for fifteen seconds, through
+  walls. Each zone takes a name. The buttons under the display still work as before.
+- Zones in the PLC: FA.Z2 is 1 while any device in zone 2 is in alarm. The door's display
+  alternates the device line with its zone during an alarm, and the panel's goggles show it.
+
 ## 0.69.0 — 2026-10-26
 
 ### Added
