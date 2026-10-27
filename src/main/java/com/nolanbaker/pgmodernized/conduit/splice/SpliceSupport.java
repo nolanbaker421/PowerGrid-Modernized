@@ -287,6 +287,81 @@ public final class SpliceSupport {
         return out;
     }
 
+    /** The pulled conductor landed on a host's hidden conductor terminal, or null. Works on both sides. */
+    @Nullable
+    public static com.nolanbaker.pgmodernized.conduit.ConductorEntity conductorAt(ISpliceHost host, int terminal) {
+        int hub = host.hubOf(terminal);
+        var run = hub < 0 ? null : host.hubRun(hub);
+        return run == null ? null : run.conductor(host.conductorOf(terminal));
+    }
+
+    /**
+     * Every conductor wired straight through to this one: the chain across splices that join one
+     * pulled wire to another, box after box. A splice onto a point, a bar, a device or a breaker
+     * ends the chain there. Server side.
+     */
+    public static List<com.nolanbaker.pgmodernized.conduit.ConductorEntity> chain(Level level, com.nolanbaker.pgmodernized.conduit.ConductorEntity start) {
+        var out = new ArrayList<com.nolanbaker.pgmodernized.conduit.ConductorEntity>();
+        var seen = new java.util.HashSet<java.util.UUID>();
+        var queue = new java.util.ArrayDeque<com.nolanbaker.pgmodernized.conduit.ConductorEntity>();
+        queue.add(start);
+        seen.add(start.getUUID());
+        while(!queue.isEmpty() && out.size() < 256) {
+            var conductor = queue.poll();
+            out.add(conductor);
+            for(var endpoint : new org.patryk3211.powergrid.electricity.wire.IWireEndpoint[] {conductor.getEndpoint1(), conductor.getEndpoint2()}) {
+                if(!(endpoint instanceof BlockWireEndpoint block) || !(level.getBlockEntity(block.getPos()) instanceof ISpliceHost host) || host.splices() == null)
+                    continue;
+                int terminal = block.getTerminal();
+                if(host.hubOf(terminal) < 0)
+                    continue;
+                for(var splice : host.splices().list()) {
+                    int other = splice[0] == terminal ? splice[1] : splice[1] == terminal ? splice[0] : -1;
+                    if(other < 0 || host.hubOf(other) < 0)
+                        continue;
+                    var next = conductorAt(host, other);
+                    if(next != null && seen.add(next.getUUID()))
+                        queue.add(next);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** Labels every conductor in the chain. Server side. */
+    public static void labelChain(Level level, com.nolanbaker.pgmodernized.conduit.ConductorEntity start, String label) {
+        for(var conductor : chain(level, start))
+            conductor.setLabel(label);
+    }
+
+    /** Tapes every conductor in the chain the same colour; a negative index takes them all back to their slot colours. Server side. */
+    public static void colorChain(Level level, com.nolanbaker.pgmodernized.conduit.ConductorEntity start, int colorIndex) {
+        for(var conductor : chain(level, start))
+            conductor.setColorIndex(colorIndex);
+    }
+
+    /**
+     * Two conductors were just spliced together: the name and the tape colour either side already
+     * carries go onto every conductor in the joined chain that has none. Server side.
+     */
+    public static void carryOver(Level level, com.nolanbaker.pgmodernized.conduit.ConductorEntity a, com.nolanbaker.pgmodernized.conduit.ConductorEntity b) {
+        var chain = chain(level, a);
+        String label = !a.label().isEmpty() ? a.label() : !b.label().isEmpty() ? b.label() : "";
+        int color = a.hasChosenColor() ? a.colorIndex() : b.hasChosenColor() ? b.colorIndex() : -1;
+        for(var conductor : chain) {
+            if(label.isEmpty() && !conductor.label().isEmpty())
+                label = conductor.label();
+            if(color < 0 && conductor.hasChosenColor())
+                color = conductor.colorIndex();
+        }
+        for(var conductor : chain) {
+            if(!label.isEmpty() && conductor.label().isEmpty())
+                conductor.setLabel(label);
+            if(color >= 0 && !conductor.hasChosenColor())
+                conductor.setColorIndex(color);
+        }
+    }
+
     /** The position itself, or a cell whose block entity answers for the block at {@code head}. */
     private static boolean delegatesTo(Level level, BlockPos at, BlockPos head) {
         return at.equals(head) || (level.getBlockEntity(at) instanceof IElectricDelegate delegate && delegate.headPos().equals(head));

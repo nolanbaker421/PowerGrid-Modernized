@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.71.0 — 2026-10-27
+
+### Changed
+- A wire's name and tape colour follow it through the splices: labelling or taping a conductor in
+  one box labels or tapes every conductor spliced straight through to it, box after box. A splice
+  onto a point, a bar, a device or a breaker ends the chain, so neutrals on a bar and the circuits
+  in a panel keep their own names. Splicing a fresh conductor onto a named or taped one carries
+  the name and the tape onto it and anything beyond it that has none yet.
+
 ## 0.70.1 — 2026-10-26
 
 ### Changed

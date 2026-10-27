@@ -10,7 +10,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import static com.nolanbaker.pgmodernized.PowerGridModernized.asResource;
 
-/** Client labels the pulled conductor on a splice host's conductor terminal; an empty label clears it. */
+/** Client labels the pulled conductor on a splice host's conductor terminal, and with it every conductor spliced straight through to it; an empty label clears them. */
 public record ConductorLabelPayload(BlockPos pos, int terminal, String label) implements CustomPacketPayload {
     public static final int MAX_LENGTH = 32;
     public static final Type<ConductorLabelPayload> TYPE = new Type<>(asResource("conductor_label"));
@@ -32,10 +32,8 @@ public record ConductorLabelPayload(BlockPos pos, int terminal, String label) im
             return;
         if(!(level.getBlockEntity(payload.pos) instanceof ISpliceHost host) || host.splices() == null)
             return;
-        int hub = host.hubOf(payload.terminal);
-        var run = hub < 0 ? null : host.hubRun(hub);
-        var conductor = run == null ? null : run.conductor(host.conductorOf(payload.terminal));
+        var conductor = com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport.conductorAt(host, payload.terminal);
         if(conductor != null)
-            conductor.setLabel(payload.label);
+            com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport.labelChain(level, conductor, payload.label);
     }
 }

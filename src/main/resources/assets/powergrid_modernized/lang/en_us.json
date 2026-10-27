@@ -321,7 +321,7 @@
   "powergrid.message.disconnect.locked_on": "Locked out: the handle will not move",
   "powergrid.message.disconnect.unlocked": "Lock removed",
   "powergrid.gui.splice.recolor_hint": "Right-click: next colour",
-  "powergrid.gui.splice.label_hint": "Shift + right-click: label this wire",
+  "powergrid.gui.splice.label_hint": "Shift + right-click: label this wire (the name and tape follow it through every wire-to-wire splice)",
   "powergrid.gui.splice.label_title": "Wire label",
   "powergrid.gui.splice.label_apply": "Apply",
   "powergrid.gui.splice.label_clear": "Remove label",

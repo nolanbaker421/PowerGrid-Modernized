@@ -58,12 +58,10 @@ public record SplicePayload(BlockPos pos, int action, int a, int b) implements C
         if(!(level.getBlockEntity(payload.pos) instanceof ISpliceHost host) || host.splices() == null)
             return;
         if(payload.action == RECOLOR) {
-            // Tape on a wire's end: no electrical change, nothing live is touched.
-            int hub = host.hubOf(payload.a);
-            var run = hub < 0 ? null : host.hubRun(hub);
-            var conductor = run == null ? null : run.conductor(host.conductorOf(payload.a));
+            // Tape on a wire's end, and on every wire spliced straight through to it: no electrical change, nothing live is touched.
+            var conductor = com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport.conductorAt(host, payload.a);
             if(conductor != null)
-                conductor.setColorIndex(payload.b);
+                com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport.colorChain(level, conductor, payload.b);
             return;
         }
         // Working a live terminal hurts; the edit still happens, as it would in real life.
@@ -82,5 +80,15 @@ public record SplicePayload(BlockPos pos, int action, int a, int b) implements C
         }
         if(payload.action == TOGGLE || payload.action == LAND)
             CopperScrap.roll(player, payload.pos);
+        // Two pulled wires just joined: the name and tape either carries go on through.
+        if(payload.action == TOGGLE && host.hubOf(payload.a) >= 0 && host.hubOf(payload.b) >= 0) {
+            int lo = Math.min(payload.a, payload.b), hi = Math.max(payload.a, payload.b);
+            if(host.splices().list().stream().anyMatch(s -> s[0] == lo && s[1] == hi)) {
+                var ca = com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport.conductorAt(host, payload.a);
+                var cb = com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport.conductorAt(host, payload.b);
+                if(ca != null && cb != null)
+                    com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport.carryOver(level, ca, cb);
+            }
+        }
     }
 }
