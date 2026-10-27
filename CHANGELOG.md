@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.68.0 — 2026-10-26
+
+### Added
+- The fire alarm panel has three dry contacts in its splice editor, each a COM and an NO: Alarm
+  closes while the panel is in alarm, Trouble while it is in trouble, Silenced once the horns
+  are silenced. They switch whatever is spliced through them, a contactor coil, a controls
+  cabinet input channel, a bell. Numbered after the knockouts' landings, so existing panels keep
+  their wiring.
+
 ## 0.67.1 — 2026-10-26
 
 ### Fixed

@@ -41,6 +41,8 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
     private DeviceSpliceHost deviceHubs;
     private ElectricWire feed;
     private ProvidedVoltageSourceCoupling idc, nac;
+    /** The three dry contacts: Alarm, Trouble, Silenced. */
+    private org.patryk3211.powergrid.electricity.sim.SwitchedWire[] contacts;
     private AcReadings.Filter feedReading;
     private float feedVolts, idcVolts, nacVolts, idcAmps, nacAmps;
     private boolean powered, alarm, silenced, idcOpen, nacOpen;
@@ -86,6 +88,18 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         nac = new ProvidedVoltageSourceCoupling(builder.terminalNode(TERMINAL_NAC_PLUS), builder.terminalNode(TERMINAL_NAC_MINUS), resistance("loop"));
         nac.setVoltageProvider(() -> nacVolts);
         builder.add(nac);
+        contacts = new org.patryk3211.powergrid.electricity.sim.SwitchedWire[CONTACT_COUNT];
+        boolean[] closed = {alarm, state == State.TROUBLE, silenced};
+        for(int c = 0; c < CONTACT_COUNT; ++c)
+            contacts[c] = builder.connectSwitch(resistance("contact"), builder.terminalNode(contactTerminal(c, false)), builder.terminalNode(contactTerminal(c, true)), closed[c]);
+    }
+
+    private void applyContacts() {
+        if(contacts == null)
+            return;
+        contacts[CONTACT_ALARM].setState(alarm);
+        contacts[CONTACT_TROUBLE].setState(state == State.TROUBLE);
+        contacts[CONTACT_SILENCED].setState(silenced);
     }
 
     @Override
@@ -259,6 +273,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
             idcVolts = LOOP_VOLTS;
             nacVolts = alarm ? (silenced ? SILENCED_VOLTS : LOOP_VOLTS) : SUPERVISORY_VOLTS;
         }
+        applyContacts();
         if(alarm != wasAlarm)
             alarmChanged();
     }
@@ -279,6 +294,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
             return;
         }
         silenced = true;
+        applyContacts();
         level.playSound(null, worldPosition, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.5f, 1.2f);
         message(player, "message.fire_alarm.silenced", ChatFormatting.YELLOW);
         setChanged();
@@ -300,6 +316,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         }
         alarm = false;
         silenced = false;
+        applyContacts();
         level.playSound(null, worldPosition, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 0.5f, 1.2f);
         message(player, "message.fire_alarm.reset", ChatFormatting.GREEN);
         alarmChanged();

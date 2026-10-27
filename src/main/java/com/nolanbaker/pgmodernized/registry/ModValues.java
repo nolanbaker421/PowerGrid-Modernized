@@ -55,7 +55,7 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         resistance("conduit_box", "lamp", 240, "supervisory", 20000, "detector", 1000, "horn", 80);
         resistance("ceiling_tile_conduit_box", "lamp", 240, "supervisory", 20000, "detector", 1000, "horn", 80);
         // The fire alarm panel: a twenty-watt load on its feed, and the source resistance of each loop.
-        resistance("fire_alarm_panel", "feed", 720, "loop", 1);
+        resistance("fire_alarm_panel", "feed", 720, "loop", 1, "contact", 0.001);
         // Bus duct plug-in: one contact per pole and the neutral through-path.
         resistance("bus_duct_plug_in", "contact", 0.0005);
         resistance("bus_duct_plug_in_breaker", "contact", 0.0005);

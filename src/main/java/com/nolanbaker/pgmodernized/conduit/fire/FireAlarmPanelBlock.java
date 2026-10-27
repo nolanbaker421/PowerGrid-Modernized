@@ -62,11 +62,40 @@ public class FireAlarmPanelBlock extends HorizontalElectricBlock implements IBE<
         }
     }
 
-    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUBS.length, new int[] {0, 1, 2, 3, 4, 5, 6});
+    /**
+     * Three dry contacts, COM and NO each, numbered after the knockouts' landings so older panels
+     * keep their wiring: Alarm closes in alarm, Trouble in trouble, Silenced once the horns are
+     * silenced. They switch whatever is spliced through them: a contactor coil, a cabinet input.
+     */
+    public static final int CONTACT_COUNT = 3;
+    public static final int CONTACT_ALARM = 0, CONTACT_TROUBLE = 1, CONTACT_SILENCED = 2;
+    private static final int[] POINTS = points();
+    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUBS.length, POINTS, CONTACT_COUNT * 2);
+    private static final String[] CONTACT_KEYS = {"alarm", "trouble", "silenced"};
+
+    private static int[] points() {
+        int extraBase = BASE_COUNT + HUBS.length + HUBS.length * DeviceHubs.PER_HUB;
+        var points = new int[BASE_COUNT + CONTACT_COUNT * 2];
+        for(int i = 0; i < BASE_COUNT; ++i)
+            points[i] = i;
+        for(int i = 0; i < CONTACT_COUNT * 2; ++i)
+            points[BASE_COUNT + i] = extraBase + i;
+        return points;
+    }
+
+    /** The COM terminal of a contact; NO is the next one. */
+    public static int contactTerminal(int contact, boolean normallyOpen) {
+        return LAYOUT.extraBase() + contact * 2 + (normallyOpen ? 1 : 0);
+    }
 
     public FireAlarmPanelBlock(Properties properties) {
         super(properties);
-        var terminals = DeviceHubs.withHubs(terminals(), HIDDEN, HUBS);
+        var contacts = new TerminalBoundingBox[CONTACT_COUNT * 2];
+        for(int c = 0; c < CONTACT_COUNT; ++c) {
+            contacts[c * 2] = terminal("fire_alarm.contact_" + CONTACT_KEYS[c] + "_com", ChatFormatting.GOLD, 0xC8A000);
+            contacts[c * 2 + 1] = terminal("fire_alarm.contact_" + CONTACT_KEYS[c] + "_no", ChatFormatting.GOLD, 0xE0C040);
+        }
+        var terminals = DeviceHubs.withExtras(DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), contacts);
         setTerminalCollection(StateTerminals.horizontalNorth(this, DeviceHubs.withHubs(BODY, HUBS), state -> terminals));
     }
 
