@@ -183,7 +183,7 @@ public final class ConduitPlacement {
         }
         if(level.isClientSide)
             return InteractionResult.SUCCESS;
-        var entity = ConduitRunEntity.create(level, new ImaginaryWireEndpoint(start), ConduitSupply.stack(stack, newItems), legs);
+        var entity = ConduitRunEntity.create(level, start, ConduitSupply.stack(stack, newItems), legs);
         SubLevelStick.stick(entity);
         if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
             PowerGridModernized.LOGGER.error("Failed to spawn conduit run entity");
@@ -365,19 +365,13 @@ public final class ConduitPlacement {
         boolean atStart = reference.distanceToSqr(start) < reference.distanceToSqr(end);
 
         if(atStart) {
-            // A start in the air, a run begun on a strut, is as open as no endpoint at all.
-            if(run.getEndpoint1() != null && !(run.getEndpoint1() instanceof ImaginaryWireEndpoint)) {
+            // A run begun on a strut has no endpoint at its start: open, like a flipped run's.
+            if(run.getEndpoint1() != null) {
                 message(player, "message.conduit.no_tee", ChatFormatting.RED);
                 return InteractionResult.FAIL;
             }
             run = (ConduitRunEntity) run.flip();
-            if(run.getEndpoint2() instanceof ImaginaryWireEndpoint) {
-                run.setEndpoint2(null);
-                if(run.getEndpoint1() == null)
-                    run.setEndpoint1(new ImaginaryWireEndpoint(run.position()));
-                run.sendExtraData();
-            }
-        } else if(run.getEndpoint2() != null && !(run.getEndpoint2() instanceof ImaginaryWireEndpoint)) {
+        } else if(run.getEndpoint2() != null) {
             message(player, "message.conduit.no_tee", ChatFormatting.RED);
             return InteractionResult.FAIL;
         }

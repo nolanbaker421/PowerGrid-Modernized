@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.61.1 — 2026-10-26
+
+### Fixed
+- Starting a run on a strut did nothing: the start piece was given Power Grid's free endpoint,
+  which refuses to own a wire entity, and the server threw. The piece starts with no endpoint,
+  as a flipped run does.
+
 ## 0.61.0 — 2026-10-26
 
 ### Added
