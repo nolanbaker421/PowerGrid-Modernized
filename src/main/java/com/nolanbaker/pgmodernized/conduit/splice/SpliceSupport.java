@@ -260,6 +260,33 @@ public final class SpliceSupport {
         return null;
     }
 
+    /**
+     * The far ends of every wire landed on the given terminal of the block entity: a pulled
+     * conductor's other landing, or a bare wire's. Mid-air junctions are left out. Server side.
+     */
+    public static List<BlockWireEndpoint> farEnds(SmartBlockEntity be, int terminal) {
+        var out = new java.util.ArrayList<BlockWireEndpoint>();
+        Level level = be.getLevel();
+        var behaviour = be.getBehaviour(ElectricBehaviour.TYPE);
+        if(level == null || behaviour == null)
+            return out;
+        BlockPos pos = be.getBlockPos();
+        for(var entry : behaviour.getConnections().entrySet()) {
+            var key = entry.getKey();
+            if(key.getTerminal() != terminal || !delegatesTo(level, key.getPos(), pos))
+                continue;
+            for(var wire : entry.getValue()) {
+                if(wire.isRemoved())
+                    continue;
+                for(var endpoint : new org.patryk3211.powergrid.electricity.wire.IWireEndpoint[] {wire.getEndpoint1(), wire.getEndpoint2()}) {
+                    if(endpoint instanceof BlockWireEndpoint block && !(block.getTerminal() == terminal && delegatesTo(level, block.getPos(), pos)))
+                        out.add(block);
+                }
+            }
+        }
+        return out;
+    }
+
     /** The position itself, or a cell whose block entity answers for the block at {@code head}. */
     private static boolean delegatesTo(Level level, BlockPos at, BlockPos head) {
         return at.equals(head) || (level.getBlockEntity(at) instanceof IElectricDelegate delegate && delegate.headPos().equals(head));

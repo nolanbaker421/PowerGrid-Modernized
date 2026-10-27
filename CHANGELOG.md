@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.70.1 — 2026-10-26
+
+### Changed
+- The fire alarm panel finds its devices along the wiring, not the conduit: it follows the
+  conductors and splices out of its IDC and NAC terminals, so a box the loop never gets to is not
+  listed however much conduit runs to it. A device in a box the loop passes through, but with
+  nothing spliced to its own points, shows as "not wired in".
+- A missing device has a Remove button on the panel's screen; it drops off the list and frees its
+  address. A device the panel still reaches comes straight back at the next survey.
+
 ## 0.70.0 — 2026-10-26
 
 ### Added

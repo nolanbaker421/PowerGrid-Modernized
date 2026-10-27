@@ -181,6 +181,11 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
         return false;
     }
 
+    @Override
+    public int[] fireTerminals(int slot) {
+        return new int[] {0, 1};
+    }
+
     /** A renamed name tag names the device under the cover; a plain one clears the name. The tag is used up. Server side. */
     public boolean label(Player player, ItemStack tag) {
         if(level == null || level.isClientSide || fireKind(0) == null)

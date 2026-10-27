@@ -30,4 +30,7 @@ public interface IFireDevice {
 
     /** Whether either of the device's two points has a splice on it. */
     boolean fireSpliced(int slot);
+
+    /** The device's own terminals: the two points its leads land on. The panel's survey must reach one of them along the wiring. */
+    int[] fireTerminals(int slot);
 }

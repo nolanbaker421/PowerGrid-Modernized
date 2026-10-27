@@ -63,8 +63,8 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
     private int nextAddress = 1;
     private int surveyTimer;
     private boolean deviceTrouble;
-    /** Boxes and gangs a survey will look through at most; a mall is not a loop. */
-    private static final int MAX_HOSTS = 512, MAX_ADDRESS = 159;
+    /** Terminals a survey will look through at most; a mall is not a loop. */
+    private static final int MAX_NODES = 8192, MAX_ADDRESS = 159;
     /** Ticks between surveys, and how long a device stays listed as missing before it is forgotten. */
     private static final int SURVEY_TICKS = 60, FORGET_TICKS = 6000;
 
@@ -286,32 +286,52 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
     }
 
     /**
-     * Walks the conduit from the panel's knockouts, box to box, and gathers every fire alarm device
-     * it reaches: a new one gets the next free address, a known one its state, and one no longer
-     * reached is marked missing until it has been gone a while.
+     * Follows the wiring out of the panel's four loop terminals, conductor by conductor and splice
+     * by splice, and gathers every fire alarm device it reaches: a new one gets the next free
+     * address, a known one its state, and one no longer reached is marked missing until it has
+     * been gone a while or is removed on the screen. A device in a box the loop passes through
+     * but with nothing spliced to its own points shows as not spliced; a box the wiring never
+     * reaches, however much conduit leads to it, is not on the loop.
      */
     private void survey() {
         long now = level.getGameTime();
-        var seen = new java.util.HashSet<BlockPos>();
-        var queue = new java.util.ArrayDeque<BlockPos>();
-        queue.add(worldPosition);
-        seen.add(worldPosition);
-        var found = new java.util.ArrayList<FireDevice>();
-        while(!queue.isEmpty() && seen.size() < MAX_HOSTS) {
-            var pos = queue.poll();
-            if(!(level.getBlockEntity(pos) instanceof com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost host))
+        var seen = new java.util.HashSet<Long>();
+        var queue = new java.util.ArrayDeque<org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint>();
+        var hosts = new java.util.LinkedHashMap<BlockPos, java.util.Set<Integer>>();
+        for(int terminal : new int[] {TERMINAL_IDC_PLUS, TERMINAL_IDC_MINUS, TERMINAL_NAC_PLUS, TERMINAL_NAC_MINUS}) {
+            var start = new org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint(worldPosition, terminal);
+            seen.add(nodeKey(start));
+            queue.add(start);
+        }
+        while(!queue.isEmpty() && seen.size() < MAX_NODES) {
+            var node = queue.poll();
+            var pos = node.getPos();
+            int terminal = node.getTerminal();
+            if(!(level.getBlockEntity(pos) instanceof com.simibubi.create.foundation.blockEntity.SmartBlockEntity be))
                 continue;
-            if(host instanceof IFireDevice device)
-                gather(device, pos, now, found);
-            for(int hub = 0; hub < host.hubCount(); ++hub) {
-                var run = host.hubRun(hub);
-                if(run == null)
-                    continue;
-                for(var endpoint : new org.patryk3211.powergrid.electricity.wire.IWireEndpoint[] {run.getEndpoint1(), run.getEndpoint2()}) {
-                    if(endpoint instanceof org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint b && seen.add(b.getPos()))
-                        queue.add(b.getPos());
+            hosts.computeIfAbsent(pos, p -> new java.util.HashSet<>()).add(terminal);
+            var next = new java.util.ArrayList<org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint>();
+            // Across a wire: a pulled conductor's far landing, or a bare wire's.
+            next.addAll(com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport.farEnds(be, terminal));
+            // Across a splice inside the fitting.
+            if(be instanceof com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost host) {
+                for(var splice : host.splices().list()) {
+                    if(splice[0] == terminal)
+                        next.add(new org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint(pos, splice[1]));
+                    else if(splice[1] == terminal)
+                        next.add(new org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint(pos, splice[0]));
                 }
             }
+            for(var endpoint : next)
+                if(seen.add(nodeKey(endpoint)))
+                    queue.add(endpoint);
+        }
+        var found = new java.util.ArrayList<FireDevice>();
+        for(var entry : hosts.entrySet()) {
+            if(entry.getKey().equals(worldPosition))
+                continue;
+            if(level.getBlockEntity(entry.getKey()) instanceof IFireDevice device)
+                gather(device, entry.getKey(), entry.getValue(), now, found);
         }
         // Addresses: a device keeps the one it has unless another found device holds it too.
         var taken = new java.util.HashSet<Integer>();
@@ -345,13 +365,21 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         }
     }
 
-    private void gather(IFireDevice holder, BlockPos pos, long now, java.util.List<FireDevice> out) {
+    private static long nodeKey(org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint endpoint) {
+        return endpoint.getPos().asLong() * 1024 + (endpoint.getTerminal() & 1023);
+    }
+
+    /** The devices in one fitting the wiring reached; {@code reached} is the set of its terminals the loop got to. */
+    private void gather(IFireDevice holder, BlockPos pos, java.util.Set<Integer> reached, long now, java.util.List<FireDevice> out) {
         for(int slot = 0; slot < holder.fireSlots(); ++slot) {
             var kind = holder.fireKind(slot);
             if(kind == null)
                 continue;
+            boolean wired = false;
+            for(int terminal : holder.fireTerminals(slot))
+                wired |= reached.contains(terminal);
             FireDevice.Status status;
-            if(!holder.fireSpliced(slot))
+            if(!wired)
                 status = FireDevice.Status.NOT_SPLICED;
             else if(kind.initiating())
                 status = holder.fireTripped(slot) ? FireDevice.Status.ALARM : FireDevice.Status.NORMAL;
@@ -373,6 +401,16 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
             }
         }
         return -1;
+    }
+
+    /** Server side: drops a device the panel no longer reaches from the list, freeing its address. One it still reaches comes straight back. */
+    public void forget(int address) {
+        if(level == null || level.isClientSide || devices.remove(address) == null)
+            return;
+        zoneOf.remove(address);
+        deviceTrouble = devices.values().stream().anyMatch(d -> d.status().trouble());
+        setChanged();
+        sendData();
     }
 
     /** The first device in the given status, by address, or null. Works on both sides. */

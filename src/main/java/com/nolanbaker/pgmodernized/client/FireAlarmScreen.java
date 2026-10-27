@@ -25,7 +25,7 @@ import java.util.Map;
  * typed in a small screen of its own.
  */
 public class FireAlarmScreen extends Screen {
-    private static final int PANEL_W = 420, ROW = 20, PADDING = 10, HEADER = 14, FOOTER = 16;
+    private static final int PANEL_W = 470, ROW = 20, PADDING = 10, HEADER = 14, FOOTER = 16;
     private static final int PANEL_BG = 0xE0202024, PANEL_EDGE = 0xFF606068, TEXT = 0xFFE8E8E8, DIM = 0xFF9A9A9A;
     private static final int RED = 0xFFFF5050, YELLOW = 0xFFFFC040, GREEN = 0xFF60E070, AQUA = 0xFF60D0E0;
 
@@ -182,6 +182,8 @@ public class FireAlarmScreen extends Screen {
             button(Component.literal(">"), zx + 100, y, 14, b -> PacketDistributor.sendToServer(new FireAlarmPayload(pos, FireAlarmPayload.SET_ZONE, address, zone >= FireAlarmPanelBlockEntity.MAX_ZONES ? 0 : zone + 1, "")));
             var at = device.pos();
             button(Component.translatable("powergrid.gui.fire_alarm.find"), right - 40, y, 40, b -> FireAlarmHighlight.show(at));
+            if(device.status() == FireDevice.Status.MISSING)
+                button(Component.translatable("powergrid.gui.fire_alarm.remove"), right - 96, y, 52, b -> PacketDistributor.sendToServer(new FireAlarmPayload(pos, FireAlarmPayload.REMOVE, address, 0, "")));
             y += ROW;
         }
         y += ROW / 2;

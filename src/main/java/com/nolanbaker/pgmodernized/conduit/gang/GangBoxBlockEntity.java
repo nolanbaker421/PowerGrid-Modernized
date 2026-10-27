@@ -135,6 +135,11 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         return false;
     }
 
+    @Override
+    public int[] fireTerminals(int slot) {
+        return new int[] {GangLayout.point(slot, 0), GangLayout.point(slot, 1)};
+    }
+
     /** A renamed name tag names the fire alarm device in that gang; a plain one clears the name. The tag is used up. Server side. */
     public boolean label(int slot, Player player, ItemStack tag) {
         ensureArrays();
