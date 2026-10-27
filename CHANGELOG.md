@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.59.10 — 2026-10-26
+
+### Fixed
+- A one-pixel jog laid by an earlier version and since cancelled by the knockout and slot
+  centring was still drawn as an offset of no width, a small defect at the stub. It draws as one
+  straight now. Re-laying the run drops the jog from its legs altogether.
+
 ## 0.59.9 — 2026-10-26
 
 ### Changed

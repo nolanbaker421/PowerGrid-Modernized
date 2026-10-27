@@ -270,7 +270,13 @@ public class BodyWireRenderer extends BlockWireRenderer {
                     TubeDraw.straight(pose, consumer, segLight, rgb, from, to, t);
                     couplings(pose, consumer, segLight, rgb, pos, along, travelled, seg.length(), t, cutStart[i], cutEnd[i]);
                 }
-                if(offsetSpan[i] > 0) {
+                if(offsetSpan[i] > 0 && across(v[i + offsetSpan[i] + 1].subtract(end), along).length() < 0.25 / 16) {
+                    // A jog the knockout's or a slot's centring has cancelled: one straight carries
+                    // through to the next leg, where the S would have been.
+                    int j = i + offsetSpan[i] + 1;
+                    var nextFrom = v[j].relative(segs.get(j).direction, cutStart[j]);
+                    TubeDraw.straight(pose, consumer, segLight, rgb, to, nextFrom, t);
+                } else if(offsetSpan[i] > 0) {
                     var c1 = end;
                     var c2 = v[i + offsetSpan[i] + 1];
                     double m = c2.subtract(c1).length();
@@ -293,8 +299,12 @@ public class BodyWireRenderer extends BlockWireRenderer {
 
     /** The part of a shift that is square to a leg's direction: what moves the leg's line rather than its end. */
     private static Vec3 square(Vec3 shift, Direction dir) {
-        var u = Vec3.atLowerCornerOf(dir.getNormal());
-        return shift.subtract(u.scale(shift.dot(u)));
+        return across(shift, Vec3.atLowerCornerOf(dir.getNormal()));
+    }
+
+    /** The part of a vector square to a unit direction. */
+    private static Vec3 across(Vec3 vector, Vec3 along) {
+        return vector.subtract(along.scale(vector.dot(along)));
     }
 
     /** The index of the leg drawn after leg {@code i}, past any absorbed ones; {@code n} when there is none. */
