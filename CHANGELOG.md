@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.63.4 — 2026-10-26
+
+### Fixed
+- A client crash in the conduit preview when the pending knockout's block was gone or not loaded
+  on the client: Power Grid threw when asked for the knockout's terminal. The preview checks the
+  knockout is still there, and the knockout helper answers null for a block that is not
+  electrical instead of asking.
+
 ## 0.63.3 — 2026-10-26
 
 ### Added

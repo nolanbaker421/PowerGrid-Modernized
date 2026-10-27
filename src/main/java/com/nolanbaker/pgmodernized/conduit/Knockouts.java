@@ -29,6 +29,9 @@ public final class Knockouts {
 
     @Nullable
     public static Direction normal(Level level, BlockWireEndpoint endpoint) {
+        // The block may be gone, or not here yet on a client: Power Grid would throw asking it for a terminal.
+        if(org.patryk3211.powergrid.electricity.base.IElectric.getAt(level, endpoint.getPos()) == null)
+            return null;
         if(!(endpoint.getTerminalPlacement(level) instanceof TerminalBoundingBox box))
             return null;
         var o = box.getOutline();

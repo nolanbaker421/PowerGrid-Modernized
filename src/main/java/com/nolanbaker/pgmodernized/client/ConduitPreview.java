@@ -90,6 +90,9 @@ public final class ConduitPreview {
         var endpoint = ConduitConnection.get(stack);
         if(endpoint == null)
             return;
+        // A pending knockout whose block is gone, or not loaded here, is nothing to preview from.
+        if(endpoint instanceof BlockWireEndpoint hub && !hub.isValid(level))
+            return;
         stackUsed = stack;
         item = WireRegistry.forItem(level, ConduitSupply.item(stack));
         if(item == null)
