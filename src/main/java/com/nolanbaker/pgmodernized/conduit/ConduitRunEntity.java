@@ -62,14 +62,14 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
 
     public static ConduitRunEntity create(Level level, IWireEndpoint endpoint1, ItemStack item, List<Point> segments) {
         var entity = create(level, endpoint1.getExactPosition(level), item, segments);
-        entity.setEndpoint1(endpoint1);
+        // A free start, a run begun on a strut, is only a position: Power Grid's free endpoint
+        // will not own a wire entity, and the run is as open there as a flipped run is.
+        if(!(endpoint1 instanceof org.patryk3211.powergrid.electricity.wire.ImaginaryWireEndpoint))
+            entity.setEndpoint1(endpoint1);
         return entity;
     }
 
-    /**
-     * A run that starts in the air, on a strut, with no endpoint at its start: as open there as a
-     * flipped run is, since Power Grid's free endpoint will not own a wire entity.
-     */
+    /** A run from a point with no endpoint at its start. */
     public static ConduitRunEntity create(Level level, Vec3 start, ItemStack item, List<Point> segments) {
         var entity = new ConduitRunEntity(ModEntities.CONDUIT_RUN.get(), level);
         entity.setItem(item.getItem(), item.getCount());

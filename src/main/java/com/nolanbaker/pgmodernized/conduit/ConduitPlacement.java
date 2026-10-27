@@ -155,45 +155,36 @@ public final class ConduitPlacement {
     }
 
     /**
-     * A click on a strut with no run pending starts one there, ahead of any panel: a short piece
-     * clamped in the slot, crossing the rail six pixels either side, open at both ends. The run
-     * carries on from the far end, and later from the near end by clicking the run there.
+     * A click on a strut with no run pending starts one there, ahead of any panel: nothing is laid
+     * or spent yet, the clamp point is remembered as the run's start, and the next click lays the
+     * run from it, leaving the clamp across the rail.
      */
     private static InteractionResult startOnStrut(UseOnContext context, BlockState strut, Vec3 local, double tubeRadiusPx) {
-        var stack = context.getItemInHand();
         var level = context.getLevel();
-        var player = context.getPlayer();
-        var entry = wireEntry(level, stack, player);
-        if(entry == null)
-            return InteractionResult.FAIL;
         var pos = context.getClickedPos();
-        var facing = strut.getValue(StrutBlock.FACING);
-        var strutAxis = StrutBlock.axisFor(facing, strut.getValue(StrutBlock.AXIS));
-        var acrossAxis = Direction.Axis.values()[3 - facing.getAxis().ordinal() - strutAxis.ordinal()];
         var clampLocal = StrutBlock.clamp(strut, local, tubeRadiusPx);
         var clamp = new Vec3(pos.getX() + clampLocal.x, pos.getY() + clampLocal.y, pos.getZ() + clampLocal.z);
-        boolean nearSide = local.get(acrossAxis) * 16 < 8;
-        var toward = Direction.fromAxisAndDirection(acrossAxis, nearSide ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
-        var start = clamp.relative(toward.getOpposite(), MIN_CROSS_PX / 16.0);
-        var legs = List.of(new BlockWireEntity.Point(toward, 2 * MIN_CROSS_PX));
-        int newItems = Math.max((int) Math.ceil(2 * MIN_CROSS_PX / 16.0 * entry.itemsPerMeter()), 1);
-        if(!ConduitSupply.has(player, stack, newItems)) {
-            message(player, "message.connection_missing_items", ChatFormatting.RED);
-            return InteractionResult.FAIL;
+        if(!level.isClientSide) {
+            ConduitConnection.set(context.getItemInHand(), new ImaginaryWireEndpoint(clamp), level);
+            message(context.getPlayer(), "message.conduit.strut_started", ChatFormatting.GRAY);
         }
-        if(level.isClientSide)
-            return InteractionResult.SUCCESS;
-        var entity = ConduitRunEntity.create(level, start, ConduitSupply.stack(stack, newItems), legs);
-        SubLevelStick.stick(entity);
-        if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
-            PowerGridModernized.LOGGER.error("Failed to spawn conduit run entity");
-            message(player, "message.connection_failed", ChatFormatting.RED);
-            return InteractionResult.FAIL;
-        }
-        ConduitSupply.take(player, stack, newItems);
-        ConduitConnection.set(stack, new BlockWireEntityEndpoint(entity, true), level);
-        message(player, "message.conduit.strut_started", ChatFormatting.GRAY);
         return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * For a run begun on a strut, the way it leaves the clamp: across the rail, towards the target
+     * when the target is to one side of it. Null when the start is not on a strut.
+     */
+    @Nullable
+    private static Direction strutStartDirection(Level level, Vec3 start, Vec3 target) {
+        var state = level.getBlockState(net.minecraft.core.BlockPos.containing(start));
+        if(!(state.getBlock() instanceof StrutBlock))
+            return null;
+        var facing = state.getValue(StrutBlock.FACING);
+        var strutAxis = StrutBlock.axisFor(facing, state.getValue(StrutBlock.AXIS));
+        var across = Direction.Axis.values()[3 - facing.getAxis().ordinal() - strutAxis.ordinal()];
+        double d = target.get(across) - start.get(across);
+        return Direction.fromAxisAndDirection(across, d < -1 / 32.0 ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
     }
 
     /** A kick out to a strut's tier starts this far before the rail's centre line, in pixels. */
@@ -249,6 +240,15 @@ public final class ConduitPlacement {
                     points.add(new BlockWireEntity.Point(exit, Knockouts.STUB_PX));
                     last = last.relative(exit, Knockouts.STUB_PX / 16.0);
                     incoming = exit;
+                }
+            }
+            if(from instanceof ImaginaryWireEndpoint) {
+                // Begun on a strut: the first leg crosses that rail, as a knockout's stub leaves its box.
+                var across = strutStartDirection(level, last, BodySpace.local(level, to));
+                if(across != null) {
+                    points.add(new BlockWireEntity.Point(across, MIN_CROSS_PX));
+                    last = last.relative(across, MIN_CROSS_PX / 16.0);
+                    incoming = across;
                 }
             }
         }
@@ -504,6 +504,15 @@ public final class ConduitPlacement {
                 stubs.add(new BlockWireEntity.Point(exit, Knockouts.STUB_PX));
                 lastPoint = lastPoint.relative(exit, Knockouts.STUB_PX / 16.0);
                 continueDir = exit;
+            }
+        }
+        if(existing == null && from instanceof ImaginaryWireEndpoint) {
+            // Begun on a strut: the first leg crosses that rail, as a knockout's stub leaves its box.
+            var across = strutStartDirection(level, lastPoint, BodySpace.local(level, to));
+            if(across != null) {
+                stubs.add(new BlockWireEntity.Point(across, MIN_CROSS_PX));
+                lastPoint = lastPoint.relative(across, MIN_CROSS_PX / 16.0);
+                continueDir = across;
             }
         }
         var targetPoint = BodySpace.local(level, to);

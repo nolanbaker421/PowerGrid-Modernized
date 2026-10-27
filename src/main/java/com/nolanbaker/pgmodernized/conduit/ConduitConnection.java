@@ -49,7 +49,8 @@ public final class ConduitConnection {
             return null;
         }
         var endpoint = WireEndpointType.deserialize(tag);
-        if(endpoint == null || !endpoint.isValid(level)) {
+        // A free point, a start on a strut, is always there.
+        if(endpoint == null || (!(endpoint instanceof org.patryk3211.powergrid.electricity.wire.ImaginaryWireEndpoint) && !endpoint.isValid(level))) {
             clear(stack);
             return null;
         }

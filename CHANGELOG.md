@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.61.2 — 2026-10-26
+
+### Changed
+- Starting a run on a strut lays nothing until the next click: the first click only marks the
+  clamp as the start, and the run is laid from it, leaving the clamp across the rail, when the
+  next strut, knockout or point is clicked. No more three-quarter-block piece on the first click.
+
 ## 0.61.1 — 2026-10-26
 
 ### Fixed
