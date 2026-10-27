@@ -153,9 +153,12 @@ public class ConduitBoxBlock extends DirectionalElectricBlock implements IBE<Con
         return state.getValue(COVER);
     }
 
-    /** A lit light socket lights the room. */
+    /** A lit light socket lights the room; a strobe going lights it some. */
     public static int lightOf(BlockState state) {
-        return state.hasProperty(COVER) && state.getValue(COVER) == ConduitCover.LIGHT_ON ? 15 : 0;
+        if(!state.hasProperty(COVER))
+            return 0;
+        var cover = state.getValue(COVER);
+        return cover == ConduitCover.LIGHT_ON ? 15 : cover == ConduitCover.HORN_ON ? 10 : 0;
     }
 
     @Override

@@ -30,7 +30,13 @@ public class ConduitBoxRenderer extends SafeBlockEntityRenderer<ConduitBoxBlockE
     protected void renderSafe(ConduitBoxBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
         var bulb = be.bulb();
         var state = be.getBlockState();
-        if(bulb == null || !(state.getBlock() instanceof ConduitBoxBlock) || !ConduitBoxBlock.cover(state).isLight())
+        if(!(state.getBlock() instanceof ConduitBoxBlock))
+            return;
+        var cover = ConduitBoxBlock.cover(state);
+        boolean drawBulb = bulb != null && cover.isLight();
+        // A strobe going: a full-bright flash over the lens, a quarter of a second in every second.
+        boolean flash = cover == com.nolanbaker.pgmodernized.conduit.ConduitCover.HORN_ON && be.getLevel() != null && (be.getLevel().getGameTime() / 5) % 4 == 0;
+        if(!drawBulb && !flash)
             return;
         var renderer = Minecraft.getInstance().getBlockRenderer().getModelRenderer();
         ms.pushPose();
@@ -52,6 +58,14 @@ public class ConduitBoxRenderer extends SafeBlockEntityRenderer<ConduitBoxBlockE
             }
         }
         ms.translate(-0.5, -0.5, -0.5);
+        if(flash) {
+            var l = ConduitBoxGeometry.HORN_LENS;
+            DeviceDraw.box(ms, buffer, LightTexture.FULL_BRIGHT, l.minX - 0.3, l.minY - 0.3, l.minZ - 0.4, l.maxX + 0.3, l.maxY + 0.3, l.minZ, 0xFFFFFF);
+        }
+        if(!drawBulb) {
+            ms.popPose();
+            return;
+        }
         // The bulb space in front of the holder, pointing out of the box (north in the frame).
         var space = ConduitBoxGeometry.BULB;
         double cx = (space.minX + space.maxX) / 32, cy = (space.minY + space.maxY) / 32, back = space.maxZ / 16;

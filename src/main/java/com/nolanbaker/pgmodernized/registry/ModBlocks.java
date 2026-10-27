@@ -469,6 +469,19 @@ public class ModBlocks {
             .lang("Ceiling Tile Conduit Box")
             .register();
 
+    /** The fire alarm control panel: 120 V in, a detector loop and a horn strobe loop out, all through conduit. */
+    public static final BlockEntry<com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlock> FIRE_ALARM_PANEL =
+            REGISTRATE.block("fire_alarm_panel", com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Fire Alarm Panel")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
     /** Ends one run in a cord socket; the equipment end of a run. */
     public static final BlockEntry<ConduitSocketBlock> CONDUIT_SOCKET = REGISTRATE.block("conduit_socket", ConduitSocketBlock::new)
             .blockstate(NonNullBiConsumer.noop())

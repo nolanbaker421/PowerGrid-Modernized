@@ -7,7 +7,13 @@
     "particle": "powergrid_modernized:block/conduit_box",
     "plate": "powergrid_modernized:block/conduit_box",
     "terminal": "powergrid_modernized:block/panel_terminal",
-    "receptacle": "powergrid_modernized:block/receptacle"
+    "receptacle": "powergrid_modernized:block/receptacle",
+    "detector": "powergrid_modernized:block/smoke_detector",
+    "led_green": "powergrid_modernized:block/led_green",
+    "led_red": "powergrid_modernized:block/led_red",
+    "horn": "powergrid_modernized:block/horn_strobe",
+    "lens_off": "powergrid_modernized:block/lens_off",
+    "lens_on": "powergrid_modernized:block/lens_on"
   },
   "elements": [
     {

@@ -14,7 +14,13 @@ public enum ConduitCover implements StringRepresentable {
     LIGHT_OFF("light_off", 2),
     LIGHT_ON("light_on", 2),
     /** A receptacle on the plate: cover terminals 0 (line) and 1 (neutral) are its two poles, and power cords plug into it. */
-    RECEPTACLE("receptacle", 2);
+    RECEPTACLE("receptacle", 2),
+    /** A smoke detector on the plate: cover terminals 0 (+) and 1 (-) are the fire alarm panel's initiating loop. */
+    SMOKE("smoke", 2),
+    SMOKE_ALARM("smoke_alarm", 2),
+    /** A horn strobe on the plate: cover terminals 0 (+) and 1 (-) are the fire alarm panel's notification loop. */
+    HORN_OFF("horn_off", 2),
+    HORN_ON("horn_on", 2);
 
     private final String name;
     private final int terminals;
@@ -51,13 +57,21 @@ public enum ConduitCover implements StringRepresentable {
         return this == LIGHT_OFF || this == LIGHT_ON;
     }
 
-    /** A plate whose two terminals are a device on the plate (a lamp or a receptacle) rather than bare terminals. */
-    public boolean isDevice() {
-        return isLight() || this == RECEPTACLE;
+    public boolean isSmoke() {
+        return this == SMOKE || this == SMOKE_ALARM;
     }
 
-    /** The state a plate item fits: a light socket goes on dark. */
+    public boolean isHorn() {
+        return this == HORN_OFF || this == HORN_ON;
+    }
+
+    /** A plate whose two terminals are a device on the plate rather than bare terminals. */
+    public boolean isDevice() {
+        return isLight() || this == RECEPTACLE || isSmoke() || isHorn();
+    }
+
+    /** The state a plate item fits: a light socket goes on dark, a detector quiet, a horn strobe off. */
     public ConduitCover itemCover() {
-        return this == LIGHT_ON ? LIGHT_OFF : this;
+        return this == LIGHT_ON ? LIGHT_OFF : this == SMOKE_ALARM ? SMOKE : this == HORN_ON ? HORN_OFF : this;
     }
 }

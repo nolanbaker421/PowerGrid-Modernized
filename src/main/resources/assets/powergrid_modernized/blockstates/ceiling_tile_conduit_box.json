@@ -17,6 +17,18 @@
     },
     "cover=receptacle": {
       "model": "powergrid_modernized:block/ceiling_tile_conduit_box_receptacle"
+    },
+    "cover=smoke": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_smoke"
+    },
+    "cover=smoke_alarm": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_smoke_alarm"
+    },
+    "cover=horn_off": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_horn_off"
+    },
+    "cover=horn_on": {
+      "model": "powergrid_modernized:block/ceiling_tile_conduit_box_horn_on"
     }
   }
 }

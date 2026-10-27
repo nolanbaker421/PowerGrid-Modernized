@@ -86,6 +86,7 @@ public class PowerGridModernized {
         ForkHooks.get().registerContent();
         CONDITIONS.register(bus);
         ModDataComponents.REGISTER.register(bus);
+        com.nolanbaker.pgmodernized.registry.ModSounds.REGISTER.register(bus);
 
         if(Platform.isModLoaded("computercraft")) {
             CCBridge.init(bus);

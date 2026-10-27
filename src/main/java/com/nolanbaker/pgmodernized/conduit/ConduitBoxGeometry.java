@@ -155,9 +155,13 @@ public final class ConduitBoxGeometry {
     /** The two screw terminals beside a light fixture or a receptacle: line on the viewer's right (+x), neutral on the left. */
     public static final AABB SCREW_LINE = new AABB(10, 7, 12, 11, 9, 13), SCREW_NEUTRAL = new AABB(5, 7, 12, 6, 9, 13);
 
-    /** Where a cover's exposed terminal sits: a node on the node plate, a screw beside a fixture or receptacle. */
+    /** The smoke detector's puck on the plate, and its light; the horn strobe's body and its lens. */
+    public static final AABB SMOKE_PUCK = new AABB(5, 5, 11.5, 11, 11, 13), SMOKE_LED = new AABB(7.5, 6, 11.2, 8.5, 7, 11.5);
+    public static final AABB HORN_BODY = new AABB(6, 4.5, 11, 10, 11.5, 13), HORN_LENS = new AABB(7, 8.5, 10.5, 9, 10.5, 11);
+
+    /** Where a cover's exposed terminal sits: a node on the node plate, a screw beside any device. */
     public static AABB coverNub(ConduitCover cover, int k) {
-        if(cover.isLight() || cover == ConduitCover.RECEPTACLE)
+        if(cover.isDevice())
             return k == 0 ? SCREW_LINE : SCREW_NEUTRAL;
         return frontNub(k);
     }
@@ -171,6 +175,10 @@ public final class ConduitBoxGeometry {
             shape = Shapes.or(shape, box(frame.apply(LAMP_HOLDER)), box(frame.apply(BULB)));
         if(cover == ConduitCover.RECEPTACLE)
             shape = Shapes.or(shape, box(frame.apply(RECEPTACLE_FACE)));
+        if(cover.isSmoke())
+            shape = Shapes.or(shape, box(frame.apply(SMOKE_PUCK)));
+        if(cover.isHorn())
+            shape = Shapes.or(shape, box(frame.apply(HORN_BODY)));
         for(var hub : HUBS)
             shape = Shapes.or(shape, box(frame.apply(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub))));
         return shape;

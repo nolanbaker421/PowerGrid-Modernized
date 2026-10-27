@@ -1,0 +1,12 @@
+{
+  "fire_alarm_horn": {
+    "subtitle": "powergrid.subtitle.fire_alarm_horn",
+    "sounds": [
+      {
+        "name": "minecraft:note/bit",
+        "pitch": 0.5,
+        "volume": 1.0
+      }
+    ]
+  }
+}

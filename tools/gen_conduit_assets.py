@@ -50,8 +50,22 @@ for _a in HUB_ALONG:
              (_x - 1, 3, 13.5, _x + 1, 4, 15.5), (12, _x - 1, 13.5, 13, _x + 1, 15.5)]
 COLUMNS_U = [5, 7, 9, 11]
 # Every cover state, and the cover terminals each shows as nubs; the light socket's lamp holder and bulb (ConduitBoxGeometry).
-COVERS = ("open", "blank", "node", "light_off", "light_on", "receptacle")
-NUBS = {"open": 0, "blank": 0, "node": 12, "light_off": 2, "light_on": 2, "receptacle": 2}
+COVERS = ("open", "blank", "node", "light_off", "light_on", "receptacle", "smoke", "smoke_alarm", "horn_off", "horn_on")
+NUBS = {"open": 0, "blank": 0, "node": 12, "light_off": 2, "light_on": 2, "receptacle": 2, "smoke": 2, "smoke_alarm": 2, "horn_off": 2, "horn_on": 2}
+# The smoke detector's puck and light, the horn strobe's body and lens (ConduitBoxGeometry); textures from gen_fire_alarm_assets.py.
+SMOKE_PUCK, SMOKE_LED = (5, 5, 11.5, 11, 11, 13), (7.5, 6, 11.2, 8.5, 7, 11.5)
+HORN_BODY, HORN_LENS = (6, 4.5, 11, 10, 11.5, 13), (7, 8.5, 10.5, 9, 10.5, 11)
+FIRE_TEX = {"detector": "%s:block/smoke_detector" % MOD, "led_green": "%s:block/led_green" % MOD, "led_red": "%s:block/led_red" % MOD,
+            "horn": "%s:block/horn_strobe" % MOD, "lens_off": "%s:block/lens_off" % MOD, "lens_on": "%s:block/lens_on" % MOD}
+
+
+def fire_elements(cover, transform=lambda b: b):
+    """The device on a smoke detector or horn strobe cover, in the given frame."""
+    if cover.startswith("smoke"):
+        return [element(*transform(SMOKE_PUCK), "#detector"), element(*transform(SMOKE_LED), "#led_red" if cover == "smoke_alarm" else "#led_green")]
+    if cover.startswith("horn"):
+        return [element(*transform(HORN_BODY), "#horn"), element(*transform(HORN_LENS), "#lens_on" if cover == "horn_on" else "#lens_off")]
+    return []
 LAMP_HOLDER = (6.5, 6.5, 11, 9.5, 9.5, 13)
 BULB = (6, 6, 8.5, 10, 10, 11)
 RECEPTACLE_FACE = (6.5, 6, 11.5, 9.5, 10, 13)
@@ -121,13 +135,15 @@ def textures():
 # Luna-Terra's box: one element list per cover variant, imported by import_bbmodel.py from the
 # .bbmodel, on a 32x32 texture. Body, nub grid and knockout positions match the geometry here.
 LUNA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "conduit_box_luna.json")
-LUNA_VARIANT = {"open": "open", "blank": "blank", "node": "node", "light_off": "light", "light_on": "light", "receptacle": "blank"}
+LUNA_VARIANT = {"open": "open", "blank": "blank", "node": "node", "light_off": "light", "light_on": "light", "receptacle": "blank",
+                "smoke": "blank", "smoke_alarm": "blank", "horn_off": "blank", "horn_on": "blank"}
 
 
 def box_model():
     tex = {"box": "%s:block/conduit_box_detail" % MOD, "knockout": "%s:block/knockout_one_half" % MOD,
            "particle": "%s:block/conduit_box" % MOD, "plate": "%s:block/conduit_box" % MOD,
            "terminal": "%s:block/panel_terminal" % MOD, "receptacle": "%s:block/receptacle" % MOD}
+    tex.update(FIRE_TEX)
     with open(LUNA, encoding="utf-8") as f:
         luna = json.load(f)["variants"]
     for cover in COVERS:
@@ -137,7 +153,8 @@ def box_model():
             elements.append(element(*hub, "#knockout"))
         if cover == "receptacle":
             elements.append(receptacle_face(RECEPTACLE_FACE))
-        if cover == "receptacle" or cover.startswith("light"):
+        elements += fire_elements(cover)
+        if cover == "receptacle" or cover.startswith(("light", "smoke", "horn")):
             for screw in SCREWS:
                 elements.append(element(*screw, "#terminal"))
         # Cutout: the detail texture has transparent pixels where the plate is open.
@@ -230,6 +247,7 @@ def ceiling_box_models():
            "open": "%s:block/conduit_box_open" % MOD, "tile": TILE_TEXTURE, "knockout": "%s:block/knockout_one_half" % MOD,
            "particle": "%s:block/conduit_box" % MOD, "lamp_off": "%s:block/lamp_off" % MOD, "lamp_on": "%s:block/lamp_on" % MOD,
            "receptacle": "%s:block/receptacle" % MOD}
+    tex.update(FIRE_TEX)
     for cover in COVERS:
         elements = [dict(e) for e in TILE_ELEMENTS]
         if cover == "open":
@@ -251,6 +269,7 @@ def ceiling_box_models():
             e = element(*on_tile(RECEPTACLE_FACE), "#box")
             e["faces"]["up"] = {"uv": [0, 0, 16, 16], "texture": "#receptacle"}
             elements.append(e)
+        elements += fire_elements(cover, on_tile)
         dump(os.path.join(ASSETS, "models", "block", "ceiling_tile_conduit_box_%s.json" % cover),
              {"parent": "block/block", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "blockstates", "ceiling_tile_conduit_box.json"),

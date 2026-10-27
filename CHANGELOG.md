@@ -4,6 +4,24 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.65.0 — 2026-10-26
+
+### Added
+- A fire alarm system, first part. The fire alarm panel is a small red wall cabinet with four
+  knockouts; through them it takes a 120 V feed and puts out two 24 V DC loops of pulled wire,
+  the initiating loop for detectors and the notification loop for horn strobes, all spliced in
+  its editor like any device. It watches the loops: a detector in alarm draws current and sets it
+  off, a loop with nothing on it is trouble. In alarm it drives the notification loop and puts out
+  a redstone signal. The left button on the door silences the horns, leaving the strobes going;
+  the right resets once every detector is quiet. Three lights on the door: power, alarm and
+  trouble.
+- A smoke detector cover for the conduit box, on walls or ceiling tiles: trips on fire, lit
+  campfires, lava or anything burning within four blocks and holds ten seconds past the last.
+  Its light turns from green to red in alarm.
+- A horn strobe cover for the conduit box: on the notification loop it sounds the three-pulse
+  horn pattern and flashes its lens, lighting the room in bursts, from sixteen volts; from eight
+  it only flashes, which is what a silenced panel gives it.
+
 ## 0.64.1 — 2026-10-26
 
 ### Changed

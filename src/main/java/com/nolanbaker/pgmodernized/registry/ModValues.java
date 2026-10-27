@@ -51,8 +51,11 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         resistance("conduit_switch_3way", "contact", 0.001);
         resistance("disconnect", "contact", 0.0005);
         // Conduit boxes: the lamp of a light socket cover, sixty watts at 120 V.
-        resistance("conduit_box", "lamp", 240);
-        resistance("ceiling_tile_conduit_box", "lamp", 240);
+        // A smoke detector's supervisory resistor and alarm contact, and a horn strobe's load, on the 24 V loops.
+        resistance("conduit_box", "lamp", 240, "supervisory", 20000, "detector", 1000, "horn", 80);
+        resistance("ceiling_tile_conduit_box", "lamp", 240, "supervisory", 20000, "detector", 1000, "horn", 80);
+        // The fire alarm panel: a twenty-watt load on its feed, and the source resistance of each loop.
+        resistance("fire_alarm_panel", "feed", 720, "loop", 1);
         // Bus duct plug-in: one contact per pole and the neutral through-path.
         resistance("bus_duct_plug_in", "contact", 0.0005);
         resistance("bus_duct_plug_in_breaker", "contact", 0.0005);
