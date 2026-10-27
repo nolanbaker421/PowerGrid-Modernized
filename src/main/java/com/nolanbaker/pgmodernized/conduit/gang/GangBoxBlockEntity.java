@@ -55,6 +55,15 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     /** Per gang: the loop address a fire alarm panel gave a pull station or horn strobe there, and its name. */
     private int[] fireAddresses;
     private String[] fireLabels;
+    /** A monitor module's sense source across its contact points, and whether its contact is normally closed. */
+    private org.patryk3211.powergrid.electricity.sim.node.ProvidedVoltageSourceCoupling[] sense;
+    private boolean[] monitorNc;
+    /** An annunciator's panel: where it is, and when its survey last reached this box. */
+    private BlockPos[] panelPos;
+    private long[] panelSeen;
+    public static final float SENSE_VOLTS = 5, SENSE_AMPS = 0.001f;
+    /** Ticks without a survey before an annunciator shows its link lost; surveys come every sixty. */
+    public static final int LINK_TICKS = 200;
     private List<SplicePoint> points;
 
     public GangBoxBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -74,7 +83,113 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             fireAddresses = new int[GangLayout.MAX_GANGS];
             fireLabels = new String[GangLayout.MAX_GANGS];
             java.util.Arrays.fill(fireLabels, "");
+            sense = new org.patryk3211.powergrid.electricity.sim.node.ProvidedVoltageSourceCoupling[GangLayout.MAX_GANGS];
+            monitorNc = new boolean[GangLayout.MAX_GANGS];
+            panelPos = new BlockPos[GangLayout.MAX_GANGS];
+            panelSeen = new long[GangLayout.MAX_GANGS];
         }
+    }
+
+    /** The gang that holds the device covering this one: the gang itself unless it is covered by a wide device. */
+    public int owner(int slot) {
+        ensureArrays();
+        if(slot < 0 || slot >= GangLayout.MAX_GANGS)
+            return -1;
+        int s = slot;
+        while(s > 0 && devices[s] == GangDevice.SPAN)
+            --s;
+        return s;
+    }
+
+    // ---- monitor modules ----
+
+    /** Whether the module's contact is taken as normally closed, tripping when it opens. Works on both sides. */
+    public boolean monitorNc(int slot) {
+        ensureArrays();
+        return slot >= 0 && slot < GangLayout.MAX_GANGS && monitorNc[slot];
+    }
+
+    /** Server side: a wrench flips the module between normally open and normally closed. */
+    public void toggleMonitorMode(int slot, Player player) {
+        ensureArrays();
+        if(device(slot) != GangDevice.MONITOR_MODULE || level == null || level.isClientSide)
+            return;
+        monitorNc[slot] = !monitorNc[slot];
+        level.playSound(null, worldPosition, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, 1.3f);
+        player.displayClientMessage(Lang.translate(monitorNc[slot] ? "message.gang.monitor_nc" : "message.gang.monitor_no").style(ChatFormatting.GRAY).component(), true);
+        monitorTick();
+        setChanged();
+        sendData();
+    }
+
+    /** Every tick: each monitor module reads the current through its contact and trips when the contact is not in its normal state. */
+    private void monitorTick() {
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
+            if(devices[slot] != GangDevice.MONITOR_MODULE || sense[slot] == null)
+                continue;
+            double amps = sense[slot].getCurrent();
+            boolean closed = Double.isFinite(amps) && Math.abs(amps) >= SENSE_AMPS;
+            boolean trip = closed != monitorNc[slot];
+            if(trip != on[slot]) {
+                on[slot] = trip;
+                applyContacts(slot);
+                setChanged();
+                sendData();
+            }
+        }
+    }
+
+    // ---- annunciators ----
+
+    @Override
+    public void setFirePanel(int slot, BlockPos panel, long now) {
+        ensureArrays();
+        if(slot < 0 || slot >= GangLayout.MAX_GANGS || level == null || level.isClientSide)
+            return;
+        boolean changed = !panel.equals(panelPos[slot]);
+        panelPos[slot] = panel;
+        panelSeen[slot] = now;
+        setChanged();
+        if(changed || now % 200 < 60)
+            sendData();
+    }
+
+    /** Where the annunciator's panel is, or null before any survey reached it. Works on both sides. */
+    @Nullable
+    public BlockPos annunciatorPanel(int slot) {
+        ensureArrays();
+        return slot >= 0 && slot < GangLayout.MAX_GANGS ? panelPos[slot] : null;
+    }
+
+    /** Whether the panel's survey has reached the annunciator lately. Works on both sides. */
+    public boolean annunciatorLinked(int slot) {
+        ensureArrays();
+        return level != null && slot >= 0 && slot < GangLayout.MAX_GANGS && panelPos[slot] != null && level.getGameTime() - panelSeen[slot] <= LINK_TICKS;
+    }
+
+    /** Whether any annunciator in the box is the given panel's. */
+    public boolean linksTo(BlockPos panel) {
+        ensureArrays();
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
+            if(devices[slot] == GangDevice.ANNUNCIATOR && panel.equals(panelPos[slot]))
+                return true;
+        return false;
+    }
+
+    /** Server side: Silence or Reset on an annunciator presses the panel's button. */
+    public void annunciatorPress(int slot, boolean silence, Player player) {
+        ensureArrays();
+        if(device(slot) != GangDevice.ANNUNCIATOR || level == null || level.isClientSide)
+            return;
+        var pos = panelPos[slot];
+        if(!annunciatorLinked(slot) || pos == null || !level.isLoaded(pos) || !(level.getBlockEntity(pos) instanceof com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity panel)) {
+            player.displayClientMessage(Lang.translate("message.gang.no_panel").style(ChatFormatting.RED).component(), true);
+            return;
+        }
+        if(silence)
+            panel.silence(player);
+        else
+            panel.reset(player);
     }
 
     // ---- as fire alarm devices ----
@@ -91,6 +206,10 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.PULL;
         if(device == GangDevice.HORN_STROBE)
             return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.HORN;
+        if(device == GangDevice.MONITOR_MODULE)
+            return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.MONITOR;
+        if(device == GangDevice.ANNUNCIATOR)
+            return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.ANNUNCIATOR;
         return null;
     }
 
@@ -118,7 +237,8 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     @Override
     public boolean fireTripped(int slot) {
-        return device(slot) == GangDevice.PULL_STATION && isOn(slot);
+        var device = device(slot);
+        return (device == GangDevice.PULL_STATION || device == GangDevice.MONITOR_MODULE) && isOn(slot);
     }
 
     @Override
@@ -198,6 +318,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             var device = devices[slot];
             contacts[slot] = null;
             horns[slot] = null;
+            sense[slot] = null;
             if(device == null)
                 continue;
             var p = new int[GangDevice.MAX_POINTS];
@@ -220,6 +341,18 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                             builder.connectSwitch(resistance("detector"), builder.terminalNode(p[0]), builder.terminalNode(p[1]), on[slot])};
                 }
                 case HORN_STROBE -> horns[slot] = builder.connect(resistance("horn"), builder.terminalNode(p[0]), builder.terminalNode(p[1]));
+                case MONITOR_MODULE -> {
+                    // On the loop like a pull station; across its contact points a small sense source of its own, read every tick.
+                    builder.connect(resistance("supervisory"), builder.terminalNode(p[0]), builder.terminalNode(p[1]));
+                    contacts[slot] = new SwitchedWire[] {
+                            builder.connectSwitch(resistance("detector"), builder.terminalNode(p[0]), builder.terminalNode(p[1]), on[slot])};
+                    var source = new org.patryk3211.powergrid.electricity.sim.node.ProvidedVoltageSourceCoupling(builder.terminalNode(p[2]), builder.terminalNode(p[3]), resistance("sense"));
+                    source.setVoltageProvider(() -> SENSE_VOLTS);
+                    builder.add(source);
+                    sense[slot] = source;
+                }
+                case ANNUNCIATOR -> builder.connect(resistance("supervisory"), builder.terminalNode(p[0]), builder.terminalNode(p[1]));
+                case SPAN -> {}
                 case RECEPTACLE -> {
                     if(!cordWired) {
                         builder.connect(SpliceSupport.SPLICE_RESISTANCE, builder.terminalNode(GangLayout.CORD_A), builder.terminalNode(p[0]));
@@ -240,7 +373,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             return;
         boolean state = on[slot];
         switch(device) {
-            case SWITCH, BUTTON, PULL_STATION -> wires[0].setState(state);
+            case SWITCH, BUTTON, PULL_STATION, MONITOR_MODULE -> wires[0].setState(state);
             case THREE_WAY -> {
                 wires[0].setState(!state);
                 wires[1].setState(state);
@@ -295,39 +428,62 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         if(level == null || level.isClientSide)
             return;
         int gangs = gangs();
-        if(slot < 0 || slot >= gangs || devices[slot] != null) {
+        int width = device.width();
+        if(slot < 0 || !emptyRun(slot, width)) {
             slot = -1;
-            for(int i = 0; i < gangs; ++i) {
-                if(devices[i] == null) {
+            for(int i = 0; i + width <= gangs; ++i) {
+                if(emptyRun(i, width)) {
                     slot = i;
                     break;
                 }
             }
         }
         if(slot < 0) {
-            player.displayClientMessage(Lang.builder().translate("message.gang.full").style(ChatFormatting.RED).component(), true);
+            player.displayClientMessage(width > 1 ? Lang.builder().translate("message.gang.needs_wide", width).style(ChatFormatting.RED).component()
+                    : Lang.builder().translate("message.gang.full").style(ChatFormatting.RED).component(), true);
             return;
         }
-        devices[slot] = device;
-        on[slot] = false;
-        hold[slot] = 0;
-        fireAddresses[slot] = 0;
-        fireLabels[slot] = "";
+        for(int i = 0; i < width; ++i) {
+            devices[slot + i] = i == 0 ? device : GangDevice.SPAN;
+            on[slot + i] = false;
+            hold[slot + i] = 0;
+            fireAddresses[slot + i] = 0;
+            fireLabels[slot + i] = "";
+            monitorNc[slot + i] = false;
+            panelPos[slot + i] = null;
+        }
         if(!player.isCreative())
             stack.shrink(1);
         level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.2f);
         rebuild();
     }
 
-    /** Server side: takes the device out of that gang; its splices go with it. */
+    /** Whether {@code width} gangs from {@code slot} on are empty and in the box. */
+    private boolean emptyRun(int slot, int width) {
+        if(slot < 0 || slot + width > gangs())
+            return false;
+        for(int i = 0; i < width; ++i)
+            if(devices[slot + i] != null)
+                return false;
+        return true;
+    }
+
+    /** Server side: takes the device out of that gang, or the wide device covering it; its splices go with it. */
     public void remove(int slot, Player player) {
         ensureArrays();
-        if(level == null || level.isClientSide || device(slot) == null)
+        slot = owner(slot);
+        if(level == null || level.isClientSide || device(slot) == null || devices[slot] == GangDevice.SPAN)
             return;
         var stack = ModItems.gangDevice(devices[slot]);
-        for(int k = 0; k < GangDevice.MAX_POINTS; ++k) {
-            int point = GangLayout.point(slot, k);
-            splices().list().removeIf(s -> s[0] == point || s[1] == point);
+        for(int i = 0; i < devices[slot].width() && slot + i < GangLayout.MAX_GANGS; ++i) {
+            for(int k = 0; k < GangDevice.MAX_POINTS; ++k) {
+                int point = GangLayout.point(slot + i, k);
+                splices().list().removeIf(s -> s[0] == point || s[1] == point);
+            }
+            if(i > 0) {
+                devices[slot + i] = null;
+                on[slot + i] = false;
+            }
         }
         devices[slot] = null;
         on[slot] = false;
@@ -343,7 +499,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         if(level == null || level.isClientSide)
             return;
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
-            if(devices[slot] != null)
+            if(devices[slot] != null && devices[slot].isItem())
                 Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, ModItems.gangDevice(devices[slot]));
             devices[slot] = null;
         }
@@ -449,6 +605,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                 setOn(slot, false);
         }
         hornTick();
+        monitorTick();
     }
 
     @Override
@@ -558,6 +715,16 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         for(var label : fireLabels)
             labels.add(StringTag.valueOf(label));
         tag.put("FireLabels", labels);
+        int nc = 0;
+        var panels = new long[GangLayout.MAX_GANGS];
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
+            if(monitorNc[slot])
+                nc |= 1 << slot;
+            panels[slot] = panelPos[slot] == null ? Long.MIN_VALUE : panelPos[slot].asLong();
+        }
+        tag.putInt("MonitorNc", nc);
+        tag.putLongArray("Panels", panels);
+        tag.putLongArray("PanelSeen", panelSeen.clone());
     }
 
     @Override
@@ -599,6 +766,14 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         var labels = tag.getList("FireLabels", Tag.TAG_STRING);
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
             fireLabels[slot] = slot < labels.size() ? labels.getString(slot) : "";
+        int nc = tag.getInt("MonitorNc");
+        var panels = tag.getLongArray("Panels");
+        var seen = tag.getLongArray("PanelSeen");
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
+            monitorNc[slot] = (nc & 1 << slot) != 0;
+            panelPos[slot] = slot < panels.length && panels[slot] != Long.MIN_VALUE ? BlockPos.of(panels[slot]) : null;
+            panelSeen[slot] = slot < seen.length ? seen[slot] : 0;
+        }
         points = null;
         if(changed && !clientPacket && level != null && !level.isClientSide && electricBehaviour != null) {
             electricBehaviour.rebuildCircuit(false);
@@ -622,10 +797,16 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                 line.text(", ");
             if(device == null) {
                 line.add(Lang.builder().translate("gang.empty").style(ChatFormatting.DARK_GRAY));
+            } else if(device == GangDevice.SPAN) {
+                line.add(Lang.builder().translate("gang.covered").style(ChatFormatting.DARK_GRAY));
             } else {
                 line.add(Lang.builder().text(device.label()).style(ChatFormatting.WHITE));
-                if(device.toggles() || device == GangDevice.PULL_STATION)
-                    line.text(" ").add(Lang.builder().translate(stateKey(device, on[slot])).style(on[slot] == (device == GangDevice.PULL_STATION) ? ChatFormatting.RED : ChatFormatting.GREEN));
+                if(device == GangDevice.MONITOR_MODULE)
+                    line.text(" ").add(Lang.builder().translate(monitorNc[slot] ? "gang.monitor_nc" : "gang.monitor_no").style(ChatFormatting.GRAY));
+                if(device == GangDevice.ANNUNCIATOR)
+                    line.text(" ").add(Lang.builder().translate(annunciatorLinked(slot) ? "gang.linked" : "gang.unlinked").style(annunciatorLinked(slot) ? ChatFormatting.GREEN : ChatFormatting.RED));
+                if(device.toggles() || device.initiating())
+                    line.text(" ").add(Lang.builder().translate(stateKey(device, on[slot])).style(on[slot] == device.initiating() ? ChatFormatting.RED : ChatFormatting.GREEN));
                 if(fireKind(slot) != null) {
                     if(fireAddresses[slot] > 0)
                         line.text(" ").add(Lang.builder().text(String.format("%03d", fireAddresses[slot])).style(ChatFormatting.AQUA));
@@ -649,6 +830,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             case THREE_WAY -> on ? "gui.conduit_switch.to_b" : "gui.conduit_switch.to_a";
             case FOUR_WAY -> on ? "gang.crossed" : "gang.straight";
             case PULL_STATION -> on ? "gang.pulled" : "gang.set";
+            case MONITOR_MODULE -> on ? "gang.tripped" : "gang.normal";
             default -> on ? "gui.conduit_switch.on" : "gui.conduit_switch.off";
         };
     }

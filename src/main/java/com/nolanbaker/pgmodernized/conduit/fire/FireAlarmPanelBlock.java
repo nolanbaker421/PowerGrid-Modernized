@@ -63,32 +63,41 @@ public class FireAlarmPanelBlock extends HorizontalElectricBlock implements IBE<
     }
 
     /**
-     * Three dry contacts, COM and NO each, numbered after the knockouts' landings so older panels
-     * keep their wiring: Alarm closes in alarm, Trouble in trouble, Silenced once the horns are
-     * silenced. They switch whatever is spliced through them: a contactor coil, a cabinet input.
+     * Three Form C dry contacts, COM, NO and NC each, numbered after the knockouts' landings so
+     * older panels keep their wiring: Alarm's NO closes in alarm, Trouble's in trouble, Silenced's
+     * once the horns are silenced. The NC contacts are supervised: closed only while the panel is
+     * powered and the condition is clear, so a loss of power or a broken wire reads the same as
+     * the condition. They switch whatever is spliced through them: a contactor coil, a cabinet input.
      */
     public static final int CONTACT_COUNT = 3;
     public static final int CONTACT_ALARM = 0, CONTACT_TROUBLE = 1, CONTACT_SILENCED = 2;
     private static final int[] POINTS = points();
-    /** The contacts, then the network jack on the panel's right side, after the knockouts' landings. */
-    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUBS.length, POINTS, CONTACT_COUNT * 2 + 1);
+    /** The contacts' COM and NO, then the network jack on the panel's right side, then the NC contacts, after the knockouts' landings. */
+    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUBS.length, POINTS, CONTACT_COUNT * 3 + 1);
     public static final int JACK = LAYOUT.extraBase() + CONTACT_COUNT * 2;
     private static final AABB JACK_BOX = new AABB(13, 3, 12.5, 14, 5, 14.5);
     private static final String[] CONTACT_KEYS = {"alarm", "trouble", "silenced"};
 
     private static int[] points() {
         int extraBase = BASE_COUNT + HUBS.length + HUBS.length * DeviceHubs.PER_HUB;
-        var points = new int[BASE_COUNT + CONTACT_COUNT * 2];
+        var points = new int[BASE_COUNT + CONTACT_COUNT * 3];
         for(int i = 0; i < BASE_COUNT; ++i)
             points[i] = i;
         for(int i = 0; i < CONTACT_COUNT * 2; ++i)
             points[BASE_COUNT + i] = extraBase + i;
+        for(int c = 0; c < CONTACT_COUNT; ++c)
+            points[BASE_COUNT + CONTACT_COUNT * 2 + c] = extraBase + CONTACT_COUNT * 2 + 1 + c;
         return points;
     }
 
     /** The COM terminal of a contact; NO is the next one. */
     public static int contactTerminal(int contact, boolean normallyOpen) {
         return LAYOUT.extraBase() + contact * 2 + (normallyOpen ? 1 : 0);
+    }
+
+    /** The supervised NC terminal of a contact, after the jack. */
+    public static int contactNcTerminal(int contact) {
+        return LAYOUT.extraBase() + CONTACT_COUNT * 2 + 1 + contact;
     }
 
     public FireAlarmPanelBlock(Properties properties) {
@@ -99,7 +108,10 @@ public class FireAlarmPanelBlock extends HorizontalElectricBlock implements IBE<
             contacts[c * 2 + 1] = terminal("fire_alarm.contact_" + CONTACT_KEYS[c] + "_no", ChatFormatting.GOLD, 0xE0C040);
         }
         var jack = com.nolanbaker.pgmodernized.network.JackTerminals.jack(JACK_BOX.minX, JACK_BOX.minY, JACK_BOX.minZ, JACK_BOX.maxX, JACK_BOX.maxY, JACK_BOX.maxZ);
-        var terminals = DeviceHubs.withExtras(DeviceHubs.withExtras(DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), contacts), jack);
+        var nc = new TerminalBoundingBox[CONTACT_COUNT];
+        for(int c = 0; c < CONTACT_COUNT; ++c)
+            nc[c] = terminal("fire_alarm.contact_" + CONTACT_KEYS[c] + "_nc", ChatFormatting.GOLD, 0xB08020);
+        var terminals = DeviceHubs.withExtras(DeviceHubs.withExtras(DeviceHubs.withExtras(DeviceHubs.withHubs(terminals(), HIDDEN, HUBS), contacts), jack), nc);
         var shape = net.minecraft.world.phys.shapes.Shapes.or(DeviceHubs.withHubs(BODY, HUBS), box(JACK_BOX.minX, JACK_BOX.minY, JACK_BOX.minZ, JACK_BOX.maxX, JACK_BOX.maxY, JACK_BOX.maxZ));
         setTerminalCollection(StateTerminals.horizontalNorth(this, shape, state -> terminals));
     }

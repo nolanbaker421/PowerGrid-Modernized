@@ -19,7 +19,13 @@ public enum GangDevice {
     /** On the fire alarm panel's initiating loop: pulled by hand, reset with a wrench. */
     PULL_STATION("pull_station", "Pull Station", "loop_plus", "loop_minus"),
     /** On the fire alarm panel's notification loop: sounds and flashes from sixteen volts, flashes from eight. */
-    HORN_STROBE("horn_strobe", "Horn Strobe", "loop_plus", "loop_minus");
+    HORN_STROBE("horn_strobe", "Horn Strobe", "loop_plus", "loop_minus"),
+    /** On the initiating loop: a dry contact across its two sense points, normally open or normally closed, trips it. */
+    MONITOR_MODULE("monitor_module", "Monitor Module", "loop_plus", "loop_minus", "contact_a", "contact_b"),
+    /** On the initiating loop, three gangs wide: the panel's lights and display, with Silence and Reset. */
+    ANNUNCIATOR("annunciator", "Fire Annunciator", "loop_plus", "loop_minus"),
+    /** A gang a wide device covers past its first; never an item. */
+    SPAN("span", "Covered");
 
     public static final int MAX_POINTS = 4;
     private static final int YELLOW = 0xC8A000, WHITE = 0xF0F0F0;
@@ -64,12 +70,24 @@ public enum GangDevice {
             return com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlock.LOOP_PLUS_RGB;
         if(key.equals("loop_minus"))
             return com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlock.LOOP_MINUS_RGB;
+        if(key.startsWith("contact_"))
+            return YELLOW;
         return switch(k) {
             case 0 -> ConductorColors.hotRgb(0);
             case 1 -> ConductorColors.hotRgb(1);
             case 2 -> ConductorColors.hotRgb(2);
             default -> YELLOW;
         };
+    }
+
+    /** Gangs it takes, side by side; the first holds the device and its points, the rest are {@link #SPAN}. */
+    public int width() {
+        return this == ANNUNCIATOR ? 3 : 1;
+    }
+
+    /** Whether there is an item of it. */
+    public boolean isItem() {
+        return this != SPAN;
     }
 
     /** A click flips it. */
@@ -84,7 +102,7 @@ public enum GangDevice {
 
     /** A detector or pull station's contact across the initiating loop, with its supervisory resistor. */
     public boolean initiating() {
-        return this == PULL_STATION;
+        return this == PULL_STATION || this == MONITOR_MODULE;
     }
 
     public static GangDevice byId(String id) {

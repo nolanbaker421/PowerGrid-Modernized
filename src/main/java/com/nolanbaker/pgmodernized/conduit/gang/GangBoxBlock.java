@@ -249,6 +249,25 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
             return InteractionResult.SUCCESS;
         }
         var device = slot >= 0 ? be.device(slot) : null;
+        if(device == GangDevice.SPAN || device == GangDevice.ANNUNCIATOR) {
+            // The display opens the panel's screen; Silence sits on the viewer's left under it, Reset on the right.
+            int owner = be.owner(slot);
+            var frame = GangFrame.toFrame(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ())).scale(16);
+            double cx = GangLayout.slotCentreX(gangs, owner + 1);
+            if(frame.z < 9.3) {
+                if(level.isClientSide) {
+                    var panel = be.annunciatorPanel(owner);
+                    if(panel != null && be.annunciatorLinked(owner))
+                        ClientHooks.openFireAlarm(panel, pos);
+                    else
+                        player.displayClientMessage(Lang.translate("message.gang.no_panel").style(ChatFormatting.RED).component(), true);
+                }
+                return InteractionResult.SUCCESS;
+            }
+            if(!level.isClientSide)
+                be.annunciatorPress(owner, frame.x < cx, player);
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if(device == GangDevice.RECEPTACLE) {
             // A cord in the receptacle comes out in the hand, as on a socket.
             if(level.isClientSide)
@@ -272,12 +291,17 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** A wrench on a pulled station resets it; anywhere else it turns the box. */
+    /** A wrench on a pulled station resets it, on a monitor module flips it between normally open and closed; anywhere else it turns the box. */
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         var level = context.getLevel();
         var pos = context.getClickedPos();
         int slot = slotAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        if(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && slot >= 0 && be.device(slot) == GangDevice.MONITOR_MODULE) {
+            if(!level.isClientSide && context.getPlayer() != null)
+                be.toggleMonitorMode(slot, context.getPlayer());
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && slot >= 0 && be.device(slot) == GangDevice.PULL_STATION && be.isOn(slot)) {
             if(!level.isClientSide && context.getPlayer() != null)
                 be.resetPull(slot, context.getPlayer());

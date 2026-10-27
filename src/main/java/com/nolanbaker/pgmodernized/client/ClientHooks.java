@@ -23,7 +23,12 @@ public final class ClientHooks {
 
     /** Opens the fire alarm panel's screen: its devices, their zones, and the buttons. */
     public static void openFireAlarm(BlockPos pos) {
-        Minecraft.getInstance().setScreen(new FireAlarmScreen(pos));
+        Minecraft.getInstance().setScreen(new FireAlarmScreen(pos, pos));
+    }
+
+    /** The same, from an annunciator at {@code via}. */
+    public static void openFireAlarm(BlockPos pos, BlockPos via) {
+        Minecraft.getInstance().setScreen(new FireAlarmScreen(pos, via));
     }
 
     /** Opens a controls cabinet: its rail, its door and the wiring between them. */

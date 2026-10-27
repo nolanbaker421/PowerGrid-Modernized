@@ -417,7 +417,7 @@ def gang_device_items():
     """Item icons for the gang devices: a plate with the device on it."""
     plate = (0xd8, 0xd8, 0xd8)
     dark = (0x2a, 0x2a, 0x2a)
-    for device in ("blank", "switch", "switch_3way", "switch_4way", "button", "receptacle", "pull_station", "horn_strobe"):
+    for device in ("blank", "switch", "switch_3way", "switch_4way", "button", "receptacle", "pull_station", "horn_strobe", "monitor_module", "annunciator"):
         img = canvas(16, 16)
         fill(img, 3, 1, 13, 15, plate)
         fill(img, 3, 14, 13, 15, shade(plate, 0.7))
@@ -448,6 +448,19 @@ def gang_device_items():
             fill(img, 6, 4, 10, 7, (0xff, 0xff, 0xf0))
             for y in range(8, 12, 2):
                 fill(img, 6, y, 10, y + 1, (0x60, 0x10, 0x10))
+        elif device == "monitor_module":
+            fill(img, 5, 3, 11, 13, (0x9a, 0x9a, 0x9a))
+            fill(img, 7, 4, 9, 6, (0x30, 0xe0, 0x50))        # the status light
+            fill(img, 6, 9, 7, 11, (0xc8, 0xa0, 0x00))        # the two contact screws
+            fill(img, 9, 9, 10, 11, (0xc8, 0xa0, 0x00))
+        elif device == "annunciator":
+            fill(img, 2, 3, 14, 13, (0x30, 0x30, 0x34))
+            for x, c in ((4, (0x30, 0xe0, 0x50)), (7, (0x60, 0x20, 0x20)), (10, (0x60, 0x50, 0x20))):
+                fill(img, x, 4, x + 2, 5, c)
+            fill(img, 3, 7, 13, 10, (0x10, 0x14, 0x18))
+            fill(img, 4, 8, 10, 9, (0x40, 0xe0, 0x60))        # a line of text
+            fill(img, 3, 11, 7, 12, (0xc8, 0xa0, 0x00))        # the two keys
+            fill(img, 9, 11, 13, 12, (0x30, 0xa0, 0x50))
         write_png(os.path.join(ITEM_TEX_DIR, "gang_%s.png" % device), img)
         dump(os.path.join(ASSETS, "models", "item", "gang_%s.json" % device), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/gang_%s" % (MOD, device)}})
 
@@ -592,6 +605,8 @@ def recipes():
     recipe_shapeless("gang_receptacle", [{"tag": "c:ingots/copper"}, nugget, nugget], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_pull_station", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_horn_strobe", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"tag": "c:nuggets/copper"}], 1, {"items": "%s:gang_box_1" % MOD})
+    recipe_shapeless("gang_monitor_module", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"item": "minecraft:redstone_torch"}], 1, {"items": "%s:gang_box_1" % MOD})
+    recipe_shapeless("gang_annunciator", [nugget, nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"tag": "c:glass_panes"}, {"tag": "c:nuggets/copper"}], 1, {"items": "%s:gang_box_3" % MOD})
     # The old single blocks turn into their device.
     for old, device in (("conduit_switch", "gang_switch"), ("conduit_button", "gang_button"), ("conduit_switch_3way", "gang_switch_3way"), ("conduit_socket", "gang_receptacle")):
         dump(os.path.join(DATA, "recipe", "crafting", device + "_from_" + old + ".json"), {

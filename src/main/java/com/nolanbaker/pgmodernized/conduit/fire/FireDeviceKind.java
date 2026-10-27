@@ -8,7 +8,11 @@ public enum FireDeviceKind {
     SMOKE("smoke", "SMOKE", true),
     HEAT("heat", "HEAT", true),
     PULL("pull", "PULL", true),
-    HORN("horn", "HORN", false);
+    /** A monitor module: a dry contact of something else, a flow switch or a relay, on the initiating loop. */
+    MONITOR("monitor", "MONITOR", true),
+    HORN("horn", "HORN", false),
+    /** An annunciator: mirrors the panel's lights and display, with its own Silence and Reset. */
+    ANNUNCIATOR("annunciator", "ANNUN", false);
 
     private final String id, display;
     private final boolean initiating;

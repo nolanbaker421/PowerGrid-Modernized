@@ -18,6 +18,9 @@ public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity>
     private static final int TOGGLE = 0xE0E0E0, TOGGLE_EDGE = 0x9A9A9A, BUTTON = 0xC83030, BUTTON_RING = 0x404040;
     private static final int FACE = 0xE8E4DA, SLOT = 0x2A2A2A, BLANK = 0xD8D8D8;
     private static final int ALARM_RED = 0xB31B1B, HANDLE = 0xF0F0EC, LENS_OFF = 0xC8C8C0, LENS_ON = 0xFFFFF0;
+    private static final int MODULE = 0x9A9A9A, ANNUN_FACE = 0x303034, ANNUN_SCREEN = 0x101418, SILENCE_KEY = 0xC8A000, RESET_KEY = 0x30A050;
+    /** Text drawn in the north frame turned to lie on the plate's top face, read from the floor frame's south. */
+    private static final org.joml.Quaternionf FLAT = new org.joml.Quaternionf().rotateAxis((float) Math.PI, 0f, 0.70710677f, -0.70710677f);
 
     public GangBoxRenderer(BlockEntityRendererProvider.Context context) {}
 
@@ -71,9 +74,75 @@ public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity>
                     DeviceDraw.box(ms, buffer, flash ? net.minecraft.client.renderer.LightTexture.FULL_BRIGHT : light,
                             cx - 1, top + 1.4, 6.2, cx + 1, top + (flash ? 2.0 : 1.8), 7.6, flash ? LENS_ON : LENS_OFF);
                 }
+                case MONITOR_MODULE -> {
+                    // A grey module with its status light: green at rest, red once tripped; N.O. or N.C. printed under it.
+                    DeviceDraw.box(ms, buffer, light, cx - 1.5, top, 5.75, cx + 1.5, top + 0.8, 10.25, MODULE);
+                    boolean tripped = be.isOn(slot);
+                    DeviceDraw.box(ms, buffer, net.minecraft.client.renderer.LightTexture.FULL_BRIGHT, cx - 0.4, top + 0.8, 6.4, cx + 0.4, top + 1.0, 7.2, tripped ? 0xFF2020 : 0x30E050);
+                    flat(ms, buffer, light, be.monitorNc(slot) ? "N.C." : "N.O.", cx, top + 0.82, 8.6, 1 / 256f, 0x202020);
+                }
+                case ANNUNCIATOR -> annunciator(be, slot, gangs, ms, buffer, light);
+                case SPAN -> {}
                 case BLANK -> DeviceDraw.box(ms, buffer, light, cx - 1.6, top, 5.75, cx + 1.6, top + 0.3, 10.25, BLANK);
             }
         }
         ms.popPose();
+    }
+
+    /** Text lying on the plate at floor-frame (x, y, z), centred on x, its top toward -z. */
+    private static void flat(PoseStack ms, MultiBufferSource buffer, int light, String text, double x, double y, double z, float s, int color) {
+        ms.pushPose();
+        ms.translate(x / 16, y / 16, z / 16);
+        ms.mulPose(FLAT);
+        DeviceDraw.text(ms, buffer, light, text, 0, 0, 0, s, color, false, 0.5);
+        ms.popPose();
+    }
+
+    /**
+     * Three gangs wide: the panel's three lights, its two-line display, and Silence and Reset
+     * keys. Dark but for a message while no panel's survey has reached it or the panel is not
+     * loaded here.
+     */
+    private static void annunciator(GangBoxBlockEntity be, int slot, int gangs, PoseStack ms, MultiBufferSource buffer, int light) {
+        double top = GangLayout.PLATE_Y1;
+        double cx = GangLayout.slotCentreX(gangs, slot + 1);
+        DeviceDraw.box(ms, buffer, light, cx - 5.8, top, 5.75, cx + 5.8, top + 0.6, 10.25, ANNUN_FACE);
+        DeviceDraw.box(ms, buffer, light, cx - 5.2, top + 0.6, 7.0, cx + 5.2, top + 0.7, 9.1, ANNUN_SCREEN);
+        DeviceDraw.box(ms, buffer, light, cx - 4.6, top + 0.6, 9.5, cx - 1.4, top + 0.9, 10.0, SILENCE_KEY);
+        DeviceDraw.box(ms, buffer, light, cx + 1.4, top + 0.6, 9.5, cx + 4.6, top + 0.9, 10.0, RESET_KEY);
+        var level = be.getLevel();
+        var panelPos = be.annunciatorPanel(slot);
+        com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity panel = null;
+        if(level != null && panelPos != null && be.annunciatorLinked(slot) && level.getBlockEntity(panelPos) instanceof com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity found)
+            panel = found;
+        int[] lights = panel == null ? new int[] {0x202020, 0x202020, 0x202020} : FireAlarmPanelRenderer.lights(panel);
+        double[] lx = {cx - 3, cx, cx + 3};
+        for(int i = 0; i < 3; ++i) {
+            int lit = lights[i] == 0x202020 ? light : net.minecraft.client.renderer.LightTexture.FULL_BRIGHT;
+            DeviceDraw.box(ms, buffer, lit, lx[i] - 0.4, top + 0.6, 6.1, lx[i] + 0.4, top + 0.8, 6.7, lights[i]);
+        }
+        float s = 1 / 192f;
+        var font = net.minecraft.client.Minecraft.getInstance().font;
+        int chars = (int) (10 / 16 / s);
+        String line1, line2;
+        int color;
+        if(panel == null) {
+            line1 = panelPos == null ? "NO PANEL" : "LINK LOST";
+            line2 = "";
+            color = 0xFFC040;
+        } else if(!panel.powered()) {
+            line1 = "";
+            line2 = "";
+            color = 0;
+        } else {
+            var shown = FireAlarmPanelRenderer.lines(panel);
+            line1 = shown.line1();
+            line2 = shown.line2();
+            color = shown.color();
+        }
+        if(!line1.isEmpty())
+            flat(ms, buffer, net.minecraft.client.renderer.LightTexture.FULL_BRIGHT, font.plainSubstrByWidth(line1, chars), cx, top + 0.72, 7.6, s, color);
+        if(!line2.isEmpty())
+            flat(ms, buffer, net.minecraft.client.renderer.LightTexture.FULL_BRIGHT, font.plainSubstrByWidth(line2, chars), cx, top + 0.72, 8.5, s, color);
     }
 }

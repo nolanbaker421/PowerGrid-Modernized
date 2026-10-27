@@ -4,6 +4,23 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.72.0 — 2026-10-27
+
+### Added
+- Fire Annunciator: a gang device three gangs wide, for a 3-gang box or three gangs of a 4-gang.
+  Spliced onto the initiating loop it repeats the panel's three lights and two-line display, and
+  its two keys press the panel's Silence and Reset; clicking its display opens the panel's screen,
+  so zones can be worked from anywhere on the loop. It reads NO PANEL until a panel's survey has
+  reached it, and LINK LOST if the loop is cut.
+- Monitor Module: a gang device on the initiating loop with two sense points of its own. Splice
+  any dry contact across them, a flow switch, a tamper switch, a relay, a push button, and the
+  panel sees it as a device. A wrench sets it normally open, tripping when the contact closes, or
+  normally closed, tripping when it opens, as a supervised circuit should.
+- The panel's three dry contacts are Form C: each has a supervised NC terminal beside its COM and
+  NO, closed only while the panel is powered and the condition is clear, so a loss of power or a
+  broken wire reads the same as the condition at a PLC or a contactor. The NO terminals and the
+  jack keep their numbers, so existing panels keep their wiring.
+
 ## 0.71.0 — 2026-10-27
 
 ### Changed

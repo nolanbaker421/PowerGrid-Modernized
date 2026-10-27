@@ -33,4 +33,7 @@ public interface IFireDevice {
 
     /** The device's own terminals: the two points its leads land on. The panel's survey must reach one of them along the wiring. */
     int[] fireTerminals(int slot);
+
+    /** The panel whose loop reached this device, told at every survey; an annunciator mirrors it. Server side. */
+    default void setFirePanel(int slot, net.minecraft.core.BlockPos panel, long now) {}
 }

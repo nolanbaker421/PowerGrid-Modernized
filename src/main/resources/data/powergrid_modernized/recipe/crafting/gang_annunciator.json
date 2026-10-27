@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "c:nuggets/iron"
+    },
+    {
+      "tag": "c:nuggets/iron"
+    },
+    {
+      "item": "minecraft:redstone"
+    },
+    {
+      "tag": "c:dyes/red"
+    },
+    {
+      "tag": "c:glass_panes"
+    },
+    {
+      "tag": "c:nuggets/copper"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:gang_annunciator"
+  }
+}

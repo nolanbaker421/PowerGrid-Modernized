@@ -58,6 +58,8 @@ public class ModItems {
     private static Map<GangDevice, ItemEntry<GangDeviceItem>> gangDevices() {
         var map = new EnumMap<GangDevice, ItemEntry<GangDeviceItem>>(GangDevice.class);
         for(var device : GangDevice.values()) {
+            if(!device.isItem())
+                continue;
             map.put(device, REGISTRATE.item("gang_" + device.id(), props -> new GangDeviceItem(props, device))
                     .model(NonNullBiConsumer.noop())
                     .lang(device.label())

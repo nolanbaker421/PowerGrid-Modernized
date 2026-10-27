@@ -26,6 +26,10 @@ public class GangDeviceItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
         tooltip.add(Lang.builder().translate("gang.device.tooltip").style(ChatFormatting.GRAY).component());
+        if(device == GangDevice.ANNUNCIATOR)
+            tooltip.add(Lang.builder().translate("gang.device.annunciator_tip").style(ChatFormatting.GRAY).component());
+        if(device == GangDevice.MONITOR_MODULE)
+            tooltip.add(Lang.builder().translate("gang.device.monitor_tip").style(ChatFormatting.GRAY).component());
         if(device.points() > 0) {
             var names = Lang.builder();
             for(int k = 0; k < device.points(); ++k) {

@@ -41,8 +41,8 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
     private DeviceSpliceHost deviceHubs;
     private ElectricWire feed;
     private ProvidedVoltageSourceCoupling idc, nac;
-    /** The three dry contacts: Alarm, Trouble, Silenced. */
-    private org.patryk3211.powergrid.electricity.sim.SwitchedWire[] contacts;
+    /** The three dry contacts: Alarm, Trouble, Silenced; NO closes on the condition, NC is supervised: closed only while powered and clear. */
+    private org.patryk3211.powergrid.electricity.sim.SwitchedWire[] contacts, ncContacts;
     /** The network jack a controls cabinet reaches the panel through. */
     private final com.nolanbaker.pgmodernized.network.JackSupport jack = new com.nolanbaker.pgmodernized.network.JackSupport(this, false);
     /** A drill: alarm with no device, started by a PLC or a test, cleared by Reset. */
@@ -244,17 +244,22 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         nac.setVoltageProvider(() -> nacVolts);
         builder.add(nac);
         contacts = new org.patryk3211.powergrid.electricity.sim.SwitchedWire[CONTACT_COUNT];
+        ncContacts = new org.patryk3211.powergrid.electricity.sim.SwitchedWire[CONTACT_COUNT];
         boolean[] closed = {alarm, state == State.TROUBLE, silenced};
-        for(int c = 0; c < CONTACT_COUNT; ++c)
+        for(int c = 0; c < CONTACT_COUNT; ++c) {
             contacts[c] = builder.connectSwitch(resistance("contact"), builder.terminalNode(contactTerminal(c, false)), builder.terminalNode(contactTerminal(c, true)), closed[c]);
+            ncContacts[c] = builder.connectSwitch(resistance("contact"), builder.terminalNode(contactTerminal(c, false)), builder.terminalNode(contactNcTerminal(c)), powered && !closed[c]);
+        }
     }
 
     private void applyContacts() {
         if(contacts == null)
             return;
-        contacts[CONTACT_ALARM].setState(alarm);
-        contacts[CONTACT_TROUBLE].setState(state == State.TROUBLE);
-        contacts[CONTACT_SILENCED].setState(silenced);
+        boolean[] closed = {alarm, state == State.TROUBLE, silenced};
+        for(int c = 0; c < CONTACT_COUNT; ++c) {
+            contacts[c].setState(closed[c]);
+            ncContacts[c].setState(powered && !closed[c]);
+        }
     }
 
     @Override
@@ -389,6 +394,8 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
                         : v >= com.nolanbaker.pgmodernized.conduit.ConduitBoxBlockEntity.STROBE_VOLTS ? FireDevice.Status.STROBING : FireDevice.Status.NORMAL;
             }
             out.add(new FireDevice(pos, slot, holder.fireAddress(slot), kind, holder.fireLabel(slot), status, now));
+            if(kind == FireDeviceKind.ANNUNCIATOR && wired)
+                holder.setFirePanel(slot, worldPosition, now);
         }
     }
 

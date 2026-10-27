@@ -45,6 +45,19 @@ public class FireAlarmPanelRenderer extends SafeBlockEntityRenderer<FireAlarmPan
         ms.popPose();
     }
 
+    /** What the display reads: two lines and their colour. */
+    public record Display(String line1, String line2, int color) {}
+
+    /** The three lights' colours for the panel as it is now: power, alarm, trouble; dark where off. */
+    public static int[] lights(FireAlarmPanelBlockEntity be) {
+        boolean blink = be.getLevel() != null && (be.getLevel().getGameTime() / 10) % 2 == 0;
+        boolean powered = be.powered();
+        int power = powered ? GREEN : DARK;
+        int alarm = powered && be.state() == FireAlarmPanelBlockEntity.State.ALARM && (blink || be.silenced()) ? RED : DARK;
+        int trouble = powered && be.state() == FireAlarmPanelBlockEntity.State.TROUBLE && blink ? YELLOW : DARK;
+        return new int[] {power, alarm, trouble};
+    }
+
     /** The two-line display under the lights: the state, and the first device that matters, as a panel prints it. */
     private static void display(FireAlarmPanelBlockEntity be, PoseStack ms, MultiBufferSource buffer, boolean powered, double z) {
         if(!powered)
@@ -52,6 +65,13 @@ public class FireAlarmPanelRenderer extends SafeBlockEntityRenderer<FireAlarmPan
         float s = 1 / 192f;
         var font = net.minecraft.client.Minecraft.getInstance().font;
         int chars = (int) (7.5 / 16 / s);
+        var shown = lines(be);
+        DeviceDraw.text(ms, buffer, LightTexture.FULL_BRIGHT, font.plainSubstrByWidth(shown.line1(), chars), 8, 10.6, z - 0.05, s, shown.color(), false, 0.5);
+        DeviceDraw.text(ms, buffer, LightTexture.FULL_BRIGHT, font.plainSubstrByWidth(shown.line2(), chars), 8, 9.3, z - 0.05, s, shown.color(), false, 0.5);
+    }
+
+    /** The display's lines for the panel as it is now; an annunciator prints the same. */
+    public static Display lines(FireAlarmPanelBlockEntity be) {
         String line1, line2 = "";
         int color;
         switch(be.state()) {
@@ -75,8 +95,7 @@ public class FireAlarmPanelRenderer extends SafeBlockEntityRenderer<FireAlarmPan
                 color = 0x40E060;
             }
         }
-        DeviceDraw.text(ms, buffer, LightTexture.FULL_BRIGHT, font.plainSubstrByWidth(line1, chars), 8, 10.6, z - 0.05, s, color, false, 0.5);
-        DeviceDraw.text(ms, buffer, LightTexture.FULL_BRIGHT, font.plainSubstrByWidth(line2, chars), 8, 9.3, z - 0.05, s, color, false, 0.5);
+        return new Display(line1, line2, color);
     }
 
     private static void led(PoseStack ms, MultiBufferSource buffer, int light, double x, int rgb, double z) {
