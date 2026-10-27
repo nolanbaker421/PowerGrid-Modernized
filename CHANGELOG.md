@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.63.2 — 2026-10-26
+
+### Changed
+- The bender's diagonal mode is gone; there is one grab. Tap a leg to grab it at that point,
+  then tap a block face to move the leg there, or tap a point on another leg of the same run to
+  draw the tube straight between the two points. The overlay shows the grab point, the green
+  outline for a move, and a green line for a diagonal, whichever the crosshair is on.
+  Sneak-click takes a diagonal out where there is one and cuts the run where there is not.
+
 ## 0.63.1 — 2026-10-26
 
 ### Fixed

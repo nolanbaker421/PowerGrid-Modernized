@@ -16,8 +16,10 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 /**
  * With the bender in hand, the leg of the run under the crosshair gets a yellow outline, so it
- * is plain which leg a tap will grab. A grabbed leg keeps an orange outline, and while the
- * crosshair is on a block face a green outline shows where the next tap would put it.
+ * is plain which leg a tap will grab. A grabbed leg keeps an orange outline with a marker at the
+ * grab point; while the crosshair is on a block face a green outline shows where the next tap
+ * would put the leg, and on another leg of the same run a green line shows the diagonal it
+ * would make.
  */
 public final class BenderOverlay {
     private BenderOverlay() {}
@@ -36,14 +38,12 @@ public final class BenderOverlay {
             return;
         AABB held = null, ghost = null, hover = null;
         net.minecraft.world.phys.Vec3 mark = null, to = null;
-        boolean diagonal = ConduitBenderItem.mode(stack) == ConduitBenderItem.Mode.DIAGONAL;
         var grabbed = ConduitBenderItem.grabbed(level, stack);
         if(grabbed != null) {
             int leg = ConduitBenderItem.grabbedLeg(stack);
-            if(diagonal) {
-                mark = ConduitBenderItem.pointOnLeg(grabbed, leg, ConduitBenderItem.grabbedPx(stack));
-            } else if(leg < grabbed.boundingBoxes.size()) {
+            if(leg < grabbed.boundingBoxes.size()) {
                 held = grabbed.legBox(leg);
+                mark = ConduitBenderItem.pointOnLeg(grabbed, leg, ConduitBenderItem.grabbedPx(stack));
                 if(mc.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
                     var shift = ConduitBenderItem.targetShift(grabbed, leg, hit);
                     if(shift != null && !shift.equals(Vec3i.ZERO))
@@ -57,7 +57,7 @@ public final class BenderOverlay {
             var leg = run.segmentAt(eye, far);
             if(leg != null && leg.index() < run.boundingBoxes.size()) {
                 hover = run.legBox(leg.index());
-                if(mark != null && run == grabbed)
+                if(mark != null && run == grabbed && leg.index() != ConduitBenderItem.grabbedLeg(stack))
                     to = ConduitBenderItem.pointOnLeg(run, leg.index(), ConduitBenderItem.pxAlong(run, leg.index(), leg.point()));
             }
         }
