@@ -48,7 +48,7 @@ import java.util.List;
  * take, not the whole run. Bending or cutting a run drops its diagonals.
  */
 public class ConduitBenderItem extends Item {
-    private static final String GRAB_ID = "GrabId", GRAB_UUID = "GrabUuid", GRAB_LEG = "GrabLeg", GRAB_PX = "GrabPx", STANDOFF = "Standoff";
+    private static final String GRAB_ID = "GrabId", GRAB_UUID = "GrabUuid", GRAB_LEG = "GrabLeg", GRAB_PX = "GrabPx", STANDOFF = "Standoff", GRAB_DIAG = "GrabDiag";
     /** The furthest a moved leg can be held off the face it is put on, in pixels. */
     public static final int MAX_STANDOFF = 16;
     /** A cut this close to a corner, in pixels, is made at the corner. */
@@ -91,6 +91,19 @@ public class ConduitBenderItem extends Item {
         return Math.max(0, Math.min(MAX_STANDOFF, tag(stack).getInt(STANDOFF)));
     }
 
+    /** The diagonal grabbed, by its first leg, or -1 when the grab is a leg. */
+    public static int grabbedDiagonal(ItemStack stack) {
+        var tag = tag(stack);
+        return tag.contains(GRAB_DIAG) ? tag.getInt(GRAB_DIAG) : -1;
+    }
+
+    private static void grabDiagonal(ItemStack stack, ConduitRunEntity run, int leg, ConduitRunEntity.Diagonal d) {
+        grab(stack, run, leg, 0);
+        var tag = tag(stack);
+        tag.putInt(GRAB_DIAG, d.legA());
+        store(stack, tag);
+    }
+
     public static void setStandoff(ItemStack stack, int pixels) {
         var tag = tag(stack);
         tag.putInt(STANDOFF, Math.max(0, Math.min(MAX_STANDOFF, pixels)));
@@ -116,6 +129,7 @@ public class ConduitBenderItem extends Item {
         tag.putInt(GRAB_LEG, leg);
         tag.putInt(GRAB_PX, px);
         tag.remove(STANDOFF);
+        tag.remove(GRAB_DIAG);
         store(stack, tag);
     }
 
@@ -126,6 +140,7 @@ public class ConduitBenderItem extends Item {
         tag.remove(GRAB_LEG);
         tag.remove(GRAB_PX);
         tag.remove(STANDOFF);
+        tag.remove(GRAB_DIAG);
         store(stack, tag);
     }
 
@@ -142,6 +157,22 @@ public class ConduitBenderItem extends Item {
         if(leg == null)
             return fail(player, "message.conduit.bend_miss");
         var held = grabbed(run.level(), stack);
+        var over = run.diagonalOver(leg.index());
+        if(held == run && grabbedDiagonal(stack) >= 0) {
+            // A diagonal is grabbed: a tap on it lets go, a tap on a leg moves its nearer end there.
+            if(over != null && over.legA() == grabbedDiagonal(stack)) {
+                release(stack);
+                player.displayClientMessage(Lang.translate("message.conduit.bend_release").style(ChatFormatting.GRAY).component(), true);
+                return InteractionResult.SUCCESS;
+            }
+            if(over == null)
+                return moveDiagonalEnd(run, player, stack, leg);
+        }
+        if(over != null) {
+            grabDiagonal(stack, run, leg.index(), over);
+            player.displayClientMessage(Lang.translate("message.conduit.diag_grab").style(ChatFormatting.GRAY).component(), true);
+            return InteractionResult.SUCCESS;
+        }
         if(held == run && grabbedLeg(stack) == leg.index()) {
             release(stack);
             player.displayClientMessage(Lang.translate("message.conduit.bend_release").style(ChatFormatting.GRAY).component(), true);
@@ -151,6 +182,74 @@ public class ConduitBenderItem extends Item {
             return diagonalTap(run, player, stack, leg);
         grab(stack, run, leg.index(), pxAlong(run, leg.index(), leg.point()));
         player.displayClientMessage(Lang.builder().translate("message.conduit.bend_grab", leg.index() + 1).style(ChatFormatting.GRAY).component(), true);
+        return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * A diagonal's ends, tidied: an end at the very end of a leg is the start of the next, so each
+     * end has a bit of straight leg on its side, and the run's own ends keep a leg of their own.
+     * Null, with a message, when the two points make no diagonal.
+     */
+    @Nullable
+    private static ConduitRunEntity.Diagonal tidyDiagonal(ConduitRunEntity run, Player player, int a, int pa, int b, int pb, @Nullable ConduitRunEntity.Diagonal replacing) {
+        var segs = run.segments;
+        if(a > b || (a == b && pa > pb)) {
+            int swap = a; a = b; b = swap;
+            swap = pa; pa = pb; pb = swap;
+        }
+        if(pb == segs.get(b).gridLength && b + 1 < segs.size()) {
+            b += 1;
+            pb = 0;
+        }
+        if(pa == 0 && a > 0) {
+            a -= 1;
+            pa = segs.get(a).gridLength;
+        }
+        if(a == b || (b == a + 1 && pa == segs.get(a).gridLength && pb == 0)) {
+            fail(player, "message.conduit.diag_same");
+            return null;
+        }
+        if((a == 0 && pa == 0) || (b == segs.size() - 1 && pb == segs.get(b).gridLength)) {
+            fail(player, "message.conduit.diag_edge");
+            return null;
+        }
+        for(var d : run.diagonals()) {
+            if(d.equals(replacing))
+                continue;
+            boolean before = b < d.legA() || (b == d.legA() && pb <= d.pxA());
+            boolean after = a > d.legB() || (a == d.legB() && pa >= d.pxB());
+            if(!before && !after) {
+                fail(player, "message.conduit.diag_overlap");
+                return null;
+            }
+        }
+        return new ConduitRunEntity.Diagonal(a, pa, b, pb);
+    }
+
+    /** With a diagonal grabbed, a tap on a leg: the end nearer along the run moves to the tap. Server side. */
+    private static InteractionResult moveDiagonalEnd(ConduitRunEntity run, Player player, ItemStack stack, ConduitRunEntity.Hit hit) {
+        ConduitRunEntity.Diagonal held = null;
+        for(var d : run.diagonals())
+            if(d.legA() == grabbedDiagonal(stack))
+                held = d;
+        if(held == null) {
+            release(stack);
+            return fail(player, "message.conduit.diag_none");
+        }
+        int k = hit.index(), px = pxAlong(run, k, hit.point());
+        int at = run.runPixels(k, px);
+        boolean startEnd = Math.abs(at - run.runPixels(held.legA(), held.pxA())) <= Math.abs(at - run.runPixels(held.legB(), held.pxB()));
+        var moved = startEnd ? tidyDiagonal(run, player, k, px, held.legB(), held.pxB(), held) : tidyDiagonal(run, player, held.legA(), held.pxA(), k, px, held);
+        if(moved == null)
+            return InteractionResult.FAIL;
+        var list = new ArrayList<>(run.diagonals());
+        list.remove(held);
+        list.add(moved);
+        list.sort(java.util.Comparator.comparingInt(ConduitRunEntity.Diagonal::legA));
+        run.setDiagonals(list);
+        release(stack);
+        run.level().playSound(null, hit.point().x, hit.point().y, hit.point().z, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 0.5f, 1.4f);
+        player.displayClientMessage(Lang.translate("message.conduit.diag_moved").style(ChatFormatting.GRAY).component(), true);
         return InteractionResult.SUCCESS;
     }
 
@@ -180,21 +279,12 @@ public class ConduitBenderItem extends Item {
 
     /** The second tap, on another leg of the grabbed run: a diagonal from the grab point to this one. Server side. */
     private static InteractionResult diagonalTap(ConduitRunEntity run, Player player, ItemStack stack, ConduitRunEntity.Hit hit) {
-        int a = grabbedLeg(stack), pa = grabbedPx(stack), b = hit.index(), pb = pxAlong(run, hit.index(), hit.point());
-        if(a > b) {
-            int swap = a; a = b; b = swap;
-            swap = pa; pa = pb; pb = swap;
-        }
-        if(a == b || (b == a + 1 && pa == run.segments.get(a).gridLength && pb == 0))
-            return fail(player, "message.conduit.diag_same");
+        var made = tidyDiagonal(run, player, grabbedLeg(stack), grabbedPx(stack), hit.index(), pxAlong(run, hit.index(), hit.point()), null);
+        if(made == null)
+            return InteractionResult.FAIL;
+        int a = made.legA(), pa = made.pxA();
         var list = new ArrayList<>(run.diagonals());
-        for(var d : list) {
-            boolean before = b < d.legA() || (b == d.legA() && pb <= d.pxA());
-            boolean after = a > d.legB() || (a == d.legB() && pa >= d.pxB());
-            if(!before && !after)
-                return fail(player, "message.conduit.diag_overlap");
-        }
-        list.add(new ConduitRunEntity.Diagonal(a, pa, b, pb));
+        list.add(made);
         list.sort(java.util.Comparator.comparingInt(ConduitRunEntity.Diagonal::legA));
         run.setDiagonals(list);
         release(stack);

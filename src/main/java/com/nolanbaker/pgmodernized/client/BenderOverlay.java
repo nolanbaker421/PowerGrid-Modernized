@@ -37,9 +37,18 @@ public final class BenderOverlay {
         if(!(stack.getItem() instanceof ConduitBenderItem))
             return;
         AABB held = null, ghost = null, hover = null;
-        net.minecraft.world.phys.Vec3 mark = null, to = null;
+        net.minecraft.world.phys.Vec3 mark = null, mark2 = null, to = null;
         var grabbed = ConduitBenderItem.grabbed(level, stack);
-        if(grabbed != null) {
+        ConduitRunEntity.Diagonal heldDiag = null;
+        if(grabbed != null && ConduitBenderItem.grabbedDiagonal(stack) >= 0) {
+            for(var d : grabbed.diagonals())
+                if(d.legA() == ConduitBenderItem.grabbedDiagonal(stack))
+                    heldDiag = d;
+            if(heldDiag != null) {
+                mark = ConduitBenderItem.pointOnLeg(grabbed, heldDiag.legA(), heldDiag.pxA());
+                mark2 = ConduitBenderItem.pointOnLeg(grabbed, heldDiag.legB(), heldDiag.pxB());
+            }
+        } else if(grabbed != null) {
             int leg = ConduitBenderItem.grabbedLeg(stack);
             if(leg < grabbed.boundingBoxes.size()) {
                 held = grabbed.legBox(leg);
@@ -57,7 +66,15 @@ public final class BenderOverlay {
             var leg = run.segmentAt(eye, far);
             if(leg != null && leg.index() < run.boundingBoxes.size()) {
                 hover = run.legBox(leg.index());
-                if(mark != null && run == grabbed && leg.index() != ConduitBenderItem.grabbedLeg(stack))
+                if(heldDiag != null && run == grabbed && run.diagonalOver(leg.index()) == null) {
+                    int px = ConduitBenderItem.pxAlong(run, leg.index(), leg.point());
+                    int at = run.runPixels(leg.index(), px);
+                    boolean startEnd = Math.abs(at - run.runPixels(heldDiag.legA(), heldDiag.pxA())) <= Math.abs(at - run.runPixels(heldDiag.legB(), heldDiag.pxB()));
+                    var from = startEnd ? mark2 : mark;
+                    var end = ConduitBenderItem.pointOnLeg(run, leg.index(), px);
+                    to = end;
+                    mark = from;
+                } else if(mark != null && heldDiag == null && run == grabbed && leg.index() != ConduitBenderItem.grabbedLeg(stack))
                     to = ConduitBenderItem.pointOnLeg(run, leg.index(), ConduitBenderItem.pxAlong(run, leg.index(), leg.point()));
             }
         }
@@ -75,8 +92,10 @@ public final class BenderOverlay {
             LevelRenderer.renderLineBox(poseStack, lines, held, 1f, 0.55f, 0.1f, 1f);
         if(ghost != null)
             LevelRenderer.renderLineBox(poseStack, lines, ghost, 0.3f, 1f, 0.4f, 1f);
+        double m = 1.5 / 16;
+        if(mark2 != null)
+            LevelRenderer.renderLineBox(poseStack, lines, new AABB(mark2.x - m, mark2.y - m, mark2.z - m, mark2.x + m, mark2.y + m, mark2.z + m), 1f, 0.55f, 0.1f, 1f);
         if(mark != null) {
-            double m = 1.5 / 16;
             LevelRenderer.renderLineBox(poseStack, lines, new AABB(mark.x - m, mark.y - m, mark.z - m, mark.x + m, mark.y + m, mark.z + m), 1f, 0.55f, 0.1f, 1f);
             if(to != null)
                 line(poseStack, lines, mark, to, 0.3f, 1f, 0.4f);

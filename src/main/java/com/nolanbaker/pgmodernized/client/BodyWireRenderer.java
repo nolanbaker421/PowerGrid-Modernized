@@ -301,12 +301,31 @@ public class BodyWireRenderer extends BlockWireRenderer {
             if(length < 0.5 / 16)
                 continue;
             u = u.scale(1 / length);
-            double roomA = d.pxA() / 16.0 - Math.max(0, cutStart[a]);
-            double roomB = (segs.get(b).gridLength - d.pxB()) / 16.0 - Math.max(0, cutEnd[b]);
-            float r = (float) Math.min(wanted, Math.min(length / 2, Math.min(roomA, roomB)));
+            // The bend needs its setback, not its whole radius, of straight leg at each end; a bend
+            // at the leg's far end gives way to it, down to a sharp joint, as for an offset.
+            double roomA = d.pxA() / 16.0, roomB = (segs.get(b).gridLength - d.pxB()) / 16.0;
+            float r = (float) Math.min(wanted, length / 2);
+            double dA = TubeDraw.setback(r, alongA, u), dB = TubeDraw.setback(r, u, alongB);
+            if(dA > roomA && dA > 1e-9)
+                r = (float) Math.min(r, r * roomA / dA);
+            if(dB > roomB && dB > 1e-9)
+                r = (float) Math.min(r, r * roomB / dB);
             if(r < 1.5f / 16)
                 r = 0;
-            double dA = r > 0 ? TubeDraw.setback(r, alongA, u) : 0, dB = r > 0 ? TubeDraw.setback(r, u, alongB) : 0;
+            dA = r > 0 ? TubeDraw.setback(r, alongA, u) : 0;
+            dB = r > 0 ? TubeDraw.setback(r, u, alongB) : 0;
+            if(a > 0 && !inOffset[a] && cutStart[a] > roomA - dA + 1e-9) {
+                float give = (float) Math.max(0, roomA - dA);
+                radii[a - 1] = give >= 1.5f / 16 ? give : 0;
+                cutEnd[a - 1] = radii[a - 1] > 0 ? radii[a - 1] : -h;
+                cutStart[a] = cutEnd[a - 1];
+            }
+            if(b + 1 < n && !inOffset[b] && cutEnd[b] > roomB - dB + 1e-9) {
+                float give = (float) Math.max(0, roomB - dB);
+                radii[b] = give >= 1.5f / 16 ? give : 0;
+                cutEnd[b] = radii[b] > 0 ? radii[b] : -h;
+                cutStart[b + 1] = cutEnd[b];
+            }
             cutEnd[a] = (segs.get(a).gridLength - d.pxA()) / 16.0 + dA;
             cutStart[b] = d.pxB() / 16.0 + dB;
             diagDraw[a] = new DiagDraw(p, q, u, alongA, alongB, r, dA, dB);

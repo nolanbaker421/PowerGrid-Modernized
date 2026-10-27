@@ -4,6 +4,21 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.64.0 — 2026-10-26
+
+### Added
+- A diagonal can be grabbed and reshaped: tap it with the bender and both ends get markers; tap a
+  point on a leg and the end nearer along the run moves there, with a green line showing it
+  first. Tap the diagonal again to let go.
+- A diagonal can be hit where it is drawn: the hidden legs' hitboxes follow the tube, so
+  sneak-clicking the diagonal takes it out and tapping it grabs it.
+
+### Fixed
+- Sharp knuckles at a diagonal's ends near a corner or a strut crossing. The bend is sized by
+  its setback, not its radius, and a bend at the neighbouring corner gives way to it, down to a
+  joint, as it does for an offset. An end set at the very end of a leg is taken as the start of
+  the next, so each end has straight leg on its side.
+
 ## 0.63.4 — 2026-10-26
 
 ### Fixed

@@ -94,6 +94,60 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         var tag = new CompoundTag();
         tag.putIntArray("D", array);
         getEntityData().set(DIAGONALS, tag);
+        bakeBoundingBoxes();
+    }
+
+    /** The diagonal that stands in for leg {@code leg}, drawn away from it; null for a leg drawn where it is. */
+    @Nullable
+    public Diagonal diagonalOver(int leg) {
+        for(var d : diagonals())
+            if(d.legA() < leg && leg < d.legB())
+                return d;
+        return null;
+    }
+
+    /** Pixels along the run from its start to {@code px} pixels along leg {@code leg}. */
+    public int runPixels(int leg, int px) {
+        int total = px;
+        for(int k = 0; k < leg && k < segments.size(); ++k)
+            total += segments.get(k).gridLength;
+        return total;
+    }
+
+    @Override
+    public void onSyncedDataUpdated(net.minecraft.network.syncher.EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if(DIAGONALS.equals(key) && !segments.isEmpty())
+            bakeBoundingBoxes();
+    }
+
+    /**
+     * Along a diagonal the tube is drawn away from the legs it stands in for: those legs' boxes
+     * become the diagonal's envelope, so the tube can be hit where it is seen. The boxes are kept
+     * relative to the run, as Power Grid keeps them.
+     */
+    @Override
+    public void bakeBoundingBoxes() {
+        super.bakeBoundingBoxes();
+        var diagonals = diagonals();
+        if(diagonals.isEmpty() || boundingBoxes.size() < segments.size())
+            return;
+        var starts = new Vec3[segments.size() + 1];
+        starts[0] = Vec3.ZERO;
+        for(int i = 0; i < segments.size(); ++i)
+            starts[i + 1] = starts[i].add(segments.get(i).vector());
+        double h = size().tubeThickness() / 2 + 1 / 32.0;
+        for(var d : diagonals) {
+            if(d.legA() < 0 || d.legB() >= segments.size() || d.legA() >= d.legB())
+                continue;
+            var p = starts[d.legA()].add(Vec3.atLowerCornerOf(segments.get(d.legA()).direction.getNormal()).scale(d.pxA() / 16.0));
+            var q = starts[d.legB()].add(Vec3.atLowerCornerOf(segments.get(d.legB()).direction.getNormal()).scale(d.pxB() / 16.0));
+            var envelope = new AABB(p, q).inflate(h);
+            for(int k = d.legA() + 1; k < d.legB(); ++k)
+                boundingBoxes.set(k, envelope);
+            if(d.legB() == d.legA() + 1)
+                boundingBoxes.set(d.legA(), boundingBoxes.get(d.legA()).minmax(envelope));
+        }
     }
     public ConduitRunEntity(EntityType<?> type, Level level) {
         super(type, level);
