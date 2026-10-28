@@ -148,6 +148,8 @@ So a two-wire pull is a black hot and a white neutral, and a three-phase pull wi
 white, red, blue. If a run needs another neutral, or you keep your own colour code, **right-click a
 wire's pin in the splice editor** to step it through the twelve colours; the colour follows the wire
 everywhere it is named. A run itself takes dye like any Power Grid wire, so conduit can be painted.
+No dye is the bare galvanized grey, so to strip the paint, **right-click the run with sand**: it
+sandblasts the run back to bare steel and uses one sand.
 
 Hardware lugs wear the same code, so a wire lands on a lug of its own colour: **L1 black, L2 red,
 L3 blue, neutral white, ground green** on panels, switchgear, disconnects, cam-lock boxes, rail

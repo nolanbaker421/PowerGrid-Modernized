@@ -101,6 +101,8 @@
   "powergrid.message.conduit.strut_no_flex": "Flex conduit is not clipped to strut",
   "powergrid.message.connection_different_bodies": "Both ends must be on the same structure or physics body",
   "powergrid.message.conduit.no_tee": "Conduit cannot tee, continue from a free end or use a conduit box",
+  "powergrid.message.conduit.bare": "This conduit is bare galvanized steel already",
+  "powergrid.message.conduit.sandblasted": "Sandblasted back to galvanized steel",
   "powergrid.message.conduit.flex_hubs": "Flexible conduit hangs from one knockout straight to another",
   "powergrid.breaker_panel.line": "Line",
   "powergrid.breaker_panel.neutral": "Neutral",

@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.73.1 — 2026-10-27
+
+### Added
+- Sandblasting: right-click a painted conduit run with sand (any sand, red sand too) to strip the
+  dye back to bare galvanized grey. Dye comes from Power Grid's wire interaction and no dye colour
+  is the mod's grey, so a painted run had no way back. Uses one sand outside creative.
+
 ## 0.73.0 — 2026-10-27
 
 ### Added

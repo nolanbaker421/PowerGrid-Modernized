@@ -14,6 +14,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -718,7 +721,26 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
             return client ? InteractionResult.SUCCESS : pull(player, stack);
         if(stack.isEmpty() || stack.getItem() instanceof MultimeterItem)
             return client ? InteractionResult.SUCCESS : inspect(player);
+        if(stack.is(ItemTags.SAND))
+            return client ? InteractionResult.SUCCESS : sandblast(player, stack);
         return super.interact(player, hand);
+    }
+
+    /**
+     * Sand on a painted run blasts the paint off, back to galvanized grey. Dye goes on through
+     * Power Grid's own interaction, and no dye is the mod's grey, so this is the only way back.
+     * One sand per run outside creative. Server side.
+     */
+    private InteractionResult sandblast(Player player, ItemStack sand) {
+        if((getColor() & 0xFFFFFF) == DEFAULT_COLOR)
+            return fail(player, "message.conduit.bare");
+        setColor(DEFAULT_COLOR);
+        sendExtraData();
+        if(!player.getAbilities().instabuild)
+            sand.shrink(1);
+        level().playSound(null, blockPosition(), SoundEvents.SAND_BREAK, SoundSource.BLOCKS, 1.0f, 0.8f);
+        player.displayClientMessage(Lang.translate("message.conduit.sandblasted").style(ChatFormatting.GRAY).component(), true);
+        return InteractionResult.SUCCESS;
     }
 
     @Override
