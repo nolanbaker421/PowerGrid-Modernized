@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "P": {
+      "item": "create:propeller"
+    },
+    "C": {
+      "tag": "c:ingots/copper"
+    },
+    "F": {
+      "item": "powergrid:wire"
+    }
+  },
+  "pattern": [
+    "IPI",
+    "CFC",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:condenser"
+  }
+}

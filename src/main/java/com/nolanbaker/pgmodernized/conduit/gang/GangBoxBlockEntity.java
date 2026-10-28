@@ -65,6 +65,12 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     /** A monitor module's sense source across its contact points, and whether its contact is normally closed. */
     private org.patryk3211.powergrid.electricity.sim.node.ProvidedVoltageSourceCoupling[] sense;
     private boolean[] monitorNc;
+    /** A thermostat's mode, setpoint in Fahrenheit, calls (bit 0 cool, bit 1 heat, bit 2 fan) and the room it last read, tenths of a degree. */
+    private int[] thermoMode, thermoSet, thermoCall, thermoTemp;
+    private int thermoTimer;
+    public static final int MODE_OFF = 0, MODE_COOL = 1, MODE_HEAT = 2, MODE_AUTO = 3;
+    public static final int SET_DEFAULT_F = 72, SET_MIN_F = 50, SET_MAX_F = 90;
+    public static final float HYSTERESIS_F = 1.5f;
     /** An annunciator's panel: where it is, and when its survey last reached this box. */
     private BlockPos[] panelPos;
     private long[] panelSeen;
@@ -96,6 +102,12 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             java.util.Arrays.fill(fireLabels, "");
             sense = new org.patryk3211.powergrid.electricity.sim.node.ProvidedVoltageSourceCoupling[GangLayout.MAX_GANGS];
             monitorNc = new boolean[GangLayout.MAX_GANGS];
+            thermoMode = new int[GangLayout.MAX_GANGS];
+            thermoSet = new int[GangLayout.MAX_GANGS];
+            thermoCall = new int[GangLayout.MAX_GANGS];
+            thermoTemp = new int[GangLayout.MAX_GANGS];
+            java.util.Arrays.fill(thermoMode, MODE_AUTO);
+            java.util.Arrays.fill(thermoSet, SET_DEFAULT_F);
             panelPos = new BlockPos[GangLayout.MAX_GANGS];
             panelSeen = new long[GangLayout.MAX_GANGS];
         }
@@ -148,6 +160,100 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                 sendData();
             }
         }
+    }
+
+    // ---- thermostats ----
+
+    private void thermostatTick() {
+        if(++thermoTimer < 20)
+            return;
+        thermoTimer = 0;
+        boolean changed = false;
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
+            if(devices[slot] == GangDevice.THERMOSTAT && thermostatUpdate(slot))
+                changed = true;
+        if(changed) {
+            setChanged();
+            sendData();
+        }
+    }
+
+    /**
+     * Reads the room, the nearest air handler's or the biome's, decides the calls with a degree
+     * and a half of hysteresis either side of the setpoint, and sets the contacts. True when
+     * anything the box shows changed. Server side.
+     */
+    private boolean thermostatUpdate(int slot) {
+        var handler = com.nolanbaker.pgmodernized.device.hvac.AirHandlerBlockEntity.nearest(level, worldPosition);
+        float temp = handler != null ? handler.roomF() : com.nolanbaker.pgmodernized.device.hvac.Climate.outdoorF(level, worldPosition);
+        int mode = thermoMode[slot], set = thermoSet[slot], call = thermoCall[slot];
+        boolean cool = (call & 1) != 0, heat = (call & 2) != 0;
+        if(mode == MODE_COOL || mode == MODE_AUTO) {
+            if(temp >= set + HYSTERESIS_F)
+                cool = true;
+            else if(temp <= set - HYSTERESIS_F)
+                cool = false;
+        } else
+            cool = false;
+        if(mode == MODE_HEAT || mode == MODE_AUTO) {
+            if(temp <= set - HYSTERESIS_F)
+                heat = true;
+            else if(temp >= set + HYSTERESIS_F)
+                heat = false;
+        } else
+            heat = false;
+        if(cool)
+            heat = false;
+        int now = (cool ? 1 : 0) | (heat ? 2 : 0) | (cool || heat ? 4 : 0);
+        int shown = Math.round(temp * 10);
+        boolean changed = now != call || shown != thermoTemp[slot];
+        thermoCall[slot] = now;
+        thermoTemp[slot] = shown;
+        if(now != call)
+            applyContacts(slot);
+        return changed;
+    }
+
+    public int thermoMode(int slot) {
+        ensureArrays();
+        return slot >= 0 && slot < GangLayout.MAX_GANGS ? thermoMode[slot] : MODE_OFF;
+    }
+
+    public int thermoSet(int slot) {
+        ensureArrays();
+        return slot >= 0 && slot < GangLayout.MAX_GANGS ? thermoSet[slot] : SET_DEFAULT_F;
+    }
+
+    public int thermoCall(int slot) {
+        ensureArrays();
+        return slot >= 0 && slot < GangLayout.MAX_GANGS ? thermoCall[slot] : 0;
+    }
+
+    /** The room as the thermostat last read it, tenths of a degree Fahrenheit. */
+    public int thermoTemp(int slot) {
+        ensureArrays();
+        return slot >= 0 && slot < GangLayout.MAX_GANGS ? thermoTemp[slot] : 0;
+    }
+
+    public static String modeKey(int mode) {
+        return switch(mode) {
+            case MODE_COOL -> "gang.tstat.cool";
+            case MODE_HEAT -> "gang.tstat.heat";
+            case MODE_AUTO -> "gang.tstat.auto";
+            default -> "gang.tstat.off";
+        };
+    }
+
+    /** Server side: the wrench moves the setpoint, two degrees a click. */
+    public void adjustSetpoint(int slot, int delta, Player player) {
+        ensureArrays();
+        if(level == null || level.isClientSide || device(slot) != GangDevice.THERMOSTAT)
+            return;
+        thermoSet[slot] = Math.max(SET_MIN_F, Math.min(SET_MAX_F, thermoSet[slot] + delta));
+        thermostatUpdate(slot);
+        player.displayClientMessage(Lang.builder().translate("message.gang.thermostat_set", thermoSet[slot]).style(ChatFormatting.GRAY).component(), true);
+        setChanged();
+        sendData();
     }
 
     // ---- annunciators ----
@@ -447,6 +553,10 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                     sense[slot] = source;
                 }
                 case ANNUNCIATOR -> builder.connect(resistance("supervisory"), builder.terminalNode(p[0]), builder.terminalNode(p[1]));
+                case THERMOSTAT -> contacts[slot] = new SwitchedWire[] {
+                        builder.connectSwitch(r, builder.terminalNode(p[0]), builder.terminalNode(p[1]), (thermoCall[slot] & 1) != 0),
+                        builder.connectSwitch(r, builder.terminalNode(p[0]), builder.terminalNode(p[2]), (thermoCall[slot] & 2) != 0),
+                        builder.connectSwitch(r, builder.terminalNode(p[0]), builder.terminalNode(p[3]), (thermoCall[slot] & 4) != 0)};
                 case SPAN -> {}
                 case RECEPTACLE -> {
                     if(!cordWired) {
@@ -478,6 +588,11 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                 wires[1].setState(!state);
                 wires[2].setState(state);
                 wires[3].setState(state);
+            }
+            case THERMOSTAT -> {
+                wires[0].setState((thermoCall[slot] & 1) != 0);
+                wires[1].setState((thermoCall[slot] & 2) != 0);
+                wires[2].setState((thermoCall[slot] & 4) != 0);
             }
             default -> {}
         }
@@ -547,6 +662,10 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             fireAddresses[slot + i] = 0;
             fireLabels[slot + i] = "";
             monitorNc[slot + i] = false;
+            thermoMode[slot + i] = MODE_AUTO;
+            thermoSet[slot + i] = SET_DEFAULT_F;
+            thermoCall[slot + i] = 0;
+            thermoTemp[slot + i] = 0;
             panelPos[slot + i] = null;
         }
         if(!player.isCreative())
@@ -723,6 +842,16 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         var device = device(slot);
         if(device == null || !device.toggles() || level == null || level.isClientSide)
             return;
+        if(device == GangDevice.THERMOSTAT) {
+            // A click steps the mode: off, cool, heat, auto.
+            thermoMode[slot] = (thermoMode[slot] + 1) % 4;
+            thermostatUpdate(slot);
+            player.displayClientMessage(Lang.builder().translate("message.gang.thermostat_mode", Lang.builder().translate(modeKey(thermoMode[slot])).component()).style(ChatFormatting.GRAY).component(), true);
+            level.playSound(null, worldPosition, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.3f, 1.4f);
+            setChanged();
+            sendData();
+            return;
+        }
         if(device.momentary()) {
             hold[slot] = HOLD_TICKS;
             if(on[slot])
@@ -753,6 +882,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         }
         hornTick();
         monitorTick();
+        thermostatTick();
     }
 
     @Override
@@ -878,6 +1008,10 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             panels[slot] = panelPos[slot] == null ? Long.MIN_VALUE : panelPos[slot].asLong();
         }
         tag.putInt("MonitorNc", nc);
+        tag.putIntArray("ThermoMode", thermoMode.clone());
+        tag.putIntArray("ThermoSet", thermoSet.clone());
+        tag.putIntArray("ThermoCall", thermoCall.clone());
+        tag.putIntArray("ThermoTemp", thermoTemp.clone());
         tag.putLongArray("Panels", panels);
         tag.putLongArray("PanelSeen", panelSeen.clone());
     }
@@ -930,6 +1064,18 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
             fireLabels[slot] = slot < labels.size() ? labels.getString(slot) : "";
         int nc = tag.getInt("MonitorNc");
+        if(tag.contains("ThermoMode")) {
+            var modes = tag.getIntArray("ThermoMode");
+            var sets = tag.getIntArray("ThermoSet");
+            var calls = tag.getIntArray("ThermoCall");
+            var temps = tag.getIntArray("ThermoTemp");
+            for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
+                thermoMode[slot] = slot < modes.length ? modes[slot] : MODE_AUTO;
+                thermoSet[slot] = slot < sets.length ? sets[slot] : SET_DEFAULT_F;
+                thermoCall[slot] = slot < calls.length ? calls[slot] : 0;
+                thermoTemp[slot] = slot < temps.length ? temps[slot] : 0;
+            }
+        }
         var panels = tag.getLongArray("Panels");
         var seen = tag.getLongArray("PanelSeen");
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
@@ -966,6 +1112,13 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                 line.add(Lang.builder().text(device.label()).style(ChatFormatting.WHITE));
                 if(device == GangDevice.MONITOR_MODULE)
                     line.text(" ").add(Lang.builder().translate(monitorNc[slot] ? "gang.monitor_nc" : "gang.monitor_no").style(ChatFormatting.GRAY));
+                if(device == GangDevice.THERMOSTAT) {
+                    int call = thermoCall[slot];
+                    String calling = (call & 1) != 0 ? "gang.tstat.calling_cool" : (call & 2) != 0 ? "gang.tstat.calling_heat" : "gang.tstat.satisfied";
+                    line.text(" ").add(Lang.builder().translate(modeKey(thermoMode[slot])).style(ChatFormatting.GRAY))
+                            .text(" ").add(Lang.builder().translate("gang.tstat.state", thermoSet[slot], String.format("%.1f", thermoTemp[slot] / 10f)).style(ChatFormatting.GRAY))
+                            .text(" ").add(Lang.builder().translate(calling).style((call & 3) != 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY));
+                }
                 if(device == GangDevice.ANNUNCIATOR)
                     line.text(" ").add(Lang.builder().translate(annunciatorLinked(slot) ? "gang.linked" : "gang.unlinked").style(annunciatorLinked(slot) ? ChatFormatting.GREEN : ChatFormatting.RED));
                 if(device.toggles() || device.initiating())

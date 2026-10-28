@@ -56,6 +56,10 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         resistance("ceiling_tile_conduit_box", "lamp", 240, "supervisory", 20000, "detector", 1000, "horn", 80);
         // The fire alarm panel: a twenty-watt load on its feed, and the source resistance of each loop.
         resistance("fire_alarm_panel", "feed", 720, "loop", 1, "contact", 0.001);
+        // Air conditioning. Condenser: a 15 A compressor and a 1 A fan at 240 V, and the contactor coil on 24 V.
+        // Air handler: a 3 A blower, a 5 kW heat strip, the relay coils the calls pull, and the control transformer's source resistance.
+        resistance("condenser", "compressor", 16, "fan", 240, "coil", 100);
+        resistance("air_handler", "blower", 80, "heat", 11.5, "coil", 100, "transformer", 1);
         // Bus duct plug-in: one contact per pole and the neutral through-path.
         resistance("bus_duct_plug_in", "contact", 0.0005);
         resistance("bus_duct_plug_in_breaker", "contact", 0.0005);

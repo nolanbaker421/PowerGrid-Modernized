@@ -405,6 +405,10 @@ public final class ConduitPlacement {
             message(player, "message.trough.no_knockout", ChatFormatting.RED);
             return false;
         }
+        if(!host.hubTakes(index, stack)) {
+            message(player, com.nolanbaker.pgmodernized.device.hvac.LineSetItem.isLine(stack) ? "message.hvac.line_on_knockout" : "message.hvac.conduit_on_port", ChatFormatting.RED);
+            return false;
+        }
         var size = ConduitItem.sizeOf(stack);
         if(size != null && size.ordinal() > max.ordinal()) {
             if(player != null)

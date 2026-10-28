@@ -371,6 +371,14 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
             IElectric.sendMessage(context, Lang.translate("message.lock.box_locked").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
         }
+        var level = context.getLevel();
+        var pos = context.getClickedPos();
+        int slot = slotAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        if(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && slot >= 0 && be.device(slot) == GangDevice.THERMOSTAT) {
+            if(!level.isClientSide && context.getPlayer() != null)
+                be.adjustSetpoint(slot, -2, context.getPlayer());
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         return super.onSneakWrenched(state, context);
     }
 
@@ -391,6 +399,12 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
             return InteractionResult.FAIL;
         }
         int slot = slotAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        if(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && slot >= 0 && be.device(slot) == GangDevice.THERMOSTAT) {
+            // The wrench turns the setpoint up; sneaking with it turns it down.
+            if(!level.isClientSide && context.getPlayer() != null)
+                be.adjustSetpoint(slot, 2, context.getPlayer());
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && slot >= 0 && be.device(slot) == GangDevice.MONITOR_MODULE) {
             if(!level.isClientSide && context.getPlayer() != null)
                 be.toggleMonitorMode(slot, context.getPlayer());

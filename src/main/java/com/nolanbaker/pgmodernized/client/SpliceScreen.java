@@ -188,7 +188,7 @@ public class SpliceScreen extends Screen {
         var left = new ArrayList<Integer>();
         var right = new ArrayList<Integer>();
         for(int h = 0; h < host.hubCount(); ++h) {
-            if(host.hubRun(h) != null)
+            if(host.hubRun(h) != null && host.hubShown(h))
                 (side(host, h) == Side.LEFT ? left : right).add(h);
         }
         var points = new HashMap<Integer, SplicePoint>();

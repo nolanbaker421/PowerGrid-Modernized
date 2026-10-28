@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/copper"
+    }
+  },
+  "pattern": [
+    "NNN"
+  ],
+  "result": {
+    "count": 4,
+    "id": "powergrid_modernized:line_set_liquid"
+  }
+}

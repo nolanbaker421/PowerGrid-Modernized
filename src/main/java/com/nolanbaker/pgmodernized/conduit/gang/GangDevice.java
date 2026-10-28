@@ -16,6 +16,8 @@ public enum GangDevice {
     FOUR_WAY("switch_4way", "4-Way Switch", "in_a", "in_b", "out_a", "out_b"),
     BUTTON("button", "Push Button", "line", "load"),
     RECEPTACLE("receptacle", "Duplex Receptacle", "line", "neutral"),
+    /** On an air handler's 24 V: closes R to Y for cooling, R to W for heat, R to G for the fan, reading the room the nearest air handler keeps. */
+    THERMOSTAT("thermostat", "Thermostat", "tstat_r", "tstat_y", "tstat_w", "tstat_g"),
     /** On the fire alarm panel's initiating loop: pulled by hand, reset with a wrench. */
     PULL_STATION("pull_station", "Pull Station", "loop_plus", "loop_minus"),
     /** On the fire alarm panel's notification loop: sounds and flashes from sixteen volts, flashes from eight. */
@@ -72,6 +74,13 @@ public enum GangDevice {
             return com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlock.LOOP_MINUS_RGB;
         if(key.startsWith("contact_"))
             return YELLOW;
+        switch(key) {
+            case "tstat_r": return 0xC62828;
+            case "tstat_y": return 0xE0C020;
+            case "tstat_w": return WHITE;
+            case "tstat_g": return 0x2E8B3A;
+            default: break;
+        }
         return switch(k) {
             case 0 -> ConductorColors.hotRgb(0);
             case 1 -> ConductorColors.hotRgb(1);
@@ -92,7 +101,7 @@ public enum GangDevice {
 
     /** A click flips it. */
     public boolean toggles() {
-        return this == SWITCH || this == THREE_WAY || this == FOUR_WAY || this == BUTTON;
+        return this == SWITCH || this == THREE_WAY || this == FOUR_WAY || this == BUTTON || this == THERMOSTAT;
     }
 
     /** Closed only while pressed. */

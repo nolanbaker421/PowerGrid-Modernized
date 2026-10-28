@@ -738,6 +738,45 @@ again within five seconds and the seal comes off into your hand. From then until
 on, goggles show that number and who broke it, so a utility reading its meters can see which
 cabinets were opened. Goggles on a sealed cabinet show the number and who fitted it.
 
+### Air conditioning
+
+A split system, the way a house has one: a **Condenser** outdoors, an **Air Handler** indoors, a
+**Thermostat** on the wall, and two refrigerant lines between the units. The condenser is the
+biggest load in the building, which is the point: it is what sizes the service, trips a breaker
+chosen too close, and shows up on the CT cabinet.
+
+**The units.** Both stand on the floor, their fronts to you when placed (sneak to turn them
+round). Each has knockouts on its right side for conduit and two **line ports** on its left: a
+small copper one for the **Liquid Line (3/8")** and a bigger black one for the **Suction Line
+(3/4")**. The lines are laid exactly like conduit, from a port, along blocks and strut, to the
+same port on the other unit, and the bender shapes them; they are tubes of refrigerant, so no wire
+goes through them and no knockout takes them. Nothing cools until both lines reach the other unit.
+
+**Wiring.** The condenser's points are **L1** and **L2**, its 240 V feed, and **Y** and **C**, the
+24 V call that pulls its contactor in. The air handler's are **L1** and **L2** and the thermostat
+terminals **R**, **C**, **Y**, **W** and **G**. Feed each unit from a 2-pole breaker, the condenser
+through a disconnect if you like. Run four wires from the thermostat's gang box to the air
+handler and splice them R to R, Y to Y, W to W, G to G. Run two wires from the air handler to the
+condenser and splice Y to Y and C to C: a point takes more than one splice, so the thermostat's
+Y and the condenser's Y both land on the air handler's Y.
+
+**The thermostat** is a gang device like a switch. Click it to step the mode, off, cool, heat,
+auto; a wrench turns the setpoint up two degrees and a sneaking wrench turns it down. It reads
+the room the nearest air handler within twelve blocks keeps, or the biome's air if there is none,
+and closes R to Y when the room is a degree and a half over the setpoint in cool or auto, R to W
+when it is that far under in heat or auto, and R to G with either. Its display shows the room,
+the mode and the setpoint, with a blue lamp while calling for cooling and an orange one for heat.
+
+**What happens.** The air handler's transformer puts 24 V on R and C once it has power. A call on
+Y runs the blower and, through the two wires to the condenser, the compressor, which starts at
+five times its running current for half a second, then draws fifteen amps. A call on W runs the
+blower and a five-kilowatt heat strip; G alone runs the blower. The compressor runs at least ten
+seconds and rests at least ten, as an anti-short-cycle timer would have it. The room starts at
+the biome's temperature, from the thirties in snow through seventy in plains to the hundred and
+twenties in a desert, is pulled down while cooling and up while heating, and drifts back
+outdoors between cycles, so the system cycles. The editor on either unit shows its state, the
+room and the outdoor temperature, and whether its lines are laid; goggles show the same.
+
 ### Three-Phase Motor (AC build)
 
 A Create generator like Power Grid's electric motor, with three terminals U, V, W on the terminal
@@ -1220,6 +1259,11 @@ adapter placed next to them:
 | Padlock | shapeless: an iron ingot and two iron nuggets |
 | Utility Lock | shapeless: an iron ingot, an iron nugget and a copper nugget |
 | Key (2) | three iron nuggets in a column |
+| Condenser | iron plates round a propeller, copper ingots and wire |
+| Air Handler | iron plates round a propeller, copper ingots and iron bars |
+| Liquid Line (4) | three copper nuggets in a row |
+| Suction Line (4) | three copper nuggets over three black wool |
+| Thermostat | shapeless: an iron nugget, a comparator and a paper |
 | Node Cover Plate | a blank cover plate and pins, shapeless |
 | Pull Box | ring of eight iron plates |
 | Conduit Switch (2) | iron nugget, lever, iron nugget over an iron nugget |

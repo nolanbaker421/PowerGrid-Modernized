@@ -62,4 +62,14 @@ public interface ISpliceHost {
     default boolean spliceLocked(int terminal) {
         return false;
     }
+
+    /** Whether that hub takes what is in the hand: conduit on a knockout, a refrigerant line of the right kind on a line port. */
+    default boolean hubTakes(int hub, net.minecraft.world.item.ItemStack stack) {
+        return !com.nolanbaker.pgmodernized.device.hvac.LineSetItem.isLine(stack);
+    }
+
+    /** Whether the splice editor shows that hub: a refrigerant port carries no wire and stays out of it. */
+    default boolean hubShown(int hub) {
+        return true;
+    }
 }

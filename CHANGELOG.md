@@ -4,6 +4,22 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.79.0 — 2026-10-27
+
+### Added
+- Air conditioning: a split system of a **Condenser** outdoors, an **Air Handler** indoors and a
+  **Thermostat** gang device. The condenser takes L1, L2 and a 24 V call on Y and C; the air
+  handler takes L1, L2 and R, C, Y, W, G; the thermostat closes R to Y, W or G against the room.
+  The compressor draws fifteen amps at 240 V after a half-second start at five times that, the
+  blower three, the heat strip twenty-one, and an anti-short-cycle timer keeps the compressor on
+  and off ten seconds at a time.
+- Refrigerant lines, the **Liquid Line (3/8")** and the **Suction Line (3/4")**, laid like conduit
+  on the same tracer, strut and bender, between the units' line ports. They carry no wire and no
+  knockout takes them; a port takes only its own line.
+- A room: each air handler keeps a temperature that starts at the biome's, is pulled down while
+  the compressor cools and up while the strip heats, and drifts back outdoors between, so the
+  system cycles. Thermostats read the nearest air handler within twelve blocks, or the biome.
+
 ## 0.78.0 — 2026-10-27
 
 ### Changed

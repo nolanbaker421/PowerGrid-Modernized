@@ -309,6 +309,28 @@ public class ModBlocks {
                 .build()
             .register();
 
+    /** Split-system air conditioning: the outdoor condenser and the indoor air handler, joined by refrigerant lines laid like conduit. */
+    public static final BlockEntry<com.nolanbaker.pgmodernized.device.hvac.CondenserBlock> CONDENSER = REGISTRATE.block("condenser", com.nolanbaker.pgmodernized.device.hvac.CondenserBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Condenser")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    public static final BlockEntry<com.nolanbaker.pgmodernized.device.hvac.AirHandlerBlock> AIR_HANDLER = REGISTRATE.block("air_handler", com.nolanbaker.pgmodernized.device.hvac.AirHandlerBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Air Handler")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
     /** The invisible cells of a transformer beyond its base block. */
     public static final BlockEntry<TransformerFillerBlock> TRANSFORMER_FILLER = REGISTRATE.block("transformer_filler", TransformerFillerBlock::new)
             .blockstate(NonNullBiConsumer.noop())

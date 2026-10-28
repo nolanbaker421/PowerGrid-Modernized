@@ -188,6 +188,16 @@ public class ModBlockEntities {
                     .renderer(() -> com.nolanbaker.pgmodernized.client.CtCabinetLockRenderer::new)
                     .register();
 
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.device.hvac.CondenserBlockEntity> CONDENSER =
+            REGISTRATE.blockEntity("condenser", com.nolanbaker.pgmodernized.device.hvac.CondenserBlockEntity::new)
+                    .validBlock(ModBlocks.CONDENSER)
+                    .renderer(() -> com.nolanbaker.pgmodernized.client.CondenserRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.device.hvac.AirHandlerBlockEntity> AIR_HANDLER =
+            REGISTRATE.blockEntity("air_handler", com.nolanbaker.pgmodernized.device.hvac.AirHandlerBlockEntity::new)
+                    .validBlock(ModBlocks.AIR_HANDLER)
+                    .register();
+
     @SuppressWarnings("unchecked")
     public static final BlockEntityEntry<TransformerBlockEntity> TRANSFORMER =
             REGISTRATE.blockEntity("transformer", ComputerBlockEntityFactories.transformer())

@@ -290,6 +290,8 @@ public class ModItems {
     public static final Map<ConduitSize, ItemEntry<ConduitItem>> CONDUIT;
     /** 1" flexible conduit: a whip from one knockout straight to another, on any two bodies. */
     public static final ItemEntry<FlexConduitItem> CONDUIT_FLEX_ONE;
+    /** The two refrigerant lines of a split system, laid like conduit between a condenser and an air handler. */
+    public static final Map<com.nolanbaker.pgmodernized.device.hvac.LineKind, ItemEntry<com.nolanbaker.pgmodernized.device.hvac.LineSetItem>> LINE_SET;
     /** What clips onto a controls cabinet's rail, and what mounts in its door. */
     public static final ItemEntry<RadioRemoteItem> RADIO_REMOTE;
     public static final Map<ControlModule, ItemEntry<ControlModule.ModuleItem>> CONTROL_MODULES;
@@ -331,6 +333,14 @@ public class ModItems {
                 .model(NonNullBiConsumer.noop())
                 .lang("1\" Flexible Conduit")
                 .register();
+        var lines = new EnumMap<com.nolanbaker.pgmodernized.device.hvac.LineKind, ItemEntry<com.nolanbaker.pgmodernized.device.hvac.LineSetItem>>(com.nolanbaker.pgmodernized.device.hvac.LineKind.class);
+        for(var kind : com.nolanbaker.pgmodernized.device.hvac.LineKind.values()) {
+            lines.put(kind, REGISTRATE.item(kind.id(), p -> new com.nolanbaker.pgmodernized.device.hvac.LineSetItem(p, kind))
+                    .model(NonNullBiConsumer.noop())
+                    .lang(kind.label())
+                    .register());
+        }
+        LINE_SET = Collections.unmodifiableMap(lines);
         RADIO_REMOTE = REGISTRATE.item("radio_remote", RadioRemoteItem::new)
                 .model(NonNullBiConsumer.noop())
                 .lang("Radio Remote")

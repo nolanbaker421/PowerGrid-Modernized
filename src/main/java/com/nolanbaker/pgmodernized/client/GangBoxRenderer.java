@@ -25,6 +25,7 @@ public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity>
     /** Die-cast grey of a weatherproof cover, its hinge and lever a shade darker, the gasket under it black. */
     private static final int COVER = 0x8E9094, COVER_DARK = 0x66686C, GASKET = 0x1C1C1C;
     private static final int BRASS = 0xC8A040, SHACKLE = 0x50524E;
+    private static final int TSTAT_FACE = 0xE8E4D8, TSTAT_SCREEN = 0x101810, TSTAT_TEXT = 0x40E060;
     /** Text drawn in the north frame turned to lie on the plate's top face, read from the floor frame's south. */
     private static final org.joml.Quaternionf FLAT = new org.joml.Quaternionf().rotateAxis((float) Math.PI, 0f, 0.70710677f, -0.70710677f);
 
@@ -95,6 +96,18 @@ public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity>
                     flat(ms, buffer, light, be.monitorNc(slot) ? "N.C." : "N.O.", cx, top + 0.82, 8.6, 1 / 256f, 0x202020);
                 }
                 case ANNUNCIATOR -> annunciator(be, slot, gangs, ms, buffer, light);
+                case THERMOSTAT -> {
+                    // A beige stat with a little display: the room in green, the mode under it, a lamp blue for a cooling call and orange for heat.
+                    DeviceDraw.box(ms, buffer, light, cx - 1.5, top, 5.75, cx + 1.5, top + 0.6, 10.25, TSTAT_FACE);
+                    DeviceDraw.box(ms, buffer, light, cx - 1.1, top + 0.6, 6.2, cx + 1.1, top + 0.7, 8.0, TSTAT_SCREEN);
+                    int call = be.thermoCall(slot);
+                    int lamp = (call & 1) != 0 ? 0x40A0FF : (call & 2) != 0 ? 0xFF8020 : 0;
+                    if(lamp != 0)
+                        DeviceDraw.box(ms, buffer, net.minecraft.client.renderer.LightTexture.FULL_BRIGHT, cx - 0.3, top + 0.6, 8.4, cx + 0.3, top + 0.75, 8.9, lamp);
+                    flat(ms, buffer, net.minecraft.client.renderer.LightTexture.FULL_BRIGHT, String.format("%.0f", be.thermoTemp(slot) / 10f), cx, top + 0.72, 7.1, 1 / 256f, TSTAT_TEXT);
+                    var mode = net.minecraft.client.resources.language.I18n.get("powergrid." + GangBoxBlockEntity.modeKey(be.thermoMode(slot)));
+                    flat(ms, buffer, light, mode + " " + be.thermoSet(slot), cx, top + 0.62, 9.6, 1 / 384f, 0x303030);
+                }
                 case SPAN -> {}
                 case BLANK -> DeviceDraw.box(ms, buffer, light, cx - 1.6, top, 5.75, cx + 1.6, top + 0.3, 10.25, BLANK);
             }

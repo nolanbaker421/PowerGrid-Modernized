@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "P": {
+      "item": "create:propeller"
+    },
+    "C": {
+      "tag": "c:ingots/copper"
+    },
+    "B": {
+      "item": "minecraft:iron_bars"
+    }
+  },
+  "pattern": [
+    "IPI",
+    "CBC",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:air_handler"
+  }
+}

@@ -500,7 +500,7 @@ def gang_device_items():
     """Item icons for the gang devices: a plate with the device on it."""
     plate = (0xd8, 0xd8, 0xd8)
     dark = (0x2a, 0x2a, 0x2a)
-    for device in ("blank", "switch", "switch_3way", "switch_4way", "button", "receptacle", "pull_station", "horn_strobe", "monitor_module", "annunciator"):
+    for device in ("blank", "switch", "switch_3way", "switch_4way", "button", "receptacle", "pull_station", "horn_strobe", "monitor_module", "annunciator", "thermostat"):
         img = canvas(16, 16)
         fill(img, 3, 1, 13, 15, plate)
         fill(img, 3, 14, 13, 15, shade(plate, 0.7))
@@ -536,6 +536,11 @@ def gang_device_items():
             fill(img, 7, 4, 9, 6, (0x30, 0xe0, 0x50))        # the status light
             fill(img, 6, 9, 7, 11, (0xc8, 0xa0, 0x00))        # the two contact screws
             fill(img, 9, 9, 10, 11, (0xc8, 0xa0, 0x00))
+        elif device == "thermostat":
+            fill(img, 5, 3, 11, 13, (0xe8, 0xe4, 0xd8))
+            fill(img, 6, 4, 10, 7, (0x10, 0x18, 0x10))      # the display
+            fill(img, 7, 5, 9, 6, (0x40, 0xe0, 0x60))
+            fill(img, 7, 9, 9, 11, (0x40, 0xa0, 0xff))      # the cooling lamp
         elif device == "annunciator":
             fill(img, 2, 3, 14, 13, (0x30, 0x30, 0x34))
             for x, c in ((4, (0x30, 0xe0, 0x50)), (7, (0x60, 0x20, 0x20)), (10, (0x60, 0x50, 0x20))):
@@ -749,6 +754,7 @@ def recipes():
     recipe_shapeless("gang_switch_4way", [lever, lever, lever, nugget], 1, {"items": "%s:gang_switch_3way" % MOD})
     recipe_shapeless("gang_button", [{"item": "minecraft:stone_button"}, nugget], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_receptacle", [{"tag": "c:ingots/copper"}, nugget, nugget], 1, {"items": "%s:gang_box_1" % MOD})
+    recipe_shapeless("gang_thermostat", [nugget, {"item": "minecraft:comparator"}, {"item": "minecraft:paper"}], 1, {"items": "%s:air_handler" % MOD})
     # Weatherproof covers: an iron plate with a gasket for the receptacle hood, with a lever for the switch.
     recipe_shapeless("weatherproof_receptacle_cover", [{"tag": "c:plates/iron"}, nugget, {"item": "minecraft:slime_ball"}], 1, {"items": "%s:gang_receptacle" % MOD})
     recipe_shapeless("weatherproof_switch_cover", [{"tag": "c:plates/iron"}, nugget, lever], 1, {"items": "%s:gang_switch" % MOD})

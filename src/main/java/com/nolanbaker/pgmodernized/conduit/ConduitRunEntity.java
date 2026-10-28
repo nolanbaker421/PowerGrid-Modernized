@@ -169,7 +169,8 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
     public static ConduitRunEntity create(Level level, Vec3 start, ItemStack item, List<Point> segments) {
         var entity = new ConduitRunEntity(ModEntities.CONDUIT_RUN.get(), level);
         entity.setItem(item.getItem(), item.getCount());
-        entity.setColor(DEFAULT_COLOR);
+        var line = com.nolanbaker.pgmodernized.device.hvac.LineSetItem.kindOf(item);
+        entity.setColor(line != null ? line.color() : DEFAULT_COLOR);
         var pos = BlockTrace.alignPosition(start);
         entity.setPosRaw(pos.x, pos.y, pos.z);
         entity.segments.addAll(segments);
@@ -355,6 +356,8 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
 
     /** Wires this run takes: its trade size's slots, and no more than either fitting has landings for. */
     public int capacity() {
+        if(getItem() instanceof com.nolanbaker.pgmodernized.device.hvac.LineSetItem)
+            return 0;   // refrigerant, not wire
         int cap = size().conductors();
         cap = Math.min(cap, landingsAt(getEndpoint1()));
         cap = Math.min(cap, landingsAt(getEndpoint2()));
@@ -417,6 +420,8 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
     /** Pull one conductor of the held wire through the run. Server side. */
     public InteractionResult pull(Player player, ItemStack stack) {
         var level = level();
+        if(getItem() instanceof com.nolanbaker.pgmodernized.device.hvac.LineSetItem)
+            return fail(player, "message.hvac.no_wire");
         var ends = ends();
         if(ends == null) {
             var e1 = hub(getEndpoint1());
@@ -568,6 +573,10 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
     }
 
     private InteractionResult inspect(Player player) {
+        if(getItem() instanceof com.nolanbaker.pgmodernized.device.hvac.LineSetItem line) {
+            player.displayClientMessage(Lang.builder().add(line.kind().title().copy()).style(ChatFormatting.GRAY).component(), false);
+            return InteractionResult.SUCCESS;
+        }
         for(var line : contents())
             player.displayClientMessage(line, false);
         return InteractionResult.SUCCESS;
