@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.77.1 — 2026-10-27
+
+### Fixed
+- After a reload, a breaker panel's extensions took no breakers and showed no place for them,
+  and breaking and replacing an extension brought back the breakers that had been in it. The
+  head's cached section count was reset to one by a field initialiser running after the
+  superclass constructor had already read the real count from the block state, so the head
+  believed it had twelve spaces while the state said more; the space count now comes from the
+  block state every time.
+
 ## 0.77.0 — 2026-10-27
 
 ### Changed

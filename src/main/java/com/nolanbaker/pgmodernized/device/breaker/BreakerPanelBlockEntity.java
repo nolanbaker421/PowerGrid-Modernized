@@ -79,8 +79,13 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     private SpliceSupport splices;
     private List<SplicePoint> points;
     private boolean needsRebuild;
-    /** The head plus the extensions below it, from the block state. */
-    private int sections = 1;
+    /**
+     * The head plus the extensions below it, as last seen in the block state; only for telling a
+     * change in {@link #setBlockState}. No initialiser: buildCircuit runs from the superclass
+     * constructor and sets it through ensureInit, and an initialiser would then put it back to 1
+     * after a reload, leaving every space in the extensions dead until the state next changed.
+     */
+    private int sections;
 
     public BreakerPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -150,10 +155,10 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             level.setBlock(worldPosition, state.setValue(BreakerPanelBlock.SECTIONS, found), Block.UPDATE_ALL);
     }
 
-    /** Branch spaces the panel has with its present extensions. */
+    /** Branch spaces the panel has with its present extensions, from the block state. */
     public int slotCount() {
         ensureInit();
-        return spec.slots() * sections;
+        return spec.slots() * sections();
     }
 
     /** Whether any of the head's bottom knockouts carries a run, which an extension would cover. */
@@ -207,7 +212,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     /** The breakers of the extensions are drawn by this block entity, a block or two below it. */
     @Override
     public AABB getRenderBoundingBox() {
-        return new AABB(worldPosition.getX(), worldPosition.getY() - (sections - 1), worldPosition.getZ(),
+        return new AABB(worldPosition.getX(), worldPosition.getY() - (sections() - 1), worldPosition.getZ(),
                 worldPosition.getX() + 1, worldPosition.getY() + 1, worldPosition.getZ() + 1);
     }
 
