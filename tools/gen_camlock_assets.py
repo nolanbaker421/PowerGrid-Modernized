@@ -1,4 +1,5 @@
 """Assets and data for the two cam-lock connector boxes. Run from anywhere: python tools/gen_camlock_assets.py"""
+import json
 import os
 import sys
 
@@ -22,11 +23,13 @@ def textures():
         if name.endswith("400"):
             fill(side, 2, 6, 14, 8, (0xd0, 0xa0, 0x20))   # a yellow band on the big one
         write_png(os.path.join(TEX, name + ".png"), side)
-    # One receptacle texture per pole colour: a ring around a dark socket.
+    # One receptacle texture per pole colour: a ring around a dark socket. The whole texture goes
+    # on each face of a two-pixel receptacle, so the ring is wide and the socket small, for the
+    # colour to carry at that size.
     for k, rgb in enumerate(POLES):
         face = canvas(16, 16, rgb + (255,))
-        fill(face, 4, 4, 12, 12, (0x18, 0x18, 0x1c))
-        fill(face, 6, 6, 10, 10, shade(rgb, 0.5))
+        fill(face, 5, 5, 11, 11, (0x18, 0x18, 0x1c))
+        fill(face, 7, 7, 9, 9, shade(rgb, 0.5))
         write_png(os.path.join(TEX, "cam_lock_pole_%d.png" % k), face)
 
 
@@ -39,6 +42,21 @@ def models():
         for k, x in enumerate((1.5, 4, 6.5, 9, 11.5)):
             elements.append(element(x, 8, 5, x + 2, 10, 7, "#pole%d" % k))
         rotation4_models(name, elements, textures_)
+        full_pole_faces(name)
+
+
+def full_pole_faces(name):
+    """Each receptacle face shows the whole pole texture. The default UV is the element's own
+    window of the texture, which for a two-pixel cube in the middle of the box is a scrap of the
+    dark socket, so L2 and the neutral came out black."""
+    for suffix in ("", "_h"):
+        path = os.path.join(ASSETS, "models", "block", name + suffix + ".json")
+        model = json.load(open(path))
+        for e in model["elements"]:
+            for face in e["faces"].values():
+                if face["texture"].startswith("#pole"):
+                    face["uv"] = [0, 0, 16, 16]
+        dump(path, model)
 
 
 def data():

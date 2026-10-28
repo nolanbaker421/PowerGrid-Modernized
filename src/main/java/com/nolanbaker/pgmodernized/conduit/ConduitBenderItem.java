@@ -42,13 +42,18 @@ import java.util.List;
  * hitbox follows the corners. Tap the grabbed leg again, or sneak-use in the air, to let go. The
  * stubs into the knockouts never move; bend the next leg.
  * <p>
+ * An offset, a short jog between two legs the same way, is grabbed as one piece: tap a jog, or
+ * either long leg within a few pixels of it. A tap on a face then slides the whole offset along
+ * the run to where the tap landed, the leg before growing and the leg after shrinking, so the
+ * jog keeps its shape; see {@link Offsets}.
+ * <p>
  * Sneak-click a diagonal to take it out. Sneak-click any other leg to cut the run there into two
  * runs, each open at the cut, a cut within two pixels of a corner made at the corner; the wires
  * pulled through it come out and drop. A mistake costs the bad piece, which the wire cutters
  * take, not the whole run. Bending or cutting a run drops its diagonals.
  */
 public class ConduitBenderItem extends Item {
-    private static final String GRAB_ID = "GrabId", GRAB_UUID = "GrabUuid", GRAB_LEG = "GrabLeg", GRAB_PX = "GrabPx", STANDOFF = "Standoff", GRAB_DIAG = "GrabDiag";
+    private static final String GRAB_ID = "GrabId", GRAB_UUID = "GrabUuid", GRAB_LEG = "GrabLeg", GRAB_PX = "GrabPx", STANDOFF = "Standoff", GRAB_DIAG = "GrabDiag", GRAB_OFFSET = "GrabOffset";
     /** The furthest a moved leg can be held off the face it is put on, in pixels. */
     public static final int MAX_STANDOFF = 16;
     /** A cut this close to a corner, in pixels, is made at the corner. */
@@ -97,6 +102,20 @@ public class ConduitBenderItem extends Item {
         return tag.contains(GRAB_DIAG) ? tag.getInt(GRAB_DIAG) : -1;
     }
 
+    /** The offset grabbed, or null when the grab is a leg or a diagonal. Works on both sides. */
+    @Nullable
+    public static Offsets.Offset grabbedOffset(ItemStack stack) {
+        var tag = tag(stack);
+        return tag.contains(GRAB_OFFSET) ? new Offsets.Offset(tag.getInt(GRAB_LEG), tag.getInt(GRAB_OFFSET)) : null;
+    }
+
+    private static void grabOffset(ItemStack stack, ConduitRunEntity run, Offsets.Offset o) {
+        grab(stack, run, o.first(), 0);
+        var tag = tag(stack);
+        tag.putInt(GRAB_OFFSET, o.last());
+        store(stack, tag);
+    }
+
     private static void grabDiagonal(ItemStack stack, ConduitRunEntity run, int leg, ConduitRunEntity.Diagonal d) {
         grab(stack, run, leg, 0);
         var tag = tag(stack);
@@ -130,6 +149,7 @@ public class ConduitBenderItem extends Item {
         tag.putInt(GRAB_PX, px);
         tag.remove(STANDOFF);
         tag.remove(GRAB_DIAG);
+        tag.remove(GRAB_OFFSET);
         store(stack, tag);
     }
 
@@ -141,6 +161,7 @@ public class ConduitBenderItem extends Item {
         tag.remove(GRAB_PX);
         tag.remove(STANDOFF);
         tag.remove(GRAB_DIAG);
+        tag.remove(GRAB_OFFSET);
         store(stack, tag);
     }
 
@@ -171,14 +192,28 @@ public class ConduitBenderItem extends Item {
             player.displayClientMessage(Lang.translate("message.conduit.diag_grab").style(ChatFormatting.GRAY).component(), true);
             return InteractionResult.SUCCESS;
         }
-        if(held == run && grabbedLeg(stack) == leg.index()) {
+        int px = pxAlong(run, leg.index(), leg.point());
+        var offsetHeld = held == run ? grabbedOffset(stack) : null;
+        var offset = Offsets.at(run, leg.index(), px);
+        if(offsetHeld != null && offsetHeld.equals(offset)) {
             release(stack);
             player.displayClientMessage(Lang.translate("message.conduit.bend_release").style(ChatFormatting.GRAY).component(), true);
             return InteractionResult.SUCCESS;
         }
-        if(held == run)
+        if(held == run && offsetHeld == null && grabbedLeg(stack) == leg.index()) {
+            release(stack);
+            player.displayClientMessage(Lang.translate("message.conduit.bend_release").style(ChatFormatting.GRAY).component(), true);
+            return InteractionResult.SUCCESS;
+        }
+        if(held == run && offsetHeld == null)
             return diagonalTap(run, player, stack, leg);
-        grab(stack, run, leg.index(), pxAlong(run, leg.index(), leg.point()));
+        if(offset != null) {
+            // An offset is grabbed whole: a tap on a face slides it along the run.
+            grabOffset(stack, run, offset);
+            player.displayClientMessage(Lang.translate("message.conduit.offset_grab").style(ChatFormatting.GRAY).component(), true);
+            return InteractionResult.SUCCESS;
+        }
+        grab(stack, run, leg.index(), px);
         player.displayClientMessage(Lang.builder().translate("message.conduit.bend_grab", leg.index() + 1).style(ChatFormatting.GRAY).component(), true);
         return InteractionResult.SUCCESS;
     }
@@ -365,6 +400,9 @@ public class ConduitBenderItem extends Item {
             release(stack);
             return fail(player, "message.conduit.bend_nothing");
         }
+        var offset = grabbedOffset(stack);
+        if(offset != null)
+            return moveOffset(run, player, stack, offset, hit.getLocation());
         int index = grabbedLeg(stack);
         var shift = targetShift(run, index, hit, standoff(stack));
         if(shift == null)
@@ -378,6 +416,37 @@ public class ConduitBenderItem extends Item {
         if(result.consumesAction())
             release(stack);
         return result;
+    }
+
+    /**
+     * With an offset grabbed, a tap on a face: the offset slides along the run to where the tap
+     * landed, as far as the legs either side allow. The run keeps its length, so no sticks change
+     * hands. Server side.
+     */
+    private static InteractionResult moveOffset(ConduitRunEntity run, Player player, ItemStack stack, Offsets.Offset held, Vec3 point) {
+        var offset = Offsets.find(run, held.first(), held.last());
+        if(offset == null) {
+            release(stack);
+            return fail(player, "message.conduit.bend_nothing");
+        }
+        int wanted = Offsets.wanted(run, offset, point);
+        if(wanted == 0) {
+            release(stack);
+            player.displayClientMessage(Lang.translate("message.conduit.bend_same").style(ChatFormatting.GRAY).component(), true);
+            return InteractionResult.SUCCESS;
+        }
+        int d = Offsets.slide(run, offset, point);
+        if(d == 0)
+            return fail(player, "message.conduit.offset_stuck");
+        var pulled = run.conductors();
+        run.reshape(new RunReshape.Result(Offsets.slid(run, offset, d), Vec3i.ZERO));
+        for(var conductor : pulled)
+            conductor.follow(run);
+        release(stack);
+        var at = Offsets.box(run, offset).getCenter();
+        run.level().playSound(null, at.x, at.y, at.z, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 0.5f, 1.6f);
+        player.displayClientMessage(Lang.builder().translate("message.conduit.offset_moved", Math.abs(d)).style(ChatFormatting.GRAY).component(), true);
+        return InteractionResult.SUCCESS;
     }
 
     /**
@@ -663,7 +732,10 @@ public class ConduitBenderItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
         if(holding(stack)) {
-            tooltip.add(Lang.builder().translate("bender.holding", grabbedLeg(stack) + 1).style(ChatFormatting.AQUA).component());
+            if(grabbedOffset(stack) != null)
+                tooltip.add(Lang.translate("bender.holding_offset").style(ChatFormatting.AQUA).component());
+            else
+                tooltip.add(Lang.builder().translate("bender.holding", grabbedLeg(stack) + 1).style(ChatFormatting.AQUA).component());
             if(standoff(stack) > 0)
                 tooltip.add(Lang.builder().translate("message.conduit.bend_standoff", standoff(stack)).style(ChatFormatting.GRAY).component());
         }

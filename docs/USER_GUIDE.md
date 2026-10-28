@@ -893,20 +893,34 @@ clickable hubs are where they always were, shown while conduit is in hand.
 ### Conduit Bender
 
 The **Conduit Bender** (an iron plate over two iron ingots on the diagonal) reshapes a run after it
-is laid. Click a leg and it slides one step away from the face you clicked. The legs either side
-grow or shrink to follow; a leg that shrinks to nothing goes and its two corners become one, and a
-push across a neighbour that runs on another axis puts in a new leg and a new corner. A few clicks
-make an offset, a kick or a saddle around a beam. The leg under your crosshair is outlined while
-you hold the bender, and each click says which leg moved and which way. The step is 2 px; sneak
-and use the bender in the air to cycle it through 4, 8 and 1. Sticks come out of your inventory as
-the run grows and go back as it shrinks, and the wires inside follow the new path. The stubs into
-the knockouts never move: bend the leg after them.
+is laid, in two taps. Tap a leg to grab it: the leg under your crosshair is outlined while you hold
+the bender, and the grabbed leg stays outlined with a marker at the grab point. Then tap a block
+face where the leg should go. It slides so the tube rests on that face, where the click landed
+along it, on the pixel grid; a green outline shows where it will land before you tap. The legs
+either side grow or shrink to follow; a leg that shrinks to nothing goes and its two corners
+become one, and a push across a neighbour that runs on another axis puts in a new leg and a new
+corner, so a kick or a saddle around a beam is a grab and a tap. With a leg grabbed, the scroll
+wheel holds it off the face by up to sixteen pixels. Sticks come out of your inventory as the run
+grows and go back as it shrinks, and the wires inside follow the new path. The stubs into the
+knockouts never move: bend the leg after them. Tap the grabbed leg again, or sneak-use in the air,
+to let go.
 
-Sneak-click a run to pick the whole run up into the bender, sticks and wires alike, with each
-wire's colour and label. The loaded bender lays conduit exactly like the conduit item, from a
-knockout, along blocks and strut, to a knockout, spending the sticks it holds before any in your
-inventory. When the new run closes, the wires go back in; one that no longer reaches is handed back
-to you instead. Sneak-use in the air with a loaded bender hands the whole run back as items.
+**Offsets.** A short jog between two legs that run the same way is an offset, drawn as one smooth
+S. To move it along the run, tap the jog itself, or either long leg within three pixels of it: the
+whole offset is grabbed and outlined. Then tap a face, and the offset slides to where the click
+landed along the run, the leg before it growing and the leg after it shrinking by the same amount,
+as far as the legs and the knockout stubs allow.
+
+**Diagonals.** With a leg grabbed, tap a point on another leg of the same run instead of a face:
+the tube is drawn straight between the two points, a diagonal in place of the corners between. The
+legs underneath stay as laid, so the hitbox follows the corners. Tap a diagonal to grab it; then a
+tap on a leg moves the diagonal's nearer end there, and a tap on the diagonal itself pulls that end
+back to the tap. Sneak-click a diagonal to take it out. Bending or cutting a run drops its
+diagonals.
+
+**Cutting.** Sneak-click any other leg to cut the run there into two runs, each open at the cut, a
+cut within two pixels of a corner made at the corner; the wires pulled through it come out and
+drop. A mistake costs the bad piece, which the wire cutters take, not the whole run.
 
 ### Gang boxes
 

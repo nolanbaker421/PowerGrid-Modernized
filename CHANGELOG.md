@@ -4,6 +4,26 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.74.0 — 2026-10-27
+
+### Added
+- The bender moves offsets. A short jog between two legs the same way, the kind the renderer
+  draws as one smooth S, is grabbed whole: tap the jog, or either long leg within three pixels
+  of it, and the offset is outlined. A tap on a face then slides it along the run to where the
+  tap landed, the leg before growing and the leg after shrinking by the same amount, so the jog
+  keeps its shape. The green outline shows where it will land first. Grabbing the long leg itself
+  still moves that leg sideways, as before.
+
+### Fixed
+- The cam-lock box's receptacles showed the wrong colours: L2 and the neutral were black, L3 and
+  the ground only partly coloured. Each two-pixel receptacle took its own window of the
+  sixteen-pixel ring texture, mostly the dark socket. Every face now wears the whole ring, and
+  the socket is smaller so the colour carries at that size.
+
+### Changed
+- The user guide's bender section described the bender before grabs, diagonals and cuts, and a
+  loaded-bender feature that went in 0.62.0. Rewritten to match.
+
 ## 0.73.1 — 2026-10-27
 
 ### Added

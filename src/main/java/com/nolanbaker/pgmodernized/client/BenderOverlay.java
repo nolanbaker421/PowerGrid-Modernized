@@ -2,6 +2,7 @@ package com.nolanbaker.pgmodernized.client;
 
 import com.nolanbaker.pgmodernized.conduit.ConduitBenderItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
+import com.nolanbaker.pgmodernized.conduit.Offsets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
@@ -19,7 +20,8 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
  * is plain which leg a tap will grab. A grabbed leg keeps an orange outline with a marker at the
  * grab point; while the crosshair is on a block face a green outline shows where the next tap
  * would put the leg, and on another leg of the same run a green line shows the diagonal it
- * would make.
+ * would make. An offset is outlined whole, under the crosshair and when grabbed, with a green
+ * outline where a tap on a face would slide it to.
  */
 public final class BenderOverlay {
     private BenderOverlay() {}
@@ -48,6 +50,19 @@ public final class BenderOverlay {
                 mark = ConduitBenderItem.pointOnLeg(grabbed, heldDiag.legA(), heldDiag.pxA());
                 mark2 = ConduitBenderItem.pointOnLeg(grabbed, heldDiag.legB(), heldDiag.pxB());
             }
+        } else if(grabbed != null && ConduitBenderItem.grabbedOffset(stack) != null) {
+            var o = ConduitBenderItem.grabbedOffset(stack);
+            var offset = Offsets.find(grabbed, o.first(), o.last());
+            if(offset != null && offset.last() < grabbed.boundingBoxes.size()) {
+                held = Offsets.box(grabbed, offset);
+                if(mc.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
+                    int d = Offsets.slide(grabbed, offset, hit.getLocation());
+                    if(d != 0) {
+                        var along = net.minecraft.world.phys.Vec3.atLowerCornerOf(grabbed.segments.get(offset.first()).direction.getNormal()).scale(d / 16.0);
+                        ghost = held.move(along);
+                    }
+                }
+            }
         } else if(grabbed != null) {
             int leg = ConduitBenderItem.grabbedLeg(stack);
             if(leg < grabbed.boundingBoxes.size()) {
@@ -67,6 +82,12 @@ public final class BenderOverlay {
             if(leg != null && leg.index() < run.boundingBoxes.size()) {
                 hover = run.legBox(leg.index());
                 var overDiag = run.diagonalOver(leg.index());
+                // A tap here would grab the offset whole, unless a leg of this run is already grabbed,
+                // when it makes a diagonal to the point.
+                var offset = overDiag == null && (run != grabbed || ConduitBenderItem.grabbedOffset(stack) != null)
+                        ? Offsets.at(run, leg.index(), ConduitBenderItem.pxAlong(run, leg.index(), leg.point())) : null;
+                if(offset != null && offset.last() < run.boundingBoxes.size())
+                    hover = Offsets.box(run, offset);
                 if(heldDiag != null && run == grabbed && overDiag != null && overDiag.legA() == heldDiag.legA()) {
                     // On the grabbed diagonal: the nearer end would move to where the crosshair falls along it.
                     double t = ConduitBenderItem.alongDiagonal(run, heldDiag, eye, far);
