@@ -116,7 +116,7 @@ public class ModItems {
         return LOCKS.get(kind).asStack();
     }
 
-    /** A key, cut to a lock's number in the crafting grid; keys of one number stack. */
+    /** A key: any key takes any padlock off. */
     public static final ItemEntry<com.nolanbaker.pgmodernized.device.lock.KeyItem> KEY = REGISTRATE.item("key", com.nolanbaker.pgmodernized.device.lock.KeyItem::new)
             .model(NonNullBiConsumer.noop())
             .lang("Key")

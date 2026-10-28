@@ -75,6 +75,12 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
     private long lastReport = -1;
     /** The utility's lock sealing the cabinet, or null. */
     private com.nolanbaker.pgmodernized.device.lock.Lock lock;
+    /** The last seal broken, and by whom, shown until a new seal goes on. */
+    private String brokenSerial = "", brokenBy = "";
+    /** Who was last told the seal's number before breaking it, and when: a second sneak-click soon after breaks it. */
+    private java.util.UUID sealWarnBy;
+    private long sealWarnAt;
+    public static final int SEAL_WARN_TICKS = 100;
 
     public CtCabinetBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -256,6 +262,8 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         Lang.builder().translate("gui.ct_cabinet.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
         if(lock != null)
             Lang.builder().translate("gui.lock.cabinet", lock.serial(), lock.ownerName()).style(ChatFormatting.GOLD).forGoggles(tooltip, 1);
+        else if(!brokenSerial.isEmpty())
+            Lang.builder().translate("gui.lock.broken", brokenSerial, brokenBy).style(ChatFormatting.RED).forGoggles(tooltip, 1);
         for(var line : readings())
             Lang.builder().add(line).forGoggles(tooltip, 1);
         if(hasAntenna()) {
@@ -285,7 +293,7 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         return lock != null;
     }
 
-    /** Server side: the lock in the hand seals the cabinet. */
+    /** Server side: the lock in the hand seals the cabinet, with a new number; the last broken seal is forgotten. */
     public void fitLock(Player player, ItemStack stack) {
         if(level == null || level.isClientSide)
             return;
@@ -294,6 +302,9 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
             return;
         }
         lock = com.nolanbaker.pgmodernized.device.lock.Lock.fit(stack, player, level);
+        brokenSerial = "";
+        brokenBy = "";
+        sealWarnBy = null;
         if(!player.isCreative())
             stack.shrink(1);
         level.playSound(null, worldPosition, net.minecraft.sounds.SoundEvents.IRON_DOOR_CLOSE, net.minecraft.sounds.SoundSource.BLOCKS, 0.5f, 1.6f);
@@ -302,17 +313,38 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         sendData();
     }
 
-    /** Server side: the seal comes off into the hand, the same numbered lock. The block checks the key. */
+    /**
+     * Server side: breaking the seal by hand takes two sneak-clicks. The first says the seal's
+     * number and who fitted it; a second from the same player within five seconds breaks it, and
+     * the cabinet remembers the number and who broke it until a new seal goes on.
+     */
+    public void breakSeal(Player player) {
+        if(level == null || level.isClientSide || lock == null)
+            return;
+        long now = level.getGameTime();
+        if(player.getUUID().equals(sealWarnBy) && now - sealWarnAt <= SEAL_WARN_TICKS && now >= sealWarnAt) {
+            brokenSerial = lock.serial();
+            brokenBy = player.getGameProfile().getName();
+            removeLock(player);
+            return;
+        }
+        sealWarnBy = player.getUUID();
+        sealWarnAt = now;
+        player.displayClientMessage(Lang.builder().translate("message.lock.seal_warn", lock.serial(), lock.ownerName()).style(ChatFormatting.GOLD).component(), true);
+    }
+
+    /** Server side: the seal comes off into the hand, the lock showing the number it had. */
     public void removeLock(Player player) {
         if(level == null || level.isClientSide || lock == null)
             return;
         var taken = lock;
         lock = null;
+        sealWarnBy = null;
         var stack = taken.item();
         if(!player.getInventory().add(stack))
             net.minecraft.world.Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, stack);
         level.playSound(null, worldPosition, net.minecraft.sounds.SoundEvents.IRON_DOOR_OPEN, net.minecraft.sounds.SoundSource.BLOCKS, 0.5f, 1.6f);
-        player.displayClientMessage(Lang.builder().translate("message.lock.removed", taken.serial()).style(ChatFormatting.GRAY).component(), true);
+        player.displayClientMessage(Lang.builder().translate("message.lock.seal_broken", taken.serial()).style(ChatFormatting.GRAY).component(), true);
         setChanged();
         sendData();
     }
@@ -442,6 +474,8 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         tag.putLong("LastReport", lastReport);
         if(lock != null)
             tag.put("Lock", lock.write());
+        tag.putString("BrokenSerial", brokenSerial);
+        tag.putString("BrokenBy", brokenBy);
         if(clientPacket) {
             var list = new net.minecraft.nbt.ListTag();
             for(int n = 0; n < CHANNELS; ++n) {
@@ -467,6 +501,8 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         utility = tag.getString("Utility");
         lastReport = tag.contains("LastReport") ? tag.getLong("LastReport") : -1;
         lock = tag.contains("Lock") ? com.nolanbaker.pgmodernized.device.lock.Lock.read(tag.getCompound("Lock")) : null;
+        brokenSerial = tag.getString("BrokenSerial");
+        brokenBy = tag.getString("BrokenBy");
         if(clientPacket && tag.contains("Readings")) {
             var list = tag.getList("Readings", net.minecraft.nbt.Tag.TAG_FLOAT);
             for(int n = 0; n < CHANNELS && n * 4 + 3 < list.size(); ++n) {

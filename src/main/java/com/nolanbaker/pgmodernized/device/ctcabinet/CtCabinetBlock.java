@@ -45,8 +45,9 @@ import com.nolanbaker.pgmodernized.conduit.ConductorColors;
  * viewer's left. Mirrored by {@code tools/gen_ct_cabinet_assets.py}.
  * <p>
  * A utility lock seals it, as a utility seals a meter cabinet: nobody opens it, lands wiring on
- * it, changes its splices, zeroes, wrenches, picks up or breaks it until a key cut to the lock's
- * number takes the lock off.
+ * it, changes its splices, zeroes, wrenches, picks up or breaks it while the seal is on. Anyone
+ * breaks the seal by hand, in two sneak-clicks, the first telling them its number; the cabinet
+ * then shows that number and who broke it until a new seal, with a new number, goes on.
  */
 public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCabinetBlockEntity> {
     /** A meter antenna module is fitted: the cabinet reports its readings over the air. */
@@ -188,14 +189,8 @@ public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCab
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(stack.getItem() instanceof com.nolanbaker.pgmodernized.device.lock.KeyItem) {
-            if(!level.isClientSide && level.getBlockEntity(pos) instanceof CtCabinetBlockEntity be) {
-                if(be.lock() == null)
-                    player.displayClientMessage(Lang.translate("message.lock.no_lock").style(ChatFormatting.RED).component(), true);
-                else if(!be.lock().opensWith(stack))
-                    player.displayClientMessage(Lang.builder().translate("message.lock.wrong_key", be.lock().serial()).style(ChatFormatting.RED).component(), true);
-                else
-                    be.removeLock(player);
-            }
+            if(!level.isClientSide)
+                player.displayClientMessage(Lang.translate("message.lock.seal_by_hand").style(ChatFormatting.RED).component(), true);
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
         if(stack.getItem() instanceof com.nolanbaker.pgmodernized.device.lock.LockItem item) {
@@ -210,14 +205,18 @@ public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCab
         return stack.isEmpty() ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
 
-    /** Empty hand opens the readings and splice editor; a sealed cabinet only says who sealed it. */
+    /** Empty hand opens the readings and splice editor; on a sealed cabinet a click says the seal's number, and sneaking twice breaks it. */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(hand != InteractionHand.MAIN_HAND || !player.getMainHandItem().isEmpty())
             return InteractionResult.PASS;
         if(level.getBlockEntity(pos) instanceof CtCabinetBlockEntity be && be.lock() != null) {
-            if(!level.isClientSide)
-                player.displayClientMessage(be.lock().held(), true);
+            if(!level.isClientSide) {
+                if(player.isShiftKeyDown())
+                    be.breakSeal(player);
+                else
+                    player.displayClientMessage(be.lock().held(), true);
+            }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
         if(player.isShiftKeyDown()) {

@@ -360,7 +360,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         sendData();
     }
 
-    /** Server side: the padlock comes off into the hand, the same numbered lock. The block checks the key. */
+    /** Server side: the padlock comes off into the hand, the same numbered lock. The block asks for a key. */
     public void removeLock(int slot, Player player) {
         ensureArrays();
         slot = owner(slot);

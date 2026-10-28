@@ -14,9 +14,9 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 /**
- * A lock with a serial number. The number is stamped when the lock is crafted, or when it is
- * first fitted if it came from the creative menu, and stays with it: a lock taken off a cover or
- * a cabinet comes back as the same numbered lock.
+ * A lock with a serial number, stamped when the lock is crafted, or when it is first fitted if
+ * it came from the creative menu. A padlock keeps its number for good; a utility lock is a seal
+ * and takes a new number every time it is fitted, the item showing the number it last had.
  */
 public class LockItem extends Item {
     private final LockKind kind;

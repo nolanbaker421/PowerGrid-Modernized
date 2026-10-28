@@ -4,6 +4,17 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.77.0 — 2026-10-27
+
+### Changed
+- Padlocks open with any key. They keep their serial number, shown on the item, in goggles and
+  in the message a locked gang gives, but a key is a plain item now: three iron nuggets in a
+  column make two. Key cutting is gone.
+- The utility lock is a seal, not a lock. It takes a new serial number every time it is fitted,
+  and anyone breaks it by hand: sneak-click the sealed cabinet and it says the seal's number and
+  who fitted it, sneak-click again within five seconds and the seal comes off. The cabinet then
+  shows that number and who broke it, in goggles, until a new seal goes on.
+
 ## 0.76.0 — 2026-10-27
 
 ### Changed
