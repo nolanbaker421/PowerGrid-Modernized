@@ -43,6 +43,9 @@ import com.nolanbaker.pgmodernized.conduit.ConductorColors;
  * <p>
  * North frame like the breaker panel: enclosure against the south wall, front facing north, +x on the
  * viewer's left. Mirrored by {@code tools/gen_ct_cabinet_assets.py}.
+ * <p>
+ * A utility lock seals it, as a utility seals a meter cabinet: nobody but the lock's owner, a
+ * creative player or an operator opens it, lands wiring on it, wrenches, picks up or breaks it.
  */
 public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCabinetBlockEntity> {
     /** A meter antenna module is fitted: the cabinet reports its readings over the air. */
@@ -133,9 +136,43 @@ public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCab
         return WireAcceptance.electrical(wireStack);
     }
 
-    /** Conduit on the knockouts, Cat6 on the jack, nothing else lands anywhere. */
+    /** Whether the seal keeps this player out. */
+    private static boolean lockedAgainst(Level level, BlockPos pos, @Nullable Player player) {
+        return level.getBlockEntity(pos) instanceof CtCabinetBlockEntity be && be.lockedAgainst(player);
+    }
+
+    private static InteractionResult sealed(UseOnContext context) {
+        if(context.getLevel().getBlockEntity(context.getClickedPos()) instanceof CtCabinetBlockEntity be && be.lock() != null)
+            IElectric.sendMessage(context, be.lock().held());
+        return InteractionResult.FAIL;
+    }
+
+    @Override
+    public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
+        if(lockedAgainst(context.getLevel(), context.getClickedPos(), context.getPlayer()))
+            return sealed(context);
+        return super.onSneakWrenched(state, context);
+    }
+
+    @Override
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        if(lockedAgainst(context.getLevel(), context.getClickedPos(), context.getPlayer()))
+            return sealed(context);
+        return super.onWrenched(state, context);
+    }
+
+    @Override
+    protected float getDestroyProgress(BlockState state, Player player, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        if(level.getBlockEntity(pos) instanceof CtCabinetBlockEntity be && be.lockedAgainst(player))
+            return 0f;
+        return super.getDestroyProgress(state, player, level, pos);
+    }
+
+    /** Conduit on the knockouts, Cat6 on the jack, nothing else lands anywhere; nothing at all on a sealed cabinet. */
     @Override
     public InteractionResult onWire(BlockState state, UseOnContext context) {
+        if(lockedAgainst(context.getLevel(), context.getClickedPos(), context.getPlayer()))
+            return sealed(context);
         return DeviceHubs.onWire(this, LAYOUT, state, context,
                 (s, c) -> JackTerminals.onWire(this, JACK, s, c, (s2, c2) -> {
                     if(c2.getClickedFace() == facing(s2) && WireAcceptance.electrical(c2.getItemInHand())) {
@@ -146,16 +183,38 @@ public class CtCabinetBlock extends HorizontalElectricBlock implements IBE<CtCab
                 }));
     }
 
+    /** A utility lock seals the cabinet. */
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(stack.getItem() instanceof com.nolanbaker.pgmodernized.device.lock.LockItem item) {
+            if(!level.isClientSide && level.getBlockEntity(pos) instanceof CtCabinetBlockEntity be) {
+                if(item.kind() != com.nolanbaker.pgmodernized.device.lock.LockKind.UTILITY)
+                    player.displayClientMessage(Lang.translate("message.lock." + item.kind().id() + "_fits").style(ChatFormatting.RED).component(), true);
+                else
+                    be.fitLock(player, stack);
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
         return stack.isEmpty() ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
 
-    /** Empty hand opens the readings and splice editor. */
+    /** Empty hand opens the readings and splice editor; on a sealed cabinet, only for whom the lock lets in, and sneaking takes the lock off. */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(hand != InteractionHand.MAIN_HAND || !player.getMainHandItem().isEmpty())
             return InteractionResult.PASS;
+        if(level.getBlockEntity(pos) instanceof CtCabinetBlockEntity be && be.lock() != null) {
+            if(!be.lock().mayOpen(player)) {
+                if(!level.isClientSide)
+                    player.displayClientMessage(be.lock().held(), true);
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+            if(player.isShiftKeyDown()) {
+                if(!level.isClientSide)
+                    be.removeLock(player);
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+        }
         if(player.isShiftKeyDown()) {
             // Sneak with an empty hand zeroes the energy counters, the reset button of a real meter.
             if(!level.isClientSide) {

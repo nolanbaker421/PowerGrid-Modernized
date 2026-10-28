@@ -729,6 +729,12 @@ Right-click the cabinet with an empty hand to open it: the readings sit above th
 Goggles show the same lines. Energy is kept when the world reloads and can be zeroed from a
 computer. The cabinet has a Cat6 jack for the network.
 
+**Sealing it.** A **Utility Lock** (an iron ingot, an iron nugget and a copper nugget) right-clicked
+on the cabinet seals it the way a utility seals a meter cabinet. Nobody but you, a creative player
+or an operator opens it, lands conduit or Cat6 on it, zeroes it, wrenches, picks up or breaks it;
+goggles show the lock's serial number and who fitted it. Sneak-click the sealed cabinet to take the
+lock off; it comes back with the same number.
+
 ### Three-Phase Motor (AC build)
 
 A Create generator like Power Grid's electric motor, with three terminals U, V, W on the terminal
@@ -936,6 +942,21 @@ shows its points by gang, Line and Load for a switch or button, Common and the t
 3-way, In A, In B, Out A and Out B for a 4-way (straight or crossed), Line and Neutral for a
 receptacle, and you splice the run's conductors to them. A power cord plugs into the first receptacle in
 the box; a box without one takes no cord.
+
+**Weatherproof covers.** Two die-cast covers go over fitted devices for outdoor boxes. The
+**Weatherproof Receptacle Cover** (an iron plate, a nugget and a slime ball for the gasket)
+right-clicked on a receptacle gang hoods it, hinged at the top; the hood swings up while a cord is
+plugged in and shuts when it comes out. The **Weatherproof Switch Cover** (an iron plate, a nugget
+and a lever) goes over a single-pole, 3-way or 4-way switch and puts a lever through the plate, up
+for on and down for off; clicking it still flips the switch. Sneak-click a covered gang to take
+the cover off; the device comes out on the next sneak-click.
+
+**Padlocks.** A **Padlock** (an iron ingot and two nuggets) right-clicked on a covered gang hangs
+on the cover's tab and locks that gang: nobody but you, a creative player or an operator flips the
+switch, plugs or unplugs a cord, takes the cover or the device out, or wrenches, picks up or
+breaks the box. A padlocked hood stays shut over a plugged cord. Every lock is stamped with a
+serial number when crafted, shown on the item and in goggles, and sneak-clicking the gang gives
+the same numbered lock back.
 
 The Conduit Switch, Conduit Socket, Conduit Button and 3-Way Conduit Switch blocks stay for
 builds that have them; each crafts into its gang device.
@@ -1189,6 +1210,10 @@ adapter placed next to them:
 | Conduit Box (2) | ring of eight iron nuggets |
 | Conduit Bender | an iron plate top right, two iron ingots down the diagonal |
 | Blank Cover Plate (2) | an iron plate |
+| Weatherproof Receptacle Cover | shapeless: an iron plate, an iron nugget and a slime ball |
+| Weatherproof Switch Cover | shapeless: an iron plate, an iron nugget and a lever |
+| Padlock | shapeless: an iron ingot and two iron nuggets |
+| Utility Lock | shapeless: an iron ingot, an iron nugget and a copper nugget |
 | Node Cover Plate | a blank cover plate and pins, shapeless |
 | Pull Box | ring of eight iron plates |
 | Conduit Switch (2) | iron nugget, lever, iron nugget over an iron nugget |

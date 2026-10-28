@@ -43,6 +43,13 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     private SpliceSupport splices;
     // No initialisers: buildCircuit runs from the superclass constructor, before field initialisers would.
     private GangDevice[] devices;
+    /** The weatherproof cover over each gang's device, or null. */
+    private GangCover[] covers;
+    /** The padlock on each gang's cover, or null. */
+    private com.nolanbaker.pgmodernized.device.lock.Lock[] locks;
+    /** Per gang: when a plugged cord was last looked for, and whether one was there. Either side. */
+    private long[] cordChecked;
+    private boolean[] cordIn;
     private boolean[] on;
     private int[] hold;
     /** Up to four contacts a gang, by device: [line-load], [common-A, common-B], [inA-outA, inB-outB, inA-outB, inB-outA]. */
@@ -74,6 +81,10 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     private void ensureArrays() {
         if(devices == null) {
             devices = new GangDevice[GangLayout.MAX_GANGS];
+            covers = new GangCover[GangLayout.MAX_GANGS];
+            locks = new com.nolanbaker.pgmodernized.device.lock.Lock[GangLayout.MAX_GANGS];
+            cordChecked = new long[GangLayout.MAX_GANGS];
+            cordIn = new boolean[GangLayout.MAX_GANGS];
             on = new boolean[GangLayout.MAX_GANGS];
             hold = new int[GangLayout.MAX_GANGS];
             contacts = new SwitchedWire[GangLayout.MAX_GANGS][];
@@ -298,6 +309,84 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         return slot >= 0 && slot < GangLayout.MAX_GANGS && on[slot];
     }
 
+    @Nullable
+    public GangCover cover(int slot) {
+        ensureArrays();
+        return slot >= 0 && slot < GangLayout.MAX_GANGS ? covers[slot] : null;
+    }
+
+    @Nullable
+    public com.nolanbaker.pgmodernized.device.lock.Lock lock(int slot) {
+        ensureArrays();
+        return slot >= 0 && slot < GangLayout.MAX_GANGS ? locks[slot] : null;
+    }
+
+    /** Whether some gang's padlock keeps this player out: the box then cannot be wrenched or broken by them. */
+    public boolean lockedAgainst(@Nullable Player player) {
+        ensureArrays();
+        for(var lock : locks)
+            if(lock != null && !lock.mayOpen(player))
+                return true;
+        return false;
+    }
+
+    /** Server side: a padlock hangs on the cover in that gang. */
+    public void fitLock(int slot, Player player, ItemStack stack) {
+        ensureArrays();
+        if(level == null || level.isClientSide)
+            return;
+        slot = owner(slot);
+        if(cover(slot) == null) {
+            player.displayClientMessage(Lang.translate("message.lock.padlock_fits").style(ChatFormatting.RED).component(), true);
+            return;
+        }
+        if(locks[slot] != null) {
+            player.displayClientMessage(Lang.translate("message.lock.already").style(ChatFormatting.RED).component(), true);
+            return;
+        }
+        var lock = com.nolanbaker.pgmodernized.device.lock.Lock.fit(stack, player, level);
+        locks[slot] = lock;
+        if(!player.isCreative())
+            stack.shrink(1);
+        level.playSound(null, worldPosition, SoundEvents.IRON_DOOR_CLOSE, SoundSource.BLOCKS, 0.5f, 1.6f);
+        player.displayClientMessage(Lang.builder().translate("message.lock.fitted", lock.serial()).style(ChatFormatting.GRAY).component(), true);
+        setChanged();
+        sendData();
+    }
+
+    /** Server side: the padlock comes off into the hand, the same numbered lock. The block checks who may. */
+    public void removeLock(int slot, Player player) {
+        ensureArrays();
+        slot = owner(slot);
+        if(level == null || level.isClientSide || lock(slot) == null)
+            return;
+        var lock = locks[slot];
+        locks[slot] = null;
+        var stack = lock.item();
+        if(!player.getInventory().add(stack))
+            Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, stack);
+        level.playSound(null, worldPosition, SoundEvents.IRON_DOOR_OPEN, SoundSource.BLOCKS, 0.5f, 1.6f);
+        player.displayClientMessage(Lang.builder().translate("message.lock.removed", lock.serial()).style(ChatFormatting.GRAY).component(), true);
+        setChanged();
+        sendData();
+    }
+
+    /**
+     * Whether a power cord is plugged into that receptacle gang, for the cover's lid. Looked up
+     * every half second at most, since it means a search of the cords nearby. Works on both sides.
+     */
+    public boolean cordPlugged(int slot) {
+        ensureArrays();
+        if(level == null || slot < 0 || slot >= GangLayout.MAX_GANGS || devices[slot] != GangDevice.RECEPTACLE || !(getBlockState().getBlock() instanceof GangBoxBlock box))
+            return false;
+        long now = level.getGameTime();
+        if(cordChecked[slot] == 0 || now - cordChecked[slot] >= 10 || now < cordChecked[slot]) {
+            cordChecked[slot] = now;
+            cordIn[slot] = GangBoxBlock.cordOn(this, slot, box.cordEndpoint(worldPosition, getBlockState(), slot)) != null;
+        }
+        return cordIn[slot];
+    }
+
     // ---- circuit ----
 
     @Override
@@ -445,6 +534,8 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         }
         for(int i = 0; i < width; ++i) {
             devices[slot + i] = i == 0 ? device : GangDevice.SPAN;
+            covers[slot + i] = null;
+            locks[slot + i] = null;
             on[slot + i] = false;
             hold[slot + i] = 0;
             fireAddresses[slot + i] = 0;
@@ -489,8 +580,52 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         on[slot] = false;
         if(!player.getInventory().add(stack))
             Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, stack);
+        if(covers[slot] != null) {
+            var cover = ModItems.gangCover(covers[slot]);
+            covers[slot] = null;
+            if(!player.getInventory().add(cover))
+                Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, cover);
+        }
         level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.6f, 1.2f);
         rebuild();
+    }
+
+    /** Server side: a weatherproof cover goes over the device in that gang, if it is one the cover fits and the gang is bare. */
+    public void fitCover(int slot, GangCover cover, Player player, ItemStack stack) {
+        ensureArrays();
+        if(level == null || level.isClientSide)
+            return;
+        slot = owner(slot);
+        var device = device(slot);
+        if(device == null || !cover.fits(device)) {
+            player.displayClientMessage(Lang.translate("message.gang.cover_fits_" + cover.id()).style(ChatFormatting.RED).component(), true);
+            return;
+        }
+        if(covers[slot] != null) {
+            player.displayClientMessage(Lang.translate("message.gang.covered").style(ChatFormatting.RED).component(), true);
+            return;
+        }
+        covers[slot] = cover;
+        if(!player.isCreative())
+            stack.shrink(1);
+        level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.0f);
+        setChanged();
+        sendData();
+    }
+
+    /** Server side: the cover comes off that gang, into the hand, the device staying put. */
+    public void removeCover(int slot, Player player) {
+        ensureArrays();
+        slot = owner(slot);
+        if(level == null || level.isClientSide || cover(slot) == null)
+            return;
+        var stack = ModItems.gangCover(covers[slot]);
+        covers[slot] = null;
+        if(!player.getInventory().add(stack))
+            Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, stack);
+        level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.6f, 1.0f);
+        setChanged();
+        sendData();
     }
 
     /** The box is going: every device falls out. */
@@ -501,7 +636,13 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
             if(devices[slot] != null && devices[slot].isItem())
                 Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, ModItems.gangDevice(devices[slot]));
+            if(covers[slot] != null)
+                Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, ModItems.gangCover(covers[slot]));
+            if(locks[slot] != null)
+                Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, locks[slot].item());
             devices[slot] = null;
+            covers[slot] = null;
+            locks[slot] = null;
         }
     }
 
@@ -706,6 +847,14 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         }
         tag.put("Devices", list);
         tag.putInt("On", bits);
+        var coverList = new ListTag();
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
+            coverList.add(StringTag.valueOf(covers[slot] == null ? "" : covers[slot].id()));
+        tag.put("Covers", coverList);
+        var lockList = new ListTag();
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
+            lockList.add(locks[slot] == null ? new CompoundTag() : locks[slot].write());
+        tag.put("Locks", lockList);
         var volts = new int[GangLayout.MAX_GANGS];
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
             volts[slot] = Math.round(hornVolts[slot] * 10);
@@ -757,6 +906,14 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             devices[slot] = device;
             on[slot] = (bits & 1 << slot) != 0;
         }
+        var coverList = tag.getList("Covers", Tag.TAG_STRING);
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
+            var id = slot < coverList.size() ? coverList.getString(slot) : "";
+            covers[slot] = id.isEmpty() ? null : GangCover.byId(id);
+        }
+        var lockList = tag.getList("Locks", Tag.TAG_COMPOUND);
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
+            locks[slot] = slot < lockList.size() ? com.nolanbaker.pgmodernized.device.lock.Lock.read(lockList.getCompound(slot)) : null;
         var volts = tag.getIntArray("HornVolts");
         for(int slot = 0; slot < GangLayout.MAX_GANGS && slot < volts.length; ++slot)
             hornVolts[slot] = volts[slot] / 10f;
@@ -821,6 +978,9 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             }
         }
         line.forGoggles(tooltip, 1);
+        for(int slot = 0; slot < gangs(); ++slot)
+            if(locks[slot] != null)
+                Lang.builder().translate("gui.lock.gang", slot + 1, locks[slot].serial(), locks[slot].ownerName()).style(ChatFormatting.GOLD).forGoggles(tooltip, 1);
         splices().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }

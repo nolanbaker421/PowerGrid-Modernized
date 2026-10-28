@@ -45,7 +45,10 @@ import java.util.Map;
  * splice screen (sneak-click an empty gang or the plate) wires the run's conductors to the devices'
  * points. Mounted like the conduit switch: on any face, turned with a wrench. A power cord plugs
  * into any receptacle gang and lands on that gang's line and neutral: each gang is its own cord
- * endpoint, so a box of receptacles takes a cord in every one.
+ * endpoint, so a box of receptacles takes a cord in every one. A weatherproof cover item goes
+ * over a fitted receptacle or switch; sneaking takes the cover off before the device. A padlock
+ * on a cover keeps everyone but its owner, creative players and operators from working that gang,
+ * taking anything off it, plugging or unplugging a cord, or wrenching or breaking the box.
  */
 public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxBlockEntity>, IAcceptCord {
     /** The gang of the first receptacle, 1 to 4, or 0 with none: where a power cord plugs in. Kept by the block entity. */
@@ -116,11 +119,16 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         int slot = slotAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
         if(slot < 0 || be.device(slot) != GangDevice.RECEPTACLE)
             return null;
+        var lock = be.lock(slot);
+        if(lock != null && !lock.mayOpen(context.getPlayer())) {
+            IElectric.sendMessage(context, lock.held());
+            return null;
+        }
         return cordEndpoint(pos, state, slot);
     }
 
     /** The cord endpoint of a receptacle gang: on its line and neutral, three pixels off the plate, plug pointing out. */
-    private AutoCordEndpoint cordEndpoint(BlockPos pos, BlockState state, int slot) {
+    public AutoCordEndpoint cordEndpoint(BlockPos pos, BlockState state, int slot) {
         var face = GangLayout.slot(gangs, slot);
         var centre = GangFrame.toWorld(state, new Vec3((face.minX + face.maxX) / 32, GangLayout.PLATE_Y1 / 16, 0.5));
         var out = GangFrame.toWorld(state, new Vec3(0.5, 1, 0.5)).subtract(GangFrame.toWorld(state, new Vec3(0.5, 0, 0.5))).normalize();
@@ -129,9 +137,9 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         return new AutoCordEndpoint(pos, GangLayout.point(slot, 0), GangLayout.point(slot, 1), placement, Direction.getNearest(out.x, out.y, out.z));
     }
 
-    /** The cord plugged into a receptacle gang, or null. Server side. */
+    /** The cord plugged into a receptacle gang, or null. The connections are the server's; the search of the cords nearby works on either side. */
     @Nullable
-    private static CordEntity cordOn(GangBoxBlockEntity be, int slot, AutoCordEndpoint endpoint) {
+    public static CordEntity cordOn(GangBoxBlockEntity be, int slot, AutoCordEndpoint endpoint) {
         var behaviour = be.getBehaviour(ElectricBehaviour.TYPE);
         if(behaviour != null) {
             for(var entry : behaviour.getConnections().entrySet()) {
@@ -218,6 +226,28 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
+        // A padlock hangs on the cover in the gang under the click.
+        if(stack.getItem() instanceof com.nolanbaker.pgmodernized.device.lock.LockItem item) {
+            if(!level.isClientSide && level.getBlockEntity(pos) instanceof GangBoxBlockEntity be) {
+                int slot = slotAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+                if(item.kind() != com.nolanbaker.pgmodernized.device.lock.LockKind.PADLOCK || slot < 0)
+                    player.displayClientMessage(Lang.translate("message.lock." + item.kind().id() + "_fits").style(ChatFormatting.RED).component(), true);
+                else
+                    be.fitLock(slot, player, stack);
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+        // A weatherproof cover goes over the device in the gang under the click.
+        if(stack.getItem() instanceof GangCoverItem item) {
+            if(!level.isClientSide && level.getBlockEntity(pos) instanceof GangBoxBlockEntity be) {
+                int slot = slotAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+                if(slot < 0)
+                    player.displayClientMessage(Lang.translate("message.gang.cover_fits_" + item.cover().id()).style(ChatFormatting.RED).component(), true);
+                else
+                    be.fitCover(slot, item.cover(), player, stack);
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
         // A name tag names the fire alarm device in the gang under the click.
         if(stack.is(net.minecraft.world.item.Items.NAME_TAG) && level.getBlockEntity(pos) instanceof GangBoxBlockEntity be) {
             int slot = slotAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
@@ -234,7 +264,7 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
      * Empty hand: a click flips the switch or presses the button in that gang, pulls a station by
      * its handle, and anywhere else, the box, an empty gang, a device with nothing to press, the
      * rest of a pull station, opens the splice editor as on a conduit box. Sneaking takes the
-     * device out, or opens the editor on an empty gang.
+     * cover off a covered gang, else the device out, or opens the editor on an empty gang.
      */
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
@@ -243,7 +273,23 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         int slot = slotAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
         if(!(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be))
             return InteractionResult.PASS;
+        var lock = slot >= 0 ? be.lock(be.owner(slot)) : null;
+        if(lock != null && !lock.mayOpen(player)) {
+            if(!level.isClientSide)
+                player.displayClientMessage(lock.held(), true);
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if(player.isShiftKeyDown()) {
+            if(lock != null) {
+                if(!level.isClientSide)
+                    be.removeLock(slot, player);
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+            if(slot >= 0 && be.cover(slot) != null) {
+                if(!level.isClientSide)
+                    be.removeCover(slot, player);
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
             if(slot >= 0 && be.device(slot) != null) {
                 if(!level.isClientSide)
                     be.remove(slot, player);
@@ -305,11 +351,36 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
+    /** A padlocked box is not wrenched, picked up or broken by anyone its lock keeps out. */
+    private static boolean lockedAgainst(Level level, BlockPos pos, @Nullable Player player) {
+        return level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && be.lockedAgainst(player);
+    }
+
+    @Override
+    public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
+        if(lockedAgainst(context.getLevel(), context.getClickedPos(), context.getPlayer())) {
+            IElectric.sendMessage(context, Lang.translate("message.lock.box_locked").style(ChatFormatting.RED).component());
+            return InteractionResult.FAIL;
+        }
+        return super.onSneakWrenched(state, context);
+    }
+
+    @Override
+    protected float getDestroyProgress(BlockState state, Player player, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        if(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && be.lockedAgainst(player))
+            return 0f;
+        return super.getDestroyProgress(state, player, level, pos);
+    }
+
     /** A wrench on a pulled station resets it, on a monitor module flips it between normally open and closed; anywhere else it turns the box. */
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         var level = context.getLevel();
         var pos = context.getClickedPos();
+        if(lockedAgainst(level, pos, context.getPlayer())) {
+            IElectric.sendMessage(context, Lang.translate("message.lock.box_locked").style(ChatFormatting.RED).component());
+            return InteractionResult.FAIL;
+        }
         int slot = slotAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
         if(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && slot >= 0 && be.device(slot) == GangDevice.MONITOR_MODULE) {
             if(!level.isClientSide && context.getPlayer() != null)

@@ -41,4 +41,9 @@ public class ModDataComponents {
             REGISTER.registerComponentType("conduit_bender", builder -> builder
                     .persistent(CompoundTag.CODEC)
                     .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
+    /** A lock's serial number. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> LOCK =
+            REGISTER.registerComponentType("lock", builder -> builder
+                    .persistent(CompoundTag.CODEC)
+                    .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
 }

@@ -185,6 +185,7 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<CtCabinetBlockEntity> CT_CABINET =
             REGISTRATE.blockEntity("ct_cabinet", ComputerBlockEntityFactories.ctCabinet())
                     .validBlock(ModBlocks.CT_CABINET)
+                    .renderer(() -> com.nolanbaker.pgmodernized.client.CtCabinetLockRenderer::new)
                     .register();
 
     @SuppressWarnings("unchecked")

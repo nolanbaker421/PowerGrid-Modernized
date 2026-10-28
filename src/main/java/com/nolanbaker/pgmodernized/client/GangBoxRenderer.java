@@ -3,6 +3,7 @@ package com.nolanbaker.pgmodernized.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlock;
 import com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlockEntity;
+import com.nolanbaker.pgmodernized.conduit.gang.GangCover;
 import com.nolanbaker.pgmodernized.conduit.gang.GangFrame;
 import com.nolanbaker.pgmodernized.conduit.gang.GangLayout;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
@@ -12,13 +13,18 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 /**
  * Draws the devices in a gang box: a toggle up or down, a button out or in, a receptacle face, a
  * blank. Drawn in the floor frame through {@link GangFrame}, so they sit on the plate however the
- * box is mounted and turned.
+ * box is mounted and turned. A weatherproof cover goes over the device: a hood on a hinge at the
+ * top over a receptacle, shut, or swung up while a cord is in; a plate with a lever over a
+ * switch, the lever up for on and down for off in place of the toggle.
  */
 public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity> {
     private static final int TOGGLE = 0xE0E0E0, TOGGLE_EDGE = 0x9A9A9A, BUTTON = 0xC83030, BUTTON_RING = 0x404040;
     private static final int FACE = 0xE8E4DA, SLOT = 0x2A2A2A, BLANK = 0xD8D8D8;
     private static final int ALARM_RED = 0xB31B1B, HANDLE = 0xF0F0EC, LENS_OFF = 0xC8C8C0, LENS_ON = 0xFFFFF0;
     private static final int MODULE = 0x9A9A9A, ANNUN_FACE = 0x303034, ANNUN_SCREEN = 0x101418, SILENCE_KEY = 0xC8A000, RESET_KEY = 0x30A050;
+    /** Die-cast grey of a weatherproof cover, its hinge and lever a shade darker, the gasket under it black. */
+    private static final int COVER = 0x8E9094, COVER_DARK = 0x66686C, GASKET = 0x1C1C1C;
+    private static final int BRASS = 0xC8A040, SHACKLE = 0x50524E;
     /** Text drawn in the north frame turned to lie on the plate's top face, read from the floor frame's south. */
     private static final org.joml.Quaternionf FLAT = new org.joml.Quaternionf().rotateAxis((float) Math.PI, 0f, 0.70710677f, -0.70710677f);
 
@@ -39,6 +45,13 @@ public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity>
                 continue;
             double cx = GangLayout.slotCentreX(gangs, slot);
             boolean on = be.isOn(slot);
+            var cover = be.cover(slot);
+            if(cover == GangCover.SWITCH) {
+                switchCover(ms, buffer, light, cx, top, on);
+                if(be.lock(slot) != null)
+                    padlock(ms, buffer, light, cx, top + 0.55);
+                continue;
+            }
             switch(device) {
                 case SWITCH, THREE_WAY, FOUR_WAY -> {
                     // A toggle: leans south when off, north when on; the 4-way shows crossed as on.
@@ -85,8 +98,56 @@ public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity>
                 case SPAN -> {}
                 case BLANK -> DeviceDraw.box(ms, buffer, light, cx - 1.6, top, 5.75, cx + 1.6, top + 0.3, 10.25, BLANK);
             }
+            if(cover == GangCover.RECEPTACLE) {
+                // A padlocked hood stays shut over a plugged cord, the in-use way.
+                receptacleCover(ms, buffer, light, cx, top, be.cordPlugged(slot) && be.lock(slot) == null);
+                if(be.lock(slot) != null)
+                    padlock(ms, buffer, light, cx, top + 1.85);
+            }
         }
         ms.popPose();
+    }
+
+    /**
+     * The weatherproof receptacle cover: a gasket and frame round the gang, a hinge across the
+     * top, and a hood that sits shut over the receptacle, or stands up off the hinge while a cord
+     * is plugged in, so the plug shows.
+     */
+    private static void receptacleCover(PoseStack ms, MultiBufferSource buffer, int light, double cx, double top, boolean open) {
+        DeviceDraw.box(ms, buffer, light, cx - 2.0, top, 5.3, cx + 2.0, top + 0.15, 10.7, GASKET);
+        DeviceDraw.box(ms, buffer, light, cx - 1.95, top + 0.15, 5.35, cx + 1.95, top + 0.45, 10.65, COVER);
+        DeviceDraw.box(ms, buffer, light, cx - 1.7, top + 0.45, 5.35, cx + 1.7, top + 0.95, 5.95, COVER_DARK);   // the hinge
+        if(open) {
+            // The hood swung up a right angle: its depth becomes its thickness, its length its height.
+            DeviceDraw.box(ms, buffer, light, cx - 2.0, top + 0.95, 5.3, cx + 2.0, top + 6.3, 6.7, COVER);
+            DeviceDraw.box(ms, buffer, light, cx - 0.4, top + 5.9, 6.7, cx + 0.4, top + 6.3, 7.0, COVER_DARK);   // the latch tab
+        } else {
+            DeviceDraw.box(ms, buffer, light, cx - 2.0, top + 0.45, 5.95, cx + 2.0, top + 1.85, 10.7, COVER);
+            DeviceDraw.box(ms, buffer, light, cx - 0.4, top + 1.85, 9.9, cx + 0.4, top + 2.15, 10.4, COVER_DARK);   // the latch tab
+        }
+    }
+
+    /** A brass padlock hanging off the cover's tab at the plate's bottom edge, its shackle through the tab at height {@code y}. */
+    private static void padlock(PoseStack ms, MultiBufferSource buffer, int light, double cx, double y) {
+        DeviceDraw.box(ms, buffer, light, cx - 0.4, y, 10.3, cx + 0.4, y + 0.3, 10.7, COVER_DARK);   // the tab
+        DeviceDraw.box(ms, buffer, light, cx - 0.15, y - 0.15, 10.0, cx + 0.15, y + 0.45, 11.3, SHACKLE);   // the shackle through it
+        DeviceDraw.box(ms, buffer, light, cx - 0.7, y - 0.5, 11.3, cx + 0.7, y + 0.8, 12.4, BRASS);   // the body below
+    }
+
+    /**
+     * The weatherproof switch cover: a plate over the gang with a boss in the middle and a lever
+     * through it, up for on and down for off, ON and OFF cast beside it.
+     */
+    private static void switchCover(PoseStack ms, MultiBufferSource buffer, int light, double cx, double top, boolean on) {
+        DeviceDraw.box(ms, buffer, light, cx - 2.0, top, 5.3, cx + 2.0, top + 0.15, 10.7, GASKET);
+        DeviceDraw.box(ms, buffer, light, cx - 1.95, top + 0.15, 5.35, cx + 1.95, top + 0.55, 10.65, COVER);
+        DeviceDraw.box(ms, buffer, light, cx - 0.9, top + 0.55, 7.1, cx + 0.9, top + 1.35, 8.9, COVER_DARK);   // the boss
+        double z1 = on ? 5.9 : 8.0, z2 = on ? 8.0 : 10.1;
+        DeviceDraw.box(ms, buffer, light, cx - 0.45, top + 0.95, z1, cx + 0.45, top + 1.55, z2, COVER);   // the lever
+        double k1 = on ? 5.9 : 9.4, k2 = on ? 6.6 : 10.1;
+        DeviceDraw.box(ms, buffer, light, cx - 0.55, top + 0.85, k1, cx + 0.55, top + 1.95, k2, COVER);   // its knob
+        flat(ms, buffer, light, "ON", cx + 1.3, top + 0.57, 6.2, 1 / 400f, 0x404448);
+        flat(ms, buffer, light, "OFF", cx + 1.3, top + 0.57, 9.9, 1 / 400f, 0x404448);
     }
 
     /** Text lying on the plate at floor-frame (x, y, z), centred on x, its top toward -z. */

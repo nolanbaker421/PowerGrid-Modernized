@@ -548,6 +548,57 @@ def gang_device_items():
         dump(os.path.join(ASSETS, "models", "item", "gang_%s.json" % device), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/gang_%s" % (MOD, device)}})
 
 
+def gang_cover_items():
+    """Item icons for the weatherproof covers: die-cast grey, a hooded lid with its hinge, or a plate with a lever."""
+    grey = (0x8e, 0x90, 0x94)
+    dark = (0x66, 0x68, 0x6c)
+    for cover in ("weatherproof_receptacle_cover", "weatherproof_switch_cover"):
+        img = canvas(16, 16)
+        fill(img, 3, 1, 13, 15, grey)
+        fill(img, 3, 14, 13, 15, shade(grey, 0.7))
+        fill(img, 12, 1, 13, 15, shade(grey, 0.8))
+        if cover == "weatherproof_receptacle_cover":
+            fill(img, 4, 2, 12, 4, dark)                    # the hinge
+            fill(img, 4, 4, 12, 13, shade(grey, 1.15))      # the hood
+            fill(img, 11, 4, 12, 13, shade(grey, 0.85))
+            fill(img, 4, 12, 12, 13, shade(grey, 0.75))
+            fill(img, 7, 13, 9, 14, dark)                   # the latch tab
+        else:
+            fill(img, 6, 6, 10, 10, dark)                   # the boss
+            fill(img, 7, 3, 9, 7, shade(grey, 1.2))         # the lever, up
+            fill(img, 6, 2, 10, 4, shade(grey, 1.3))        # its knob
+            fill(img, 11, 3, 12, 4, dark)                   # ON and OFF marks
+            fill(img, 11, 12, 12, 13, dark)
+        write_png(os.path.join(ITEM_TEX_DIR, "%s.png" % cover), img)
+        dump(os.path.join(ASSETS, "models", "item", "%s.json" % cover), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/%s" % (MOD, cover)}})
+
+
+def lock_items():
+    """Item icons for the locks: a brass padlock with its shackle, and the utility's grey barrel lock."""
+    brass = (0xc8, 0xa0, 0x40)
+    shackle = (0x50, 0x52, 0x4e)
+    barrel = (0x4a, 0x4c, 0x50)
+    img = canvas(16, 16)
+    fill(img, 4, 7, 12, 14, brass)
+    fill(img, 4, 13, 12, 14, shade(brass, 0.7))
+    fill(img, 11, 7, 12, 14, shade(brass, 0.8))
+    fill(img, 7, 10, 9, 12, shade(brass, 0.5))        # the keyway
+    fill(img, 5, 2, 7, 7, shackle)
+    fill(img, 9, 2, 11, 7, shackle)
+    fill(img, 5, 2, 11, 3, shackle)
+    fill(img, 7, 3, 9, 4, shade(shackle, 1.3))
+    write_png(os.path.join(ITEM_TEX_DIR, "padlock.png"), img)
+    dump(os.path.join(ASSETS, "models", "item", "padlock.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/padlock" % MOD}})
+    img = canvas(16, 16)
+    fill(img, 6, 3, 10, 14, barrel)
+    fill(img, 9, 3, 10, 14, shade(barrel, 0.7))
+    fill(img, 5, 1, 11, 4, shade(barrel, 1.3))       # the head
+    fill(img, 6, 1, 10, 2, brass)                      # the brass face
+    fill(img, 7, 6, 9, 8, shade(barrel, 0.5))         # the keyway
+    write_png(os.path.join(ITEM_TEX_DIR, "utility_lock.png"), img)
+    dump(os.path.join(ASSETS, "models", "item", "utility_lock.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/utility_lock" % MOD}})
+
+
 def pull_box_assets():
     """A full-block grey cabinet: a door with a handle on the front, two flush knockouts on every other face."""
     block = os.path.join(ASSETS, "textures", "block")
@@ -686,6 +737,12 @@ def recipes():
     recipe_shapeless("gang_switch_4way", [lever, lever, lever, nugget], 1, {"items": "%s:gang_switch_3way" % MOD})
     recipe_shapeless("gang_button", [{"item": "minecraft:stone_button"}, nugget], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_receptacle", [{"tag": "c:ingots/copper"}, nugget, nugget], 1, {"items": "%s:gang_box_1" % MOD})
+    # Weatherproof covers: an iron plate with a gasket for the receptacle hood, with a lever for the switch.
+    recipe_shapeless("weatherproof_receptacle_cover", [{"tag": "c:plates/iron"}, nugget, {"item": "minecraft:slime_ball"}], 1, {"items": "%s:gang_receptacle" % MOD})
+    recipe_shapeless("weatherproof_switch_cover", [{"tag": "c:plates/iron"}, nugget, lever], 1, {"items": "%s:gang_switch" % MOD})
+    # Locks: an iron ingot and nuggets for the padlock, a copper nugget for the utility lock's barrel face.
+    recipe_shapeless("padlock", [{"tag": "c:ingots/iron"}, nugget, nugget], 1, {"items": "%s:weatherproof_receptacle_cover" % MOD})
+    recipe_shapeless("utility_lock", [{"tag": "c:ingots/iron"}, nugget, {"tag": "c:nuggets/copper"}], 1, {"items": "%s:ct_cabinet" % MOD})
     recipe_shapeless("gang_pull_station", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_horn_strobe", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"tag": "c:nuggets/copper"}], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_monitor_module", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"item": "minecraft:redstone_torch"}], 1, {"items": "%s:gang_box_1" % MOD})
@@ -726,6 +783,8 @@ def main():
     three_way_model()
     gang_box_models()
     gang_device_items()
+    gang_cover_items()
+    lock_items()
     pull_box_assets()
     item_models()
     loot_table("conduit_box")

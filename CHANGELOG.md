@@ -4,6 +4,23 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.75.0 — 2026-10-27
+
+### Added
+- Weatherproof covers for gang boxes, as items that go over a fitted device. The **Weatherproof
+  Receptacle Cover** hoods a receptacle gang, hinged at the top; the hood swings up while a cord
+  is plugged in and shuts when it comes out. The **Weatherproof Switch Cover** goes over a
+  single-pole, 3-way or 4-way switch with a lever through the plate, up for on and down for
+  off, in place of the toggle; a click still flips the switch. Sneak-click takes the cover off
+  before the device. Crafted from an iron plate and a nugget with a slime ball or a lever.
+- Locks, each stamped with a serial number when crafted that stays with it on and off. A
+  **Padlock** hangs on a weatherproof cover and locks that gang: only its owner, a creative
+  player or an operator flips the switch, plugs or unplugs a cord, takes the cover or device
+  out, or wrenches, picks up or breaks the box. A padlocked hood stays shut over a plugged cord.
+  A **Utility Lock** seals a CT cabinet the way a utility seals a meter cabinet: no opening,
+  wiring, zeroing, wrenching, picking up or breaking it but by the same people. Goggles show the
+  number and who fitted it; sneak-click gives the lock back.
+
 ## 0.74.0 — 2026-10-27
 
 ### Added

@@ -1,5 +1,9 @@
 package com.nolanbaker.pgmodernized.registry;
 
+import com.nolanbaker.pgmodernized.conduit.gang.GangCover;
+import com.nolanbaker.pgmodernized.device.lock.LockItem;
+import com.nolanbaker.pgmodernized.device.lock.LockKind;
+import com.nolanbaker.pgmodernized.conduit.gang.GangCoverItem;
 import com.nolanbaker.pgmodernized.conduit.gang.GangDeviceItem;
 import com.nolanbaker.pgmodernized.conduit.gang.GangDevice;
 import com.nolanbaker.pgmodernized.radio.CellCardItem;
@@ -71,6 +75,45 @@ public class ModItems {
     /** One of that device, as an item. */
     public static ItemStack gangDevice(GangDevice device) {
         return GANG_DEVICES.get(device).asStack();
+    }
+
+    /** The weatherproof covers that go over a gang box's devices, by kind. */
+    public static final Map<GangCover, ItemEntry<GangCoverItem>> GANG_COVERS = gangCovers();
+
+    private static Map<GangCover, ItemEntry<GangCoverItem>> gangCovers() {
+        var map = new EnumMap<GangCover, ItemEntry<GangCoverItem>>(GangCover.class);
+        for(var cover : GangCover.values()) {
+            map.put(cover, REGISTRATE.item(cover.id(), props -> new GangCoverItem(props, cover))
+                    .model(NonNullBiConsumer.noop())
+                    .lang(cover.label())
+                    .register());
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    /** One of that cover, as an item. */
+    public static ItemStack gangCover(GangCover cover) {
+        return GANG_COVERS.get(cover).asStack();
+    }
+
+    /** The locks: a padlock for weatherproof covers, a utility lock for CT cabinets. Each is numbered, so they do not stack. */
+    public static final Map<LockKind, ItemEntry<LockItem>> LOCKS = locks();
+
+    private static Map<LockKind, ItemEntry<LockItem>> locks() {
+        var map = new EnumMap<LockKind, ItemEntry<LockItem>>(LockKind.class);
+        for(var kind : LockKind.values()) {
+            map.put(kind, REGISTRATE.item(kind.id(), props -> new LockItem(props, kind))
+                    .properties(p -> p.stacksTo(1))
+                    .model(NonNullBiConsumer.noop())
+                    .lang(kind.label())
+                    .register());
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    /** One of that lock, as an item, not yet numbered. */
+    public static ItemStack lock(LockKind kind) {
+        return LOCKS.get(kind).asStack();
     }
 
     /** The installer's boresight scope: sights two antennas in on each other. */

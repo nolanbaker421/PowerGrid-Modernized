@@ -16,6 +16,9 @@ import com.nolanbaker.pgmodernized.util.BodySpace;
 import com.nolanbaker.pgmodernized.util.AcReadings;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.ChatFormatting;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -70,6 +73,8 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
     private String meterId = "", utility = "";
     private int reportTimer;
     private long lastReport = -1;
+    /** The utility's lock sealing the cabinet, or null. */
+    private com.nolanbaker.pgmodernized.device.lock.Lock lock;
 
     public CtCabinetBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -249,6 +254,8 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.builder().translate("gui.ct_cabinet.title").style(ChatFormatting.GRAY).forGoggles(tooltip);
+        if(lock != null)
+            Lang.builder().translate("gui.lock.cabinet", lock.serial(), lock.ownerName()).style(ChatFormatting.GOLD).forGoggles(tooltip, 1);
         for(var line : readings())
             Lang.builder().add(line).forGoggles(tooltip, 1);
         if(hasAntenna()) {
@@ -258,6 +265,50 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         }
         deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
+    }
+
+    // ---- the utility's lock ----
+
+    @Nullable
+    public com.nolanbaker.pgmodernized.device.lock.Lock lock() {
+        return lock;
+    }
+
+    /** Whether the seal keeps this player out of the cabinet. */
+    public boolean lockedAgainst(@Nullable Player player) {
+        return lock != null && !lock.mayOpen(player);
+    }
+
+    /** Server side: the lock in the hand seals the cabinet. */
+    public void fitLock(Player player, ItemStack stack) {
+        if(level == null || level.isClientSide)
+            return;
+        if(lock != null) {
+            player.displayClientMessage(Lang.translate("message.lock.already").style(ChatFormatting.RED).component(), true);
+            return;
+        }
+        lock = com.nolanbaker.pgmodernized.device.lock.Lock.fit(stack, player, level);
+        if(!player.isCreative())
+            stack.shrink(1);
+        level.playSound(null, worldPosition, net.minecraft.sounds.SoundEvents.IRON_DOOR_CLOSE, net.minecraft.sounds.SoundSource.BLOCKS, 0.5f, 1.6f);
+        player.displayClientMessage(Lang.builder().translate("message.lock.fitted", lock.serial()).style(ChatFormatting.GRAY).component(), true);
+        setChanged();
+        sendData();
+    }
+
+    /** Server side: the seal comes off into the hand, the same numbered lock. The block checks who may. */
+    public void removeLock(Player player) {
+        if(level == null || level.isClientSide || lock == null)
+            return;
+        var taken = lock;
+        lock = null;
+        var stack = taken.item();
+        if(!player.getInventory().add(stack))
+            net.minecraft.world.Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, stack);
+        level.playSound(null, worldPosition, net.minecraft.sounds.SoundEvents.IRON_DOOR_OPEN, net.minecraft.sounds.SoundSource.BLOCKS, 0.5f, 1.6f);
+        player.displayClientMessage(Lang.builder().translate("message.lock.removed", taken.serial()).style(ChatFormatting.GRAY).component(), true);
+        setChanged();
+        sendData();
     }
 
     // ---- the meter antenna module ----
@@ -383,6 +434,8 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         tag.putString("MeterId", meterId);
         tag.putString("Utility", utility);
         tag.putLong("LastReport", lastReport);
+        if(lock != null)
+            tag.put("Lock", lock.write());
         if(clientPacket) {
             var list = new net.minecraft.nbt.ListTag();
             for(int n = 0; n < CHANNELS; ++n) {
@@ -407,6 +460,7 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         meterId = tag.getString("MeterId");
         utility = tag.getString("Utility");
         lastReport = tag.contains("LastReport") ? tag.getLong("LastReport") : -1;
+        lock = tag.contains("Lock") ? com.nolanbaker.pgmodernized.device.lock.Lock.read(tag.getCompound("Lock")) : null;
         if(clientPacket && tag.contains("Readings")) {
             var list = tag.getList("Readings", net.minecraft.nbt.Tag.TAG_FLOAT);
             for(int n = 0; n < CHANNELS && n * 4 + 3 < list.size(); ++n) {
