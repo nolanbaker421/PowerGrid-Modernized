@@ -57,6 +57,14 @@ public record SplicePayload(BlockPos pos, int action, int a, int b) implements C
             return;
         if(!(level.getBlockEntity(payload.pos) instanceof ISpliceHost host) || host.splices() == null)
             return;
+        // A sealed cabinet or a padlocked gang keeps its wiring, even from an editor opened before the lock went on.
+        boolean locked = switch(payload.action) {
+            case TOGGLE -> host.spliceLocked(payload.a) || host.spliceLocked(payload.b);
+            case LAND -> java.util.Arrays.stream(landTerminals(host, payload.a)).anyMatch(host::spliceLocked);
+            default -> host.spliceLocked(payload.a);
+        };
+        if(locked)
+            return;
         if(payload.action == RECOLOR) {
             // Tape on a wire's end, and on every wire spliced straight through to it: no electrical change, nothing live is touched.
             var conductor = com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport.conductorAt(host, payload.a);

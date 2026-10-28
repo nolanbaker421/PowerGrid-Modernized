@@ -116,6 +116,16 @@ public class ModItems {
         return LOCKS.get(kind).asStack();
     }
 
+    /** A key, cut to a lock's number in the crafting grid; keys of one number stack. */
+    public static final ItemEntry<com.nolanbaker.pgmodernized.device.lock.KeyItem> KEY = REGISTRATE.item("key", com.nolanbaker.pgmodernized.device.lock.KeyItem::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Key")
+            .register();
+
+    public static ItemStack key() {
+        return KEY.asStack();
+    }
+
     /** The installer's boresight scope: sights two antennas in on each other. */
     public static final ItemEntry<AlignmentScopeItem> ALIGNMENT_SCOPE = REGISTRATE.item("alignment_scope", AlignmentScopeItem::new)
             .properties(p -> p.stacksTo(1))

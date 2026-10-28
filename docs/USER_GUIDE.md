@@ -730,10 +730,10 @@ Goggles show the same lines. Energy is kept when the world reloads and can be ze
 computer. The cabinet has a Cat6 jack for the network.
 
 **Sealing it.** A **Utility Lock** (an iron ingot, an iron nugget and a copper nugget) right-clicked
-on the cabinet seals it the way a utility seals a meter cabinet. Nobody but you, a creative player
-or an operator opens it, lands conduit or Cat6 on it, zeroes it, wrenches, picks up or breaks it;
-goggles show the lock's serial number and who fitted it. Sneak-click the sealed cabinet to take the
-lock off; it comes back with the same number.
+on the cabinet seals it the way a utility seals a meter cabinet. Nobody opens it, changes its
+splices, lands conduit or Cat6 on it, zeroes it, wrenches, picks up or breaks it, until a key cut
+to the lock's number (see the gang box's padlock for cutting keys) is right-clicked on it, when the
+lock comes back with the same number. Goggles show the serial number and who fitted it.
 
 ### Three-Phase Motor (AC build)
 
@@ -951,12 +951,17 @@ and a lever) goes over a single-pole, 3-way or 4-way switch and puts a lever thr
 for on and down for off; clicking it still flips the switch. Sneak-click a covered gang to take
 the cover off; the device comes out on the next sneak-click.
 
-**Padlocks.** A **Padlock** (an iron ingot and two nuggets) right-clicked on a covered gang hangs
-on the cover's tab and locks that gang: nobody but you, a creative player or an operator flips the
-switch, plugs or unplugs a cord, takes the cover or the device out, or wrenches, picks up or
-breaks the box. A padlocked hood stays shut over a plugged cord. Every lock is stamped with a
-serial number when crafted, shown on the item and in goggles, and sneak-clicking the gang gives
-the same numbered lock back.
+**Padlocks and keys.** A **Padlock** (an iron ingot and two nuggets) right-clicked on a covered
+gang hangs on the cover's tab and puts that gang out of use for everyone, you included: nobody
+flips the switch, plugs or unplugs a cord, takes the cover or the device out, changes the gang's
+splices, or wrenches, picks up or breaks the box. A padlocked hood stays shut over a plugged cord.
+Every lock is stamped with a serial number when crafted, shown on the item and in goggles. To cut
+a **Key** for it, put the lock (or a key of its number) and an iron nugget in a crafting grid: the
+key comes out stamped with the number and the lock stays in the grid, so cut keys before you fit
+the lock. Right-click the padlocked gang with its key and the same numbered lock comes back. A
+lock from the creative menu takes its number when fitted, so cut its keys from a key of another
+number first, or keep a numbered one. A creative player can still break a locked box, which drops
+everything in it.
 
 The Conduit Switch, Conduit Socket, Conduit Button and 3-Way Conduit Switch blocks stay for
 builds that have them; each crafts into its gang device.
@@ -1214,6 +1219,7 @@ adapter placed next to them:
 | Weatherproof Switch Cover | shapeless: an iron plate, an iron nugget and a lever |
 | Padlock | shapeless: an iron ingot and two iron nuggets |
 | Utility Lock | shapeless: an iron ingot, an iron nugget and a copper nugget |
+| Key | a numbered lock or key and an iron nugget anywhere in the grid; the lock or key stays |
 | Node Cover Plate | a blank cover plate and pins, shapeless |
 | Pull Box | ring of eight iron plates |
 | Conduit Switch (2) | iron nugget, lever, iron nugget over an iron nugget |

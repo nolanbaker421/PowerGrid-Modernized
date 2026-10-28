@@ -47,8 +47,9 @@ import java.util.Map;
  * into any receptacle gang and lands on that gang's line and neutral: each gang is its own cord
  * endpoint, so a box of receptacles takes a cord in every one. A weatherproof cover item goes
  * over a fitted receptacle or switch; sneaking takes the cover off before the device. A padlock
- * on a cover keeps everyone but its owner, creative players and operators from working that gang,
- * taking anything off it, plugging or unplugging a cord, or wrenching or breaking the box.
+ * on a cover puts that gang out of use for everyone: no switching, no cord in or out, nothing
+ * taken off, its splices kept, and the box not wrenched, picked up or broken, until a key cut
+ * to the lock's number takes the lock off.
  */
 public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxBlockEntity>, IAcceptCord {
     /** The gang of the first receptacle, 1 to 4, or 0 with none: where a power cord plugs in. Kept by the block entity. */
@@ -120,7 +121,7 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         if(slot < 0 || be.device(slot) != GangDevice.RECEPTACLE)
             return null;
         var lock = be.lock(slot);
-        if(lock != null && !lock.mayOpen(context.getPlayer())) {
+        if(lock != null) {
             IElectric.sendMessage(context, lock.held());
             return null;
         }
@@ -226,6 +227,20 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
+        // The key takes the padlock off the gang under the click.
+        if(stack.getItem() instanceof com.nolanbaker.pgmodernized.device.lock.KeyItem) {
+            if(!level.isClientSide && level.getBlockEntity(pos) instanceof GangBoxBlockEntity be) {
+                int slot = slotAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+                var lock = slot < 0 ? null : be.lock(be.owner(slot));
+                if(lock == null)
+                    player.displayClientMessage(Lang.translate("message.lock.no_lock").style(ChatFormatting.RED).component(), true);
+                else if(!lock.opensWith(stack))
+                    player.displayClientMessage(Lang.builder().translate("message.lock.wrong_key", lock.serial()).style(ChatFormatting.RED).component(), true);
+                else
+                    be.removeLock(slot, player);
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
         // A padlock hangs on the cover in the gang under the click.
         if(stack.getItem() instanceof com.nolanbaker.pgmodernized.device.lock.LockItem item) {
             if(!level.isClientSide && level.getBlockEntity(pos) instanceof GangBoxBlockEntity be) {
@@ -274,17 +289,13 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         if(!(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be))
             return InteractionResult.PASS;
         var lock = slot >= 0 ? be.lock(be.owner(slot)) : null;
-        if(lock != null && !lock.mayOpen(player)) {
+        if(lock != null) {
+            // A padlocked gang does nothing for anyone until its key takes the lock off.
             if(!level.isClientSide)
                 player.displayClientMessage(lock.held(), true);
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
         if(player.isShiftKeyDown()) {
-            if(lock != null) {
-                if(!level.isClientSide)
-                    be.removeLock(slot, player);
-                return InteractionResult.sidedSuccess(level.isClientSide);
-            }
             if(slot >= 0 && be.cover(slot) != null) {
                 if(!level.isClientSide)
                     be.removeCover(slot, player);
@@ -351,14 +362,14 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** A padlocked box is not wrenched, picked up or broken by anyone its lock keeps out. */
-    private static boolean lockedAgainst(Level level, BlockPos pos, @Nullable Player player) {
-        return level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && be.lockedAgainst(player);
+    /** A padlocked box is not wrenched, picked up or broken by anyone. */
+    private static boolean locked(Level level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && be.locked();
     }
 
     @Override
     public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
-        if(lockedAgainst(context.getLevel(), context.getClickedPos(), context.getPlayer())) {
+        if(locked(context.getLevel(), context.getClickedPos())) {
             IElectric.sendMessage(context, Lang.translate("message.lock.box_locked").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
         }
@@ -367,7 +378,7 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
 
     @Override
     protected float getDestroyProgress(BlockState state, Player player, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
-        if(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && be.lockedAgainst(player))
+        if(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && be.locked())
             return 0f;
         return super.getDestroyProgress(state, player, level, pos);
     }
@@ -377,7 +388,7 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         var level = context.getLevel();
         var pos = context.getClickedPos();
-        if(lockedAgainst(level, pos, context.getPlayer())) {
+        if(locked(level, pos)) {
             IElectric.sendMessage(context, Lang.translate("message.lock.box_locked").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
         }

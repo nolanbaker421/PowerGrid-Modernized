@@ -597,6 +597,17 @@ def lock_items():
     fill(img, 7, 6, 9, 8, shade(barrel, 0.5))         # the keyway
     write_png(os.path.join(ITEM_TEX_DIR, "utility_lock.png"), img)
     dump(os.path.join(ASSETS, "models", "item", "utility_lock.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/utility_lock" % MOD}})
+    # The key: a brass bow, a shank and two bits.
+    img = canvas(16, 16)
+    fill(img, 3, 3, 8, 8, brass)
+    fill(img, 4, 4, 7, 7, shade(brass, 0.6))
+    fill(img, 5, 5, 6, 6, (0, 0, 0, 0))
+    fill(img, 7, 5, 14, 6, brass)
+    fill(img, 7, 6, 14, 7, shade(brass, 0.75))
+    fill(img, 11, 7, 12, 9, shade(brass, 0.75))
+    fill(img, 13, 7, 14, 9, shade(brass, 0.75))
+    write_png(os.path.join(ITEM_TEX_DIR, "key.png"), img)
+    dump(os.path.join(ASSETS, "models", "item", "key.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/key" % MOD}})
 
 
 def pull_box_assets():
@@ -743,6 +754,8 @@ def recipes():
     # Locks: an iron ingot and nuggets for the padlock, a copper nugget for the utility lock's barrel face.
     recipe_shapeless("padlock", [{"tag": "c:ingots/iron"}, nugget, nugget], 1, {"items": "%s:weatherproof_receptacle_cover" % MOD})
     recipe_shapeless("utility_lock", [{"tag": "c:ingots/iron"}, nugget, {"tag": "c:nuggets/copper"}], 1, {"items": "%s:ct_cabinet" % MOD})
+    # Keys are cut by the mod's own recipe: a numbered lock or key and an iron nugget, the pattern staying in the grid.
+    dump(os.path.join(DATA, "recipe", "crafting", "key_cutting.json"), {"type": "%s:key_cutting" % MOD, "category": "misc"})
     recipe_shapeless("gang_pull_station", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_horn_strobe", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"tag": "c:nuggets/copper"}], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_monitor_module", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"item": "minecraft:redstone_torch"}], 1, {"items": "%s:gang_box_1" % MOD})

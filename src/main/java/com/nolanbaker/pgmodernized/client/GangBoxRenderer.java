@@ -100,7 +100,7 @@ public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity>
             }
             if(cover == GangCover.RECEPTACLE) {
                 // A padlocked hood stays shut over a plugged cord, the in-use way.
-                receptacleCover(ms, buffer, light, cx, top, be.cordPlugged(slot) && be.lock(slot) == null);
+                receptacleCover(ms, buffer, light, cx, top, be.lock(slot) == null && (be.cordPlugged(slot) || cordStarting(be, slot)));
                 if(be.lock(slot) != null)
                     padlock(ms, buffer, light, cx, top + 1.85);
             }
@@ -125,6 +125,28 @@ public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity>
             DeviceDraw.box(ms, buffer, light, cx - 2.0, top + 0.45, 5.95, cx + 2.0, top + 1.85, 10.7, COVER);
             DeviceDraw.box(ms, buffer, light, cx - 0.4, top + 1.85, 9.9, cx + 0.4, top + 2.15, 10.4, COVER_DARK);   // the latch tab
         }
+    }
+
+    /** Whether the player is drawing a cord out of that receptacle: its first end is in the cord item in their hand. */
+    private static boolean cordStarting(GangBoxBlockEntity be, int slot) {
+        var player = net.minecraft.client.Minecraft.getInstance().player;
+        if(player == null || !(be.getBlockState().getBlock() instanceof GangBoxBlock box))
+            return false;
+        var endpoint = box.cordEndpoint(be.getBlockPos(), be.getBlockState(), slot);
+        for(var stack : new net.minecraft.world.item.ItemStack[] {player.getMainHandItem(), player.getOffhandItem()}) {
+            if(!(stack.getItem() instanceof org.patryk3211.powergrid.electricity.wire.powercord.CordItem))
+                continue;
+            var connection = stack.get(org.patryk3211.powergrid.collections.ModdedDataComponents.CONNECTION_DATA.get());
+            if(connection == null)
+                continue;
+            try {
+                if(endpoint.equals(connection.endpoint()))
+                    return true;
+            } catch(RuntimeException ignored) {
+                // An empty or foreign connection tag: not ours.
+            }
+        }
+        return false;
     }
 
     /** A brass padlock hanging off the cover's tab at the plate's bottom edge, its shackle through the tab at height {@code y}. */

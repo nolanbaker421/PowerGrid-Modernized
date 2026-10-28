@@ -274,9 +274,15 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         return lock;
     }
 
-    /** Whether the seal keeps this player out of the cabinet. */
-    public boolean lockedAgainst(@Nullable Player player) {
-        return lock != null && !lock.mayOpen(player);
+    /** Whether the cabinet is sealed. */
+    public boolean locked() {
+        return lock != null;
+    }
+
+    /** A sealed cabinet keeps all its splices. */
+    @Override
+    public boolean spliceLocked(int terminal) {
+        return lock != null;
     }
 
     /** Server side: the lock in the hand seals the cabinet. */
@@ -296,7 +302,7 @@ public class CtCabinetBlockEntity extends ElectricBlockEntity implements IDevice
         sendData();
     }
 
-    /** Server side: the seal comes off into the hand, the same numbered lock. The block checks who may. */
+    /** Server side: the seal comes off into the hand, the same numbered lock. The block checks the key. */
     public void removeLock(Player player) {
         if(level == null || level.isClientSide || lock == null)
             return;

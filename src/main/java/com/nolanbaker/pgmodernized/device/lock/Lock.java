@@ -13,21 +13,21 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.UUID;
 
 /**
- * A lock fitted to something: which kind, its serial, and who fitted it. Only they, a creative
- * player or an operator open what it holds or take it off. Taken off, it is the same numbered
- * lock again as an item.
+ * A lock fitted to something: which kind, its serial, and who fitted it. It holds against
+ * everyone, the one who fitted it included; only a key cut to its number takes it off. Taken off,
+ * it is the same numbered lock again as an item.
  */
 public record Lock(LockKind kind, String serial, UUID owner, String ownerName) {
 
-    /** The lock in the player's hand goes on: it takes a serial if it has none, and remembers the player. */
+    /** The lock in the player's hand goes on: it takes a serial if it has none, and remembers who fitted it. */
     public static Lock fit(ItemStack stack, Player player, Level level) {
         var kind = stack.getItem() instanceof LockItem item ? item.kind() : LockKind.PADLOCK;
         return new Lock(kind, LockItem.stamp(stack, level), player.getUUID(), player.getGameProfile().getName());
     }
 
-    /** Whether the player gets past this lock: its owner, a creative player, or an operator. */
-    public boolean mayOpen(@Nullable Player player) {
-        return player != null && (player.getUUID().equals(owner) || player.isCreative() || player.hasPermissions(2));
+    /** Whether that is a key cut to this lock's number. */
+    public boolean opensWith(ItemStack stack) {
+        return stack.getItem() instanceof KeyItem && LockItem.serial(stack).equals(serial);
     }
 
     /** The lock back as an item, numbered as before. */
@@ -37,9 +37,9 @@ public record Lock(LockKind kind, String serial, UUID owner, String ownerName) {
         return stack;
     }
 
-    /** "Locked by Nolan, lock PL-0000000" in red, for the action bar. */
+    /** "Locked: PL-0000000, fitted by Nolan; its key takes it off" in red, for the action bar. */
     public Component held() {
-        return Lang.builder().translate("message.lock.held", ownerName, serial).style(ChatFormatting.RED).component();
+        return Lang.builder().translate("message.lock.held", serial, ownerName).style(ChatFormatting.RED).component();
     }
 
     public CompoundTag write() {

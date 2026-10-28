@@ -57,4 +57,9 @@ public interface ISpliceHost {
     /** The run on that hub, or null. Works on both sides. */
     @Nullable
     ConduitRunEntity hubRun(int hub);
+
+    /** Whether a lock keeps the splices on that terminal as they are: a sealed cabinet, a padlocked gang. */
+    default boolean spliceLocked(int terminal) {
+        return false;
+    }
 }

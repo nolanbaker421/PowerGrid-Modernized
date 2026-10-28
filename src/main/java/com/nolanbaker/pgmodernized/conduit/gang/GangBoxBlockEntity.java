@@ -321,13 +321,19 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         return slot >= 0 && slot < GangLayout.MAX_GANGS ? locks[slot] : null;
     }
 
-    /** Whether some gang's padlock keeps this player out: the box then cannot be wrenched or broken by them. */
-    public boolean lockedAgainst(@Nullable Player player) {
+    /** Whether any gang is padlocked: the box then cannot be wrenched, picked up or broken. */
+    public boolean locked() {
         ensureArrays();
         for(var lock : locks)
-            if(lock != null && !lock.mayOpen(player))
+            if(lock != null)
                 return true;
         return false;
+    }
+
+    /** A padlocked gang's points keep their splices. */
+    @Override
+    public boolean spliceLocked(int terminal) {
+        return GangLayout.isPoint(terminal) && lock(owner(GangLayout.slotOfPoint(terminal))) != null;
     }
 
     /** Server side: a padlock hangs on the cover in that gang. */
@@ -354,7 +360,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         sendData();
     }
 
-    /** Server side: the padlock comes off into the hand, the same numbered lock. The block checks who may. */
+    /** Server side: the padlock comes off into the hand, the same numbered lock. The block checks the key. */
     public void removeLock(int slot, Player player) {
         ensureArrays();
         slot = owner(slot);

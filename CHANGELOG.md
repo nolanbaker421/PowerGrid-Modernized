@@ -4,6 +4,22 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.76.0 — 2026-10-27
+
+### Changed
+- Locks hold against everyone, the one who fitted them included. 0.75.0 let the owner, creative
+  players and operators through, which in a single-player world with cheats is everybody, so
+  nothing was ever locked. A padlocked gang now does nothing for anyone, its splices stay, and a
+  sealed CT cabinet keeps its splices too, even from an editor opened before the lock went on. A
+  creative player can still break a locked box, which drops everything in it.
+
+### Added
+- Keys. A numbered lock or key and an iron nugget in a crafting grid cut a **Key** of that
+  number, the lock or key staying in the grid. Right-click a padlocked gang or a sealed cabinet
+  with its key to take the lock off. Keys of one number stack.
+- The weatherproof receptacle hood swings up while a cord is being drawn out of the receptacle,
+  not only once the cord is finished.
+
 ## 0.75.0 — 2026-10-27
 
 ### Added
