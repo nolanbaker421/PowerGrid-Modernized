@@ -76,8 +76,6 @@ public class BreakerItem extends Item {
         if(gfci)
             tooltip.add(Lang.builder().translate("breaker.gfci", BreakerPanelBlockEntity.GFCI_TRIP_MILLIAMPS).style(ChatFormatting.GRAY).component());
         if(poles > 1)
-            tooltip.add(Lang.builder().translate("breaker.poles", poles, poles * frame.rows()).style(ChatFormatting.GRAY).component());
-        else if(frame.rows() > 1)
-            tooltip.add(Lang.builder().translate("breaker.rows", frame.rows()).style(ChatFormatting.GRAY).component());
+            tooltip.add(Lang.builder().translate("breaker.poles", poles).style(ChatFormatting.GRAY).component());
     }
 }

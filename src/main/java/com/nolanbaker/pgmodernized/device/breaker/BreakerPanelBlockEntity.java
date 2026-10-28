@@ -799,6 +799,18 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         // Multi-lug mains installed before 0.9.0 were stored as one pole; they are the panel's pole count.
         if(main.installed() && !main.blank && main.poles < spec.lugs())
             main.poles = spec.lugs();
+        // Breakers from before every frame took one row a pole covered two or three rows a pole: their
+        // spans are laid out afresh, the rows past the new span freed and each remaining row one pole.
+        for(int head = 0; head < branches.length; ++head) {
+            var breaker = branches[head];
+            if(!breaker.installed() || breaker.isCovered() || breaker.blank)
+                continue;
+            for(int slot = 0; slot < branches.length; ++slot)
+                if(branches[slot].isCovered() && branches[slot].head == head)
+                    branches[slot].clear();
+            for(int i = 1; i < breaker.rows() && head + 2 * i < branches.length; ++i)
+                branches[head + 2 * i].coverBy(head, i);
+        }
         if(!clientPacket) {
             // Loaded from disk: multi-pole wiring depends on what is installed, so rebuild once ticking.
             for(var branch : branches) {

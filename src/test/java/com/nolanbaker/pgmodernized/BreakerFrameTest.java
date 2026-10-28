@@ -30,13 +30,15 @@ public class BreakerFrameTest {
         }
     }
 
-    @Test void biggerFramesNeedMoreRows() {
-        // A 3-pole 401-800 A breaker needs nine rows: too big for any branch column, fine as a main.
-        Assertions.assertEquals(9, 3 * BreakerFrame.F800.rows());
-        Assertions.assertFalse(PanelSpec.THREE_800.fits(0, 9));
-        // A 2-pole 401-800 A breaker takes a whole six-row column of a 12-space panel.
-        Assertions.assertTrue(PanelSpec.THREE_800.fits(0, 6));
-        Assertions.assertFalse(PanelSpec.THREE_800.fits(2, 6));
+    @Test void everyFrameTakesOneRowAPole() {
+        // A breaker's rows are its poles whatever its frame: a 3-pole 401-800 A takes three rows, like any 3-pole.
+        for(var frame : BreakerFrame.values())
+            Assertions.assertEquals(1, frame.rows(), frame.name());
+        Assertions.assertEquals(3, 3 * BreakerFrame.F800.rows());
+        Assertions.assertTrue(PanelSpec.THREE_800.fits(0, 3));
+        // Two of them fill a six-row column of a 12-space panel; a third has no column left.
+        Assertions.assertTrue(PanelSpec.THREE_800.fits(6, 3));
+        Assertions.assertFalse(PanelSpec.THREE_800.fits(8, 3));
         // Rows alternate lugs, so a pole two rows down is on the same lug as its head; the panel
         // therefore assigns pole lugs by pole index, not by row.
         Assertions.assertEquals(PanelSpec.SPLIT_200.leg(0), PanelSpec.SPLIT_200.leg(4));

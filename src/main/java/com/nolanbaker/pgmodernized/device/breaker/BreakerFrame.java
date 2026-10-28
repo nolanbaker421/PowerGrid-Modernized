@@ -2,14 +2,15 @@ package com.nolanbaker.pgmodernized.device.breaker;
 
 /**
  * Breaker frame sizes. A frame is the physical breaker; its trip rating is set once it is in the
- * panel, anywhere in the frame's range in the frame's step. Bigger frames take more rows of the
- * column per pole.
+ * panel, anywhere in the frame's range in the frame's step. Every frame takes one row of the
+ * column per pole, so a breaker's rows are its poles; the bigger frames used to take two and three
+ * rows a pole, and the rows field stays for the day that comes back.
  */
 public enum BreakerFrame {
     F50("50a", 1, 50, 1, 1),
     F200("200a", 51, 200, 1, 1),
-    F400("400a", 205, 400, 5, 2),
-    F800("800a", 410, 800, 10, 3);
+    F400("400a", 205, 400, 5, 1),
+    F800("800a", 410, 800, 10, 1);
 
     private final String id;
     private final int min;

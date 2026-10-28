@@ -373,8 +373,8 @@ while the door is shut.
 
 ### Panel extensions
 
-A panel is one block, six rows a column, and a 3-pole 800 A breaker alone takes nine. The **Panel
-Extension** block adds rows: place it directly under the panel, on the same wall, and the panel
+A panel is one block, six rows a column, twelve spaces, and a service with many circuits soon
+wants more. The **Panel Extension** block adds rows: place it directly under the panel, on the same wall, and the panel
 grows by its row count again (twelve more spaces) on the same bus, numbered on from the head's. A
 second extension goes under the first; two is the limit, 36 spaces. Breakers may span down into an
 extension, and are installed, flipped, pulled, locked, labelled and wrench-set on whichever block
@@ -389,17 +389,17 @@ physical breaker; its **trip rating** is set once it is in the panel. Hold a **w
 breaker and scroll, or click it for the settings board. The 1-50 and 51-200 frames set in 1 A
 steps, 201-400 in 5 A, 401-800 in 10 A. A new breaker starts at the top of its frame.
 
-Bigger frames are bigger breakers. The two smaller frames take one row of a column per pole; the
-201-400 A frame takes two rows per pole and the 401-800 A frame three. The extra rows are dead
-(no circuit point, nothing to splice to); a pole always sits on the first row of its span.
+Every frame takes one row of a column per pole, so a breaker's rows are its poles: a 3-pole 800 A
+breaker takes three rows, the same as a 3-pole 20 A. A pole sits on each row of its span and each
+row is its own circuit point.
 
 - With a breaker in hand every free space it fits is outlined and the one under the crosshair is
   bright. Right-click a space to plug it in. New breakers start OFF.
 - Right-click a breaker with an empty hand to flip it. A tripped breaker goes to OFF on the first
   click and ON on the next, like the real thing.
 - Shift-right-click a breaker with an empty hand to pull it.
-- Any frame up to the panel's rating fits any space with enough free rows below it, including the main,
-  which is a single space whatever the frame.
+- Any frame up to the panel's rating fits any space with a free row below it for each further
+  pole, including the main, which is a single space whatever the frame.
 
 ### Trip curve
 

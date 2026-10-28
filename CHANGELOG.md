@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.78.0 — 2026-10-27
+
+### Changed
+- Every breaker frame takes one row of a column per pole. The 201-400 A frame took two rows a
+  pole and the 401-800 A frame three, the extra rows dead, so a 3-pole 800 A breaker filled nine
+  spaces; it takes three now, like any other 3-pole. Breakers already in a panel are laid out
+  afresh on load, the rows past their new span freed for other breakers.
+
 ## 0.77.1 — 2026-10-27
 
 ### Fixed
