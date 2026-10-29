@@ -55,7 +55,7 @@ public class AirHandlerBlockEntity extends ElectricBlockEntity implements IDevic
 
     private DeviceSpliceHost deviceHubs;
     private SwitchedWire blower, heat;
-    private ElectricWire coilY, coilW, coilG;
+    private ElectricWire coilY, coilW, coilG, sense;
     private ProvidedVoltageSourceCoupling control;
     private AcReadings.Filter feedReading, yReading, wReading, gReading;
     private float feedVolts;
@@ -220,6 +220,7 @@ public class AirHandlerBlockEntity extends ElectricBlockEntity implements IDevic
         coilY = builder.connect(resistance("coil"), builder.terminalNode(Y), builder.terminalNode(C));
         coilW = builder.connect(resistance("coil"), builder.terminalNode(W), builder.terminalNode(C));
         coilG = builder.connect(resistance("coil"), builder.terminalNode(G), builder.terminalNode(C));
+        sense = builder.connect(resistance("sense"), builder.terminalNode(L1), builder.terminalNode(L2));
     }
 
     @Override
@@ -237,8 +238,8 @@ public class AirHandlerBlockEntity extends ElectricBlockEntity implements IDevic
             wReading = new AcReadings.Filter();
             gReading = new AcReadings.Filter();
         }
-        if(blower.isConverged())
-            feedReading.sample(blower);
+        if(sense.isConverged())
+            feedReading.sample(sense);
         if(coilY.isConverged())
             yReading.sample(coilY);
         if(coilW.isConverged())

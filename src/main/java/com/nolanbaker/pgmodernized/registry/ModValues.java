@@ -40,7 +40,7 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         // Breaker panels: contact resistance of the main and of each branch breaker. No thermal
         // model; the breakers themselves are the overcurrent protection.
         for(var spec : PanelSpec.values())
-            resistance(spec.id(), "main", 0.002, "branch", 0.005, "bond", 0.001);
+            resistance(spec.id(), "main", 0.002, "branch", 0.005, "bond", 0.001, "gfci_neutral", 0.002);
         resistance("switchgear", "pole", 0.0005);
         // Switchgear cells: contact resistance of each pole of a breaker, fuse, switch or contactor in a slot.
         resistance("gear_cell", "pole", 0.0005);
@@ -58,8 +58,8 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         resistance("fire_alarm_panel", "feed", 720, "loop", 1, "contact", 0.001);
         // Air conditioning. Condenser: a 15 A compressor and a 1 A fan at 240 V, and the contactor coil on 24 V.
         // Air handler: a 3 A blower, a 5 kW heat strip, the relay coils the calls pull, and the control transformer's source resistance.
-        resistance("condenser", "compressor", 16, "fan", 240, "coil", 100);
-        resistance("air_handler", "blower", 80, "heat", 11.5, "coil", 100, "transformer", 1);
+        resistance("condenser", "compressor", 16, "fan", 240, "coil", 100, "sense", 1e6);
+        resistance("air_handler", "blower", 80, "heat", 11.5, "coil", 100, "transformer", 1, "sense", 1e6);
         // Bus duct plug-in: one contact per pole and the neutral through-path.
         resistance("bus_duct_plug_in", "contact", 0.0005);
         resistance("bus_duct_plug_in_breaker", "contact", 0.0005);

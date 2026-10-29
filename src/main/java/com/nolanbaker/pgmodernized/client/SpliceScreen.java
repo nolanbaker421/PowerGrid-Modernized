@@ -358,6 +358,11 @@ public class SpliceScreen extends Screen {
             int bx = rightCol ? mainX + COL_W + BUS_GAP : mainX;
             int by = rowsTop + (slot / 2) * ROW_H;
             c.pin(terminal, rightCol ? bx + COL_W - PIN - 1 : bx + 1, by + (ROW_H - PIN) / 2, PIN, PIN, point, rightCol ? Side.RIGHT : Side.LEFT, false);
+            // A GFCI breaker's load neutral, a white pin beside its hot.
+            int neutralTerminal = PanelLayout.gfciNeutralTerminal(spec, slot);
+            var neutralPoint = points.get(neutralTerminal);
+            if(neutralPoint != null)
+                c.pin(neutralTerminal, rightCol ? bx + COL_W - 2 * PIN - 3 : bx + PIN + 3, by + (ROW_H - PIN) / 2, PIN, PIN, neutralPoint, rightCol ? Side.RIGHT : Side.LEFT, false);
         }
         int rowsH = Math.max(ROW_H, rows * ROW_H - 1);
         var neutral = points.get(spec.neutralTerminal());

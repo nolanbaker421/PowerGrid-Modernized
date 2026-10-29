@@ -17,7 +17,7 @@ public class ConduitFillTest {
 
     @Test void annexCCounts() {
         Assertions.assertEquals(12, ConduitFill.maxCount(ConduitSize.ONE, WireGauge.AWG_12), "1\" EMT holds 16 x 12 AWG; the slots cap it at 12");
-        Assertions.assertEquals(4, ConduitFill.maxCount(ConduitSize.HALF, WireGauge.AWG_12), "1/2\" EMT holds 9 x 12 AWG; the slots cap it at 4");
+        Assertions.assertEquals(9, ConduitFill.maxCount(ConduitSize.HALF, WireGauge.AWG_12), "1/2\" EMT holds 9 x 12 AWG by fill; the twelve slots do not cap it");
         Assertions.assertEquals(1, ConduitFill.maxCount(ConduitSize.HALF, WireGauge.AWG_4), "1/2\" EMT takes one 4 AWG");
         Assertions.assertEquals(4, ConduitFill.maxCount(ConduitSize.TWO, WireGauge.AWG_4_0), "2\" EMT takes four 4/0");
         Assertions.assertEquals(5, ConduitFill.maxCount(ConduitSize.THREE, WireGauge.KCMIL_500), "3\" EMT takes five 500 kcmil");

@@ -4,6 +4,29 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.80.0 — 2026-10-28
+
+### Changed
+- The GFCI breaker works the way a real one does: its space gains a load-neutral point,
+  "Circuit n N (GFCI)", beside its circuit point, the circuit's neutral lands on the breaker, and
+  the breaker trips when 50 mA out on its hot does not come back on that neutral. Ground is no
+  longer part of it, and one fault no longer trips every GFCI in the panel. Neutrals of existing
+  GFCI circuits must be moved from the bar onto the breaker's point, or the breaker trips under
+  load, as a real one would with its pigtail wired wrong.
+- The 1/2" and 3/4" conduits no longer cap at four and eight wires; every size has twelve slots
+  and fill alone decides, as the NEC's tables do: nine 12 AWG or twelve 14 AWG in a 1/2".
+- Conduit items say what they are: an empty raceway, with wire pulled through a closed run by
+  right-clicking it with any Power Grid wire. The splice editor's empty slot says so too.
+
+### Fixed
+- The condenser and air handler read their feed voltage across their own open contactor, so
+  neither ever saw power and nothing ran. Both read it across a sense branch now.
+- A gang box loaded from disk had none of its devices in its circuit until something rebuilt it:
+  switches and receptacles were dead after a reload until a wire was re-seated or the box
+  replaced. It rebuilds on its first tick.
+- Punching a strut crashed the game: its outline is empty when asked without a context, for the
+  tracer, and vanilla's hit particles wanted its bounds. The strut spawns none.
+
 ## 0.79.0 — 2026-10-27
 
 ### Added

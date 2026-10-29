@@ -68,6 +68,8 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     /** A thermostat's mode, setpoint in Fahrenheit, calls (bit 0 cool, bit 1 heat, bit 2 fan) and the room it last read, tenths of a degree. */
     private int[] thermoMode, thermoSet, thermoCall, thermoTemp;
     private int thermoTimer;
+    /** Loaded from disk before the level was set: the circuit built in the constructor knows no devices until the first tick rebuilds it. */
+    private boolean needsRebuild;
     public static final int MODE_OFF = 0, MODE_COOL = 1, MODE_HEAT = 2, MODE_AUTO = 3;
     public static final int SET_DEFAULT_F = 72, SET_MIN_F = 50, SET_MAX_F = 90;
     public static final float HYSTERESIS_F = 1.5f;
@@ -876,6 +878,12 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         super.tick();
         if(level == null || level.isClientSide)
             return;
+        if(needsRebuild) {
+            needsRebuild = false;
+            rebuild();
+            for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
+                applyContacts(slot);
+        }
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
             if(hold[slot] > 0 && --hold[slot] == 0 && on[slot])
                 setOn(slot, false);
@@ -1087,6 +1095,8 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         if(changed && !clientPacket && level != null && !level.isClientSide && electricBehaviour != null) {
             electricBehaviour.rebuildCircuit(false);
             syncSocket();
+        } else if(changed && !clientPacket && level == null) {
+            needsRebuild = true;
         }
         for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
             applyContacts(slot);

@@ -1,11 +1,13 @@
 package com.nolanbaker.pgmodernized.conduit;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -40,6 +42,16 @@ public class ConduitItem extends WireItem {
     @Nullable
     public static ConduitSize sizeOf(ItemStack stack) {
         return stack.getItem() instanceof ConduitItem conduit ? conduit.size() : null;
+    }
+
+    /** Conduit is a raceway: it says so, and how the wire gets in, since nothing else does until the editor is opened. */
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        if(this instanceof com.nolanbaker.pgmodernized.device.hvac.LineSetItem)
+            return;
+        tooltip.add(Lang.builder().translate("conduit.tooltip.raceway").style(ChatFormatting.GRAY).component());
+        tooltip.add(Lang.builder().translate("conduit.tooltip.pull").style(ChatFormatting.GRAY).component());
     }
 
     @Override

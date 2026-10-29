@@ -43,7 +43,7 @@ public class CondenserBlockEntity extends ElectricBlockEntity implements IDevice
 
     private DeviceSpliceHost deviceHubs;
     private SwitchedWire compressor, fan;
-    private ElectricWire coil;
+    private ElectricWire coil, sense;
     private AcReadings.Filter feedReading, coilReading, compressorReading;
     private float feedVolts, coilAmps, amps;
     private boolean powered, called, running, lines;
@@ -135,6 +135,8 @@ public class CondenserBlockEntity extends ElectricBlockEntity implements IDevice
         compressor = builder.connectSwitch(resistance("compressor"), builder.terminalNode(L1), builder.terminalNode(L2), running);
         fan = builder.connectSwitch(resistance("fan"), builder.terminalNode(L1), builder.terminalNode(L2), running);
         coil = builder.connect(resistance("coil"), builder.terminalNode(Y), builder.terminalNode(C));
+        // The feed is read across a high-resistance branch, not across the open contactor: a switched wire that is off reads nothing.
+        sense = builder.connect(resistance("sense"), builder.terminalNode(L1), builder.terminalNode(L2));
     }
 
     @Override
@@ -151,8 +153,8 @@ public class CondenserBlockEntity extends ElectricBlockEntity implements IDevice
             coilReading = new AcReadings.Filter();
             compressorReading = new AcReadings.Filter();
         }
-        if(fan.isConverged())
-            feedReading.sample(fan);
+        if(sense.isConverged())
+            feedReading.sample(sense);
         if(coil.isConverged())
             coilReading.sample(coil);
         if(compressor.isConverged())

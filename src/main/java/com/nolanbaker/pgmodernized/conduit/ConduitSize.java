@@ -2,13 +2,14 @@ package com.nolanbaker.pgmodernized.conduit;
 
 /**
  * EMT trade sizes. A size has an internal area (NEC Chapter 9 Table 4) that the pulled conductors
- * fill by the book ({@link ConduitFill}), a number of numbered slots that caps the count of wires
- * regardless of area, and a drawn tube thickness. The wires themselves are whatever Power Grid wire
+ * fill by the book ({@link ConduitFill}), twelve numbered slots, one a colour, that cap the count
+ * of wires regardless of area, and a drawn tube thickness. The small sizes used to cap at four
+ * and eight; fill alone keeps them honest now, as the NEC's tables do. The wires themselves are whatever Power Grid wire
  * items the player pulls, each with its own gauge.
  */
 public enum ConduitSize {
-    HALF("half", "1/2\"", 4, 0.304, 0.09f, 0xF2F2F2),
-    THREE_QUARTER("three_quarter", "3/4\"", 8, 0.533, 0.125f, 0xE8C800),
+    HALF("half", "1/2\"", 12, 0.304, 0.09f, 0xF2F2F2),
+    THREE_QUARTER("three_quarter", "3/4\"", 12, 0.533, 0.125f, 0xE8C800),
     ONE("one", "1\"", 12, 0.864, 0.16f, 0xD03030),
     ONE_QUARTER("one_quarter", "1-1/4\"", 12, 1.496, 0.17f, 0x2F6FD6),
     ONE_HALF("one_half", "1-1/2\"", 12, 2.036, 0.19f, 0x3AA048),

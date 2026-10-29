@@ -102,8 +102,9 @@ knockouts and take hanging wire; bars burn out past 2000 A. A **Bus Duct Plug-In
 plug-in disconnect with a wrench-set 3-pole breaker for a handle. See the user guide.
 
 **Ground and GFCI.** Every breaker panel has a Ground point bonded to its neutral, so a fault from
-a hot to a grounded load comes home through the panel, where goggles show it and a **1-50 A GFCI
-Breaker** trips on 50 mA of it. A **Receptacle Cover** turns a conduit box into a socket for power
+a hot to a grounded load comes home through the panel, where goggles show it. A **1-50 A GFCI
+Breaker** takes the circuit's neutral on its own point and trips on 50 mA out that does not come
+back, as a real one does. A **Receptacle Cover** turns a conduit box into a socket for power
 cords. The electrical inspector now checks the code as well as the license: an unbonded panel
 ground or a switchgear lug block without a ground bar fails the visit. The PLC has a **PID** block.
 
@@ -159,8 +160,8 @@ many conductors of one gauge each size takes:
 
 | Conduit | Area (sq in) | Slots | 12 AWG | 8 AWG | 4 AWG | 1/0 | 4/0 | 500 kcmil |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1/2" | 0.304 | 4 | 4 | 3 | 1 | 0 | 0 | 0 |
-| 3/4" | 0.533 | 8 | 8 | 5 | 2 | 1 | 0 | 0 |
+| 1/2" | 0.304 | 12 | 9 | 3 | 1 | 0 | 0 | 0 |
+| 3/4" | 0.533 | 12 | 12 | 5 | 2 | 1 | 0 | 0 |
 | 1" | 0.864 | 12 | 12 | 9 | 4 | 1 | 1 | 0 |
 | 1-1/4" | 1.496 | 12 | 12 | 12 | 7 | 3 | 1 | 1 |
 | 1-1/2" | 2.036 | 12 | 12 | 12 | 9 | 4 | 1 | 1 |

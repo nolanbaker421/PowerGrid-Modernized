@@ -62,7 +62,7 @@ import net.minecraft.network.chat.Style;
 public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, ISpliceHost {
     /** Slot index of the main breaker in the interaction and lookup methods. */
     public static final int MAIN = PanelLayout.MAIN;
-    /** Ground current at which a GFCI breaker trips. */
+    /** The difference between what a GFCI breaker sends out on its hot and gets back on its load neutral at which it trips. */
     public static final int GFCI_TRIP_MILLIAMPS = 50;
 
     // Create's SmartBlockEntity constructor builds the circuit before this class's constructor body
@@ -74,6 +74,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     private SwitchedWire[] branchWires;
     /** The main bonding jumper, ground to neutral: whatever comes home on the ground flows here. */
     private ElectricWire bond;
+    /** Each space's load-neutral path, from its GFCI point through the breaker to the bar; a GFCI breaker compares its current with its hot's. */
+    private ElectricWire[] gfciNeutrals;
     private float groundAmps;
     private BreakerRatingBehaviour[] ratings;
     private SpliceSupport splices;
@@ -106,6 +108,7 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
             branches[i] = new Breaker();
         mainWires = new SwitchedWire[spec.lugs()];
         branchWires = new SwitchedWire[branches.length];
+        gfciNeutrals = new ElectricWire[branches.length];
     }
 
     @Override
@@ -312,6 +315,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
                     builder.terminalNode(PanelLayout.branchTerminal(spec, slot)), wireClosed(slot));
         }
         bond = builder.connect(resistance("bond"), builder.terminalNode(spec.neutralTerminal()), builder.terminalNode(PanelLayout.groundTerminal(spec)));
+        for(int slot = 0; slot < branches.length; ++slot)
+            gfciNeutrals[slot] = builder.connect(resistance("gfci_neutral"), builder.terminalNode(PanelLayout.gfciNeutralTerminal(spec, slot)), builder.terminalNode(spec.neutralTerminal()));
     }
 
     private void applyWireStates() {
@@ -360,19 +365,12 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         tickGround();
     }
 
-    /** Current on the bonding jumper is a ground fault somewhere downstream: every GFCI breaker that is on trips. */
+    /** Current on the bonding jumper, for the goggles: a ground fault somewhere downstream is coming home this way. */
     private void tickGround() {
         if(bond == null || !bond.isConverged())
             return;
         float amps = (float) Math.abs(bond.current());
         groundAmps = Float.isFinite(amps) ? amps : 0;
-        if(groundAmps * 1000 < GFCI_TRIP_MILLIAMPS)
-            return;
-        for(int i = 0; i < branches.length; ++i) {
-            var breaker = branches[i];
-            if(breaker.gfci && breaker.isBreaker() && breaker.state == BreakerState.ON)
-                trip(i);
-        }
     }
 
     /** Amperes coming home on the ground. */
@@ -431,6 +429,25 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         breaker.heat = BreakerTripCurve.step(breaker.heat, current, breaker.rating);
         if(BreakerTripCurve.trips(breaker.heat, current, breaker.rating))
             trip(head);
+        else if(breaker.gfci && head != MAIN && gfciLeak(head) * 1000 >= GFCI_TRIP_MILLIAMPS)
+            trip(head);
+    }
+
+    /**
+     * What a GFCI breaker's circuit loses, in amps: the current out on its poles less the current
+     * back on its load neutral. A fault to ground, or a neutral landed on the bar instead of the
+     * breaker, shows up here; ground itself is never looked at, as on the real thing.
+     */
+    private float gfciLeak(int head) {
+        var neutral = gfciNeutrals[head];
+        if(neutral == null || !neutral.isConverged())
+            return 0;
+        double out = 0;
+        for(var wire : wiresOf(head))
+            if(wire != null)
+                out += wire.current();
+        double leak = Math.abs(out - neutral.current());
+        return Double.isFinite(leak) ? (float) leak : 0;
     }
 
     private void trip(int head) {
@@ -602,6 +619,9 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     private void uninstall(int head) {
         var breaker = breaker(head);
         if(head != MAIN) {
+            // A GFCI breaker's load neutral goes with it.
+            int neutral = PanelLayout.gfciNeutralTerminal(spec, head);
+            splices().list().removeIf(s -> s[0] == neutral || s[1] == neutral);
             for(int i = 1; i < breaker.rows(); ++i) {
                 int slot = head + 2 * i;
                 if(slot < branches.length && branches[slot].head == head)
@@ -1022,6 +1042,8 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
                 int lug = lugFor(i);
                 var name = pointName(i).copy().withStyle(Style.EMPTY.withColor(ConductorColors.hotTextRgb(lug)));
                 points.add(new SplicePoint(PanelLayout.branchTerminal(spec, i), name, ConductorColors.hotRgb(lug)));
+                if(branches[i].isBreaker() && branches[i].isGfci())
+                    points.add(new SplicePoint(PanelLayout.gfciNeutralTerminal(spec, i), Lang.builder().translate("gui.breaker_panel.gfci_neutral", i + 1).component(), ConductorColors.neutralRgb()));
             }
         }
         return points;

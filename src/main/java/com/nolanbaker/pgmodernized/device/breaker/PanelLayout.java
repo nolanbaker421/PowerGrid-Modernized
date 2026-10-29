@@ -285,12 +285,33 @@ public final class PanelLayout {
         return local >= 0 && k >= 0 ? k % PER_HUB : -1;
     }
 
-    public static int terminalCount(PanelSpec spec) {
+    // ---- GFCI load neutrals ----
+
+    /**
+     * One load-neutral terminal per space, numbered after everything else so saved panels keep
+     * their indices. A GFCI breaker in the space lists it as a point: the circuit's neutral lands
+     * on the breaker, which compares it with its hot, instead of on the bar.
+     */
+    public static int gfciBase(PanelSpec spec) {
         return extraBase(spec) + HEAD_EXTRA_SIZE + MAX_EXT * EXT_EXTRA_SIZE;
     }
 
+    public static int gfciNeutralTerminal(PanelSpec spec, int slot) {
+        return gfciBase(spec) + slot;
+    }
+
+    /** The space whose GFCI load neutral that terminal is, or -1. */
+    public static int gfciSlot(PanelSpec spec, int terminal) {
+        int slot = terminal - gfciBase(spec);
+        return slot >= 0 && slot < maxSlots(spec) ? slot : -1;
+    }
+
+    public static int terminalCount(PanelSpec spec) {
+        return gfciBase(spec) + maxSlots(spec);
+    }
+
     public static boolean isPoint(PanelSpec spec, int terminal) {
-        return (terminal >= 0 && terminal < hubBase(spec)) || branchSlot(spec, terminal) >= 0 || terminal == groundTerminal(spec);
+        return (terminal >= 0 && terminal < hubBase(spec)) || branchSlot(spec, terminal) >= 0 || terminal == groundTerminal(spec) || gfciSlot(spec, terminal) >= 0;
     }
 
     /**
@@ -478,6 +499,8 @@ public final class PanelLayout {
         for(int slot = 0; slot < maxSlots(spec); ++slot) {
             var hidden = HIDDEN.move(0, -16 * sectionOfSlot(spec, slot), 0);
             terminals[branchTerminal(spec, slot)] = terminal(branchName(spec, slot), hidden).withColor(branchRgb(spec, slot));
+            var neutralName = Lang.builder().translate("gui.breaker_panel.gfci_neutral", slot + 1).component();
+            terminals[gfciNeutralTerminal(spec, slot)] = terminal(neutralName, hidden).withColor(ConductorColors.neutralRgb());
         }
         for(int h = 0; h < maxHubs(); ++h) {
             terminals[hubTerminal(spec, h)] = terminal(hubName(h), hub(h)).withColor(com.nolanbaker.pgmodernized.conduit.ConduitSize.FOUR.bandColor());

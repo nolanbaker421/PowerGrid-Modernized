@@ -54,7 +54,7 @@ regular build.
 | Breakers 1-50, 51-200, 201-400, 401-800 A | Plug-on breaker frames; the trip rating is set with a wrench once installed |
 | Breaker Blank | Filler plate for an unused space |
 | Breaker Lockout | Hasp that freezes a breaker handle |
-| 1-50 A GFCI Breaker | Single-pole breaker that also trips on 50 mA of ground current |
+| 1-50 A GFCI Breaker | Single-pole breaker whose load neutral lands on it; trips when 50 mA goes out and does not come back |
 | Rectifier | Six-pulse diode bridge: three-phase (or single-phase) AC in, smoothed DC out |
 | Capacitor Bank | Three capacitors in delta on a handle, for power factor correction |
 | Three-Phase Pump, Pump Stage | Power Grid's pump on a three-phase motor; stages bolt on for more reach (AC build) |
@@ -85,8 +85,8 @@ wire keeps its own gauge (resistance and ampacity). Nine EMT trade sizes:
 
 | Conduit | Knockout colour | Area (sq in) | Slots | Tube |
 | --- | --- | --- | --- | --- |
-| 1/2" | white | 0.304 | 4 | 1.5 px |
-| 3/4" | yellow | 0.533 | 8 | 2 px |
+| 1/2" | white | 0.304 | 12 | 1.5 px |
+| 3/4" | yellow | 0.533 | 12 | 2 px |
 | 1" | red | 0.864 | 12 | 2.5 px |
 | 1-1/4" | blue | 1.496 | 12 | 3 px |
 | 1-1/2" | green | 2.036 | 12 | 3.5 px |
@@ -168,8 +168,8 @@ that cap the count whatever the gauge. Conductors of one gauge per run:
 
 | Conduit | Area (sq in) | Slots | 12 AWG | 8 AWG | 4 AWG | 1/0 | 4/0 | 500 kcmil |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1/2" | 0.304 | 4 | 4 | 3 | 1 | 0 | 0 | 0 |
-| 3/4" | 0.533 | 8 | 8 | 5 | 2 | 1 | 0 | 0 |
+| 1/2" | 0.304 | 12 | 9 | 3 | 1 | 0 | 0 | 0 |
+| 3/4" | 0.533 | 12 | 12 | 5 | 2 | 1 | 0 | 0 |
 | 1" | 0.864 | 12 | 12 | 9 | 4 | 1 | 1 | 0 |
 | 1-1/4" | 1.496 | 12 | 12 | 12 | 7 | 3 | 1 | 1 |
 | 1-1/2" | 2.036 | 12 | 12 | 12 | 9 | 4 | 1 | 1 |
@@ -439,10 +439,13 @@ a load that faults from a hot to its ground then comes home through the panel's 
 goggles on the panel show how many milliamps are doing so.
 
 The **1-50 A GFCI Breaker** (a 1-50 A breaker, redstone and a copper nugget) is a single-pole
-breaker that also trips, on top of its overcurrent curve, whenever 50 mA or more comes home on the
-panel's ground while it is on. Every GFCI breaker in the panel sees the same ground, so a fault on
-any circuit trips all of them; that is the price of one bonding jumper, and the reason to keep the
-circuits that need one on their own panel.
+breaker with a second point in the editor, **Circuit n N**, beside its circuit point: the
+circuit's neutral lands there, on the breaker, and the breaker carries it to the bar. On top of
+its overcurrent curve it trips whenever 50 mA or more goes out on its hot and does not come back
+on that neutral, which is what a fault to ground looks like, and also what a neutral landed on the
+bar instead of the breaker looks like, so land it on the breaker. Ground is never part of it, as
+on the real thing; a panel's ground current is only shown in goggles. Breakers from before 0.80.0
+need their neutrals moved onto the breaker, or they trip under load.
 
 The electrical inspector reads the code as well as your license: a panel with nothing on its
 ground point, or a lug block in a switchgear cell with no ground bar bonded to it, fails the
@@ -774,7 +777,9 @@ blower and a five-kilowatt heat strip; G alone runs the blower. The compressor r
 seconds and rests at least ten, as an anti-short-cycle timer would have it. The room starts at
 the biome's temperature, from the thirties in snow through seventy in plains to the hundred and
 twenties in a desert, is pulled down while cooling and up while heating, and drifts back
-outdoors between cycles, so the system cycles. The editor on either unit shows its state, the
+outdoors between cycles, so the system cycles. In a plains biome the room sits at seventy-one and
+the thermostat starts at seventy-two, so nothing calls until the setpoint is turned down, or up
+past the room for heat. The editor on either unit shows its state, the
 room and the outdoor temperature, and whether its lines are laid; goggles show the same.
 
 ### Three-Phase Motor (AC build)
