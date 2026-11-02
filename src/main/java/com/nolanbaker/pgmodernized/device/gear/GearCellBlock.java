@@ -72,11 +72,22 @@ public class GearCellBlock extends HorizontalElectricBlock implements IBE<GearCe
         return WireAcceptance.electrical(wireStack);
     }
 
-    /** Conduit on the knockouts; hanging wire on the lugs of a lug block and nowhere else. */
+    /** Conduit on the knockouts; hanging wire on the lugs of a lug block and nowhere else; the copper bus bar into a slot. */
     @Override
     public InteractionResult onWire(BlockState state, UseOnContext context) {
         var pos = context.getClickedPos();
         var level = context.getLevel();
+        if(context.getItemInHand().getItem() instanceof com.nolanbaker.pgmodernized.device.breaker.BusBarItem) {
+            // The bus bar is a Power Grid wire type for the hidden links between cells, so Power Grid's
+            // hook brings it here first and, left to pass, would start a hanging wire from the click.
+            // The slot takes it here instead.
+            int slot = slotAt(state, pos, context.getClickLocation(), context.getClickedFace());
+            if(slot < 0 || context.getPlayer() == null || !(level.getBlockEntity(pos) instanceof GearCellBlockEntity cell)) {
+                IElectric.sendMessage(context, Lang.builder().translate("message.gear_cell.bar_slot").style(ChatFormatting.RED).component());
+                return InteractionResult.FAIL;
+            }
+            return cell.install(slot, context.getItemInHand(), context.getPlayer()) ? InteractionResult.sidedSuccess(level.isClientSide) : InteractionResult.FAIL;
+        }
         int terminal = terminalIndexAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
         boolean conduit = ConduitItem.isConduit(context.getItemInHand());
         if(GearLayout.hubAt(terminal) >= 0) {

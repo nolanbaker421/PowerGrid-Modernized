@@ -4,6 +4,23 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.81.0 — 2026-11-02
+
+### Changed
+- Switchgear cells: every switched unit, breaker, fuse set, switch, contactor and starter, passes
+  the neutral and the ground straight through from its line side to its load side, and the
+  metering unit passes the ground as well as the neutral, so a lug block under a breaker is fed
+  its neutral and ground from the bars above (GitHub #3).
+- Bars share a slot: a copper bus bar, a neutral bar and a ground bar go into one slot, the slot
+  carrying all five conductors to every side; sneak-click hands every bar back (GitHub #2).
+- The guide says plainly that a switchgear section's door takes breakers and blanks only, and
+  that the cell is the modular cabinet (GitHub #1).
+
+### Fixed
+- The copper bus bar could not be mounted in a cell: it is a Power Grid wire type for the hidden
+  links between cells, so Power Grid's wire hook took the click first and started a hanging wire
+  from it. The cell takes the bar from that hook now (GitHub #2).
+
 ## 0.80.0 — 2026-10-28
 
 ### Changed

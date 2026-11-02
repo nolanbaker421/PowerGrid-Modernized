@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.client;
 
+import com.nolanbaker.pgmodernized.device.gear.GearKind;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.nolanbaker.pgmodernized.device.gear.GearCellBlock;
@@ -51,9 +52,15 @@ public class GearCellRenderer extends SafeBlockEntityRenderer<GearCellBlockEntit
                 continue;
             var r = GearLayout.slotRect(s);
             switch(kind) {
-                case BUS -> bars(be, s, slot, r, ms, buffer, light, 0, 3, COPPER);
-                case NEUTRAL_BAR -> bars(be, s, slot, r, ms, buffer, light, 3, 4, SILVER);
-                case GROUND_BAR -> bars(be, s, slot, r, ms, buffer, light, 4, 5, GREEN);
+                case BUS, NEUTRAL_BAR, GROUND_BAR -> {
+                    // Every bar in the slot, each on its own row of the slot.
+                    if(slot.hasBar(GearKind.BUS))
+                        bars(be, s, slot, r, ms, buffer, light, 0, 3, COPPER);
+                    if(slot.hasBar(GearKind.NEUTRAL_BAR))
+                        bars(be, s, slot, r, ms, buffer, light, 3, 4, SILVER);
+                    if(slot.hasBar(GearKind.GROUND_BAR))
+                        bars(be, s, slot, r, ms, buffer, light, 4, 5, GREEN);
+                }
                 case LUGS -> lugs(be, s, slot, r, ms, buffer, light);
                 case BREAKER -> breaker(slot, r, ms, buffer, light, overlay);
                 case FUSE -> fuses(slot, r, ms, buffer, light);

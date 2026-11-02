@@ -482,7 +482,9 @@ how many sections share it.
 - Every other section feeds one three-phase load through its breaker: splice the outgoing run to
   Load L1..L3 and the neutral to the neutral bus.
 - Any 3-pole frame goes in the door; set its rating with a wrench, flip it, lock it and label it
-  exactly like a panel breaker. Blanks fit too.
+  exactly like a panel breaker. Blanks fit too. The door takes breakers and blanks only: for
+  fuses, switches, contactors, starters, meters and bars, use a **Switchgear Cell** (below), which
+  takes every module and joins a section's row through a bus duct.
 - The bus bars between sections carry 2000 A and burn out like any wire past that.
 - A **Bus Duct** standing on a section joins its bus (see below).
 
@@ -524,20 +526,26 @@ out; a wrench turns it a quarter turn; a name tag labels it):
 
 | Item | Offers | Where |
 | --- | --- | --- |
-| **Copper Bus Bar** | L1, L2, L3 | every side |
-| **Neutral Bar** | N | every side |
-| **Ground Bar** | G | every side |
+| **Copper Bus Bar** | L1, L2, L3 | every side; shares its slot with a neutral bar and a ground bar |
+| **Neutral Bar** | N | every side; shares its slot with the bus bars and a ground bar |
+| **Ground Bar** | G | every side; shares its slot with the bus bars and a neutral bar |
 | **Lug Block** | L1, L2, L3, N, G on five lugs | fed from above and from either side; nothing below |
-| any **3-pole breaker** | L1, L2, L3 switched | lines above, loads below; rating by wrench, handle, lockout, label as in a panel |
-| **Fuse Set** (100, 200, 400, 800 A) | L1, L2, L3 fused | lines above, loads below; a blown set is scrap, take it out and fit a new one |
-| **Switch Unit** | L1, L2, L3 switched | lines above, loads below; bare hand throws it, lockout on an open switch |
-| **Contactor** | L1, L2, L3 switched | lines above, loads below; closed while the cell has a redstone signal |
-| **Combination Starter** | L1, L2, L3 switched | lines above, loads below; a 1-50 A breaker, a redstone contactor and an overload relay in one, see below |
-| **Metering Unit** | L1, L2, L3, N straight through | lines above, loads below; goggles and computers read volts, amps and watts per phase |
+| any **3-pole breaker** | L1, L2, L3 switched; N, G straight through | lines above, loads below; rating by wrench, handle, lockout, label as in a panel |
+| **Fuse Set** (100, 200, 400, 800 A) | L1, L2, L3 fused; N, G straight through | lines above, loads below; a blown set is scrap, take it out and fit a new one |
+| **Switch Unit** | L1, L2, L3 switched; N, G straight through | lines above, loads below; bare hand throws it, lockout on an open switch |
+| **Contactor** | L1, L2, L3 switched; N, G straight through | lines above, loads below; closed while the cell has a redstone signal |
+| **Combination Starter** | L1, L2, L3 switched; N, G straight through | lines above, loads below; a 1-50 A breaker, a redstone contactor and an overload relay in one, see below |
+| **Metering Unit** | L1, L2, L3, N, G straight through | lines above, loads below; goggles and computers read volts, amps and watts per phase |
 
-The usual layout is a row of bus bars across the top of the lineup (with a neutral bar beside
-them where the loads need one), breakers in the middle row under the bus, and lug blocks in the
-bottom row under the breakers. Feed the lineup through a lug block (conduit on a knockout, spliced
+The neutral and ground run behind every switched unit, line side to load side, the way the buses
+run behind the units of real gear: a lug block under a breaker gets its neutral and ground from
+the bars above the breaker. Bars share a slot: put a copper bus bar in, then a neutral bar and a
+ground bar on the same slot, and the slot carries all five conductors to every side. Sneak-click
+takes every bar out together.
+
+The usual layout is a row of bus bars across the top of the lineup, each slot with its neutral
+and ground bar too, breakers in the middle row under the bus, and lug blocks in the bottom row
+under the breakers. Feed the lineup through a lug block (conduit on a knockout, spliced
 in the editor, or hanging wire on its lugs) that sits under a bar, or drop a **Bus Duct** onto the
 middle of a cell's top edge where a bar waits for it. Each cell has three knockouts on top, three
 underneath and two on each side, all 4"; the splice editor (bare hand on the frame) lists the lugs

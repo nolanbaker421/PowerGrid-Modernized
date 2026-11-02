@@ -7,7 +7,8 @@ import org.jetbrains.annotations.Nullable;
  * What can go in a slot of a switchgear cell, and which conductors it offers on which sides.
  * Slots connect where both sides offer the same conductor: bars join anything beside them, a
  * breaker takes its lines from the slot above and gives its loads to the slot below (turned with
- * a wrench), and a lug block brings the slot above and beside it out to five lugs.
+ * a wrench) and passes the neutral and the ground straight through, as the buses run behind every
+ * unit of real gear, and a lug block brings the slot above and beside it out to five lugs.
  * <p>
  * Conductors are bits: 0 L1, 1 L2, 2 L3, 3 N, 4 ground. Sides are {@link GearSide} bits before rotation.
  */
@@ -20,18 +21,18 @@ public enum GearKind {
     GROUND_BAR("ground_bar", 0b10000, all()),
     /** Five lugs on the face, fed from above and from either side; nothing below. */
     LUGS("lugs", 0b11111, GearSide.UP.bit() | GearSide.LEFT.bit() | GearSide.RIGHT.bit()),
-    /** A 3-pole breaker: lines above, loads below. */
-    BREAKER("breaker", 0b00111, GearSide.UP.bit() | GearSide.DOWN.bit()),
-    /** Three fuses: lines above, loads below; a blown set is scrap. */
-    FUSE("fuse", 0b00111, GearSide.UP.bit() | GearSide.DOWN.bit()),
-    /** A 3-pole switch with a handle and a lockout. */
-    SWITCH("switch", 0b00111, GearSide.UP.bit() | GearSide.DOWN.bit()),
-    /** A 3-pole contactor whose coil is the cell's redstone signal. */
-    CONTACTOR("contactor", 0b00111, GearSide.UP.bit() | GearSide.DOWN.bit()),
-    /** A combination starter: a breaker, a redstone contactor and an overload relay on one setting. */
-    STARTER("starter", 0b00111, GearSide.UP.bit() | GearSide.DOWN.bit()),
-    /** A metering unit: L1, L2, L3 and N straight through, with volts, amps and watts per phase. */
-    METER("meter", 0b01111, GearSide.UP.bit() | GearSide.DOWN.bit());
+    /** A 3-pole breaker: lines above, loads below; N and G straight through. */
+    BREAKER("breaker", 0b11111, GearSide.UP.bit() | GearSide.DOWN.bit()),
+    /** Three fuses: lines above, loads below, N and G straight through; a blown set is scrap. */
+    FUSE("fuse", 0b11111, GearSide.UP.bit() | GearSide.DOWN.bit()),
+    /** A 3-pole switch with a handle and a lockout; N and G straight through. */
+    SWITCH("switch", 0b11111, GearSide.UP.bit() | GearSide.DOWN.bit()),
+    /** A 3-pole contactor whose coil is the cell's redstone signal; N and G straight through. */
+    CONTACTOR("contactor", 0b11111, GearSide.UP.bit() | GearSide.DOWN.bit()),
+    /** A combination starter: a breaker, a redstone contactor and an overload relay on one setting; N and G straight through. */
+    STARTER("starter", 0b11111, GearSide.UP.bit() | GearSide.DOWN.bit()),
+    /** A metering unit: L1, L2, L3, N and G straight through, with volts, amps and watts per phase. */
+    METER("meter", 0b11111, GearSide.UP.bit() | GearSide.DOWN.bit());
 
     public static final int PHASES = 0b00111, NEUTRAL = 0b01000, GROUND = 0b10000, ALL_CONDUCTORS = 0b11111;
 

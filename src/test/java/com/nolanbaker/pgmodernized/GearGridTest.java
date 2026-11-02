@@ -22,13 +22,13 @@ public class GearGridTest {
     }
 
     @Test void aBreakerTakesLinesAboveAndGivesLoadsBelowUntilTurned() {
-        Assertions.assertEquals(GearKind.PHASES, GearKind.BREAKER.portMask(GearSide.UP, 0));
-        Assertions.assertEquals(GearKind.PHASES, GearKind.BREAKER.portMask(GearSide.DOWN, 0));
+        Assertions.assertEquals(GearKind.ALL_CONDUCTORS, GearKind.BREAKER.portMask(GearSide.UP, 0), "lines above, and N and G straight through");
+        Assertions.assertEquals(GearKind.ALL_CONDUCTORS, GearKind.BREAKER.portMask(GearSide.DOWN, 0));
         Assertions.assertEquals(0, GearKind.BREAKER.portMask(GearSide.LEFT, 0));
         Assertions.assertEquals(0, GearKind.BREAKER.portMask(GearSide.RIGHT, 0));
         // A quarter turn clockwise: the line side is now on the viewer's right, the load side on the left.
-        Assertions.assertEquals(GearKind.PHASES, GearKind.BREAKER.portMask(GearSide.RIGHT, 1));
-        Assertions.assertEquals(GearKind.PHASES, GearKind.BREAKER.portMask(GearSide.LEFT, 1));
+        Assertions.assertEquals(GearKind.ALL_CONDUCTORS, GearKind.BREAKER.portMask(GearSide.RIGHT, 1));
+        Assertions.assertEquals(GearKind.ALL_CONDUCTORS, GearKind.BREAKER.portMask(GearSide.LEFT, 1));
         Assertions.assertEquals(0, GearKind.BREAKER.portMask(GearSide.UP, 1));
         var slot = new GearSlot();
         slot.install(GearKind.SWITCH, 0);
@@ -36,7 +36,9 @@ public class GearGridTest {
         Assertions.assertEquals(GearSide.RIGHT, slot.lineSide());
         Assertions.assertEquals(GearSide.LEFT, slot.loadSide());
         Assertions.assertTrue(slot.carries(GearSide.RIGHT, 0));
-        Assertions.assertFalse(slot.carries(GearSide.RIGHT, 3), "a switch has no neutral pole");
+        Assertions.assertTrue(slot.carries(GearSide.RIGHT, 3), "the neutral runs behind the switch, line side to load side");
+        Assertions.assertTrue(slot.carries(GearSide.LEFT, 4), "and so does the ground");
+        Assertions.assertFalse(slot.carries(GearSide.UP, 3), "but not out of a side the unit does not face");
     }
 
     @Test void lugBlocksHaveNothingBelowThem() {

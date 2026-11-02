@@ -168,7 +168,7 @@ public class GearCellBlockEntity extends ElectricBlockEntity implements ISpliceH
             if(kind.bar()) {
                 var wires = new ArrayList<ElectricWire>();
                 for(int k = 0; k < CONDUCTORS; ++k) {
-                    if((kind.conductors() & (1 << k)) == 0)
+                    if((slot.barConductors() & (1 << k)) == 0)
                         continue;
                     var ports = new ArrayList<IElectricNode>();
                     for(var side : GearSide.values()) {
@@ -185,6 +185,7 @@ public class GearCellBlockEntity extends ElectricBlockEntity implements ISpliceH
                 meters[s] = meter;
                 var neutral = node(builder, shared, s, slot.lineSide(), 3);
                 builder.connect(BUS_R, neutral, node(builder, shared, s, slot.loadSide(), 3));
+                builder.connect(BUS_R, node(builder, shared, s, slot.lineSide(), 4), node(builder, shared, s, slot.loadSide(), 4));
                 for(int k = 0; k < 3; ++k) {
                     var in = node(builder, shared, s, slot.lineSide(), k);
                     var out = node(builder, shared, s, slot.loadSide(), k);
@@ -205,6 +206,9 @@ public class GearCellBlockEntity extends ElectricBlockEntity implements ISpliceH
                     poles[s][k] = builder.connectSwitch(resistance("pole"),
                             node(builder, shared, s, slot.lineSide(), k), node(builder, shared, s, slot.loadSide(), k), slot.closed());
                 }
+                // The neutral and ground buses run behind the unit, line side to load side, unswitched.
+                for(int k = 3; k < CONDUCTORS; ++k)
+                    builder.connect(BUS_R, node(builder, shared, s, slot.lineSide(), k), node(builder, shared, s, slot.loadSide(), k));
             }
         }
     }
@@ -532,6 +536,24 @@ public class GearCellBlockEntity extends ElectricBlockEntity implements ISpliceH
 
     public boolean install(int s, ItemStack stack, Player player) {
         var slot = slots[s];
+        var bar = GearSlot.barOf(stack);
+        if(slot.installed() && slot.kind().bar() && bar != null) {
+            // A bus, a neutral bar and a ground bar share a slot: the next one goes in beside the first.
+            if(slot.hasBar(bar)) {
+                message(player, Lang.builder().translate("message.gear_cell.bar_present", name(s), bar.displayName()).style(ChatFormatting.RED).component());
+                return false;
+            }
+            if(level == null || level.isClientSide)
+                return true;
+            slot.addBar(bar);
+            if(!player.isCreative())
+                stack.shrink(1);
+            ModdedSoundEvents.FUSE_INSTALL.playOnServer(level, worldPosition);
+            message(player, Lang.builder().translate("message.gear_cell.bar_added", bar.displayName(), name(s)).style(ChatFormatting.GRAY).component());
+            rebuild();
+            notifyUpdate();
+            return true;
+        }
         if(slot.installed()) {
             message(player, Lang.builder().translate("message.breaker_panel.space_taken").style(ChatFormatting.RED).component());
             return false;
@@ -588,14 +610,14 @@ public class GearCellBlockEntity extends ElectricBlockEntity implements ISpliceH
             notifyUpdate();
             return true;
         }
-        var stack = slot.item();
-        var kind = slot.kind();
+        var stacks = slot.items();
+        var shown = slot.displayName();
         slot.clear();
         ratings[s].follow(slot.breaker);
-        if(!stack.isEmpty())
+        for(var stack : stacks)
             give(player, stack);
         level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.6f, 1.2f);
-        message(player, Lang.builder().translate("message.gear_cell.removed", kind.displayName(), name(s)).style(ChatFormatting.GRAY).component());
+        message(player, Lang.builder().translate("message.gear_cell.removed", shown, name(s)).style(ChatFormatting.GRAY).component());
         dropSplicesOf(s);
         rebuild();
         notifyUpdate();
@@ -915,7 +937,7 @@ public class GearCellBlockEntity extends ElectricBlockEntity implements ISpliceH
                 continue;
             any = true;
             var line = Lang.builder().add(Lang.builder().add(name(s)).style(ChatFormatting.GRAY)).text(": ")
-                    .add(Lang.builder().add(kind.displayName()).style(ChatFormatting.WHITE));
+                    .add(Lang.builder().add(slot.displayName()).style(ChatFormatting.WHITE));
             switch(kind) {
                 case BREAKER -> {
                     var breaker = slot.breaker;

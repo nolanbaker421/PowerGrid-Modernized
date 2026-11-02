@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.device.gear;
 
+import net.minecraft.network.chat.Component;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerFrame;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerItem;
 import com.nolanbaker.pgmodernized.device.breaker.BreakerPanelBlockEntity;
@@ -25,6 +26,8 @@ public final class GearSlot {
 
     @Nullable
     private GearKind kind;
+    /** For a bar kind: the conductors of every bar in the slot, since a bus, a neutral bar and a ground bar share one. */
+    private int bars;
     private int rotation;
     private String label = "";
     /** The breaker record, used when the kind is a breaker or a starter. */
@@ -47,6 +50,14 @@ public final class GearSlot {
         return kind != null;
     }
 
+    /** The bar kind of an item that is one, or null. */
+    @Nullable
+    public static GearKind barOf(ItemStack stack) {
+        if(stack.getItem() instanceof com.nolanbaker.pgmodernized.device.breaker.BusBarItem)
+            return GearKind.BUS;
+        return stack.getItem() instanceof GearComponentItem component && component.kind().bar() ? component.kind() : null;
+    }
+
     public boolean is(GearKind kind) {
         return this.kind == kind;
     }
@@ -55,9 +66,56 @@ public final class GearSlot {
         return rotation;
     }
 
-    /** Conductor bits this slot offers on that side of itself. */
+    /** Conductor bits this slot offers on that side of itself; bars offer every bar in the slot on every side. */
     public int portMask(GearSide side) {
-        return kind == null ? 0 : kind.portMask(side, rotation);
+        if(kind == null)
+            return 0;
+        return kind.bar() ? bars : kind.portMask(side, rotation);
+    }
+
+    /** The conductors of the bars in a bar slot. */
+    public int barConductors() {
+        return kind != null && kind.bar() ? bars : 0;
+    }
+
+    public boolean hasBar(GearKind bar) {
+        return kind != null && kind.bar() && (bars & bar.conductors()) == bar.conductors();
+    }
+
+    /** Another bar goes in beside the ones there. */
+    public void addBar(GearKind bar) {
+        if(kind != null && kind.bar())
+            bars |= bar.conductors();
+    }
+
+    /** What the slot holds, every bar named when it holds several. */
+    public Component displayName() {
+        if(kind == null)
+            return Component.empty();
+        if(!kind.bar())
+            return kind.displayName();
+        var names = new java.util.ArrayList<Component>();
+        for(var bar : new GearKind[] {GearKind.BUS, GearKind.NEUTRAL_BAR, GearKind.GROUND_BAR})
+            if(hasBar(bar))
+                names.add(bar.displayName());
+        var out = Component.empty();
+        for(int i = 0; i < names.size(); ++i)
+            out = out.append(i == 0 ? names.get(i) : Component.literal(" + ").append(names.get(i)));
+        return out;
+    }
+
+    /** Every item the slot hands back: one per bar in a bar slot. */
+    public java.util.List<ItemStack> items() {
+        if(kind == null || !kind.bar())
+            return item().isEmpty() ? java.util.List.of() : java.util.List.of(item());
+        var out = new java.util.ArrayList<ItemStack>();
+        if(hasBar(GearKind.BUS))
+            out.add(ModItems.BUS_BAR.asStack());
+        if(hasBar(GearKind.NEUTRAL_BAR))
+            out.add(ModItems.NEUTRAL_BAR.asStack());
+        if(hasBar(GearKind.GROUND_BAR))
+            out.add(ModItems.GROUND_BAR.asStack());
+        return out;
     }
 
     public boolean carries(GearSide side, int k) {
@@ -188,6 +246,7 @@ public final class GearSlot {
 
     public void clear() {
         kind = null;
+        bars = 0;
         rotation = 0;
         label = "";
         breaker.clear();
@@ -206,6 +265,7 @@ public final class GearSlot {
     public void install(GearKind kind, int rating) {
         clear();
         this.kind = kind;
+        bars = kind.bar() ? kind.conductors() : 0;
         if(kind == GearKind.FUSE)
             fuseRating = rating;
         if(kind == GearKind.STARTER)
@@ -339,6 +399,7 @@ public final class GearSlot {
             case BUS, NEUTRAL_BAR, GROUND_BAR -> {
                 if(!clientPacket)
                     tag.putFloat("Heat", heat);
+                tag.putInt("Bars", bars);
             }
             default -> {}
         }
@@ -391,7 +452,10 @@ public final class GearSlot {
                         setMeter(k, list.getFloat(k), list.getFloat(3 + k), list.getFloat(6 + k));
                 }
             }
-            case BUS, NEUTRAL_BAR, GROUND_BAR -> heat = tag.getFloat("Heat");
+            case BUS, NEUTRAL_BAR, GROUND_BAR -> {
+                heat = tag.getFloat("Heat");
+                bars = tag.contains("Bars") ? tag.getInt("Bars") : kind.conductors();
+            }
             default -> {}
         }
         if(clientPacket && tag.contains("Current"))
