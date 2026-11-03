@@ -58,6 +58,8 @@ public class LadderEntity extends Entity {
     private BlockPos support = BlockPos.ZERO;
     @Nullable
     private Vec3 dismount;
+    /** The jump key has been seen up since the climber got on; a stale down from before does not count. */
+    private boolean jumpArmed;
 
     public LadderEntity(EntityType<? extends LadderEntity> type, Level level) {
         super(type, level);
@@ -245,8 +247,15 @@ public class LadderEntity extends Entity {
     // ---- climbing ----
 
     private void climb(Player climber) {
-        if(((com.nolanbaker.pgmodernized.mixin.LivingEntityAccessor) climber).pgm$isJumping()) {
+        // The server only hears the jump key while the player rides, so the flag it holds from the
+        // last ride, a jump off, is stale until a fresh input packet has shown it released.
+        boolean jumping = ((com.nolanbaker.pgmodernized.mixin.LivingEntityAccessor) climber).pgm$isJumping();
+        if(!jumping)
+            jumpArmed = true;
+        else if(jumpArmed) {
             dismount = null;
+            jumpArmed = false;
+            climber.setJumping(false);
             climber.stopRiding();
             return;
         }
@@ -318,6 +327,8 @@ public class LadderEntity extends Entity {
         var along = top().subtract(foot);
         double t = hit.subtract(foot).dot(along) / along.lengthSqr();
         entityData.set(CLIMB, (float) Mth.clamp(t, 0.02, 0.98));
+        jumpArmed = false;
+        player.setJumping(false);
         player.startRiding(this);
         return InteractionResult.CONSUME;
     }

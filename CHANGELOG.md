@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.90.1 — 2026-11-02
+
+### Fixed
+- Climbing on threw you straight off again after any jump dismount: the server keeps the jump
+  key's last state between rides. The ladder now waits to see the key released before a jump
+  counts, and clears it on the way off.
+
 ## 0.90.0 — 2026-11-02
 
 ### Changed
