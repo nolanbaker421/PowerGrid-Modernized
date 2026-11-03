@@ -66,14 +66,16 @@ def textures():
 
 def crossarm():
     tex = {"arm": "minecraft:block/spruce_planks", "bracket": "%s:block/cutout_steel" % MOD, "particle": "minecraft:block/spruce_planks"}
-    elements = [element(0, 9, 6, 16, 13, 10, "#arm"), element(6, 8, 10, 10, 14, 16, "#bracket")]
-    dump(os.path.join(ASSETS, "models", "block", "crossarm.json"), {"parent": "block/block", "textures": tex, "elements": elements})
+    arm = element(0, 9, 6, 16, 13, 10, "#arm")
+    dump(os.path.join(ASSETS, "models", "block", "crossarm.json"), {"parent": "block/block", "textures": tex, "elements": [arm, element(6, 8, 10, 10, 14, 16, "#bracket")]})
+    dump(os.path.join(ASSETS, "models", "block", "crossarm_extension.json"), {"parent": "block/block", "textures": tex, "elements": [arm]})
     dump(os.path.join(ASSETS, "models", "item", "crossarm.json"), {"parent": "%s:block/crossarm" % MOD})
     variants = {}
     for facing, rot in FACINGS:
-        v = {"model": "%s:block/crossarm" % MOD}
-        v.update(rot)
-        variants["facing=%s" % facing] = v
+        for bracket, model in (("true", "crossarm"), ("false", "crossarm_extension")):
+            v = {"model": "%s:block/%s" % (MOD, model)}
+            v.update(rot)
+            variants["bracket=%s,facing=%s" % (bracket, facing)] = v
     dump(os.path.join(ASSETS, "blockstates", "crossarm.json"), {"variants": variants})
     loot_table("crossarm")
 

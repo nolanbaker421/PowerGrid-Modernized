@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.85.0 — 2026-11-02
+
+### Added
+- Crossarms extend: one placed against the end of an arm continues it, bracketless, and falls
+  with the arm it continues. Pole-mounted gear stands on the block above any arm block.
+
 ## 0.84.2 — 2026-11-02
 
 ### Fixed

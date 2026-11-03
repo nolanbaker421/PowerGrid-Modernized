@@ -1,18 +1,33 @@
 {
   "variants": {
-    "facing=north": {
+    "bracket=true,facing=north": {
       "model": "powergrid_modernized:block/crossarm"
     },
-    "facing=east": {
+    "bracket=false,facing=north": {
+      "model": "powergrid_modernized:block/crossarm_extension"
+    },
+    "bracket=true,facing=east": {
       "model": "powergrid_modernized:block/crossarm",
       "y": 90
     },
-    "facing=south": {
+    "bracket=false,facing=east": {
+      "model": "powergrid_modernized:block/crossarm_extension",
+      "y": 90
+    },
+    "bracket=true,facing=south": {
       "model": "powergrid_modernized:block/crossarm",
       "y": 180
     },
-    "facing=west": {
+    "bracket=false,facing=south": {
+      "model": "powergrid_modernized:block/crossarm_extension",
+      "y": 180
+    },
+    "bracket=true,facing=west": {
       "model": "powergrid_modernized:block/crossarm",
+      "y": 270
+    },
+    "bracket=false,facing=west": {
+      "model": "powergrid_modernized:block/crossarm_extension",
       "y": 270
     }
   }
