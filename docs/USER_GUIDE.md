@@ -890,6 +890,27 @@ out, a link held in the other hand goes in, and otherwise the tube opens or clos
 Goggles show each pole's link, whether it is closed, open, blown or arcing, and its amps or the
 volts across its gap.
 
+**Pole-top switches** are built up the way the real ones are: an operator at the foot, a stack of
+**Switch Insulators** over it, and a **Switch Contact** on top. The contact is one pole's blade
+between a line lug at its back and a load lug at its front; hanging wire lands on both. The
+operator throws the head at the top of the stack above it: the **Switch Handle** by a bare hand,
+the **Switch Servo** by the redstone signal reaching it. Operators standing in a row across the
+line, facing the same way, throw together, so three stacks over three operators on a crossarm
+are one gang-operated three-phase switch, and a handle at the end of the row works all three. A
+handle takes a breaker lockout while open. The insulators are the switch's class: the open blade
+holds off two kilovolts on its own and eighteen more for every insulator under it, so a 10 kV
+line wants one and a 35 kV line two; less, and the open gap flashes over like a cutout's. A bare
+hand on the head throws it too, up the pole, with the shock that goes with it; the hot stick
+throws it from the ground.
+
+**The recloser** is a pole-mounted three-pole breaker in a tank, hanging wire on its three line
+lugs on top and three load lugs underneath. It trips on the breaker curve against its pickup,
+set with a wrench on the box on its front, recloses three seconds later, and tries as many shots
+as it is set for, a sneaking wrench stepping them from one to four. A fault still there after
+the last shot locks it out, red flag up, until a bare hand or the hot stick resets it; five
+seconds of holding clean forgets the shots. A bare hand on a closed recloser trips it and holds
+it open. Goggles show its state, pickup, shots and each pole's current.
+
 ### Line Voltmeter
 
 Two probes (+ / −) with a very high input resistance, so it can hang across anything, including
@@ -1317,6 +1338,11 @@ adapter placed next to them:
 | 1 kV / 15 kV / 38 kV Cutout | shapeless: an iron plate, terracotta (plain, brown, light blue) and one, two or three copper nuggets |
 | Fuse Link (2) | shapeless: a paper and one to eight copper nuggets, one per size from 6 A to 140 A; a paper and a copper ingot for 200 A |
 | Hot Stick | an iron nugget over two sticks |
+| Switch Insulator (2) | shapeless: two brown terracotta |
+| Switch Contact | shapeless: an iron plate, a copper ingot and a copper nugget |
+| Switch Handle | a lever over iron plates either side of an iron ingot |
+| Switch Servo | redstone over iron plates either side of an electron tube |
+| Recloser | copper ingots either side of a 3-pole 200 A breaker, iron plates round redstone, iron ingots below |
 | Node Cover Plate | a blank cover plate and pins, shapeless |
 | Pull Box | ring of eight iron plates |
 | Conduit Switch (2) | iron nugget, lever, iron nugget over an iron nugget |

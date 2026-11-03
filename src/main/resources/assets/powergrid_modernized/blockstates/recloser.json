@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north,lockout=false,open=false": {
+      "model": "powergrid_modernized:block/recloser_closed"
+    },
+    "facing=east,lockout=false,open=false": {
+      "model": "powergrid_modernized:block/recloser_closed",
+      "y": 90
+    },
+    "facing=south,lockout=false,open=false": {
+      "model": "powergrid_modernized:block/recloser_closed",
+      "y": 180
+    },
+    "facing=west,lockout=false,open=false": {
+      "model": "powergrid_modernized:block/recloser_closed",
+      "y": 270
+    },
+    "facing=north,lockout=false,open=true": {
+      "model": "powergrid_modernized:block/recloser_open"
+    },
+    "facing=east,lockout=false,open=true": {
+      "model": "powergrid_modernized:block/recloser_open",
+      "y": 90
+    },
+    "facing=south,lockout=false,open=true": {
+      "model": "powergrid_modernized:block/recloser_open",
+      "y": 180
+    },
+    "facing=west,lockout=false,open=true": {
+      "model": "powergrid_modernized:block/recloser_open",
+      "y": 270
+    },
+    "facing=north,lockout=true,open=false": {
+      "model": "powergrid_modernized:block/recloser_lockout"
+    },
+    "facing=east,lockout=true,open=false": {
+      "model": "powergrid_modernized:block/recloser_lockout",
+      "y": 90
+    },
+    "facing=south,lockout=true,open=false": {
+      "model": "powergrid_modernized:block/recloser_lockout",
+      "y": 180
+    },
+    "facing=west,lockout=true,open=false": {
+      "model": "powergrid_modernized:block/recloser_lockout",
+      "y": 270
+    },
+    "facing=north,lockout=true,open=true": {
+      "model": "powergrid_modernized:block/recloser_lockout"
+    },
+    "facing=east,lockout=true,open=true": {
+      "model": "powergrid_modernized:block/recloser_lockout",
+      "y": 90
+    },
+    "facing=south,lockout=true,open=true": {
+      "model": "powergrid_modernized:block/recloser_lockout",
+      "y": 180
+    },
+    "facing=west,lockout=true,open=true": {
+      "model": "powergrid_modernized:block/recloser_lockout",
+      "y": 270
+    }
+  }
+}

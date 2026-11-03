@@ -4,6 +4,20 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.83.0 — 2026-11-02
+
+### Added
+- Pole-top switches built as a stack: a **Switch Handle** or a redstone **Switch Servo** at the
+  foot, **Switch Insulators** over it, a **Switch Contact** on top with a line and a load lug for
+  hanging wire. The operator throws the head above it and every operator in its row across the
+  line, so three stacks on a crossarm are one gang-operated switch. The insulators are the class:
+  two kilovolts for the head and eighteen per insulator, beyond which the open blade flashes
+  over. A handle takes a breaker lockout.
+- The **Recloser**: a pole-mounted three-pole breaker that trips on the breaker curve against a
+  wrench-set pickup, recloses after three seconds, tries one to four shots and then locks out
+  until reset by hand or hot stick.
+- The hot stick throws switch contacts and trips or resets reclosers as well as working cutouts.
+
 ## 0.82.0 — 2026-11-02
 
 ### Added

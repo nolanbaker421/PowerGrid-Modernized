@@ -45,7 +45,7 @@ import org.patryk3211.powergrid.utility.Lang;
  * North frame, pixels: the mounting plate against the pole at z = 16, the tubes to the front.
  * Standing on a crossarm the same plate sits on the arm. Mirrored by {@code tools/gen_pole_assets.py}.
  */
-public class CutoutBlock extends HorizontalElectricBlock implements IBE<CutoutBlockEntity> {
+public class CutoutBlock extends HorizontalElectricBlock implements IBE<CutoutBlockEntity>, IHotStickTarget {
     public static final IntegerProperty POLES = IntegerProperty.create("poles", 1, 3);
     public static final int MAX_POLES = 3, LINE_BASE = 0, LOAD_BASE = 3, TERMINAL_COUNT = 6;
 
@@ -222,6 +222,7 @@ public class CutoutBlock extends HorizontalElectricBlock implements IBE<CutoutBl
     }
 
     /** A hot stick, from the ground or up close: the pole under the hit is worked, with whatever is in the other hand. */
+    @Override
     public void stick(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         int pole = poleAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
         if(level.getBlockEntity(pos) instanceof CutoutBlockEntity be)

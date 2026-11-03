@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "P": {
+      "tag": "c:plates/iron"
+    },
+    "I": {
+      "item": "create:electron_tube"
+    }
+  },
+  "pattern": [
+    " R ",
+    "PIP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:switch_servo"
+  }
+}

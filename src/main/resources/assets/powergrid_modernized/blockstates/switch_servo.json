@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,powered=false": {
+      "model": "powergrid_modernized:block/switch_servo_false"
+    },
+    "facing=east,powered=false": {
+      "model": "powergrid_modernized:block/switch_servo_false",
+      "y": 90
+    },
+    "facing=south,powered=false": {
+      "model": "powergrid_modernized:block/switch_servo_false",
+      "y": 180
+    },
+    "facing=west,powered=false": {
+      "model": "powergrid_modernized:block/switch_servo_false",
+      "y": 270
+    },
+    "facing=north,powered=true": {
+      "model": "powergrid_modernized:block/switch_servo_true"
+    },
+    "facing=east,powered=true": {
+      "model": "powergrid_modernized:block/switch_servo_true",
+      "y": 90
+    },
+    "facing=south,powered=true": {
+      "model": "powergrid_modernized:block/switch_servo_true",
+      "y": 180
+    },
+    "facing=west,powered=true": {
+      "model": "powergrid_modernized:block/switch_servo_true",
+      "y": 270
+    }
+  }
+}

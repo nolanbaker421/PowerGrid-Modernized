@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "powergrid_modernized:block/switch_insulator"
+    }
+  }
+}
