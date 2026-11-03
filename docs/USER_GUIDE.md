@@ -970,7 +970,23 @@ It is placed with two clicks like any wire and only connects **network jacks**:
 
 Jack to jack hangs a cable; clicking blocks in between lays it along their surfaces. Every port takes
 one cable, so fanning out means going through a switch. Cables re-link themselves once a second, so
-reloaded chunks and rebuilt networks recover on their own.
+reloaded chunks and rebuilt networks recover on their own. A cable is good to 90 blocks.
+
+### Cable tray
+
+The **Cable Tray** is a galvanized ladder tray laid the way conduit is, but free at both ends:
+click where it starts, click along the blocks it follows, and sneak-click the air to stop. Click
+near a tray's end to carry it on; click its rails to start a branch there, or to end one there
+with a run under way, so T's and crosses are just runs that start or stop on other runs. It is
+not electrical and nothing but Cat6 goes in it. Wire cutters take a run down, and every cable
+lying in it comes down with it.
+
+To pull Cat6 through it, start the cable at a jack or a laid run's open end as usual, then click
+the tray where the cable enters and click a tray where it leaves, the same one or any joined to
+it. The cable is laid along the blocks to the entry, along the rails through every tray between
+in a free lane, and left open at the exit for the next click, the far jack or another tray. A
+tray holds ten cables, five side by side and five above; an eleventh is refused. An empty hand on
+a tray says how many lanes are in use.
 
 ---
 
@@ -1350,6 +1366,7 @@ adapter placed next to them:
 | Fuse Link (2) | shapeless: a paper and one to eight copper nuggets, one per size from 6 A to 140 A; a paper and a copper ingot for 200 A |
 | Hot Stick | an iron nugget over two sticks |
 | Extension Ladder | iron plates in a ladder: two columns with three rungs |
+| Cable Tray (8) | iron nuggets in two rows with iron ingots between them |
 | 2 m A-Frame Ladder | iron plates in an A: one, then two apart, then three |
 | 3 m, 4 m A-Frame Ladder | shapeless: the ladder a metre shorter and two iron plates |
 | Recloser | copper ingots either side of a 3-pole 200 A breaker, iron plates round redstone, iron ingots below |

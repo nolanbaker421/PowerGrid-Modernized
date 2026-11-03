@@ -50,6 +50,12 @@ public class ModItems {
             .lang("Cat6 Cable")
             .register();
 
+    /** Cable tray: laid free-form like conduit; wire stats in data/powergrid_modernized/powergrid/wire_types/cable_tray.json. */
+    public static final ItemEntry<com.nolanbaker.pgmodernized.conduit.tray.CableTrayItem> CABLE_TRAY = REGISTRATE.item("cable_tray", com.nolanbaker.pgmodernized.conduit.tray.CableTrayItem::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Cable Tray")
+            .register();
+
     /** A smart meter's radio: right-click a CT cabinet with it and the cabinet reports over the air. */
     public static final ItemEntry<MeterAntennaItem> METER_ANTENNA = REGISTRATE.item("meter_antenna", MeterAntennaItem::new)
             .model(NonNullBiConsumer.noop())

@@ -46,6 +46,14 @@ public final class WireGuard {
             }
             return;
         }
+        if(item instanceof com.nolanbaker.pgmodernized.conduit.tray.CableTrayItem) {
+            // Never a wire: on any electrical block it lays or starts tray like on a plain one.
+            if(IElectric.getAt(event.getLevel(), event.getPos()) != null) {
+                event.setCanceled(true);
+                event.setCancellationResult(com.nolanbaker.pgmodernized.conduit.tray.TrayPlacement.groundClick(new UseOnContext(event.getEntity(), event.getHand(), event.getHitVec())));
+            }
+            return;
+        }
         boolean conduit = ConduitItem.isConduit(event.getItemStack());
         boolean cat6 = item instanceof Cat6CableItem;
         boolean busBar = item instanceof BusBarItem || item instanceof RailShoeItem;

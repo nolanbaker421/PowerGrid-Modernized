@@ -5,7 +5,7 @@
   "insulated": true,
   "itemsPerMeter": 0.5,
   "maximumCurrent": 1.0,
-  "maximumLength": 32.0,
+  "maximumLength": 90.0,
   "resistancePerItem": 0.001,
   "texture": "powergrid:textures/special/insulated_wire.png",
   "thermalMass": 1.0,

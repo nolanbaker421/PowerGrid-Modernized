@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    }
+  },
+  "pattern": [
+    "NNN",
+    "I I",
+    "NNN"
+  ],
+  "result": {
+    "count": 8,
+    "id": "powergrid_modernized:cable_tray"
+  }
+}

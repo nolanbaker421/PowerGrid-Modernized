@@ -4,6 +4,17 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.91.0 — 2026-11-02
+
+### Added
+- The **Cable Tray**: laid free-form like conduit, free at both ends, continued from an end or
+  branched off its rails. Cat6 clicked onto a tray enters it, a second tray click leaves it, and
+  the cable runs along the rails through every joined tray between in one of ten lanes. Taking a
+  tray down drops its cables.
+
+### Changed
+- Cat6 reaches 90 blocks instead of 32.
+
 ## 0.90.1 — 2026-11-02
 
 ### Fixed

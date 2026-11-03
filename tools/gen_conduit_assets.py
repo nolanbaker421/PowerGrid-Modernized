@@ -681,6 +681,15 @@ def pull_box_assets():
 
 
 def item_models():
+    # The cable tray icon: two galvanized rails with rungs, seen from above.
+    img = canvas(16, 16, (0, 0, 0, 0))
+    rail, rung = (0xa9, 0xad, 0xb2), (0x8e, 0x92, 0x98)
+    fill(img, 2, 1, 4, 15, rail)
+    fill(img, 12, 1, 14, 15, rail)
+    for y in (3, 7, 11):
+        fill(img, 4, y, 12, y + 1, rung)
+    write_png(os.path.join(ASSETS, "textures", "item", "cable_tray.png"), img)
+    dump(os.path.join(ASSETS, "models", "item", "cable_tray.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/cable_tray" % MOD}})
     for sid, *_ in SIZES:
         dump(os.path.join(ASSETS, "models", "item", "conduit_%s.json" % sid), {
             "parent": "minecraft:item/generated",
@@ -727,6 +736,8 @@ def recipes():
     wire = {"item": "powergrid:wire"}
     # A metre of conduit per item; the craft yields a coil of eight.
     shaped("conduit_half", ["NNN", "WWW"], {"N": nugget, "W": wire}, 8, {"items": "powergrid:wire"})
+    # A metre of tray per item: two rails of nuggets with ingots for rungs, a coil of eight.
+    shaped("cable_tray", ["NNN", "I I", "NNN"], {"N": nugget, "I": ingot}, 8, {"items": "%s:cat6_cable" % MOD})
     shaped("conduit_three_quarter", ["III", "WWW"], {"I": ingot, "W": wire}, 8, {"items": "powergrid:wire"})
     shaped("conduit_one", ["III", "WWW", "III"], {"I": ingot, "W": wire}, 8, {"items": "powergrid:wire"})
     block = {"tag": "c:storage_blocks/iron"}
@@ -785,6 +796,13 @@ def recipes():
 
 
 def wire_types():
+    # Cable tray: three pixels deep, a metre per item, never a conductor.
+    dump(os.path.join(DATA, "powergrid", "wire_types", "cable_tray.json"), {
+        "colorable": False, "cord": False, "horizontalCoefficient": 1.0, "insulated": True,
+        "itemsPerMeter": 1.0, "maximumLength": 64.0, "maximumCurrent": 1.0,
+        "resistancePerItem": 0.001, "texture": "%s:textures/special/conduit.png" % MOD,
+        "thermalMass": 1.0, "verticalCoefficient": 1.0, "wireThickness": 0.1875,
+    })
     for sid, _conductors, thickness, _band in SIZES:
         dump(os.path.join(DATA, "powergrid", "wire_types", "conduit_%s.json" % sid), {
             "colorable": True, "cord": False, "horizontalCoefficient": 1.0, "insulated": True,

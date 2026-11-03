@@ -68,6 +68,12 @@ public class ModEntities {
                     .renderer(() -> FlexConduitRenderer::new)
                     .register();
 
+    /** A cable tray laid along block surfaces, free at both ends; Cat6 is pulled through it. */
+    public static final EntityEntry<com.nolanbaker.pgmodernized.conduit.tray.TrayRunEntity> TRAY_RUN =
+            REGISTRATE.entity("tray_run", com.nolanbaker.pgmodernized.conduit.tray.TrayRunEntity::new, MobCategory.MISC)
+                    .renderer(() -> com.nolanbaker.pgmodernized.client.TrayRunRenderer::new)
+                    .register();
+
     /** Invisible bus bar between two adjacent switchgear sections. */
     public static final EntityEntry<BusLinkEntity> BUS_LINK =
             REGISTRATE.entity("bus_link", BusLinkEntity::new, MobCategory.MISC)
