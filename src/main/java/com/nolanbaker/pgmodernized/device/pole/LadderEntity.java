@@ -30,8 +30,9 @@ import org.joml.Vector3f;
  * on its own, its back legs mirroring its front ones through the apex. Climbing is riding: a
  * right-click puts the player on the rungs at the clicked height, forward climbs, back descends,
  * back at the feet steps off, forward at the top steps onto whatever is above the support if
- * there is room, and sneaking lets go wherever you are. Riding keeps the server's anti-flying
- * check off the climber. Sneak-click or punch takes the ladder down; it falls on its own if the
+ * there is room, and jumping lets go wherever you are. Sneaking never does, since a climber
+ * sneak-clicks the gear they climbed to; {@code PlayerMixin} sees to that. Riding keeps the
+ * server's anti-flying check off the climber. Sneak-click or punch takes the ladder down; it falls on its own if the
  * ground under its feet or the block it leans on goes.
  */
 public class LadderEntity extends Entity {
@@ -244,6 +245,11 @@ public class LadderEntity extends Entity {
     // ---- climbing ----
 
     private void climb(Player climber) {
+        if(((com.nolanbaker.pgmodernized.mixin.LivingEntityAccessor) climber).pgm$isJumping()) {
+            dismount = null;
+            climber.stopRiding();
+            return;
+        }
         double step = CLIMB_PER_TICK / Math.max(1, length());
         float t = climb();
         if(climber.zza > 0.1f) {

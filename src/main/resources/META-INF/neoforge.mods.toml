@@ -2,6 +2,9 @@ modLoader = "javafml"
 loaderVersion = "[1,)"
 license = "Apache-2.0"
 
+[[mixins]]
+config = "powergrid_modernized.mixins.json"
+
 [[mods]]
 modId = "powergrid_modernized"
 version = "${version}"

@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.90.0 — 2026-11-02
+
+### Changed
+- Sneaking on a ladder no longer gets you off it, so sneak-clicks on gear work from the rungs;
+  jump to let go instead. This is the mod's first mixin, on the player's sneak-dismount check,
+  and applies only while the vehicle is a ladder.
+
 ## 0.89.0 — 2026-11-02
 
 ### Added
