@@ -18,23 +18,23 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * A crossarm: the timber bolted across the top of a pole that cutouts stand on and pole cans hang
- * from. Placed on a pole's side it is bolted to the pole and runs straight out from it; placed
- * against the outer end of an arm it continues that arm, bracketless, as far as it is built, so
- * one on each side of the pole plus extensions is a through-arm. Anything pole-mounted goes on
- * the block above any arm block. Each arm block falls when the block behind it, pole or arm, goes.
+ * from. Placed on a pole's side it is bracketed to the pole, the arm running across the line;
+ * placed against the end of an arm it continues that arm, bracketless, as far as it is built.
+ * Anything pole-mounted goes on the block above any arm block. A bracketed arm falls when the pole
+ * behind it goes; an extension falls when the arm it hangs off goes.
  */
 public class CrossarmBlock extends Block {
-    /** The way the arm runs: out from the pole. */
+    /** The way the arm's outward face points: away from the pole. */
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     /** Bolted to the pole behind it, or an extension continuing an arm beside it. */
     public static final BooleanProperty BRACKET = BooleanProperty.create("bracket");
 
-    // The arm runs along the facing, through a plate on the pole face behind it. Mirrors gen_pole_assets.py.
-    private static final VoxelShape ARM_Z = box(6, 9, 0, 10, 13, 16), ARM_X = box(0, 9, 6, 16, 13, 10);
-    private static final VoxelShape FACING_NORTH = Shapes.or(ARM_Z, box(5, 8, 15, 11, 14, 16));
-    private static final VoxelShape FACING_SOUTH = Shapes.or(ARM_Z, box(5, 8, 0, 11, 14, 1));
-    private static final VoxelShape FACING_EAST = Shapes.or(ARM_X, box(0, 8, 5, 1, 14, 11));
-    private static final VoxelShape FACING_WEST = Shapes.or(ARM_X, box(15, 8, 5, 16, 14, 11));
+    // The arm close against the pole, which is behind the facing, held by a thin plate. Mirrors gen_pole_assets.py.
+    private static final VoxelShape FACING_NORTH = Shapes.or(box(0, 9, 11, 16, 13, 15), box(5, 8, 15, 11, 14, 16));
+    private static final VoxelShape FACING_SOUTH = Shapes.or(box(0, 9, 1, 16, 13, 5), box(5, 8, 0, 11, 14, 1));
+    private static final VoxelShape FACING_EAST = Shapes.or(box(1, 9, 0, 5, 13, 16), box(0, 8, 5, 1, 14, 11));
+    private static final VoxelShape FACING_WEST = Shapes.or(box(11, 9, 0, 15, 13, 16), box(15, 8, 5, 16, 14, 11));
+    private static final VoxelShape ARM_NORTH = box(0, 9, 11, 16, 13, 15), ARM_SOUTH = box(0, 9, 1, 16, 13, 5), ARM_EAST = box(1, 9, 0, 5, 13, 16), ARM_WEST = box(11, 9, 0, 15, 13, 16);
 
     public CrossarmBlock(Properties properties) {
         super(properties);
@@ -54,50 +54,56 @@ public class CrossarmBlock extends Block {
         return state.getValue(BRACKET);
     }
 
-    /** The axis the arm runs along: the facing's. */
+    /** The axis the arm runs along: across the facing. */
     public static Direction.Axis armAxis(BlockState state) {
-        return facing(state).getAxis();
+        return facing(state).getAxis() == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X;
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        if(!bracketed(state))
-            return armAxis(state) == Direction.Axis.X ? ARM_X : ARM_Z;
+        boolean b = bracketed(state);
         return switch(facing(state)) {
-            case SOUTH -> FACING_SOUTH;
-            case EAST -> FACING_EAST;
-            case WEST -> FACING_WEST;
-            default -> FACING_NORTH;
+            case SOUTH -> b ? FACING_SOUTH : ARM_SOUTH;
+            case EAST -> b ? FACING_EAST : ARM_EAST;
+            case WEST -> b ? FACING_WEST : ARM_WEST;
+            default -> b ? FACING_NORTH : ARM_NORTH;
         };
     }
 
     /**
-     * Against the outer end of an arm it continues that arm. Otherwise on a pole's side the plate
-     * goes on the pole and the arm runs out, and placed on a floor or a top it runs toward the player.
+     * Against the end of an arm it continues that arm. Otherwise on a pole's side the bracket
+     * goes on the pole, and placed on a floor or a top the arm faces the player.
      */
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         var face = ctx.getClickedFace();
         // getClickedPos is where the block goes; the block under the cursor is one step back through the clicked face.
         var clicked = ctx.getLevel().getBlockState(ctx.getClickedPos().relative(face.getOpposite()));
-        if(clicked.getBlock() instanceof CrossarmBlock && face == facing(clicked))
+        if(clicked.getBlock() instanceof CrossarmBlock && face.getAxis() == armAxis(clicked))
             return defaultBlockState().setValue(FACING, facing(clicked)).setValue(BRACKET, false);
         var facing = face.getAxis().isHorizontal() ? face : ctx.getHorizontalDirection().getOpposite();
         return defaultBlockState().setValue(FACING, facing).setValue(BRACKET, true);
     }
 
-    /** A bolted arm needs its pole behind it; an extension needs an arm of the same facing behind it. */
+    /** A bracketed arm needs its pole behind it; an extension needs an arm of the same facing beside it along the arm. */
     @Override
     protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-        var behind = level.getBlockState(pos.relative(facing(state).getOpposite()));
         if(bracketed(state))
-            return !behind.isAir();
-        return behind.getBlock() instanceof CrossarmBlock && facing(behind) == facing(state);
+            return !level.getBlockState(pos.relative(facing(state).getOpposite())).isAir();
+        for(var side : Direction.values()) {
+            if(side.getAxis() != armAxis(state))
+                continue;
+            var beside = level.getBlockState(pos.relative(side));
+            if(beside.getBlock() instanceof CrossarmBlock && facing(beside) == facing(state))
+                return true;
+        }
+        return false;
     }
 
     @Override
     protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbour, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
-        if(direction == facing(state).getOpposite() && !canSurvive(state, level, pos))
+        boolean holds = bracketed(state) ? direction == facing(state).getOpposite() : direction.getAxis() == armAxis(state);
+        if(holds && !canSurvive(state, level, pos))
             return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
         return super.updateShape(state, direction, neighbour, level, pos, neighbourPos);
     }

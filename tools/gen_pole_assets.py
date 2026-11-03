@@ -5,7 +5,7 @@ to three poles (models, blockstates, textures, loot, recipes), the fuse links an
 Run from the repository root:  python tools/gen_pole_assets.py
 
 Geometry mirrors CutoutBlock.java and CrossarmBlock.java; change both. North frame, pixels: a
-cutout's bracket straps are against the pole at z = 16, the tubes to the front; the crossarm runs out from the pole at z = 16; the crossarm's
+cutout's bracket straps are against the pole at z = 16, the tubes to the front; the crossarm's
 bracket is against the pole, the arm running across x.
 """
 import os
@@ -66,8 +66,8 @@ def textures():
 
 def crossarm():
     tex = {"arm": "minecraft:block/spruce_planks", "bracket": "%s:block/cutout_steel" % MOD, "particle": "minecraft:block/spruce_planks"}
-    # The arm runs out from the pole (at z = 16) to the block's outer face, through a steel plate at the pole; extensions are the arm alone.
-    arm = element(6, 9, 0, 10, 13, 16, "#arm")
+    # The arm close against the pole, held by a thin steel plate; extensions are the arm alone.
+    arm = element(0, 9, 11, 16, 13, 15, "#arm")
     dump(os.path.join(ASSETS, "models", "block", "crossarm.json"), {"parent": "block/block", "textures": tex, "elements": [arm, element(5, 8, 15, 11, 14, 16, "#bracket")]})
     dump(os.path.join(ASSETS, "models", "block", "crossarm_extension.json"), {"parent": "block/block", "textures": tex, "elements": [arm]})
     dump(os.path.join(ASSETS, "models", "item", "crossarm.json"), {"parent": "%s:block/crossarm" % MOD})

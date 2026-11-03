@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.86.1 — 2026-11-02
+
+### Fixed
+- The crossarm runs across the pole face again, as it did before 0.86.0; that change was a
+  mistake. It still sits tight on its plate and extensions still click onto either end, now
+  continuing along the face, so one arm plus extensions each way is the full crossbar.
+
 ## 0.86.0 — 2026-11-02
 
 ### Changed
