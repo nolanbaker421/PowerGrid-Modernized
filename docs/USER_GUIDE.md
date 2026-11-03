@@ -868,8 +868,7 @@ from a pole.
 
 **Extension ladder.** For the work the hot stick cannot do from the ground. Hold it, click the
 ground where the feet go, then click the pole or wall face the top leans on: two to fifteen
-blocks up, on the open side of the face, with the feet no further out than a block for every
-four up. Right-click the ladder to step onto it at that height; forward climbs, back descends
+blocks up, on the open side of the face, at any lean you like. Right-click the ladder to step onto it at that height; forward climbs, back descends
 and steps off at the feet, forward at the top steps onto whatever is above the support if there
 is room, and sneaking lets go wherever you are, which is a fall from anywhere high. You can work
 cutouts, cans and gang boxes from the rungs. Sneak-click or punch the ladder to take it down; it

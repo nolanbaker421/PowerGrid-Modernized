@@ -24,8 +24,7 @@ import java.util.List;
 /**
  * The extension ladder, placed in two clicks: the ground where the feet go, then the pole or
  * wall face the top leans on. The top must be two to fifteen blocks up, on the open side of
- * that face, with the feet no further out than a quarter of the height, the lineman's one-in-four
- * rule. Sneak-click with the feet chosen to start over.
+ * that face; any lean goes. Sneak-click with the feet chosen to start over.
  */
 public class ExtensionLadderItem extends Item {
     private static final String LEVEL_KEY = "PgmLevel";
@@ -92,8 +91,6 @@ public class ExtensionLadderItem extends Item {
         var normal = Vec3.atLowerCornerOf(face.getNormal());
         if(out.dot(normal) < 0.05)
             return tell(player, "ladder.wrong_side", ChatFormatting.RED);
-        if(out.length() > height / 4 + 0.3)
-            return tell(player, "ladder.too_flat", ChatFormatting.RED);
         var ladder = LadderEntity.place(ModEntities.LADDER.get(), level, foot, hit, face, ctx.getClickedPos());
         level.addFreshEntity(ladder);
         clearFoot(stack);

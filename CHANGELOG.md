@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.87.1 — 2026-11-02
+
+### Changed
+- The extension ladder leans at any angle; the one-in-four limit on how far out the feet may
+  stand is gone. Height stays two to fifteen blocks.
+
 ## 0.87.0 — 2026-11-02
 
 ### Added
