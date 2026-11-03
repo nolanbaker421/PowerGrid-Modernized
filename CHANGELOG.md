@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.87.0 — 2026-11-02
+
+### Added
+- The **Extension Ladder**: click the ground for the feet, then a pole or wall face for the top,
+  two to fifteen blocks up and no flatter than one out for four up. Right-click it to climb,
+  forward up and back down, sneak to let go. It is ridden rather than climbed so servers never
+  take a climber for a flier. Sneak-click or punch to take it down; it drops when its ground or
+  its support goes.
+
 ## 0.86.1 — 2026-11-02
 
 ### Fixed

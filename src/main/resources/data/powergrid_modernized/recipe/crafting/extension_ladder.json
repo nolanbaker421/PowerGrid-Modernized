@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "c:plates/iron"
+    }
+  },
+  "pattern": [
+    "P P",
+    "PPP",
+    "P P"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:extension_ladder"
+  }
+}

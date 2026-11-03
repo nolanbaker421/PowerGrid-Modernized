@@ -41,6 +41,11 @@ public class ModDataComponents {
             REGISTER.registerComponentType("conduit_bender", builder -> builder
                     .persistent(CompoundTag.CODEC)
                     .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
+    /** Where an extension ladder's feet go, chosen by the first click. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> LADDER_FOOT =
+            REGISTER.registerComponentType("ladder_foot", builder -> builder
+                    .persistent(CompoundTag.CODEC)
+                    .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
     /** A lock's serial number. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> LOCK =
             REGISTER.registerComponentType("lock", builder -> builder

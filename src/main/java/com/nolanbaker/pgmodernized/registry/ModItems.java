@@ -155,6 +155,13 @@ public class ModItems {
             .lang("Hot Stick")
             .register();
 
+    /** The extension ladder: feet on the ground, top on a pole, climbed by riding it. */
+    public static final ItemEntry<com.nolanbaker.pgmodernized.device.pole.ExtensionLadderItem> EXTENSION_LADDER = REGISTRATE.item("extension_ladder", com.nolanbaker.pgmodernized.device.pole.ExtensionLadderItem::new)
+            .properties(p -> p.stacksTo(1))
+            .model(NonNullBiConsumer.noop())
+            .lang("Extension Ladder")
+            .register();
+
     /** The installer's boresight scope: sights two antennas in on each other. */
     public static final ItemEntry<AlignmentScopeItem> ALIGNMENT_SCOPE = REGISTRATE.item("alignment_scope", AlignmentScopeItem::new)
             .properties(p -> p.stacksTo(1))

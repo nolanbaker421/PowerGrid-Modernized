@@ -62,6 +62,19 @@ def textures():
     fill(img, 14, 1, 15, 4, (0x80, 0x84, 0x88))
     write_png(os.path.join(ITEM_TEX, "hot_stick.png"), img)
     dump(os.path.join(ASSETS, "models", "item", "hot_stick.json"), {"parent": "minecraft:item/handheld", "textures": {"layer0": "%s:item/hot_stick" % MOD}})
+    # The extension ladder: two aluminium rails with a narrower fly section climbing past them.
+    img = canvas(16, 16, (0, 0, 0, 0))
+    rail, rung = (0xc2, 0xc6, 0xcc), (0xa8, 0xac, 0xb2)
+    fill(img, 3, 6, 4, 16, rail)
+    fill(img, 11, 6, 12, 16, rail)
+    for y in (7, 10, 13):
+        fill(img, 4, y, 11, y + 1, rung)
+    fill(img, 5, 0, 6, 12, rail)
+    fill(img, 9, 0, 10, 12, rail)
+    for y in (1, 4, 7, 10):
+        fill(img, 6, y, 9, y + 1, rung)
+    write_png(os.path.join(ITEM_TEX, "extension_ladder.png"), img)
+    dump(os.path.join(ASSETS, "models", "item", "extension_ladder.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/extension_ladder" % MOD}})
 
 
 def crossarm():
@@ -116,6 +129,7 @@ def cutouts():
 def data():
     plate, nugget, ingot = {"tag": "c:plates/iron"}, {"tag": "c:nuggets/copper"}, {"tag": "c:ingots/copper"}
     recipe("crossarm", ["PPP", " N "], {"P": {"tag": "minecraft:planks"}, "N": {"tag": "c:nuggets/iron"}}, 2, {"items": "%s:cutout_15kv" % MOD})
+    recipe("extension_ladder", ["P P", "PPP", "P P"], {"P": plate}, 1, {"items": "%s:hot_stick" % MOD})
     recipe_shapeless("cutout_1kv", [plate, {"item": "minecraft:terracotta"}, nugget], 1, {"items": "%s:fuse_link_15a" % MOD})
     recipe_shapeless("cutout_15kv", [plate, {"item": "minecraft:brown_terracotta"}, nugget, nugget], 1, {"items": "%s:fuse_link_15a" % MOD})
     recipe_shapeless("cutout_38kv", [plate, {"item": "minecraft:light_blue_terracotta"}, nugget, nugget, nugget], 1, {"items": "%s:fuse_link_15a" % MOD})

@@ -859,14 +859,22 @@ Several wires in the jaw are summed.
 Overhead gear for the distribution side, all of it taking hanging wire on lugs and none of it
 conduit.
 
-**Crossarm.** The timber across the top of a pole. Place it on a pole's side, bracket to the pole
-and the arm running across the line; it falls if the pole behind it goes. Place another against
-the end of an arm and it continues the arm without a bracket, as far as you like, so a through-arm
-is one on each side of the pole plus extensions; an extension falls when the arm it continues
-goes. Cutouts, the recloser and Power Plant Grid's insulators and breakers stand on the block
-above any arm block, and a pole can placed against an arm's outward face hangs from it the way
-one hangs from a pole. Arms on neighbouring faces of a pole never meet; put them on opposite
-faces.
+**Crossarm.** The timber across the top of a pole. Place it on a pole's side and it bolts to the
+pole through a steel plate, running across the face; it falls if the pole goes. Place another
+against either end and it continues the arm, as far as you like; an extension falls when the arm
+beside it goes. Cutouts, the recloser and Power Plant Grid's insulators and breakers stand on the
+block above any arm block, and a pole can placed against an arm hangs from it the way one hangs
+from a pole.
+
+**Extension ladder.** For the work the hot stick cannot do from the ground. Hold it, click the
+ground where the feet go, then click the pole or wall face the top leans on: two to fifteen
+blocks up, on the open side of the face, with the feet no further out than a block for every
+four up. Right-click the ladder to step onto it at that height; forward climbs, back descends
+and steps off at the feet, forward at the top steps onto whatever is above the support if there
+is room, and sneaking lets go wherever you are, which is a fall from anywhere high. You can work
+cutouts, cans and gang boxes from the rungs. Sneak-click or punch the ladder to take it down; it
+falls on its own if the ground under its feet or the block it leans on goes. Sneak-click the air
+with the feet chosen to start over.
 
 **Fused cutouts.** The drop-out fuse holders. Three classes, by the holder's insulation: the
 **1 kV Cutout** for 480 V and 1 kV lines, the **15 kV Cutout** for 8 kV and 10 kV, the **38 kV
@@ -1335,6 +1343,7 @@ adapter placed next to them:
 | 1 kV / 15 kV / 38 kV Cutout | shapeless: an iron plate, terracotta (plain, brown, light blue) and one, two or three copper nuggets |
 | Fuse Link (2) | shapeless: a paper and one to eight copper nuggets, one per size from 6 A to 140 A; a paper and a copper ingot for 200 A |
 | Hot Stick | an iron nugget over two sticks |
+| Extension Ladder | iron plates in a ladder: two columns with three rungs |
 | Recloser | copper ingots either side of a 3-pole 200 A breaker, iron plates round redstone, iron ingots below |
 
 ### Power Plant Grid recipes

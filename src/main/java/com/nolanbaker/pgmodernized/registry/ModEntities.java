@@ -98,6 +98,14 @@ public class ModEntities {
                     .renderer(() -> NoopEntityRenderer::new)
                     .register();
 
+    /** An extension ladder leaned on a pole; climbed by riding it. */
+    public static final EntityEntry<com.nolanbaker.pgmodernized.device.pole.LadderEntity> LADDER =
+            REGISTRATE.entity("extension_ladder", com.nolanbaker.pgmodernized.device.pole.LadderEntity::new, MobCategory.MISC)
+                    .properties(b -> b.sized(0.5f, 0.5f).clientTrackingRange(10).updateInterval(20))
+                    .renderer(() -> com.nolanbaker.pgmodernized.client.LadderRenderer::new)
+                    .lang("Extension Ladder")
+                    .register();
+
     /** The electrical inspector: sent after players who wire without a license. */
     public static final EntityEntry<ElectricalInspectorEntity> ELECTRICAL_INSPECTOR =
             REGISTRATE.entity("electrical_inspector", ElectricalInspectorEntity::new, MobCategory.MISC)
