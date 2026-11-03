@@ -162,6 +162,21 @@ public class ModItems {
             .lang("Extension Ladder")
             .register();
 
+    /** A-frame ladders of two, three and four blocks, stood with one click. */
+    public static final java.util.Map<Integer, ItemEntry<com.nolanbaker.pgmodernized.device.pole.StepLadderItem>> STEP_LADDERS = new java.util.LinkedHashMap<>();
+    static {
+        for(int h : new int[] {2, 3, 4})
+            STEP_LADDERS.put(h, REGISTRATE.item("step_ladder_" + h, (Item.Properties p) -> new com.nolanbaker.pgmodernized.device.pole.StepLadderItem(p, h))
+                    .properties(p -> p.stacksTo(1))
+                    .model(NonNullBiConsumer.noop())
+                    .lang(h + " m A-Frame Ladder")
+                    .register());
+    }
+
+    public static ItemEntry<com.nolanbaker.pgmodernized.device.pole.StepLadderItem> stepLadder(int height) {
+        return STEP_LADDERS.get(Math.max(2, Math.min(4, height)));
+    }
+
     /** The installer's boresight scope: sights two antennas in on each other. */
     public static final ItemEntry<AlignmentScopeItem> ALIGNMENT_SCOPE = REGISTRATE.item("alignment_scope", AlignmentScopeItem::new)
             .properties(p -> p.stacksTo(1))

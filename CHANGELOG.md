@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.89.0 — 2026-11-02
+
+### Added
+- **A-frame ladders** of 2, 3 and 4 m: one click on the ground stands one facing you. Climbed,
+  taken down and dropped like the extension ladder.
+
 ## 0.88.0 — 2026-11-02
 
 ### Changed

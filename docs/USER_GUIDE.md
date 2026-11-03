@@ -877,6 +877,10 @@ way of your clicks while you are on it. Sneak-click or punch the ladder to take 
 falls on its own if the ground under its feet or the block it leans on goes. Sneak-click the air
 with the feet chosen to start over.
 
+**A-frame ladders** of two, three and four blocks stand on their own: click the ground and one
+stands there facing you, rungs on your side. Climb, let go, take down and lose them the same way
+as the extension ladder; there is no stepping off the top.
+
 **Fused cutouts.** The drop-out fuse holders. Three classes, by the holder's insulation: the
 **1 kV Cutout** for 480 V and 1 kV lines, the **15 kV Cutout** for 8 kV and 10 kV, the **38 kV
 Cutout** for 35 kV. One item is a one-pole holder; click it with another holder of the same class
@@ -1345,6 +1349,8 @@ adapter placed next to them:
 | Fuse Link (2) | shapeless: a paper and one to eight copper nuggets, one per size from 6 A to 140 A; a paper and a copper ingot for 200 A |
 | Hot Stick | an iron nugget over two sticks |
 | Extension Ladder | iron plates in a ladder: two columns with three rungs |
+| 2 m A-Frame Ladder | iron plates in an A: one, then two apart, then three |
+| 3 m, 4 m A-Frame Ladder | shapeless: the ladder a metre shorter and two iron plates |
 | Recloser | copper ingots either side of a 3-pole 200 A breaker, iron plates round redstone, iron ingots below |
 
 ### Power Plant Grid recipes

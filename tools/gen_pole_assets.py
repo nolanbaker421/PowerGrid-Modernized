@@ -75,6 +75,21 @@ def textures():
         fill(img, 6, y, 9, y + 1, rung)
     write_png(os.path.join(ITEM_TEX, "extension_ladder.png"), img)
     dump(os.path.join(ASSETS, "models", "item", "extension_ladder.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/extension_ladder" % MOD}})
+    # The A-frames: an orange A with two to four rungs, taller the more rungs.
+    for h in (2, 3, 4):
+        img = canvas(16, 16, (0, 0, 0, 0))
+        top = 14 - 4 * h
+        for y in range(top, 16):
+            spread = (y - top) * 6 // (16 - top)
+            fill(img, 7 - spread, y, 8 - spread, y + 1, rail)
+            fill(img, 8 + spread, y, 9 + spread, y + 1, rail)
+        for k in range(h):
+            y = top + 3 + k * ((15 - top - 3) // h)
+            spread = (y - top) * 6 // (16 - top)
+            fill(img, 8 - spread, y, 8 + spread, y + 1, rung)
+        fill(img, 6, top, 10, top + 1, rung)
+        write_png(os.path.join(ITEM_TEX, "step_ladder_%d.png" % h), img)
+        dump(os.path.join(ASSETS, "models", "item", "step_ladder_%d.json" % h), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/step_ladder_%d" % (MOD, h)}})
 
 
 def crossarm():
@@ -130,6 +145,9 @@ def data():
     plate, nugget, ingot = {"tag": "c:plates/iron"}, {"tag": "c:nuggets/copper"}, {"tag": "c:ingots/copper"}
     recipe("crossarm", ["PPP", " N "], {"P": {"tag": "minecraft:planks"}, "N": {"tag": "c:nuggets/iron"}}, 2, {"items": "%s:cutout_15kv" % MOD})
     recipe("extension_ladder", ["P P", "PPP", "P P"], {"P": plate}, 1, {"items": "%s:hot_stick" % MOD})
+    recipe("step_ladder_2", [" P ", "P P", "PPP"], {"P": plate}, 1, {"items": "%s:hot_stick" % MOD})
+    recipe_shapeless("step_ladder_3", [{"item": "%s:step_ladder_2" % MOD}, plate, plate], 1, {"items": "%s:step_ladder_2" % MOD})
+    recipe_shapeless("step_ladder_4", [{"item": "%s:step_ladder_3" % MOD}, plate, plate], 1, {"items": "%s:step_ladder_3" % MOD})
     recipe_shapeless("cutout_1kv", [plate, {"item": "minecraft:terracotta"}, nugget], 1, {"items": "%s:fuse_link_15a" % MOD})
     recipe_shapeless("cutout_15kv", [plate, {"item": "minecraft:brown_terracotta"}, nugget, nugget], 1, {"items": "%s:fuse_link_15a" % MOD})
     recipe_shapeless("cutout_38kv", [plate, {"item": "minecraft:light_blue_terracotta"}, nugget, nugget, nugget], 1, {"items": "%s:fuse_link_15a" % MOD})

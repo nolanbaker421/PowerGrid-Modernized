@@ -26,7 +26,8 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 /**
- * An extension ladder stood on the ground and leaned on a pole or wall. Climbing is riding: a
+ * An extension ladder stood on the ground and leaned on a pole or wall, or an A-frame standing
+ * on its own, its back legs mirroring its front ones through the apex. Climbing is riding: a
  * right-click puts the player on the rungs at the clicked height, forward climbs, back descends,
  * back at the feet steps off, forward at the top steps onto whatever is above the support if
  * there is room, and sneaking lets go wherever you are. Riding keeps the server's anti-flying
@@ -46,6 +47,8 @@ public class LadderEntity extends Entity {
     private static final EntityDataAccessor<Integer> FACE = SynchedEntityData.defineId(LadderEntity.class, EntityDataSerializers.INT);
     /** The climber's place along the rails, 0 at the feet to 1 at the top. */
     private static final EntityDataAccessor<Float> CLIMB = SynchedEntityData.defineId(LadderEntity.class, EntityDataSerializers.FLOAT);
+    /** An A-frame's height in blocks, or 0 for an extension ladder. */
+    private static final EntityDataAccessor<Integer> FRAME = SynchedEntityData.defineId(LadderEntity.class, EntityDataSerializers.INT);
 
     /** Parts cover one block of rails each; the ladder is clicked and hit through them. */
     public static final int MAX_PARTS = (int) MAX_HEIGHT + 1;
@@ -97,11 +100,17 @@ public class LadderEntity extends Entity {
 
     /** Stands a ladder with its feet at {@code foot} and its top at {@code top} on the given face of {@code support}. */
     public static LadderEntity place(EntityType<? extends LadderEntity> type, Level level, Vec3 foot, Vec3 top, Direction face, BlockPos support) {
+        return place(type, level, foot, top, face, support, 0);
+    }
+
+    /** As above; {@code frame} above zero makes it an A-frame of that height, {@code face} then the side the rungs are on. */
+    public static LadderEntity place(EntityType<? extends LadderEntity> type, Level level, Vec3 foot, Vec3 top, Direction face, BlockPos support, int frame) {
         var ladder = new LadderEntity(type, level);
         ladder.setPos(foot);
         ladder.entityData.set(FOOT, foot.toVector3f());
         ladder.entityData.set(TOP, top.toVector3f());
         ladder.entityData.set(FACE, face.get3DDataValue());
+        ladder.entityData.set(FRAME, frame);
         ladder.support = support;
         ladder.setBoundingBox(ladder.makeBoundingBox());
         ladder.layoutParts();
@@ -135,6 +144,22 @@ public class LadderEntity extends Entity {
         return entityData.get(CLIMB);
     }
 
+    /** An A-frame's height in blocks; 0 for an extension ladder. */
+    public int frame() {
+        return entityData.get(FRAME);
+    }
+
+    /** An A-frame's back feet: the front feet mirrored through the line under the apex. */
+    public Vec3 backFoot() {
+        var foot = foot();
+        var top = top();
+        return new Vec3(2 * top.x - foot.x, foot.y, 2 * top.z - foot.z);
+    }
+
+    private ItemStack item() {
+        return new ItemStack(frame() > 0 ? ModItems.stepLadder(frame()).get() : ModItems.EXTENSION_LADDER.get());
+    }
+
     /** The point on the rungs at {@code t} along the rails. */
     public Vec3 rung(double t) {
         return foot().lerp(top(), t);
@@ -146,6 +171,7 @@ public class LadderEntity extends Entity {
         builder.define(TOP, new Vector3f());
         builder.define(FACE, Direction.NORTH.get3DDataValue());
         builder.define(CLIMB, 0f);
+        builder.define(FRAME, 0);
     }
 
     @Override
@@ -168,7 +194,10 @@ public class LadderEntity extends Entity {
         var top = top();
         if(foot.distanceToSqr(top) < 1e-4)
             return new AABB(position(), position()).inflate(0.5);
-        return new AABB(foot, top).inflate(0.5);
+        var box = new AABB(foot, top);
+        if(frame() > 0)
+            box = box.minmax(new AABB(backFoot(), top));
+        return box.inflate(0.5);
     }
 
     // ---- standing and falling ----
@@ -193,18 +222,22 @@ public class LadderEntity extends Entity {
 
     private boolean supported() {
         var ground = BlockPos.containing(foot().subtract(0, 0.1, 0));
-        return !level().getBlockState(ground).isAir() && !level().getBlockState(support).isAir();
+        if(level().getBlockState(ground).isAir())
+            return false;
+        if(frame() > 0)
+            return !level().getBlockState(BlockPos.containing(backFoot().subtract(0, 0.1, 0))).isAir();
+        return !level().getBlockState(support).isAir();
     }
 
     private void drop() {
-        spawnAtLocation(new ItemStack(ModItems.EXTENSION_LADDER.get()));
+        spawnAtLocation(item());
     }
 
     private void takeDown(Player player) {
         dismount = foot().add(outward().scale(0.6));
         ejectPassengers();
         if(!player.isCreative())
-            player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.EXTENSION_LADDER.get()));
+            player.getInventory().placeItemBackInInventory(item());
         discard();
     }
 
@@ -229,8 +262,10 @@ public class LadderEntity extends Entity {
         }
     }
 
-    /** Forward at the top: onto the block above the support if a player fits there. */
+    /** Forward at the top: onto the block above the support if a player fits there. An A-frame has nowhere to go. */
     private void stepOffTop(Player climber) {
+        if(frame() > 0)
+            return;
         var landing = Vec3.atBottomCenterOf(support.above());
         if(!level().noCollision(climber, climber.getDimensions(Pose.STANDING).makeBoundingBox(landing)))
             return;
@@ -307,7 +342,7 @@ public class LadderEntity extends Entity {
 
     @Override
     public ItemStack getPickResult() {
-        return new ItemStack(ModItems.EXTENSION_LADDER.get());
+        return item();
     }
 
     // ---- saving ----
@@ -318,6 +353,7 @@ public class LadderEntity extends Entity {
         entityData.set(TOP, new Vector3f(tag.getFloat("TopX"), tag.getFloat("TopY"), tag.getFloat("TopZ")));
         entityData.set(FACE, tag.getInt("Face"));
         entityData.set(CLIMB, tag.getFloat("Climb"));
+        entityData.set(FRAME, tag.getInt("Frame"));
         support = NbtUtils.readBlockPos(tag, "Support").orElse(BlockPos.ZERO);
         setBoundingBox(makeBoundingBox());
         layoutParts();
@@ -335,6 +371,7 @@ public class LadderEntity extends Entity {
         tag.putFloat("TopZ", (float) top.z);
         tag.putInt("Face", entityData.get(FACE));
         tag.putFloat("Climb", climb());
+        tag.putInt("Frame", frame());
         tag.put("Support", NbtUtils.writeBlockPos(support));
     }
 }
