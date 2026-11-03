@@ -11,13 +11,13 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 
 /**
- * An aluminium extension ladder from its feet to its top: a base section and a narrower fly
+ * An orange fiberglass extension ladder from its feet to its top: a base section and a narrower fly
  * section overlapping it, rungs every 0.3 m. Drawn in a frame with x across the rungs, y up the
  * rails and z out of the ladder's plane.
  */
 public class LadderRenderer extends EntityRenderer<LadderEntity> {
     private static final ResourceLocation TEXTURE = PowerGridModernized.asResource("textures/special/conduit.png");
-    private static final int RAIL = 0xC2C6CC, RUNG = 0xA8ACB2;
+    private static final int RAIL = 0xE8731E, RUNG = 0xC2C6CC;
     private static final double RUNG_PITCH = 0.3 * 16;
 
     public LadderRenderer(EntityRendererProvider.Context context) {

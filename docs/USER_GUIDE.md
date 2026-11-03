@@ -867,11 +867,13 @@ block above any arm block, and a pole can placed against an arm hangs from it th
 from a pole.
 
 **Extension ladder.** For the work the hot stick cannot do from the ground. Hold it, click the
-ground where the feet go, then click the pole or wall face the top leans on: two to fifteen
-blocks up, on the open side of the face, at any lean you like. Right-click the ladder to step onto it at that height; forward climbs, back descends
+ground where the feet go, then aim at the pole or wall face the top leans on and click; the top
+can be well out of arm's reach, two to fifteen blocks up, on the open side of the face, at any
+lean you like. Right-click the ladder to step onto it at that height; forward climbs, back descends
 and steps off at the feet, forward at the top steps onto whatever is above the support if there
-is room, and sneaking lets go wherever you are, which is a fall from anywhere high. You can work
-cutouts, cans and gang boxes from the rungs. Sneak-click or punch the ladder to take it down; it
+is room, and sneaking lets go wherever you are, which is a fall from anywhere high. From the
+rungs you work cutouts, cans and gang boxes as from the ground; the ladder never gets in the
+way of your clicks while you are on it. Sneak-click or punch the ladder to take it down; it
 falls on its own if the ground under its feet or the block it leans on goes. Sneak-click the air
 with the feet chosen to start over.
 

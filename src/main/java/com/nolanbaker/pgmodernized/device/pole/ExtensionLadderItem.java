@@ -15,6 +15,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.utility.Lang;
@@ -23,10 +25,14 @@ import java.util.List;
 
 /**
  * The extension ladder, placed in two clicks: the ground where the feet go, then the pole or
- * wall face the top leans on. The top must be two to fifteen blocks up, on the open side of
- * that face; any lean goes. Sneak-click with the feet chosen to start over.
+ * wall face the top leans on, which may be well out of arm's reach: with the feet chosen the
+ * item sights the face from up to {@link #REACH} blocks away. The top must be two to fifteen
+ * blocks up, on the open side of that face; any lean goes. Sneak-click with the feet chosen to
+ * start over.
  */
 public class ExtensionLadderItem extends Item {
+    /** How far the top may be sighted from once the feet are set. */
+    public static final double REACH = 24;
     private static final String LEVEL_KEY = "PgmLevel";
 
     public ExtensionLadderItem(Properties properties) {
@@ -80,6 +86,11 @@ public class ExtensionLadderItem extends Item {
             setFoot(stack, hit, level);
             return tell(player, "ladder.foot_set", ChatFormatting.GREEN);
         }
+        return lean(level, player, stack, foot, hit, face, ctx.getClickedPos());
+    }
+
+    /** The second click, wherever it came from: stands the ladder with its top at {@code hit} on {@code face} of {@code support}. */
+    private static InteractionResult lean(Level level, Player player, ItemStack stack, Vec3 foot, Vec3 hit, Direction face, net.minecraft.core.BlockPos support) {
         if(!face.getAxis().isHorizontal())
             return tell(player, "ladder.need_face", ChatFormatting.RED);
         double height = hit.y - foot.y;
@@ -91,7 +102,7 @@ public class ExtensionLadderItem extends Item {
         var normal = Vec3.atLowerCornerOf(face.getNormal());
         if(out.dot(normal) < 0.05)
             return tell(player, "ladder.wrong_side", ChatFormatting.RED);
-        var ladder = LadderEntity.place(ModEntities.LADDER.get(), level, foot, hit, face, ctx.getClickedPos());
+        var ladder = LadderEntity.place(ModEntities.LADDER.get(), level, foot, hit, face, support);
         level.addFreshEntity(ladder);
         clearFoot(stack);
         if(!player.isCreative())
@@ -104,16 +115,26 @@ public class ExtensionLadderItem extends Item {
         return InteractionResult.CONSUME;
     }
 
+    /** Nothing in arm's reach: with the feet set, the top is sighted from afar, the way a ladder is raised. */
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
-        if(player.isShiftKeyDown() && hasFoot(stack)) {
+        if(!hasFoot(stack))
+            return InteractionResultHolder.pass(stack);
+        if(player.isShiftKeyDown()) {
             clearFoot(stack);
             if(!level.isClientSide)
                 player.displayClientMessage(Lang.translate("message.connection_reset").style(ChatFormatting.GRAY).component(), true);
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
         }
-        return InteractionResultHolder.pass(stack);
+        if(level.isClientSide)
+            return InteractionResultHolder.sidedSuccess(stack, true);
+        var foot = foot(stack, level);
+        var pick = player.pick(REACH, 0, false);
+        if(foot == null || !(pick instanceof BlockHitResult block) || pick.getType() != HitResult.Type.BLOCK)
+            return InteractionResultHolder.pass(stack);
+        lean(level, player, stack, foot, block.getLocation(), block.getDirection(), block.getBlockPos());
+        return InteractionResultHolder.sidedSuccess(stack, false);
     }
 
     @Override

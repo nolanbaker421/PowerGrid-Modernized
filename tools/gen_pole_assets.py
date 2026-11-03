@@ -62,9 +62,9 @@ def textures():
     fill(img, 14, 1, 15, 4, (0x80, 0x84, 0x88))
     write_png(os.path.join(ITEM_TEX, "hot_stick.png"), img)
     dump(os.path.join(ASSETS, "models", "item", "hot_stick.json"), {"parent": "minecraft:item/handheld", "textures": {"layer0": "%s:item/hot_stick" % MOD}})
-    # The extension ladder: two aluminium rails with a narrower fly section climbing past them.
+    # The extension ladder: two orange fiberglass rails with a narrower fly section climbing past them.
     img = canvas(16, 16, (0, 0, 0, 0))
-    rail, rung = (0xc2, 0xc6, 0xcc), (0xa8, 0xac, 0xb2)
+    rail, rung = (0xe8, 0x73, 0x1e), (0xc2, 0xc6, 0xcc)
     fill(img, 3, 6, 4, 16, rail)
     fill(img, 11, 6, 12, 16, rail)
     for y in (7, 10, 13):

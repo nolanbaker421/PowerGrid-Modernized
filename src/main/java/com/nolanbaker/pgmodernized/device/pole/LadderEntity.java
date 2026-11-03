@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.entity.PartEntity;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -46,6 +47,10 @@ public class LadderEntity extends Entity {
     /** The climber's place along the rails, 0 at the feet to 1 at the top. */
     private static final EntityDataAccessor<Float> CLIMB = SynchedEntityData.defineId(LadderEntity.class, EntityDataSerializers.FLOAT);
 
+    /** Parts cover one block of rails each; the ladder is clicked and hit through them. */
+    public static final int MAX_PARTS = (int) MAX_HEIGHT + 1;
+
+    private final LadderPart[] parts = new LadderPart[MAX_PARTS];
     private BlockPos support = BlockPos.ZERO;
     @Nullable
     private Vec3 dismount;
@@ -53,6 +58,41 @@ public class LadderEntity extends Entity {
     public LadderEntity(EntityType<? extends LadderEntity> type, Level level) {
         super(type, level);
         noPhysics = true;
+        // Built right after the parent so their ids follow its own, which is what setId gives them on the client.
+        for(int i = 0; i < MAX_PARTS; ++i)
+            parts[i] = new LadderPart(this);
+    }
+
+    @Override
+    public boolean isMultipartEntity() {
+        return true;
+    }
+
+    @Override
+    public PartEntity<?>[] getParts() {
+        return parts;
+    }
+
+    @Override
+    public void setId(int id) {
+        super.setId(id);
+        for(int i = 0; i < parts.length; ++i)
+            parts[i].setId(id + i + 1);
+    }
+
+    /** Lays the parts along the rails, one per block of length; the rest sit idle at the feet. */
+    private void layoutParts() {
+        var foot = foot();
+        double length = length();
+        int n = length < 0.5 ? 0 : (int) Math.min(MAX_PARTS, Math.ceil(length));
+        for(int i = 0; i < parts.length; ++i) {
+            if(i < n) {
+                var centre = rung((i + 0.5) / n);
+                parts[i].set(new AABB(centre, centre).inflate(0.5), true);
+            } else {
+                parts[i].set(new AABB(foot, foot), false);
+            }
+        }
     }
 
     /** Stands a ladder with its feet at {@code foot} and its top at {@code top} on the given face of {@code support}. */
@@ -64,6 +104,7 @@ public class LadderEntity extends Entity {
         ladder.entityData.set(FACE, face.get3DDataValue());
         ladder.support = support;
         ladder.setBoundingBox(ladder.makeBoundingBox());
+        ladder.layoutParts();
         return ladder;
     }
 
@@ -110,8 +151,15 @@ public class LadderEntity extends Entity {
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
-        if(key.equals(FOOT) || key.equals(TOP))
+        if(key.equals(FOOT) || key.equals(TOP)) {
             setBoundingBox(makeBoundingBox());
+            layoutParts();
+        }
+    }
+
+    @Override
+    public AABB getBoundingBoxForCulling() {
+        return getBoundingBox();
     }
 
     @Override
@@ -128,6 +176,8 @@ public class LadderEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
+        if(tickCount == 1)
+            layoutParts();
         if(level().isClientSide)
             return;
         if(tickCount % 10 == 0 && !supported()) {
@@ -213,8 +263,8 @@ public class LadderEntity extends Entity {
         return true;
     }
 
-    @Override
-    public InteractionResult interactAt(Player player, Vec3 hit, InteractionHand hand) {
+    /** A click on the rails at {@code hit}: sneaking takes the ladder down, otherwise the player steps on there. */
+    public InteractionResult climbOn(Player player, Vec3 hit) {
         if(level().isClientSide)
             return InteractionResult.SUCCESS;
         if(player.isShiftKeyDown()) {
@@ -225,10 +275,15 @@ public class LadderEntity extends Entity {
             return InteractionResult.PASS;
         var foot = foot();
         var along = top().subtract(foot);
-        double t = position().add(hit).subtract(foot).dot(along) / along.lengthSqr();
+        double t = hit.subtract(foot).dot(along) / along.lengthSqr();
         entityData.set(CLIMB, (float) Mth.clamp(t, 0.02, 0.98));
         player.startRiding(this);
         return InteractionResult.CONSUME;
+    }
+
+    @Override
+    public InteractionResult interactAt(Player player, Vec3 hit, InteractionHand hand) {
+        return climbOn(player, position().add(hit));
     }
 
     // ---- picking up ----
@@ -244,9 +299,10 @@ public class LadderEntity extends Entity {
         return false;
     }
 
+    /** The parts are what gets picked; the whole-ladder box only sizes the render cull. */
     @Override
     public boolean isPickable() {
-        return true;
+        return false;
     }
 
     @Override
@@ -264,6 +320,7 @@ public class LadderEntity extends Entity {
         entityData.set(CLIMB, tag.getFloat("Climb"));
         support = NbtUtils.readBlockPos(tag, "Support").orElse(BlockPos.ZERO);
         setBoundingBox(makeBoundingBox());
+        layoutParts();
     }
 
     @Override

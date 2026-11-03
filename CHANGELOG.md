@@ -4,6 +4,19 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.88.0 — 2026-11-02
+
+### Changed
+- The extension ladder is orange fiberglass with aluminium rungs.
+- With the feet set, the top is sighted from up to 24 blocks away, so a 15-block ladder can be
+  raised from the ground.
+
+### Fixed
+- Nothing could be clicked from the ladder: the ladder itself caught every click. It is now
+  picked through a chain of one-block parts along its rails, never while someone is on it, so
+  clicks from the rungs reach the gear and clicks from the ground land on the ladder only where
+  it actually is.
+
 ## 0.87.1 — 2026-11-02
 
 ### Changed
