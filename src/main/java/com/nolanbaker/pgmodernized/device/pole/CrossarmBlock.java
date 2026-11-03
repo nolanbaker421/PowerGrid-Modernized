@@ -26,10 +26,11 @@ public class CrossarmBlock extends Block {
     /** The way the arm's outward face points: away from the pole. */
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    private static final VoxelShape ARM_NS = Shapes.or(box(0, 9, 6, 16, 13, 10), box(6, 8, 10, 10, 14, 16));
-    private static final VoxelShape ARM_EW = Shapes.or(box(6, 9, 0, 10, 13, 16), box(0, 8, 6, 6, 14, 10));
-    private static final VoxelShape ARM_SN = Shapes.or(box(0, 9, 6, 16, 13, 10), box(6, 8, 0, 10, 14, 6));
-    private static final VoxelShape ARM_WE = Shapes.or(box(6, 9, 0, 10, 13, 16), box(10, 8, 6, 16, 14, 10));
+    // One shape per facing, the bracket on the pole side, which is behind the facing.
+    private static final VoxelShape FACING_NORTH = Shapes.or(box(0, 9, 6, 16, 13, 10), box(6, 8, 10, 10, 14, 16));
+    private static final VoxelShape FACING_SOUTH = Shapes.or(box(0, 9, 6, 16, 13, 10), box(6, 8, 0, 10, 14, 6));
+    private static final VoxelShape FACING_EAST = Shapes.or(box(6, 9, 0, 10, 13, 16), box(0, 8, 6, 6, 14, 10));
+    private static final VoxelShape FACING_WEST = Shapes.or(box(6, 9, 0, 10, 13, 16), box(10, 8, 6, 16, 14, 10));
 
     public CrossarmBlock(Properties properties) {
         super(properties);
@@ -48,10 +49,10 @@ public class CrossarmBlock extends Block {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return switch(facing(state)) {
-            case SOUTH -> ARM_SN;
-            case EAST -> ARM_WE;
-            case WEST -> ARM_EW;
-            default -> ARM_NS;
+            case SOUTH -> FACING_SOUTH;
+            case EAST -> FACING_EAST;
+            case WEST -> FACING_WEST;
+            default -> FACING_NORTH;
         };
     }
 

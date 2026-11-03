@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.84.2 — 2026-11-02
+
+### Fixed
+- A crossarm facing east or west had its selection and collision bracket on the outward side,
+  opposite the drawn bracket; the outline now matches the model on all four facings.
+
 ## 0.84.1 — 2026-11-02
 
 ### Changed
