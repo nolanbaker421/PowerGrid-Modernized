@@ -24,7 +24,7 @@ def centres(poles):
 
 
 def textures():
-    steel = (0xa9, 0xad, 0xb2)
+    steel = (0x4e, 0x52, 0x58)   # galvanized, weathered dark
     img = canvas(16, 16, steel + (255,))
     fill(img, 0, 0, 16, 1, shade(steel, 1.1))
     fill(img, 0, 15, 16, 16, shade(steel, 0.7))
@@ -66,8 +66,9 @@ def textures():
 
 def crossarm():
     tex = {"arm": "minecraft:block/spruce_planks", "bracket": "%s:block/cutout_steel" % MOD, "particle": "minecraft:block/spruce_planks"}
-    arm = element(0, 9, 6, 16, 13, 10, "#arm")
-    dump(os.path.join(ASSETS, "models", "block", "crossarm.json"), {"parent": "block/block", "textures": tex, "elements": [arm, element(6, 8, 10, 10, 14, 16, "#bracket")]})
+    # The arm close against the pole, held by a thin steel plate; extensions are the arm alone.
+    arm = element(0, 9, 11, 16, 13, 15, "#arm")
+    dump(os.path.join(ASSETS, "models", "block", "crossarm.json"), {"parent": "block/block", "textures": tex, "elements": [arm, element(5, 8, 15, 11, 14, 16, "#bracket")]})
     dump(os.path.join(ASSETS, "models", "block", "crossarm_extension.json"), {"parent": "block/block", "textures": tex, "elements": [arm]})
     dump(os.path.join(ASSETS, "models", "item", "crossarm.json"), {"parent": "%s:block/crossarm" % MOD})
     variants = {}

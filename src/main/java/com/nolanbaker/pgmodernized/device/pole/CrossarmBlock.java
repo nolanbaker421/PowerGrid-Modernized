@@ -29,12 +29,12 @@ public class CrossarmBlock extends Block {
     /** Bolted to the pole behind it, or an extension continuing an arm beside it. */
     public static final BooleanProperty BRACKET = BooleanProperty.create("bracket");
 
-    private static final VoxelShape ARM_X = box(0, 9, 6, 16, 13, 10), ARM_Z = box(6, 9, 0, 10, 13, 16);
-    // One shape per facing, the bracket on the pole side, which is behind the facing.
-    private static final VoxelShape FACING_NORTH = Shapes.or(ARM_X, box(6, 8, 10, 10, 14, 16));
-    private static final VoxelShape FACING_SOUTH = Shapes.or(ARM_X, box(6, 8, 0, 10, 14, 6));
-    private static final VoxelShape FACING_EAST = Shapes.or(ARM_Z, box(0, 8, 6, 6, 14, 10));
-    private static final VoxelShape FACING_WEST = Shapes.or(ARM_Z, box(10, 8, 6, 16, 14, 10));
+    // The arm close against the pole, which is behind the facing, held by a thin plate. Mirrors gen_pole_assets.py.
+    private static final VoxelShape FACING_NORTH = Shapes.or(box(0, 9, 11, 16, 13, 15), box(5, 8, 15, 11, 14, 16));
+    private static final VoxelShape FACING_SOUTH = Shapes.or(box(0, 9, 1, 16, 13, 5), box(5, 8, 0, 11, 14, 1));
+    private static final VoxelShape FACING_EAST = Shapes.or(box(1, 9, 0, 5, 13, 16), box(0, 8, 5, 1, 14, 11));
+    private static final VoxelShape FACING_WEST = Shapes.or(box(11, 9, 0, 15, 13, 16), box(15, 8, 5, 16, 14, 11));
+    private static final VoxelShape ARM_NORTH = box(0, 9, 11, 16, 13, 15), ARM_SOUTH = box(0, 9, 1, 16, 13, 5), ARM_EAST = box(1, 9, 0, 5, 13, 16), ARM_WEST = box(11, 9, 0, 15, 13, 16);
 
     public CrossarmBlock(Properties properties) {
         super(properties);
@@ -61,13 +61,12 @@ public class CrossarmBlock extends Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        if(!bracketed(state))
-            return armAxis(state) == Direction.Axis.X ? ARM_X : ARM_Z;
+        boolean b = bracketed(state);
         return switch(facing(state)) {
-            case SOUTH -> FACING_SOUTH;
-            case EAST -> FACING_EAST;
-            case WEST -> FACING_WEST;
-            default -> FACING_NORTH;
+            case SOUTH -> b ? FACING_SOUTH : ARM_SOUTH;
+            case EAST -> b ? FACING_EAST : ARM_EAST;
+            case WEST -> b ? FACING_WEST : ARM_WEST;
+            default -> b ? FACING_NORTH : ARM_NORTH;
         };
     }
 

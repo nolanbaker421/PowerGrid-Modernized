@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.85.2 — 2026-11-02
+
+### Changed
+- The pole hardware steel (cutout brackets, crossarm plate, recloser lever) is a dark galvanized
+  grey instead of the near-white that still read as a panel.
+- The crossarm sits close against the pole on a thin plate rather than out on a steel cube; the
+  collision shape follows.
+
 ## 0.85.1 — 2026-11-02
 
 ### Fixed
