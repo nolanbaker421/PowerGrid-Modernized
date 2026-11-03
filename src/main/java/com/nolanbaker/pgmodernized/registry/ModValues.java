@@ -60,6 +60,9 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         // Air handler: a 3 A blower, a 5 kW heat strip, the relay coils the calls pull, and the control transformer's source resistance.
         resistance("condenser", "compressor", 16, "fan", 240, "coil", 100, "sense", 1e6);
         resistance("air_handler", "blower", 80, "heat", 11.5, "coil", 100, "transformer", 1, "sense", 1e6);
+        // Fused cutouts: the closed tube's contact, the arc across a gap that has flashed over, and the branch the gap's voltage is read through.
+        for(var cls : com.nolanbaker.pgmodernized.device.pole.CutoutClass.values())
+            resistance("cutout_" + cls.id(), "contact", 0.0005, "arc", 2, "sense", 1e6);
         // Bus duct plug-in: one contact per pole and the neutral through-path.
         resistance("bus_duct_plug_in", "contact", 0.0005);
         resistance("bus_duct_plug_in_breaker", "contact", 0.0005);

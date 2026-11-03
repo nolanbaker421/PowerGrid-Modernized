@@ -9,6 +9,8 @@ import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.IntPredicate;
 
@@ -47,6 +49,20 @@ public final class StateTerminals {
                     default -> terminal;
                 }))
                 .withShapeMapper(state -> shaper.get(state.getValue(HorizontalElectricBlock.HORIZONTAL_FACING)))
+                .build();
+    }
+
+    /** The same, with the north-frame shape chosen per state too, for a block that grows: a cutout with one pole or three. */
+    public static BlockStateTerminalCollection horizontalNorth(Block block, Function<BlockState, VoxelShape> northShape, Function<BlockState, TerminalBoundingBox[]> perState) {
+        Map<BlockState, VoxelShape> shapes = new HashMap<>();
+        return BlockStateTerminalCollection.builder(block)
+                .forAllStates(state -> BlockStateTerminalCollection.each(perState.apply(state), terminal -> switch(state.getValue(HorizontalElectricBlock.HORIZONTAL_FACING)) {
+                    case SOUTH -> terminal.rotateAroundY(180);
+                    case EAST -> terminal.rotateAroundY(90);
+                    case WEST -> terminal.rotateAroundY(-90);
+                    default -> terminal;
+                }))
+                .withShapeMapper(state -> shapes.computeIfAbsent(state, s -> VoxelShaper.forHorizontal(northShape.apply(s), Direction.NORTH).get(s.getValue(HorizontalElectricBlock.HORIZONTAL_FACING))))
                 .build();
     }
 }

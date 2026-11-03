@@ -198,6 +198,14 @@ public class ModBlockEntities {
                     .validBlock(ModBlocks.AIR_HANDLER)
                     .register();
 
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.device.pole.CutoutBlockEntity> CUTOUT =
+            REGISTRATE.blockEntity("cutout", com.nolanbaker.pgmodernized.device.pole.CutoutBlockEntity::new)
+                    .validBlocks(ModBlocks.CUTOUTS.get(com.nolanbaker.pgmodernized.device.pole.CutoutClass.KV1),
+                            ModBlocks.CUTOUTS.get(com.nolanbaker.pgmodernized.device.pole.CutoutClass.KV15),
+                            ModBlocks.CUTOUTS.get(com.nolanbaker.pgmodernized.device.pole.CutoutClass.KV38))
+                    .renderer(() -> com.nolanbaker.pgmodernized.client.CutoutRenderer::new)
+                    .register();
+
     @SuppressWarnings("unchecked")
     public static final BlockEntityEntry<TransformerBlockEntity> TRANSFORMER =
             REGISTRATE.blockEntity("transformer", ComputerBlockEntityFactories.transformer())

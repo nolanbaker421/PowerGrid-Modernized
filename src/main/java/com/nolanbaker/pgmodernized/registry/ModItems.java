@@ -126,6 +126,35 @@ public class ModItems {
         return KEY.asStack();
     }
 
+    /** Fuse links for the cutouts, by amps. */
+    public static final Map<Integer, ItemEntry<com.nolanbaker.pgmodernized.device.pole.FuseLinkItem>> FUSE_LINKS = fuseLinks();
+
+    private static Map<Integer, ItemEntry<com.nolanbaker.pgmodernized.device.pole.FuseLinkItem>> fuseLinks() {
+        var map = new java.util.LinkedHashMap<Integer, ItemEntry<com.nolanbaker.pgmodernized.device.pole.FuseLinkItem>>();
+        for(int rating : com.nolanbaker.pgmodernized.device.pole.FuseLinkItem.RATINGS) {
+            map.put(rating, REGISTRATE.item("fuse_link_" + rating + "a", p -> new com.nolanbaker.pgmodernized.device.pole.FuseLinkItem(p, rating))
+                    .model(NonNullBiConsumer.noop())
+                    .lang(rating + " A Fuse Link")
+                    .register());
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    /** One link of that rating, or of the nearest rating above it. */
+    public static ItemStack fuseLink(int rating) {
+        for(int r : com.nolanbaker.pgmodernized.device.pole.FuseLinkItem.RATINGS)
+            if(r >= rating)
+                return FUSE_LINKS.get(r).asStack();
+        return FUSE_LINKS.get(200).asStack();
+    }
+
+    /** The lineman's hot stick: works a cutout from the ground. */
+    public static final ItemEntry<com.nolanbaker.pgmodernized.device.pole.HotStickItem> HOT_STICK = REGISTRATE.item("hot_stick", com.nolanbaker.pgmodernized.device.pole.HotStickItem::new)
+            .properties(p -> p.stacksTo(1))
+            .model(NonNullBiConsumer.noop())
+            .lang("Hot Stick")
+            .register();
+
     /** The installer's boresight scope: sights two antennas in on each other. */
     public static final ItemEntry<AlignmentScopeItem> ALIGNMENT_SCOPE = REGISTRATE.item("alignment_scope", AlignmentScopeItem::new)
             .properties(p -> p.stacksTo(1))

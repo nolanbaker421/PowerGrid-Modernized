@@ -854,6 +854,42 @@ phases out on U, V, W.
 Reads the current in any Power Grid wire that passes through its jaw, without being in the circuit.
 Several wires in the jaw are summed.
 
+### Poles: crossarms, cutouts and the hot stick
+
+Overhead gear for the distribution side, all of it taking hanging wire on lugs and none of it
+conduit.
+
+**Crossarm.** The timber across the top of a pole. Place it on a pole's side, bracket to the pole
+and the arm running across the line; it falls if the pole behind it goes. Cutouts stand on the
+block above it, and a pole can placed against its outward face hangs from it the way one hangs
+from a pole.
+
+**Fused cutouts.** The drop-out fuse holders. Three classes, by the holder's insulation: the
+**1 kV Cutout** for 480 V and 1 kV lines, the **15 kV Cutout** for 8 kV and 10 kV, the **38 kV
+Cutout** for 35 kV. One item is a one-pole holder; click it with another holder of the same class
+for a second and a third pole, sneak-click an empty pole to take one off. Each pole has a line lug
+on top of its insulator and a load lug at the foot, and a fuse tube hinged between them. The
+holder is placed on a pole's side or on top of a crossarm.
+
+**Fuse links** go in the tubes: the K-link sizes, 6, 10, 15, 25, 40, 65, 100, 140 and 200 A, a
+paper and that many steps of copper nuggets each. Any link fits any class. A loaded tube hangs
+open until closed; closed, it conducts, and the link heats on the breaker curve against its
+amps and blows, the tube dropping out. A blown link is pulled and scrapped and another loaded.
+Size a link for the load behind it, a can's full-load current and a half for the one on a pole
+can.
+
+**The class matters.** An open gap, blown or thrown, that sees more voltage than its class holds
+off flashes over: an arc conducts across it with sparks and a crack, and the fault stays on until
+the line is killed upstream. A 1 kV holder on a 10 kV line blows once and arcs for ever; use the
+class the line wants.
+
+**Working them.** A bare hand on a pole closes or opens its tube and, on a live line, is a shock.
+Sneak-click a pole to pull its link. The **Hot Stick** (an iron nugget on two sticks) does the
+same from the ground: aim at a pole from up to twelve blocks and right-click. A blown link comes
+out, a link held in the other hand goes in, and otherwise the tube opens or closes, with no shock.
+Goggles show each pole's link, whether it is closed, open, blown or arcing, and its amps or the
+volts across its gap.
+
 ### Line Voltmeter
 
 Two probes (+ / −) with a very high input resistance, so it can hang across anything, including
@@ -1277,6 +1313,10 @@ adapter placed next to them:
 | Liquid Line (4) | three copper nuggets in a row |
 | Suction Line (4) | three copper nuggets over three black wool |
 | Thermostat | shapeless: an iron nugget, a comparator and a paper |
+| Crossarm (2) | three planks over an iron nugget |
+| 1 kV / 15 kV / 38 kV Cutout | shapeless: an iron plate, terracotta (plain, brown, light blue) and one, two or three copper nuggets |
+| Fuse Link (2) | shapeless: a paper and one to eight copper nuggets, one per size from 6 A to 140 A; a paper and a copper ingot for 200 A |
+| Hot Stick | an iron nugget over two sticks |
 | Node Cover Plate | a blank cover plate and pins, shapeless |
 | Pull Box | ring of eight iron plates |
 | Conduit Switch (2) | iron nugget, lever, iron nugget over an iron nugget |

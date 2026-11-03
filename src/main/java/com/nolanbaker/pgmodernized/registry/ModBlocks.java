@@ -331,6 +331,37 @@ public class ModBlocks {
                 .build()
             .register();
 
+    /** The timber across a pole that cutouts stand on and pole cans hang from. */
+    public static final BlockEntry<com.nolanbaker.pgmodernized.device.pole.CrossarmBlock> CROSSARM = REGISTRATE.block("crossarm", com.nolanbaker.pgmodernized.device.pole.CrossarmBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(() -> net.minecraft.world.level.block.Blocks.SPRUCE_PLANKS)
+            .properties(p -> p.noOcclusion())
+            .lang("Crossarm")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
+    /** Fused cutouts, one block per voltage class, one to three poles each. */
+    public static final Map<com.nolanbaker.pgmodernized.device.pole.CutoutClass, BlockEntry<com.nolanbaker.pgmodernized.device.pole.CutoutBlock>> CUTOUTS = cutouts();
+
+    private static Map<com.nolanbaker.pgmodernized.device.pole.CutoutClass, BlockEntry<com.nolanbaker.pgmodernized.device.pole.CutoutBlock>> cutouts() {
+        var map = new java.util.EnumMap<com.nolanbaker.pgmodernized.device.pole.CutoutClass, BlockEntry<com.nolanbaker.pgmodernized.device.pole.CutoutBlock>>(com.nolanbaker.pgmodernized.device.pole.CutoutClass.class);
+        for(var cls : com.nolanbaker.pgmodernized.device.pole.CutoutClass.values()) {
+            map.put(cls, REGISTRATE.block("cutout_" + cls.id(), p -> new com.nolanbaker.pgmodernized.device.pole.CutoutBlock(p, cls))
+                    .blockstate(NonNullBiConsumer.noop())
+                    .initialProperties(SharedProperties::softMetal)
+                    .properties(p -> p.noOcclusion())
+                    .transform(pickaxeOnly())
+                    .lang(cls.label())
+                    .item()
+                        .model(NonNullBiConsumer.noop())
+                        .build()
+                    .register());
+        }
+        return java.util.Collections.unmodifiableMap(map);
+    }
+
     /** The invisible cells of a transformer beyond its base block. */
     public static final BlockEntry<TransformerFillerBlock> TRANSFORMER_FILLER = REGISTRATE.block("transformer_filler", TransformerFillerBlock::new)
             .blockstate(NonNullBiConsumer.noop())

@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "facing=north,poles=1": {
+      "model": "powergrid_modernized:block/cutout_15kv_1"
+    },
+    "facing=east,poles=1": {
+      "model": "powergrid_modernized:block/cutout_15kv_1",
+      "y": 90
+    },
+    "facing=south,poles=1": {
+      "model": "powergrid_modernized:block/cutout_15kv_1",
+      "y": 180
+    },
+    "facing=west,poles=1": {
+      "model": "powergrid_modernized:block/cutout_15kv_1",
+      "y": 270
+    },
+    "facing=north,poles=2": {
+      "model": "powergrid_modernized:block/cutout_15kv_2"
+    },
+    "facing=east,poles=2": {
+      "model": "powergrid_modernized:block/cutout_15kv_2",
+      "y": 90
+    },
+    "facing=south,poles=2": {
+      "model": "powergrid_modernized:block/cutout_15kv_2",
+      "y": 180
+    },
+    "facing=west,poles=2": {
+      "model": "powergrid_modernized:block/cutout_15kv_2",
+      "y": 270
+    },
+    "facing=north,poles=3": {
+      "model": "powergrid_modernized:block/cutout_15kv_3"
+    },
+    "facing=east,poles=3": {
+      "model": "powergrid_modernized:block/cutout_15kv_3",
+      "y": 90
+    },
+    "facing=south,poles=3": {
+      "model": "powergrid_modernized:block/cutout_15kv_3",
+      "y": 180
+    },
+    "facing=west,poles=3": {
+      "model": "powergrid_modernized:block/cutout_15kv_3",
+      "y": 270
+    }
+  }
+}

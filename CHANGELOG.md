@@ -4,6 +4,19 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.82.0 — 2026-11-02
+
+### Added
+- Overhead distribution gear, sized the way a utility sizes it. **Fused cutouts** in three
+  classes, 1 kV, 15 kV and 38 kV, one to three poles each (click a holder with another of its
+  class for a pole more), with a line lug, a load lug and a drop-out fuse tube per pole. **Fuse
+  links** from 6 A to 200 A in the K-link sizes fit any class and blow on the breaker curve; a
+  blown tube drops out. A gap that sees more voltage than its class holds off flashes over and
+  arcs until the line is killed. A bare hand on a live pole is a shock; the **Hot Stick** works
+  a cutout from twelve blocks off, pulling a blown link, loading one from the other hand, or
+  throwing the tube.
+- A **Crossarm** for poles: cutouts stand on it and pole cans hang from its face.
+
 ## 0.81.0 — 2026-11-02
 
 ### Changed

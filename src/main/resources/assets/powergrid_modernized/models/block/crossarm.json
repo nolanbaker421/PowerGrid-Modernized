@@ -1,0 +1,146 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "arm": "minecraft:block/spruce_planks",
+    "bracket": "powergrid_modernized:block/cutout_steel",
+    "particle": "minecraft:block/spruce_planks"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        9,
+        6
+      ],
+      "to": [
+        16,
+        13,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            3,
+            16,
+            7
+          ],
+          "texture": "#arm"
+        },
+        "south": {
+          "uv": [
+            0,
+            3,
+            16,
+            7
+          ],
+          "texture": "#arm"
+        },
+        "east": {
+          "uv": [
+            6,
+            3,
+            10,
+            7
+          ],
+          "texture": "#arm"
+        },
+        "west": {
+          "uv": [
+            6,
+            3,
+            10,
+            7
+          ],
+          "texture": "#arm"
+        },
+        "up": {
+          "uv": [
+            0,
+            6,
+            16,
+            10
+          ],
+          "texture": "#arm"
+        },
+        "down": {
+          "uv": [
+            0,
+            6,
+            16,
+            10
+          ],
+          "texture": "#arm"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        8,
+        10
+      ],
+      "to": [
+        10,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            2,
+            10,
+            8
+          ],
+          "texture": "#bracket"
+        },
+        "south": {
+          "uv": [
+            6,
+            2,
+            10,
+            8
+          ],
+          "texture": "#bracket"
+        },
+        "east": {
+          "uv": [
+            0,
+            2,
+            6,
+            8
+          ],
+          "texture": "#bracket"
+        },
+        "west": {
+          "uv": [
+            10,
+            2,
+            16,
+            8
+          ],
+          "texture": "#bracket"
+        },
+        "up": {
+          "uv": [
+            6,
+            10,
+            10,
+            16
+          ],
+          "texture": "#bracket"
+        },
+        "down": {
+          "uv": [
+            6,
+            0,
+            10,
+            6
+          ],
+          "texture": "#bracket"
+        }
+      }
+    }
+  ]
+}

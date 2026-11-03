@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "N",
+    "S",
+    "S"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:hot_stick"
+  }
+}
