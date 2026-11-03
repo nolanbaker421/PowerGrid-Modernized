@@ -78,7 +78,8 @@ public class CrossarmBlock extends Block {
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         var face = ctx.getClickedFace();
-        var clicked = ctx.getLevel().getBlockState(ctx.getClickedPos());
+        // getClickedPos is where the block goes; the block under the cursor is one step back through the clicked face.
+        var clicked = ctx.getLevel().getBlockState(ctx.getClickedPos().relative(face.getOpposite()));
         if(clicked.getBlock() instanceof CrossarmBlock && face.getAxis() == armAxis(clicked))
             return defaultBlockState().setValue(FACING, facing(clicked)).setValue(BRACKET, false);
         var facing = face.getAxis().isHorizontal() ? face : ctx.getHorizontalDirection().getOpposite();

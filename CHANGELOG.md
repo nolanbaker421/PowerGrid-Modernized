@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.85.1 — 2026-11-02
+
+### Fixed
+- Extending a crossarm never worked: the placement looked at the empty target spot rather than
+  the arm that was clicked, so a bracketed arm went on the end instead. Clicking an arm's end now
+  continues it.
+
 ## 0.85.0 — 2026-11-02
 
 ### Added
