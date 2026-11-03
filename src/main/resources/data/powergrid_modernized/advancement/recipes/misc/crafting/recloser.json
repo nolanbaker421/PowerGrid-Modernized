@@ -5,7 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": "powergrid_modernized:switch_contact"
+            "items": "powergrid_modernized:breaker_200a_3p"
           }
         ]
       },

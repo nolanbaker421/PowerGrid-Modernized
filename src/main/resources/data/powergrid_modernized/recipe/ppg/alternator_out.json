@@ -1,0 +1,29 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "powerplantgrid"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": {
+      "item": "powergrid:heavy_wire_connector"
+    },
+    "P": {
+      "tag": "c:plates/iron"
+    },
+    "C": {
+      "item": "powergrid:conductive_casing"
+    }
+  },
+  "pattern": [
+    "HHH",
+    "PCP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powerplantgrid:alternator_out"
+  }
+}

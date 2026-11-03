@@ -4,6 +4,19 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.84.0 — 2026-11-02
+
+### Added
+- Crafting recipes for every item of **Create: Power Plant Grid** (gauged wires, rated
+  insulators, breakers and their handle, shaft and drives, transformers, clamps, synchroscope and
+  alternator parts), present only when that mod is installed. The guide lists them.
+
+### Removed
+- The 0.83.0 switch stack (Switch Insulator, Switch Contact, Switch Handle, Switch Servo): Power
+  Plant Grid's breakers, shaft and drives are the same gear with better models, so the two mods
+  now share it. Any of the four blocks already placed disappear on load. The cutouts, the hot
+  stick and the recloser stay.
+
 ## 0.83.0 — 2026-11-02
 
 ### Added

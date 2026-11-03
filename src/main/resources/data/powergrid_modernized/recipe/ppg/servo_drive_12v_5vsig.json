@@ -1,0 +1,28 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "powerplantgrid"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powergrid:servo"
+    },
+    {
+      "item": "powergrid:copper_coil"
+    },
+    {
+      "item": "powergrid:resistor"
+    },
+    {
+      "tag": "c:plates/iron"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powerplantgrid:servo_drive_12v_5vsig"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "powerplantgrid"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:plates/copper"
+    },
+    "N": {
+      "item": "powerplantgrid:insulator_10kv_b"
+    },
+    "P": {
+      "tag": "c:plates/iron"
+    }
+  },
+  "pattern": [
+    "CC",
+    "NN",
+    "PP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powerplantgrid:test_breaker_white_2p"
+  }
+}

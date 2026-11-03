@@ -342,47 +342,8 @@ public class ModBlocks {
                 .build()
             .register();
 
-    /** A pole-top switch: contact heads on stacks of insulators over handle or servo operators; and the recloser. */
-    public static final BlockEntry<com.nolanbaker.pgmodernized.device.pole.SwitchInsulatorBlock> SWITCH_INSULATOR = REGISTRATE.block("switch_insulator", com.nolanbaker.pgmodernized.device.pole.SwitchInsulatorBlock::new)
-            .blockstate(NonNullBiConsumer.noop())
-            .initialProperties(SharedProperties::softMetal)
-            .properties(p -> p.noOcclusion())
-            .transform(pickaxeOnly())
-            .lang("Switch Insulator")
-            .item()
-                .model(NonNullBiConsumer.noop())
-                .build()
-            .register();
-    public static final BlockEntry<com.nolanbaker.pgmodernized.device.pole.SwitchContactBlock> SWITCH_CONTACT = REGISTRATE.block("switch_contact", com.nolanbaker.pgmodernized.device.pole.SwitchContactBlock::new)
-            .blockstate(NonNullBiConsumer.noop())
-            .initialProperties(SharedProperties::softMetal)
-            .properties(p -> p.noOcclusion())
-            .transform(pickaxeOnly())
-            .lang("Switch Contact")
-            .item()
-                .model(NonNullBiConsumer.noop())
-                .build()
-            .register();
-    public static final BlockEntry<com.nolanbaker.pgmodernized.device.pole.SwitchOperatorBlock> SWITCH_HANDLE = REGISTRATE.block("switch_handle", p -> new com.nolanbaker.pgmodernized.device.pole.SwitchOperatorBlock(p, false))
-            .blockstate(NonNullBiConsumer.noop())
-            .initialProperties(SharedProperties::softMetal)
-            .properties(p -> p.noOcclusion())
-            .transform(pickaxeOnly())
-            .lang("Switch Handle")
-            .item()
-                .model(NonNullBiConsumer.noop())
-                .build()
-            .register();
-    public static final BlockEntry<com.nolanbaker.pgmodernized.device.pole.SwitchOperatorBlock> SWITCH_SERVO = REGISTRATE.block("switch_servo", p -> new com.nolanbaker.pgmodernized.device.pole.SwitchOperatorBlock(p, true))
-            .blockstate(NonNullBiConsumer.noop())
-            .initialProperties(SharedProperties::softMetal)
-            .properties(p -> p.noOcclusion())
-            .transform(pickaxeOnly())
-            .lang("Switch Servo")
-            .item()
-                .model(NonNullBiConsumer.noop())
-                .build()
-            .register();
+    /** The recloser: a pole-mounted three-pole breaker that trips, recloses and locks out. Pole-top switches themselves
+     *  are Create: Power Plant Grid's breakers, which this mod gives recipes to. */
     public static final BlockEntry<com.nolanbaker.pgmodernized.device.pole.RecloserBlock> RECLOSER = REGISTRATE.block("recloser", com.nolanbaker.pgmodernized.device.pole.RecloserBlock::new)
             .blockstate(NonNullBiConsumer.noop())
             .initialProperties(SharedProperties::softMetal)

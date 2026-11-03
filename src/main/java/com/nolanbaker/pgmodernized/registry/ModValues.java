@@ -63,8 +63,7 @@ public final class ModValues implements ResistanceValues.Provider, ThermalValues
         // Fused cutouts: the closed tube's contact, the arc across a gap that has flashed over, and the branch the gap's voltage is read through.
         for(var cls : com.nolanbaker.pgmodernized.device.pole.CutoutClass.values())
             resistance("cutout_" + cls.id(), "contact", 0.0005, "arc", 2, "sense", 1e6);
-        // The pole-top switch's blade, and the recloser's three poles.
-        resistance("switch_contact", "contact", 0.0005, "arc", 2, "sense", 1e6);
+        // The recloser's three poles.
         resistance("recloser", "contact", 0.0005);
         // Bus duct plug-in: one contact per pole and the neutral through-path.
         resistance("bus_duct_plug_in", "contact", 0.0005);

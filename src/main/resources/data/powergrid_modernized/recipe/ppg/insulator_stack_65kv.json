@@ -1,0 +1,34 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "powerplantgrid"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:brown_terracotta"
+    },
+    {
+      "item": "minecraft:brown_terracotta"
+    },
+    {
+      "item": "minecraft:brown_terracotta"
+    },
+    {
+      "item": "minecraft:brown_terracotta"
+    },
+    {
+      "tag": "c:nuggets/iron"
+    },
+    {
+      "item": "minecraft:chain"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powerplantgrid:insulator_stack_65kv"
+  }
+}

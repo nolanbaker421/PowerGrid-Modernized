@@ -205,11 +205,6 @@ public class ModBlockEntities {
                             ModBlocks.CUTOUTS.get(com.nolanbaker.pgmodernized.device.pole.CutoutClass.KV38))
                     .renderer(() -> com.nolanbaker.pgmodernized.client.CutoutRenderer::new)
                     .register();
-    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.device.pole.SwitchContactBlockEntity> SWITCH_CONTACT =
-            REGISTRATE.blockEntity("switch_contact", com.nolanbaker.pgmodernized.device.pole.SwitchContactBlockEntity::new)
-                    .validBlock(ModBlocks.SWITCH_CONTACT)
-                    .renderer(() -> com.nolanbaker.pgmodernized.client.SwitchContactRenderer::new)
-                    .register();
     public static final BlockEntityEntry<com.nolanbaker.pgmodernized.device.pole.RecloserBlockEntity> RECLOSER =
             REGISTRATE.blockEntity("recloser", com.nolanbaker.pgmodernized.device.pole.RecloserBlockEntity::new)
                     .validBlock(ModBlocks.RECLOSER)

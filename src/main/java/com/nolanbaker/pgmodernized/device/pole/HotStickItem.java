@@ -19,10 +19,10 @@ import java.util.List;
 
 /**
  * The lineman's hot stick: works overhead gear from the ground, a dozen blocks off, and keeps the
- * hand off the live parts. Aim at a cutout's pole, a switch contact or a recloser and right-click.
- * On a cutout a blown link comes out, a link held in the other hand goes in, and otherwise the
- * tube opens or closes; a contact is thrown; a recloser is tripped or reset. The same by hand
- * means climbing the pole and, on a live line, a shock.
+ * hand off the live parts. Aim at a cutout's pole or a recloser and right-click. On a cutout a
+ * blown link comes out, a link held in the other hand goes in, and otherwise the tube opens or
+ * closes; a recloser is tripped or reset. The same by hand means climbing the pole and, on a live
+ * line, a shock.
  */
 public class HotStickItem extends Item {
     public static final double REACH = 12;

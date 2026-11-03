@@ -1,0 +1,25 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "powerplantgrid"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "c:nuggets/iron"
+    },
+    {
+      "tag": "c:nuggets/iron"
+    },
+    {
+      "tag": "c:plates/copper"
+    }
+  ],
+  "result": {
+    "count": 2,
+    "id": "powerplantgrid:wire_clamp"
+  }
+}

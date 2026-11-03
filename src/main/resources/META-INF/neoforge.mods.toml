@@ -46,6 +46,13 @@ ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.powergrid_modernized]]
+modId = "powerplantgrid"
+type = "optional"
+versionRange = "[0.1.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.powergrid_modernized]]
 modId = "computercraft"
 type = "optional"
 versionRange = "[1.120.0,)"

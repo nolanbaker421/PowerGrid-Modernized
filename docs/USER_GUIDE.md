@@ -890,18 +890,11 @@ out, a link held in the other hand goes in, and otherwise the tube opens or clos
 Goggles show each pole's link, whether it is closed, open, blown or arcing, and its amps or the
 volts across its gap.
 
-**Pole-top switches** are built up the way the real ones are: an operator at the foot, a stack of
-**Switch Insulators** over it, and a **Switch Contact** on top. The contact is one pole's blade
-between a line lug at its back and a load lug at its front; hanging wire lands on both. The
-operator throws the head at the top of the stack above it: the **Switch Handle** by a bare hand,
-the **Switch Servo** by the redstone signal reaching it. Operators standing in a row across the
-line, facing the same way, throw together, so three stacks over three operators on a crossarm
-are one gang-operated three-phase switch, and a handle at the end of the row works all three. A
-handle takes a breaker lockout while open. The insulators are the switch's class: the open blade
-holds off two kilovolts on its own and eighteen more for every insulator under it, so a 10 kV
-line wants one and a 35 kV line two; less, and the open gap flashes over like a cutout's. A bare
-hand on the head throws it too, up the pole, with the shock that goes with it; the hot stick
-throws it from the ground.
+**Pole-top switches** are [Create: Power Plant Grid](https://www.curseforge.com/minecraft/mc-mods/create-powerplantgrid)'s
+job: its breakers (10, 35, 65 and 100 kV, one to three poles, upright or horizontal) stand on a
+breaker shaft over a handle, a solenoid, a servo or a rotary drive, with rated insulators, gauged
+conductors and tank transformers to go with them. That mod ships without recipes, so this one
+supplies them whenever it is installed; see *Power Plant Grid recipes* under Recipes below.
 
 **The recloser** is a pole-mounted three-pole breaker in a tank, hanging wire on its three line
 lugs on top and three load lugs underneath. It trips on the breaker curve against its pickup,
@@ -1338,11 +1331,35 @@ adapter placed next to them:
 | 1 kV / 15 kV / 38 kV Cutout | shapeless: an iron plate, terracotta (plain, brown, light blue) and one, two or three copper nuggets |
 | Fuse Link (2) | shapeless: a paper and one to eight copper nuggets, one per size from 6 A to 140 A; a paper and a copper ingot for 200 A |
 | Hot Stick | an iron nugget over two sticks |
-| Switch Insulator (2) | shapeless: two brown terracotta |
-| Switch Contact | shapeless: an iron plate, a copper ingot and a copper nugget |
-| Switch Handle | a lever over iron plates either side of an iron ingot |
-| Switch Servo | redstone over iron plates either side of an electron tube |
 | Recloser | copper ingots either side of a 3-pole 200 A breaker, iron plates round redstone, iron ingots below |
+
+### Power Plant Grid recipes
+
+With Create: Power Plant Grid installed, its blocks and wires craft as follows; without it, none
+of these recipes exist. Porcelain is brown terracotta, white porcelain white terracotta, and
+glass is glass.
+
+| Item | Recipe |
+| --- | --- |
+| Gauged wire (copper, iron, golden) | shapeless from Power Grid's wire of the same metal: one wire makes four 24 AWG, three 20 AWG or two 16 AWG; three make two 8 AWG; three, four, five and six make one 4, 2, 1 and 1/0 AWG |
+| Insulated gauged wire | the bare wire of that gauge and dried kelp; 12 AWG insulated iron or golden wire is one Power Grid wire and kelp |
+| 600 V Insulator (4) | porcelain and an iron nugget |
+| 10 kV Insulator (2) | two porcelain, white porcelain or glass and an iron nugget |
+| 35 kV, 65 kV, 100 kV, 275 kV, 360 kV, 500 kV, 750 kV, 1150 kV Insulators | the insulator one class down and more porcelain (or glass for the glass and multi-disc ones); 100 kV and 1150 kV add an iron ingot |
+| Thin insulators | craft the regular one alone, and back again |
+| 65 kV Disc Insulators | four porcelain or white porcelain, an iron nugget and a chain |
+| Breakers | a column per pole: copper plate over the insulator of the breaker's class over an iron plate (10 kV takes the brown 10 kV insulator, white the white one); craft an upright breaker alone for the horizontal one, and back |
+| Breaker Handle | a lever, an iron plate and an iron ingot |
+| Breaker Shaft (2) | a Create shaft and an iron plate |
+| Rotary Breaker Drive | a cogwheel, a shaft and an iron plate |
+| Solenoid Breaker Drive | a wire connector, an iron plate and one copper coil per voltage step: one for 12 V, two for 24 V, three for 110 V, four for 230 V |
+| Servo Breaker Drive | a Power Grid servo, an iron plate, copper coils for the supply as above and resistors for the signal: one for 5 V, two for 12 V, three for 24 V |
+| Transformers | HV bushings either side of the top row, copper coils round an iron block, LV terminals either side of an iron plate below. Bushings are the insulator of the side's class (600 V for 1 kV); 115 V terminals are wire connectors, 240 V heavy wire connectors. Craft an A transformer alone for its B shape, and back |
+| Wire Clamp (2) | two iron nuggets and a copper plate |
+| Large Wire Clamp (2) | an iron plate, a copper plate and an iron nugget |
+| Synchroscope | two voltage gauges, a compass and an iron plate |
+| Alternator Clutch | a generator clutch, a cogwheel and an iron plate |
+| Alternator Terminals | three heavy wire connectors over iron plates either side of a conductive casing |
 | Node Cover Plate | a blank cover plate and pins, shapeless |
 | Pull Box | ring of eight iron plates |
 | Conduit Switch (2) | iron nugget, lever, iron nugget over an iron nugget |

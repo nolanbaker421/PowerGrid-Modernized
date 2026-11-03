@@ -1,0 +1,36 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "powerplantgrid"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": {
+      "item": "powerplantgrid:insulator_10kv_a"
+    },
+    "C": {
+      "item": "powergrid:copper_coil"
+    },
+    "K": {
+      "tag": "c:storage_blocks/iron"
+    },
+    "L": {
+      "item": "powergrid:heavy_wire_connector"
+    },
+    "P": {
+      "tag": "c:plates/iron"
+    }
+  },
+  "pattern": [
+    "H H",
+    "CKC",
+    "LPL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powerplantgrid:dc_transformer_10kv_240v_a"
+  }
+}

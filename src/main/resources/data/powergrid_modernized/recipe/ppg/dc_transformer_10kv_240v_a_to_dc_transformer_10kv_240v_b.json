@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "powerplantgrid"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powerplantgrid:dc_transformer_10kv_240v_a"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powerplantgrid:dc_transformer_10kv_240v_b"
+  }
+}
