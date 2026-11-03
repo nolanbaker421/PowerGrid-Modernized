@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.84.1 — 2026-11-02
+
+### Changed
+- Cutouts lose the steel tray and back plate that read as a white panel round them; each pole now
+  sits on its own narrow bracket rail with a strap up the pole, and the collision shape follows.
+
 ## 0.84.0 — 2026-11-02
 
 ### Added

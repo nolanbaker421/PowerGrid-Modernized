@@ -91,17 +91,19 @@ public class CutoutBlock extends HorizontalElectricBlock implements IBE<CutoutBl
         return new AABB(x - 0.75, 2.5, 4.5, x + 0.75, c.top() - 0.5, 6);
     }
 
-    public static AABB plate(int poles) {
-        var xs = centres(poles);
-        double x0 = Math.min(xs[0], xs[xs.length - 1]) - 2.5, x1 = Math.max(xs[0], xs[xs.length - 1]) + 2.5;
-        return new AABB(x0, 0, 3, x1, 1, 16);
+    /** The steel bracket under one pole: a rail from the load lug back to the pole, and a strap up the pole behind it. */
+    public static AABB rail(double x) {
+        return new AABB(x - 1.5, 0, 3, x + 1.5, 1, 16);
+    }
+
+    public static AABB strap(double x) {
+        return new AABB(x - 1.5, 1, 15, x + 1.5, 6, 16);
     }
 
     private static VoxelShape shape(CutoutClass c, int poles) {
-        var plate = plate(poles);
-        var shape = Shapes.or(box(plate), box(new AABB(plate.minX, 0, 15, plate.maxX, 15, 16)));
+        var shape = Shapes.empty();
         for(double x : centres(poles))
-            shape = Shapes.or(shape, box(insulator(c, x)), box(lineLug(c, x)), box(loadLug(x)), box(tube(c, x)));
+            shape = Shapes.or(shape, box(rail(x)), box(strap(x)), box(insulator(c, x)), box(lineLug(c, x)), box(loadLug(x)), box(tube(c, x)));
         return shape;
     }
 

@@ -5,7 +5,7 @@ to three poles (models, blockstates, textures, loot, recipes), the fuse links an
 Run from the repository root:  python tools/gen_pole_assets.py
 
 Geometry mirrors CutoutBlock.java and CrossarmBlock.java; change both. North frame, pixels: a
-cutout's mounting plate is against the pole at z = 16, the tubes to the front; the crossarm's
+cutout's bracket straps are against the pole at z = 16, the tubes to the front; the crossarm's
 bracket is against the pole, the arm running across x.
 """
 import os
@@ -86,9 +86,11 @@ def cutouts():
         variants = {}
         for poles in (1, 2, 3):
             xs = centres(poles)
-            x0, x1 = min(xs) - 2.5, max(xs) + 2.5
-            elements = [element(x0, 0, 3, x1, 1, 16, "#steel"), element(x0, 0, 15, x1, 15, 16, "#steel")]
+            elements = []
             for x in xs:
+                # One steel bracket per pole: a rail under the insulator and lug, a strap up the pole behind it.
+                elements.append(element(x - 1.5, 0, 3, x + 1.5, 1, 16, "#steel"))
+                elements.append(element(x - 1.5, 1, 15, x + 1.5, 6, 16, "#steel"))
                 elements.append(element(x - 1, 1, 9, x + 1, top, 11, "#porcelain"))
                 for y in (4, 7, 10):
                     if y < top - 1:
