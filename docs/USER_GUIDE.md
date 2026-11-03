@@ -859,14 +859,12 @@ Several wires in the jaw are summed.
 Overhead gear for the distribution side, all of it taking hanging wire on lugs and none of it
 conduit.
 
-**Crossarm.** The timber across the top of a pole. Place it on a pole's side, bracket to the pole
-and the arm running across the line; it falls if the pole behind it goes. Place another against
-the end of an arm and it continues the arm without a bracket, as far as you like, so a through-arm
-is one on each side of the pole plus extensions; an extension falls when the arm it continues
-goes. Cutouts, the recloser and Power Plant Grid's insulators and breakers stand on the block
-above any arm block, and a pole can placed against an arm's outward face hangs from it the way
-one hangs from a pole. Arms on neighbouring faces of a pole never meet; put them on opposite
-faces.
+**Crossarm.** The timber across the top of a pole. Place it on a pole's side and it bolts to the
+pole through a steel plate and runs straight out from it; it falls if the pole goes. Place
+another against the outer end of an arm and it continues the arm, as far as you like, and falls
+when the arm behind it goes. A through-arm is one on each side of the pole plus extensions.
+Cutouts, the recloser and Power Plant Grid's insulators and breakers stand on the block above any
+arm block, and a pole can placed against an arm hangs from it the way one hangs from a pole.
 
 **Fused cutouts.** The drop-out fuse holders. Three classes, by the holder's insulation: the
 **1 kV Cutout** for 480 V and 1 kV lines, the **15 kV Cutout** for 8 kV and 10 kV, the **38 kV

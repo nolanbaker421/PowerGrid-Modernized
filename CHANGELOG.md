@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.86.0 — 2026-11-02
+
+### Changed
+- The crossarm runs straight out from the pole, as a real one does, instead of along the pole's
+  face. It bolts to the pole through a plate at its inner end, extensions click onto its outer
+  end, and one on each side of the pole makes a through-arm. Arms placed before this update keep
+  their facing and so turn ninety degrees; re-place them.
+
 ## 0.85.2 — 2026-11-02
 
 ### Changed
