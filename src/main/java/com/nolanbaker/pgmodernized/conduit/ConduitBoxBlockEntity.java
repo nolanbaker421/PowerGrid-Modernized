@@ -74,6 +74,8 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     private org.patryk3211.powergrid.electricity.sim.ElectricWire horn;
     private float hornVolts;
     private int hornTimer;
+    /** Game time of the next fire scan; detectors start out of step so a building's worth never scan on one tick. */
+    private long nextSmokeScan = -1;
 
     public ConduitBoxBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -419,8 +421,15 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
                 syncedWatts = lampWatts;
                 sendData();
             }
-            if(cover().isDetector())
-                smokeTick();
+            if(cover().isDetector()) {
+                long now = level.getGameTime();
+                if(nextSmokeScan < 0)
+                    nextSmokeScan = now + Math.floorMod(worldPosition.asLong(), 20);
+                if(now >= nextSmokeScan) {
+                    nextSmokeScan = now + 20;
+                    smokeTick();
+                }
+            }
         }
     }
 

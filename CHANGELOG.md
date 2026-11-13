@@ -4,6 +4,23 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.92.0 — 2026-11-12
+
+### Fixed
+- Cable tray: each leg's rails overran its corners and crossed the next leg's, and the whole tray
+  sat half in the floor with its rungs buried. Rails now stand on the surface, outer rails meet at
+  a corner while inner ones stop short and a plate floors the square, and a change of surface is
+  closed by the depth of the tray. Cables lie on the rungs instead of in the floor.
+- Tray clicks are pulled onto the line of the leg under way when within four pixels of it, so a
+  run laid click by click is straight legs and square corners rather than stair-steps.
+
+### Performance
+- Conduit runs, their conductors and laid Cat6 asked the physics mod every tick whether they sat
+  on a moving body; off a body they now ask once a second.
+- Lettering on panels, gang boxes, cabinets and HMIs is not drawn past twelve blocks, where it
+  could not be read anyway; font drawing was the costliest part of those renderers.
+- Smoke and heat detectors scan for fire out of step with each other instead of all on one tick.
+
 ## 0.91.0 — 2026-11-02
 
 ### Added

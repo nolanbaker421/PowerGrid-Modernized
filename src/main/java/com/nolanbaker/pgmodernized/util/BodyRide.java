@@ -21,6 +21,9 @@ public final class BodyRide {
     private Vec3 origin;
     private boolean tracked;
     private boolean disabled;
+    /** Off a body the question is asked once a second, not every tick: most runs never meet one. */
+    private static final int LOOK_EVERY = 20;
+    private int lookTimer = (int) (Math.random() * LOOK_EVERY);
 
     /** For an entity that places itself every tick (a flexible conduit): never ride. */
     public void disable() {
@@ -34,6 +37,9 @@ public final class BodyRide {
             return;
         var level = entity.level();
         if(origin == null) {
+            if(++lookTimer < LOOK_EVERY)
+                return;
+            lookTimer = 0;
             if(SableCompanion.INSTANCE.getContaining(level, entity.position()) == null)
                 return;
             origin = entity.position();

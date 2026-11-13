@@ -130,6 +130,8 @@ public final class DeviceDraw {
      * {@code align} is where x falls in the text, 0 for its left edge and 0.5 for its centre.
      */
     public static void text(PoseStack ms, MultiBufferSource buffer, int light, String text, double x, double y, double z, float s, int color, boolean back, double align) {
+        if(tooFarForText(ms))
+            return;
         Font font = Minecraft.getInstance().font;
         ms.pushPose();
         ms.translate(x / 16, y / 16, z / 16);
@@ -145,7 +147,18 @@ public final class DeviceDraw {
         return r << 16 | g << 8 | b;
     }
 
+    /** Lettering is unreadable past a dozen blocks and font draws are the dearest thing a renderer does. */
+    private static final double TEXT_RANGE = 12;
+
+    /** The pose of a block or entity renderer is camera-relative, so the origin's distance is the viewer's. */
+    static boolean tooFarForText(PoseStack ms) {
+        var p = ms.last().pose().transformPosition(new org.joml.Vector3f());
+        return p.lengthSquared() > TEXT_RANGE * TEXT_RANGE;
+    }
+
     private static void digits(PoseStack ms, MultiBufferSource buffer, double x, double y, int value, double door) {
+        if(tooFarForText(ms))
+            return;
         Font font = Minecraft.getInstance().font;
         String text = String.format("%4d", value);
         ms.pushPose();

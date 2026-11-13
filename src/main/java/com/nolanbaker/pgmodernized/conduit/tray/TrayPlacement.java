@@ -96,7 +96,7 @@ public final class TrayPlacement {
         } else {
             lastPoint = BlockTrace.alignPosition(from.getExactPosition(level));
         }
-        var targetPoint = to.getExactPosition(level);
+        var targetPoint = straighten(lastPoint, to.getExactPosition(level), continueDir);
         var path = BlockTrace.findPath(level, lastPoint, targetPoint, null, continueDir);
         if(path == null || !path.reachedTarget()) {
             message(player, "message.connection_no_path", ChatFormatting.RED);
@@ -140,6 +140,33 @@ public final class TrayPlacement {
             CableTrayItem.setPending(stack, new BlockWireEntityEndpoint(existing, true), level);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /** A click this near the line of the leg under way, in pixels, is taken as on it; a run of clicks then lays one straight leg. */
+    private static final double SNAP_PX = 4;
+
+    /**
+     * Pulls the target onto the line of the leg under way when it is nearly on it, and, from a
+     * fresh start, onto the start's own axis line when it is nearly square to it, so a tray laid
+     * click by click is straight legs and square corners rather than the stair-steps a hand's
+     * aim produces.
+     */
+    private static Vec3 straighten(Vec3 from, Vec3 target, @Nullable Direction continueDir) {
+        double snap = SNAP_PX / 16;
+        var d = target.subtract(from);
+        if(continueDir != null) {
+            var axis = continueDir.getAxis();
+            double x = axis == Direction.Axis.X ? d.x : Math.abs(d.x) <= snap ? 0 : d.x;
+            double y = axis == Direction.Axis.Y ? d.y : Math.abs(d.y) <= snap ? 0 : d.y;
+            double z = axis == Direction.Axis.Z ? d.z : Math.abs(d.z) <= snap ? 0 : d.z;
+            return from.add(x, y, z);
+        }
+        // No leg yet: the smallest sideways component goes if it is within reach of straight.
+        double ax = Math.abs(d.x), ay = Math.abs(d.y), az = Math.abs(d.z);
+        double x = ax <= snap && (ax <= ay || ax <= az) ? 0 : d.x;
+        double y = ay <= snap && (ay <= ax || ay <= az) ? 0 : d.y;
+        double z = az <= snap && (az <= ax || az <= ay) ? 0 : d.z;
+        return from.add(x, y, z);
     }
 
     @Nullable

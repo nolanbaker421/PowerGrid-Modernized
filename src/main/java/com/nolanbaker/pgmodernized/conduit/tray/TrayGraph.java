@@ -165,7 +165,7 @@ public final class TrayGraph {
         if(n < 1)
             return corners;
         double lateral = TrayRunEntity.LANE_PX[lane % TrayRunEntity.LANE_PX.length] / 16.0;
-        double lift = (lane / TrayRunEntity.LANE_PX.length) * TrayRunEntity.LAYER_LIFT_PX / 16.0;
+        double lift = (TrayRunEntity.BASE_LIFT_PX + (lane / TrayRunEntity.LANE_PX.length) * TrayRunEntity.LAYER_LIFT_PX) / 16.0;
         var shift = new Vec3[n];
         var side = new Vec3[n];
         var normal = new Vec3[n];

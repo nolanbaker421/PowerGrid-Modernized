@@ -44,7 +44,8 @@ public class TrayRunEntity extends BlockWireEntity {
     public static final int LANES = 10;
     /** Lateral pixel offsets of the five lanes in a layer, and the lift of the second layer. */
     public static final int[] LANE_PX = {0, -2, 2, -4, 4};
-    public static final int LAYER_LIFT_PX = 2;
+    /** The first layer's centre sits on the rungs; the second a cable's thickness above it. */
+    public static final double BASE_LIFT_PX = 1.75, LAYER_LIFT_PX = 2;
     public static final int DEFAULT_COLOR = 0xA9ADB2;
     /** How far a run's end may sit from another run's rails and still be joined to it. */
     public static final double JOIN_REACH = 0.35;
