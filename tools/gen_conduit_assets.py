@@ -681,6 +681,18 @@ def pull_box_assets():
 
 
 def item_models():
+    # The label maker: a yellow handheld with a black top and a small screen.
+    img = canvas(16, 16, (0, 0, 0, 0))
+    yellow, black, screen = (0xe8, 0xc2, 0x1e), (0x24, 0x24, 0x28), (0xb8, 0xd8, 0xc0)
+    fill(img, 5, 1, 11, 15, yellow)
+    fill(img, 4, 2, 12, 6, black)
+    fill(img, 5, 3, 11, 5, screen)
+    fill(img, 5, 7, 11, 8, black)
+    for y in (9, 11, 13):
+        for x in (6, 8, 10):
+            fill(img, x, y, x + 1, y + 1, black)
+    write_png(os.path.join(ASSETS, "textures", "item", "label_maker.png"), img)
+    dump(os.path.join(ASSETS, "models", "item", "label_maker.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/label_maker" % MOD}})
     # The cable tray icon: two galvanized rails with rungs, seen from above.
     img = canvas(16, 16, (0, 0, 0, 0))
     rail, rung = (0xa9, 0xad, 0xb2), (0x8e, 0x92, 0x98)
@@ -738,6 +750,7 @@ def recipes():
     shaped("conduit_half", ["NNN", "WWW"], {"N": nugget, "W": wire}, 8, {"items": "powergrid:wire"})
     # A metre of tray per item: two rails of nuggets with ingots for rungs, a coil of eight.
     shaped("cable_tray", ["NNN", "I I", "NNN"], {"N": nugget, "I": ingot}, 8, {"items": "%s:cat6_cable" % MOD})
+    shaped("label_maker", ["YPY", "PSP", "YRY"], {"Y": {"item": "minecraft:yellow_dye"}, "P": {"tag": "c:plates/iron"}, "S": {"item": "minecraft:paper"}, "R": {"item": "minecraft:redstone"}}, 1, {"items": "minecraft:paper"})
     shaped("conduit_three_quarter", ["III", "WWW"], {"I": ingot, "W": wire}, 8, {"items": "powergrid:wire"})
     shaped("conduit_one", ["III", "WWW", "III"], {"I": ingot, "W": wire}, 8, {"items": "powergrid:wire"})
     block = {"tag": "c:storage_blocks/iron"}

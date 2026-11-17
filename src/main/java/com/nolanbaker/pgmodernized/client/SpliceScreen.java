@@ -71,7 +71,12 @@ public class SpliceScreen extends Screen {
         }
     }
 
-    private record Box(int x, int y, int w, int h, @Nullable Component label, int fill, int border, int textColor) {}
+    /** A box's label is centred between {@code textLeft} and {@code textRight}, which keep it clear of pins. */
+    private record Box(int x, int y, int w, int h, @Nullable Component label, int fill, int border, int textColor, int textLeft, int textRight) {
+        Box(int x, int y, int w, int h, @Nullable Component label, int fill, int border, int textColor) {
+            this(x, y, w, h, label, fill, border, textColor, x + 1, x + w - 1);
+        }
+    }
 
     /** A knockout's header in a hub column, clickable to land its wires. */
     private record Header(int hub, int x, int y, int w, int h, Component label) {
@@ -345,7 +350,11 @@ public class SpliceScreen extends Screen {
                 label = null;
                 fill = BOX_EMPTY;
             }
-            c.boxes.add(new Box(bx, by, COL_W, span * ROW_H - 1, label, fill, BOX_BORDER, text));
+            // A GFCI space carries two pins on its outer edge; the rating moves over to clear them.
+            boolean gfci = points.get(PanelLayout.gfciNeutralTerminal(spec, slot)) != null;
+            int reserve = gfci ? 2 * PIN + 5 : PIN + 2;
+            c.boxes.add(new Box(bx, by, COL_W, span * ROW_H - 1, label, fill, BOX_BORDER, text,
+                    rightCol ? bx + 1 : bx + reserve, rightCol ? bx + COL_W - reserve : bx + COL_W - 1));
         }
         // The bus between the columns.
         c.boxes.add(new Box(mainX + COL_W + 4, rowsTop, BUS_GAP - 8, rows * ROW_H - 1, null, BUS_FILL, BUS_FILL, TEXT));
@@ -652,9 +661,10 @@ public class SpliceScreen extends Screen {
             graphics.fill(box.x, box.y, box.x + box.w, box.y + box.h, box.fill);
             graphics.renderOutline(box.x, box.y, box.w, box.h, box.border);
             if(box.label != null) {
-                var text = font.plainSubstrByWidth(box.label.getString(), Math.max(8, box.w - PIN * 2 - 6));
+                int room = box.textRight - box.textLeft;
+                var text = font.plainSubstrByWidth(box.label.getString(), Math.max(8, room));
                 int tw = font.width(text);
-                graphics.drawString(font, text, box.x + (box.w - tw) / 2, box.y + Math.max(1, (Math.min(box.h, ROW_H) - 8) / 2), box.textColor, false);
+                graphics.drawString(font, text, box.textLeft + (room - tw) / 2, box.y + Math.max(1, (Math.min(box.h, ROW_H) - 8) / 2), box.textColor, false);
             }
         }
         for(var header : headers) {

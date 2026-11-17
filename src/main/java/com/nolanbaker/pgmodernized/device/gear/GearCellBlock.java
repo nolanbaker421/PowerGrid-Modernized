@@ -126,7 +126,7 @@ public class GearCellBlock extends HorizontalElectricBlock implements IBE<GearCe
                 return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
             return onBlockEntityUseItemOn(level, pos, be -> be.lock(slot, player, stack) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL);
         }
-        if(stack.is(Items.NAME_TAG)) {
+        if(com.nolanbaker.pgmodernized.util.Labels.isTag(stack)) {
             if(slot < 0)
                 return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
             return onBlockEntityUseItemOn(level, pos, be -> be.label(slot, player, stack) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL);

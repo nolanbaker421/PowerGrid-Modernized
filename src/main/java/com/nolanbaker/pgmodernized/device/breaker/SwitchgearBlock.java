@@ -103,7 +103,7 @@ public class SwitchgearBlock extends HorizontalElectricBlock implements IBE<Swit
                 return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
             return onBlockEntityUseItemOn(level, pos, be -> be.lock(player, stack) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL);
         }
-        if(stack.is(Items.NAME_TAG)) {
+        if(com.nolanbaker.pgmodernized.util.Labels.isTag(stack)) {
             if(!onBreaker(state, pos, hit))
                 return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
             return onBlockEntityUseItemOn(level, pos, be -> be.label(player, stack) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL);

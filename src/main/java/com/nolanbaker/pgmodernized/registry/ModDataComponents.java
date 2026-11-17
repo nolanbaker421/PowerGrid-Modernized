@@ -51,6 +51,11 @@ public class ModDataComponents {
             REGISTER.registerComponentType("tray_connection", builder -> builder
                     .persistent(CompoundTag.CODEC)
                     .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
+    /** The text a label maker prints. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> LABEL_MAKER =
+            REGISTER.registerComponentType("label_maker", builder -> builder
+                    .persistent(CompoundTag.CODEC)
+                    .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
     /** A lock's serial number. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> LOCK =
             REGISTER.registerComponentType("lock", builder -> builder

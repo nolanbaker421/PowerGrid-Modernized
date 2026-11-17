@@ -62,6 +62,10 @@ public final class ClientHooks {
     }
 
     /** Opens the settings form of a radio, antenna, collector or meter antenna. */
+    public static void openLabelMaker(net.minecraft.world.InteractionHand hand, String current) {
+        Minecraft.getInstance().setScreen(new LabelMakerScreen(hand, current));
+    }
+
     public static void openSettings(BlockPos pos, String titleKey) {
         Minecraft.getInstance().setScreen(new SettingsScreen(pos, net.minecraft.network.chat.Component.translatable(titleKey)));
     }

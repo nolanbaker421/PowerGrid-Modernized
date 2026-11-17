@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.93.0 — 2026-11-16
+
+### Added
+- The **Label Maker**: sneak-right-click to type a label, right-click anything that takes a name
+  tag to print it there, as often as you like. Cleared, it prints blanks that clear labels.
+
+### Fixed
+- Splice editor: a GFCI breaker's load-neutral pin sat on top of the space's rating. The rating
+  now keeps clear of both pins.
+
 ## 0.92.0 — 2026-11-12
 
 ### Fixed

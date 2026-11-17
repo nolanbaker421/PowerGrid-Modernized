@@ -426,9 +426,14 @@ the breaker sound.
 - **Breaker Blank**: right-click a free space with it to fill the space. Pull it like a breaker.
 - **Breaker Lockout**: right-click an installed breaker with it. The handle is frozen and will not flip
   by hand, but the breaker still trips on overload. Shift-right-click the breaker to take the lock off.
-- **Labels**: rename a name tag in an anvil and right-click a space with it. The label shows in
-  goggles, in messages and in the splice editor ("Circuit 3 (Kitchen)"). A plain name tag clears
-  the label. Tags are used up.
+- **Labels**: rename a name tag in an anvil and right-click a space with it, or use the **Label
+  Maker** below. The label shows in goggles, in messages and in the splice editor ("Circuit 3
+  (Kitchen)"). A plain name tag clears the label. Tags are used up.
+
+**Label Maker.** No anvil: sneak-right-click it, type the label, and right-click whatever takes a
+name tag with it, a breaker space, a closed panel door, a switchgear or gear cell, a controls
+cabinet, a fire alarm device. It prints the same label as often as you like and is never used
+up. Clear in its screen and it prints blanks, which clear labels the way a plain tag does.
 
 ### Ground and GFCI
 

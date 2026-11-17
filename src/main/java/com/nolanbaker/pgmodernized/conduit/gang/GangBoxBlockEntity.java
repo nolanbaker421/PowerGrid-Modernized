@@ -384,10 +384,9 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         ensureArrays();
         if(level == null || level.isClientSide || fireKind(slot) == null)
             return false;
-        String text = tag.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME) ? tag.getHoverName().getString() : "";
+        String text = com.nolanbaker.pgmodernized.util.Labels.text(tag);
         fireLabels[slot] = text.length() > 24 ? text.substring(0, 24) : text;
-        if(!player.isCreative())
-            tag.shrink(1);
+        com.nolanbaker.pgmodernized.util.Labels.consume(player, tag);
         level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.4f);
         player.displayClientMessage(Lang.builder().translate(fireLabels[slot].isEmpty() ? "message.fire_alarm.label_cleared" : "message.fire_alarm.labelled", fireLabels[slot])
                 .style(ChatFormatting.GRAY).component(), true);

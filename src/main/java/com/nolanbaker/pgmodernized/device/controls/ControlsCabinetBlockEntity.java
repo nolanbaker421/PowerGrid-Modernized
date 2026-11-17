@@ -1297,10 +1297,9 @@ public class ControlsCabinetBlockEntity extends ElectricBlockEntity implements I
     public void labelCabinet(Player player, net.minecraft.world.item.ItemStack tag) {
         if(level == null || level.isClientSide)
             return;
-        String text = tag.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME) ? tag.getHoverName().getString() : "";
+        String text = com.nolanbaker.pgmodernized.util.Labels.text(tag);
         cabinetLabel = text.length() > 24 ? text.substring(0, 24) : text;
-        if(!player.isCreative())
-            tag.shrink(1);
+        com.nolanbaker.pgmodernized.util.Labels.consume(player, tag);
         level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_ADD_ITEM, net.minecraft.sounds.SoundSource.BLOCKS, 0.6f, 1.4f);
         player.displayClientMessage(Lang.builder().translate(cabinetLabel.isEmpty() ? "message.controls.label_cleared" : "message.controls.labelled", cabinetLabel)
                 .style(ChatFormatting.GRAY).component(), true);

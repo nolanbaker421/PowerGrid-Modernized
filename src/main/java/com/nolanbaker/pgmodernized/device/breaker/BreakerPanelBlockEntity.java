@@ -688,10 +688,9 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
         var breaker = breaker(head);
         if(level == null || level.isClientSide)
             return true;
-        String text = tag.has(DataComponents.CUSTOM_NAME) ? tag.getHoverName().getString() : "";
+        String text = com.nolanbaker.pgmodernized.util.Labels.text(tag);
         breaker.label = text.length() > 32 ? text.substring(0, 32) : text;
-        if(!player.isCreative())
-            tag.shrink(1);
+        com.nolanbaker.pgmodernized.util.Labels.consume(player, tag);
         points = null;
         level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.4f);
         if(breaker.label.isEmpty())
@@ -887,10 +886,9 @@ public class BreakerPanelBlockEntity extends ElectricBlockEntity implements IHav
     public boolean labelCover(Player player, ItemStack tag) {
         if(level == null || level.isClientSide)
             return true;
-        String text = tag.has(DataComponents.CUSTOM_NAME) ? tag.getHoverName().getString() : "";
+        String text = com.nolanbaker.pgmodernized.util.Labels.text(tag);
         coverLabel = text.length() > 24 ? text.substring(0, 24) : text;
-        if(!player.isCreative())
-            tag.shrink(1);
+        com.nolanbaker.pgmodernized.util.Labels.consume(player, tag);
         level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 0.6f, 1.4f);
         message(player, Lang.builder().translate(coverLabel.isEmpty() ? "message.breaker_panel.cover_label_cleared" : "message.breaker_panel.cover_labelled", coverLabel)
                 .style(ChatFormatting.GRAY).component());

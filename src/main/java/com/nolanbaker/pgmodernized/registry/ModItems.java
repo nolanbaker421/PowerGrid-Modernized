@@ -183,6 +183,13 @@ public class ModItems {
         return STEP_LADDERS.get(Math.max(2, Math.min(4, height)));
     }
 
+    /** The label maker: types a label once, prints it on anything that takes a name tag. */
+    public static final ItemEntry<com.nolanbaker.pgmodernized.device.label.LabelMakerItem> LABEL_MAKER = REGISTRATE.item("label_maker", com.nolanbaker.pgmodernized.device.label.LabelMakerItem::new)
+            .properties(p -> p.stacksTo(1))
+            .model(NonNullBiConsumer.noop())
+            .lang("Label Maker")
+            .register();
+
     /** The installer's boresight scope: sights two antennas in on each other. */
     public static final ItemEntry<AlignmentScopeItem> ALIGNMENT_SCOPE = REGISTRATE.item("alignment_scope", AlignmentScopeItem::new)
             .properties(p -> p.stacksTo(1))
