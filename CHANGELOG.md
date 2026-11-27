@@ -4,6 +4,26 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.102.0 — 2026-11-27
+
+### Added
+- Wiring inside the walls, built on the chaseway. Sneak while placing one and its sleeve runs
+  along the face instead of through it, the way you look, through the middle of the block, with
+  nothing on the wall. Neighbouring sleeves that meet join on their own into a chase; sleeves that
+  cross inside a block are an elbow or a tee.
+- A sleeve ending behind a fitting's free knockout (a gang box, a fixture, a pull box, a panel)
+  gets a nipple to it laid for it, so a chase feeds the boxes on a wall with only their plates
+  showing. This replaces the fixture-only link of 0.101.
+- One pull does a whole chase: a wire pulled into a run goes on through every sleeve and run
+  beyond it, in the same slot, until it comes out somewhere that is not a chaseway; pulling it out
+  of any run takes it out of the chain.
+- Engineer's Goggles show chases: every sleeve in a chased block draws as a translucent tube
+  through the wall.
+
+### Fixed
+- Fixture parts lying wholly outside the anchor block drew ghost outlines in the block's
+  selection shape (a box between the part and the anchor). Shown up by the five-block span.
+
 ## 0.101.0 — 2026-11-27
 
 ### Added

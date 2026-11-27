@@ -123,11 +123,14 @@ public final class FixtureDesign {
     /** The parts' boxes that fall inside the anchor block, as the block's shape in the north frame. */
     public VoxelShape anchorShape() {
         var shape = Shapes.empty();
+        var anchor = new AABB(FixturePart.ANCHOR_MIN, FixturePart.ANCHOR_MIN, FixturePart.ANCHOR_MIN, FixturePart.ANCHOR_MAX, FixturePart.ANCHOR_MAX, FixturePart.ANCHOR_MAX);
         for(var p : parts) {
-            var box = p.bounds()
-                    .intersect(new AABB(FixturePart.ANCHOR_MIN, FixturePart.ANCHOR_MIN, FixturePart.ANCHOR_MIN, FixturePart.ANCHOR_MAX, FixturePart.ANCHOR_MAX, FixturePart.ANCHOR_MAX));
-            if(box.getXsize() <= 0 || box.getYsize() <= 0 || box.getZsize() <= 0)
+            var bounds = p.bounds();
+            // AABB's constructor sorts its corners, so intersecting a box that misses the anchor would give a
+            // phantom box between the two, not an empty one: ask first.
+            if(!bounds.intersects(anchor))
                 continue;
+            var box = bounds.intersect(anchor);
             shape = Shapes.or(shape, Shapes.box((box.minX - 16) / 16, (box.minY - 16) / 16, (box.minZ - 16) / 16,
                     (box.maxX - 16) / 16, (box.maxY - 16) / 16, (box.maxZ - 16) / 16));
         }

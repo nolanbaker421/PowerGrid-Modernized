@@ -18,8 +18,9 @@ import org.patryk3211.powergrid.utility.Lang;
 /**
  * The chaseway as an item: used on the face of a plain solid block, it turns that block into a
  * {@link ChasewayBlock} with one sleeve through it at the slot nearest the click, along that
- * face's axis; used on a chaseway, it adds another sleeve there. One is used up each time;
- * breaking the chaseway gives the block and every sleeve back.
+ * face's axis, or sneaking, along the face the way the player looks, through the middle of the
+ * block; used on a chaseway, it adds another sleeve there. One is used up each time; breaking the
+ * chaseway gives the block and every sleeve back.
  */
 public class ChasewayItem extends Item {
     public ChasewayItem(Properties properties) {
@@ -33,7 +34,11 @@ public class ChasewayItem extends Item {
         var state = level.getBlockState(pos);
         var player = context.getPlayer();
         var local = context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
-        int slot = ChasewayBlock.slotAt(context.getClickedFace(), local);
+        // Plain click: through the block, along the face's axis. Sneaking: along the face, the way the player
+        // looks, through the middle of the block, which is how a chase runs inside a wall.
+        int slot = player != null && player.isShiftKeyDown()
+                ? ChasewayBlock.alongSlot(context.getClickedFace(), local, player.getLookAngle())
+                : ChasewayBlock.slotAt(context.getClickedFace(), local);
         if(state.getBlock() instanceof ChasewayBlock) {
             if(!(level.getBlockEntity(pos) instanceof ChasewayBlockEntity be))
                 return InteractionResult.FAIL;

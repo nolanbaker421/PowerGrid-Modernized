@@ -71,6 +71,7 @@
   "powergrid.gui.chaseway.through": "Chaseway, %1$s sleeve(s), through",
   "powergrid.gui.chaseway.end": "Sleeve %1$s end %2$s",
   "powergrid.message.chaseway.taken": "There is a sleeve here already",
+  "powergrid.message.conduit.pulled_through": "and on through %1$s more",
   "powergrid.message.chaseway.no_sleeve": "No sleeve here: put a chaseway on this spot first",
   "powergrid.gui.fixture.off": "Switched off at the fixture",
   "block.powergrid_modernized.strip_light_glow": "Strip Light Glow",

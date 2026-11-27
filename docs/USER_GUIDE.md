@@ -264,23 +264,42 @@ panel's. Pull wire through the nipple exactly as through any run, right-click it
 splice in the panel editor as usual. The nipple cannot be cut or picked up; it goes away when the
 box or the panel does. That is how feeders too big for a 2" panel knockout get in: up the gutter.
 
-### Chaseway
+### Chaseway, and wiring inside the walls
 
 A **Chaseway** is a sleeve through a solid block, for conduit that has to cross a wall, floor or
-ceiling without a hole in it. Hold one and right-click the face of a plain full block (stone,
-brick, concrete, planks, anything solid with nothing inside it) and the block becomes a chaseway
-with a sleeve through it along that face's axis, at the spot you clicked: each face has a three by
-three grid of sleeve positions, and the sleeve takes the nearest. The block keeps its look, sound
-and drop and grows a small sleeve end on both faces. Click a chaseway again with another one and
-it gets another sleeve, on any face, as many as there are free positions. Each sleeve end is a
-knockout that takes conduit up to 2". Land a run on one end from one room and a run on the other
-end from the next, pull the wires through both, and they pass straight through: the first wire of
-one run is the first wire of the other, and so on down the slots. There is nothing to splice and
-nothing to open.
+ceiling without a hole in it, and the piece a hidden run through a house is made of. Hold one and
+right-click the face of a plain full block (stone, brick, concrete, planks, anything solid with
+nothing inside it) and the block becomes a chaseway with a sleeve through it along that face's
+axis, at the spot you clicked: each face has a three by three grid of sleeve positions, and the
+sleeve takes the nearest. The block keeps its look, sound and drop and grows a small sleeve end
+on both faces. Click a chaseway again with another one and it gets another sleeve, on any face,
+as many as there are free positions. Each sleeve end is a knockout that takes conduit up to 2".
+Land a run on one end from one room and a run on the other end from the next, pull a wire into
+either, and it goes on through the sleeve into the other run by itself, in the same slot, and so
+on down any chain of sleeves and runs until it comes out somewhere that is not a chaseway. There
+is nothing to splice and nothing to open; pulling the wire back out of any run takes it out of the
+whole chain.
 
-Break a chaseway and you get the block and every chaseway back. A fixture's mount knockout is
-made for one: a sleeve in the block the fixture hangs from, ending behind that knockout, gets a
-nipple from the fixture on its own, and the run from the room above lands on the sleeve's far end.
+**A chase.** Sneak while placing and the sleeve runs *along* the face instead of through it, the
+way you are looking (level for a horizontal run, steeply up or down for a vertical one), through
+the middle of the block, with nothing showing on the wall at all. Two chased blocks side by side
+whose sleeves meet at the same spot join on their own, so a row of them is one chase down the
+inside of a wall, floor or ceiling. Two sleeves in one block that cross each other (an X sleeve and
+a Y sleeve on the same z, say) are one piece, an elbow or a tee, so a chase turns a corner or
+branches; sleeves that miss each other stay separate, so two circuits can share a block.
+
+**A box in the wall.** A sleeve that ends behind a fitting against that face, within a few pixels
+of one of its free knockouts, gets a short nipple to that knockout laid for it: a gang box with its
+knockout near the wall, a custom fixture's mount knockout, a pull box, a panel, anything with
+knockouts. So a chase down the inside of a wall feeds the receptacles and switches on it with
+nothing but their plates showing, and a chase across a ceiling drops into every fixture hung from
+it. The nipple comes and goes with what it joins.
+
+**Seeing it.** Wearing Engineer's Goggles, every sleeve in a chased block shows through the wall
+as a translucent blue tube, and the goggle readout on a chaseway lists its sleeves and the runs on
+them. Without goggles a chase is invisible, which is the point.
+
+Break a chaseway and you get the block and every chaseway back.
 
 ### Wire Trough
 
@@ -1093,10 +1112,9 @@ A placed fixture draws itself round its anchor block on a canopy plate at its mo
 design put its box (a floor
 fixture has no plate: its design supplies the base, and its knockouts lie flat on the floor at
 the base's edges), with three knockouts: one on the mounting face itself (top for a ceiling fixture, back for a
-wall one, bottom for a floor one), for a run that comes through the block by a chaseway: put a
-sleeve in that block ending behind the knockout and the fixture lays a nipple to it on its own,
-as a pull box does to its panel, so a run into the sleeve's far end pulls straight through to the
-fixture. The other two knockouts are one
+wall one, bottom for a floor one), for a run that comes through the block by a chaseway: a sleeve
+in that block ending behind the knockout gets a nipple to it on its own, so a run into the
+sleeve's far end pulls straight through to the fixture. The other two knockouts are one
 on each of two sides of the canopy for runs along the surface, left and right of a ceiling or
 floor fixture, above and below a wall one. L and N are behind them. Every socket takes the same lamp: right-click with a stack of bulbs and one goes in each
 socket; sneak-click with an empty hand to take them out; an empty hand opens the readings and

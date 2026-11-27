@@ -1,8 +1,5 @@
 package com.nolanbaker.pgmodernized.device.fixture;
 
-import com.nolanbaker.pgmodernized.conduit.ChasewayBlock;
-import com.nolanbaker.pgmodernized.conduit.ChasewayBlockEntity;
-import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
@@ -29,10 +26,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.server.level.ServerLevel;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.light.bulb.IFixtureEntity;
@@ -116,38 +110,6 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
         var stack = new ItemStack(ModItems.CUSTOM_FIXTURE.get());
         design().putOn(stack);
         return stack;
-    }
-
-    /**
-     * The mount knockout faces the block the fixture hangs from, where nothing can be clicked. A
-     * chaseway in that block with a sleeve ending behind the knockout gets a nipple laid to it here,
-     * as a pull box lays one to its panel: a run into the sleeve's far end then pulls straight
-     * through to the fixture. The nipple looks after itself once laid (see ConduitRunEntity.tick).
-     */
-    private void linkChaseway(ServerLevel server) {
-        var state = getBlockState();
-        if(!(state.getBlock() instanceof CustomFixtureBlock) || deviceHubs().hubRun(HUB_MOUNT) != null)
-            return;
-        var support = support(state, worldPosition);
-        if(!(server.getBlockEntity(support) instanceof ChasewayBlockEntity chaseway))
-            return;
-        var toward = Direction.fromDelta(worldPosition.getX() - support.getX(), worldPosition.getY() - support.getY(), worldPosition.getZ() - support.getZ());
-        if(toward == null)
-            return;
-        // Where the knockout's centre falls on the chaseway's face, in the block's own frame.
-        var px = hubs(state)[HUB_MOUNT];
-        var centre = rotate(Shapes.create(px.minX / 16, px.minY / 16, px.minZ / 16, px.maxX / 16, px.maxY / 16, px.maxZ / 16), facing(state)).bounds().getCenter();
-        int slot = ChasewayBlock.slotAt(toward, centre);
-        if(!chaseway.hasSleeve(slot))
-            return;
-        int hub = ChasewayBlock.hub(slot, toward);
-        if(chaseway.deviceHubs().hubRun(hub) != null)
-            return;
-        var mine = new BlockWireEndpoint(worldPosition, LAYOUT.hubTerminal(HUB_MOUNT));
-        var theirs = new BlockWireEndpoint(support, ChasewayBlock.LAYOUT.hubTerminal(hub));
-        var nipple = ConduitRunEntity.createNipple(server, mine, theirs);
-        if(nipple != null)
-            server.tryAddFreshEntityWithPassengers(nipple);
     }
 
     /** The design's parts inside the anchor block, turned to the facing; cached until either changes. */
@@ -426,8 +388,6 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
             return;
         deviceHubs().lazyTick();
         projectDown();
-        if(level instanceof ServerLevel server)
-            linkChaseway(server);
         if(Math.abs(watts - syncedWatts) > 0.5f) {
             syncedWatts = watts;
             sendData();

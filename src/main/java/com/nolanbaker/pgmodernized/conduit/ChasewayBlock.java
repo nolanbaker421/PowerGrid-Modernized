@@ -99,6 +99,53 @@ public class ChasewayBlock extends ElectricBlock implements IBE<ChasewayBlockEnt
         };
     }
 
+    /**
+     * Whether two sleeves of one block meet inside it: different axes, and the coordinate they share
+     * the same, so an X sleeve at (y, z) and a Y sleeve at (x, z) cross when their z agree. Crossing
+     * sleeves are joined, an elbow or a tee; parallel sleeves, or ones that miss, stay apart.
+     */
+    public static boolean cross(int s1, int s2) {
+        var a1 = axisOf(s1);
+        var a2 = axisOf(s2);
+        if(a1 == a2)
+            return false;
+        int i1 = (s1 % SLOTS_PER_AXIS) / GRID, j1 = s1 % GRID;   // X: (y, z)  Y: (x, z)  Z: (x, y)
+        int i2 = (s2 % SLOTS_PER_AXIS) / GRID, j2 = s2 % GRID;
+        if(a1 == Direction.Axis.X && a2 == Direction.Axis.Y || a1 == Direction.Axis.Y && a2 == Direction.Axis.X)
+            return j1 == j2;                                      // both name z second
+        if(a1 == Direction.Axis.X && a2 == Direction.Axis.Z)
+            return i1 == j2;                                      // X's y against Z's y
+        if(a1 == Direction.Axis.Z && a2 == Direction.Axis.X)
+            return j1 == i2;
+        return i1 == i2;                                          // Y against Z, either way round: both name x first
+    }
+
+    /** A sleeve along a face instead of through it, the way the player looks, through the middle of the block. */
+    public static int alongSlot(Direction face, Vec3 local, Vec3 look) {
+        Direction.Axis axis = switch(face.getAxis()) {
+            case Y -> Math.abs(look.x) >= Math.abs(look.z) ? Direction.Axis.X : Direction.Axis.Z;
+            case X -> Math.abs(look.y) > 0.7 ? Direction.Axis.Y : Direction.Axis.Z;
+            case Z -> Math.abs(look.y) > 0.7 ? Direction.Axis.Y : Direction.Axis.X;
+        };
+        int mid = GRID / 2;
+        var f = face.getAxis();
+        return switch(axis) {
+            case X -> slot(Direction.Axis.X, f == Direction.Axis.Y ? mid : cell(local.y), f == Direction.Axis.Z ? mid : cell(local.z));
+            case Y -> slot(Direction.Axis.Y, f == Direction.Axis.X ? mid : cell(local.x), f == Direction.Axis.Z ? mid : cell(local.z));
+            case Z -> slot(Direction.Axis.Z, f == Direction.Axis.X ? mid : cell(local.x), f == Direction.Axis.Y ? mid : cell(local.y));
+        };
+    }
+
+    /** A sleeve's centre line, in pixels: its two cross coordinates set, the one along its axis 8. */
+    public static Vec3 centre(int slot) {
+        double ca = CENTRES[(slot % SLOTS_PER_AXIS) / GRID], cb = CENTRES[slot % GRID];
+        return switch(axisOf(slot)) {
+            case X -> new Vec3(8, ca, cb);
+            case Y -> new Vec3(ca, 8, cb);
+            case Z -> new Vec3(ca, cb, 8);
+        };
+    }
+
     public static AABB[] hubs() {
         var out = new AABB[HUB_COUNT];
         for(int i = 0; i < HUB_COUNT; ++i)
@@ -115,7 +162,7 @@ public class ChasewayBlock extends ElectricBlock implements IBE<ChasewayBlockEnt
         };
     }
 
-    private static int cell(double t) {
+    public static int cell(double t) {
         return Mth.clamp((int) (t * GRID), 0, GRID - 1);
     }
 

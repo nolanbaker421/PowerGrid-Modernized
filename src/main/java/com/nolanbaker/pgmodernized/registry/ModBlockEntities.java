@@ -153,6 +153,7 @@ public class ModBlockEntities {
     public static final BlockEntityEntry<com.nolanbaker.pgmodernized.conduit.ChasewayBlockEntity> CHASEWAY =
             REGISTRATE.blockEntity("chaseway", com.nolanbaker.pgmodernized.conduit.ChasewayBlockEntity::new)
                     .validBlock(ModBlocks.CHASEWAY)
+                    .renderer(() -> com.nolanbaker.pgmodernized.client.ChasewayRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<ConduitSwitchBlockEntity> CONDUIT_SWITCH =

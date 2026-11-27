@@ -232,15 +232,12 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         return getItem() instanceof ConduitItem conduit ? conduit.size() : ConduitSize.HALF;
     }
 
-    /** A fixture whose mount knockout faces a chaseway sleeve in the block it hangs from; the fixture lays this nipple. */
-    private static boolean isChased(@Nullable net.minecraft.world.level.block.entity.BlockEntity fixture, @Nullable net.minecraft.world.level.block.entity.BlockEntity chaseway, BlockWireEndpoint chasewayEnd) {
-        if(!(fixture instanceof com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlockEntity f) || !(chaseway instanceof ChasewayBlockEntity c))
-            return false;
-        if(!(f.getBlockState().getBlock() instanceof com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock)
-                || !com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.support(f.getBlockState(), f.getBlockPos()).equals(c.getBlockPos()))
+    /** A chaseway sleeve end against another fitting (a chased block, a box, a fixture, a panel); the chaseway lays these. */
+    private static boolean isChaseLink(@Nullable net.minecraft.world.level.block.entity.BlockEntity chaseway, @Nullable net.minecraft.world.level.block.entity.BlockEntity other, BlockWireEndpoint chasewayEnd) {
+        if(!(chaseway instanceof ChasewayBlockEntity c) || !(other instanceof ISpliceHost))
             return false;
         int hub = ChasewayBlock.LAYOUT.hubAt(chasewayEnd.getTerminal());
-        return hub >= 0 && c.hasSleeve(ChasewayBlock.slotOfHub(hub));
+        return hub >= 0 && c.hasSleeve(ChasewayBlock.slotOfHub(hub)) && c.getBlockPos().relative(ChasewayBlock.faceOfHub(hub)).equals(other.getBlockPos());
     }
 
     private static boolean isGutter(@Nullable net.minecraft.world.level.block.entity.BlockEntity be) {
@@ -270,7 +267,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         var beB = level().getBlockEntity(b.getPos());
         // A gutter (pull box or trough section) against a panel (head or extension), either way round,
         // or a fixture against the chaseway sleeve in the block it hangs from.
-        boolean pair = (isGutter(beA) && isPanel(beB)) || (isGutter(beB) && isPanel(beA)) || isChased(beA, beB, b) || isChased(beB, beA, a);
+        boolean pair = (isGutter(beA) && isPanel(beB)) || (isGutter(beB) && isPanel(beA)) || isChaseLink(beA, beB, a) || isChaseLink(beB, beA, b);
         if(!pair || !a.getPos().closerThan(b.getPos(), 1.5))
             kill();
     }
@@ -466,9 +463,89 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         if(!player.isCreative())
             PlayerUtilities.removeItems(player, stack, required);
         CopperScrap.roll(player, ends.e1().getPos());
-        player.displayClientMessage(Lang.builder().translate("message.conduit.pulled", slot + 1)
-                .add(Lang.builder().text(" ").add(ConductorColors.name(slot))).style(ChatFormatting.GRAY).component(), true);
+        var visited = new java.util.HashSet<java.util.UUID>();
+        int onward = followPull(player, stack, slot, visited);
+        var message = Lang.builder().translate("message.conduit.pulled", slot + 1).add(Lang.builder().text(" ").add(ConductorColors.name(slot)));
+        if(onward > 0)
+            message.add(Lang.builder().text(" ").translate("message.conduit.pulled_through", onward));
+        player.displayClientMessage(message.style(ChatFormatting.GRAY).component(), true);
         return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * Pulls the same wire on, at the same slot, through every run a chaseway at either end hands it
+     * to: the run on the far end of the sleeve, or of the sleeves crossing it. One pull does a whole
+     * chase, nipples and all, and lands where the chase comes out. Returns how many runs it went on
+     * through.
+     */
+    private int followPull(Player player, ItemStack stack, int slot, java.util.Set<java.util.UUID> visited) {
+        visited.add(getUUID());
+        int count = 0;
+        for(var endpoint : new IWireEndpoint[] {getEndpoint1(), getEndpoint2()}) {
+            var end = hub(endpoint);
+            if(end == null || !(level().getBlockEntity(end.getPos()) instanceof ChasewayBlockEntity chaseway))
+                continue;
+            int hub = chaseway.hubAt(end.getTerminal());
+            if(hub < 0)
+                continue;
+            for(int other : chaseway.joinedHubs(hub)) {
+                var run = chaseway.hubRun(other);
+                if(run == null || visited.contains(run.getUUID()))
+                    continue;
+                if(slot >= run.capacity() || run.conductor(slot) != null || !run.pullInto(player, stack, slot)) {
+                    visited.add(run.getUUID());
+                    continue;
+                }
+                count += 1 + run.followPull(player, stack, slot, visited);
+            }
+        }
+        return count;
+    }
+
+    /** A pull into a given slot, quiet, for a run further along a chase; false when it cannot take the wire. */
+    private boolean pullInto(Player player, ItemStack stack, int slot) {
+        var ends = ends();
+        if(ends == null)
+            return false;
+        var entry = WireRegistry.forItem(level(), stack.getItem());
+        if(entry == null)
+            return false;
+        var pulled = conductors();
+        if(!ConduitFill.fits(size(), ConduitFill.used(level(), pulled), pulled.size(), WireGauge.areaOf(level(), stack.getItem())))
+            return false;
+        int required = Math.max(1, (int) Math.ceil(getTotalLength() * entry.itemsPerMeter()));
+        if(!PlayerUtilities.hasEnoughItems(player, stack, required))
+            return false;
+        if(spawnConductor(ends, slot, stack.copyWithCount(required)) == null)
+            return false;
+        if(!player.isCreative())
+            PlayerUtilities.removeItems(player, stack, required);
+        return true;
+    }
+
+    /** Takes the same slot's wire out of every run a chaseway joined this one to, as followPull put it in. */
+    private void followPullOut(int slot, java.util.Set<java.util.UUID> visited) {
+        visited.add(getUUID());
+        for(var endpoint : new IWireEndpoint[] {getEndpoint1(), getEndpoint2()}) {
+            var end = hub(endpoint);
+            if(end == null || !(level().getBlockEntity(end.getPos()) instanceof ChasewayBlockEntity chaseway))
+                continue;
+            int hub = chaseway.hubAt(end.getTerminal());
+            if(hub < 0)
+                continue;
+            for(int other : chaseway.joinedHubs(hub)) {
+                var run = chaseway.hubRun(other);
+                if(run == null || visited.contains(run.getUUID()))
+                    continue;
+                var conductor = run.conductor(slot);
+                if(conductor == null) {
+                    visited.add(run.getUUID());
+                    continue;
+                }
+                conductor.kill();
+                run.followPullOut(slot, visited);
+            }
+        }
     }
 
     /**
@@ -613,6 +690,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
             return fail(player, "message.conduit.empty");
         ShockDamage.shockAmps(player, Math.abs(last.measuredCurrent()));
         last.kill();
+        followPullOut(last.slot(), new java.util.HashSet<>());
         player.displayClientMessage(Lang.builder().translate("message.conduit.pulled_out", last.slot() + 1).style(ChatFormatting.GRAY).component(), true);
         return InteractionResult.SUCCESS;
     }
