@@ -108,6 +108,14 @@ public final class FixtureDesign {
         return Math.min(n, MAX_SOCKETS);
     }
 
+    /** Whether any lamp is out in the open: a socket lights the room, backlit text lights only itself. */
+    public boolean hasOpenLamp() {
+        for(var p : parts)
+            if(p.kind == FixturePart.Kind.SOCKET)
+                return true;
+        return false;
+    }
+
     /** The parts' boxes that fall inside the anchor block, as the block's shape in the north frame. */
     public VoxelShape anchorShape() {
         var shape = Shapes.empty();

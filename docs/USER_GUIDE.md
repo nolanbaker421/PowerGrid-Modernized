@@ -1063,7 +1063,8 @@ parts light up with the lamp. A **text** part is lettering in the game's font, u
 characters, drawn on the side of its box that its Face names and scaled to fit. Every text part
 is backlit by a hidden lamp holder of its own: the fixture takes one bulb for it as it does for a
 socket, the bulb is never seen, and with the glow material the lettering lights while the lamp
-is on. That is how a business sign is made: a dark cabinet box standing off the wall and glowing
+is on; a backlit lamp lights nothing but its lettering, so a sign with no open socket gives the
+room no light. That is how a business sign is made: a dark cabinet box standing off the wall and glowing
 text on its face, nothing else. The **Sconce**, **Lamp** and **Sign**
 buttons under the part list start a design over from one of those. A design spans three blocks
 each way round its anchor, so a sign is at most three blocks wide; only what falls inside the

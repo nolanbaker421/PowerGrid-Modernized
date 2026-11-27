@@ -191,7 +191,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
      * own fixtures light at 10 and 15 for the two, and so do ours.
      */
     public int lightLevel() {
-        if(!lit())
+        if(!lit() || !design().hasOpenLamp())
             return 0;
         return powerLevel >= 2 ? 15 : 10;
     }
@@ -228,13 +228,14 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     // ---- the glow on the floor ----
 
     /**
-     * The block the lowest lamp holder (socket or text) sits in, straight under the anchor; a
-     * pendant's bulb hangs a block below the anchor, so its light should start there.
+     * The block the lowest open socket sits in, straight under the anchor; a pendant's bulb hangs
+     * a block below the anchor, so its light should start there. Backlit text does not count: a
+     * sign's lamp is shut in its cabinet and lights nothing but the lettering.
      */
     private BlockPos lampBlock() {
         int lowest = FixturePart.ANCHOR_MIN;
         for(var p : design().parts)
-            if(p.kind == FixturePart.Kind.SOCKET || p.kind == FixturePart.Kind.TEXT)
+            if(p.kind == FixturePart.Kind.SOCKET)
                 lowest = Math.min(lowest, p.y);
         return worldPosition.below(Math.floorDiv(FixturePart.ANCHOR_MIN - lowest + 15, 16));
     }

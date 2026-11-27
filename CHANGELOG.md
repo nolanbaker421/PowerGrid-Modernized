@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.98.2 — 2026-11-26
+
+### Changed
+- Backlit text lights only its lettering: a fixture gives block light and a floor glow only when
+  it has an open socket, so a sign no longer lights the room.
+
 ## 0.98.1 — 2026-11-26
 
 ### Changed
