@@ -49,6 +49,48 @@ public final class FixtureDesign {
         return d;
     }
 
+    /** A wall sconce: a back plate on the wall, a short arm, and a frosted glass shade open at the top. */
+    public static FixtureDesign sconce() {
+        var d = new FixtureDesign();
+        d.name = "Sconce";
+        d.mount = Mount.WALL;
+        d.parts.add(new FixturePart(FixturePart.Kind.BOX, 21, 18, 30, 6, 12, 2, Direction.NORTH, 0xB8BCC2, FixturePart.Material.METAL));
+        d.parts.add(new FixturePart(FixturePart.Kind.BOX, 23, 23, 26, 2, 2, 4, Direction.NORTH, 0xB8BCC2, FixturePart.Material.METAL));
+        d.parts.add(new FixturePart(FixturePart.Kind.SOCKET, 22, 23, 22, 4, 3, 4, Direction.UP, 0x3A3C40, FixturePart.Material.MATTE));
+        var shade = new FixturePart(FixturePart.Kind.CONE, 19, 25, 19, 10, 9, 10, Direction.UP, 0xF2F2EE, FixturePart.Material.GLASS);
+        shade.taper = 65;
+        d.parts.add(shade);
+        return d;
+    }
+
+    /** A table lamp: a base, a stem, a socket and a wide fabric shade, standing on the floor. */
+    public static FixtureDesign tableLamp() {
+        var d = new FixtureDesign();
+        d.name = "Table Lamp";
+        d.mount = Mount.FLOOR;
+        d.parts.add(new FixturePart(FixturePart.Kind.BOX, 19, 19, 19, 10, 2, 10, Direction.UP, 0x8B5A2B, FixturePart.Material.MATTE));
+        d.parts.add(new FixturePart(FixturePart.Kind.BOX, 23, 21, 23, 2, 12, 2, Direction.UP, 0xC88A3C, FixturePart.Material.METAL));
+        d.parts.add(new FixturePart(FixturePart.Kind.SOCKET, 22, 33, 22, 4, 3, 4, Direction.UP, 0x3A3C40, FixturePart.Material.MATTE));
+        var shade = new FixturePart(FixturePart.Kind.CONE, 17, 34, 17, 14, 10, 14, Direction.UP, 0xE8D8B0, FixturePart.Material.MATTE);
+        shade.taper = 70;
+        d.parts.add(shade);
+        return d;
+    }
+
+    /** A lit sign on a wall: a dark cabinet standing off the wall with glowing lettering on its face and a lamp inside. */
+    public static FixtureDesign sign() {
+        var d = new FixtureDesign();
+        d.name = "Sign";
+        d.mount = Mount.WALL;
+        d.parts.add(new FixturePart(FixturePart.Kind.BOX, 4, 18, 28, 40, 12, 3, Direction.NORTH, 0x111111, FixturePart.Material.METAL));
+        d.parts.add(new FixturePart(FixturePart.Kind.BOX, 5, 19, 27, 38, 10, 1, Direction.NORTH, 0x3A3C40, FixturePart.Material.MATTE));
+        var text = new FixturePart(FixturePart.Kind.TEXT, 6, 20, 27, 36, 8, 1, Direction.NORTH, 0xFF3040, FixturePart.Material.GLOW);
+        text.text = "OPEN";
+        d.parts.add(text);
+        d.parts.add(new FixturePart(FixturePart.Kind.SOCKET, 22, 28, 29, 4, 2, 3, Direction.DOWN, 0x3A3C40, FixturePart.Material.MATTE));
+        return d;
+    }
+
     public FixtureDesign copy() {
         var d = new FixtureDesign();
         d.mount = mount;

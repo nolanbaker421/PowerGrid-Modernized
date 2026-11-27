@@ -1,6 +1,8 @@
 package com.nolanbaker.pgmodernized.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.nolanbaker.pgmodernized.device.fixture.FixtureDesign;
@@ -29,7 +31,12 @@ public final class FixtureDraw {
     private static final ResourceLocation WHITE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
     private static final float BULB_SCALE = 0.5f;
 
-    public static void draw(PoseStack ms, MultiBufferSource buffer, int light, FixtureDesign design, boolean lit, BulbDrawer bulbs, int selected) {
+    /**
+     * @param textRange how far, in blocks, lettering is still drawn; the designer's preview passes
+     *                  {@link Double#MAX_VALUE}, the world renderer a few dozen blocks, since
+     *                  font draws are dear and a sign is unreadable past that
+     */
+    public static void draw(PoseStack ms, MultiBufferSource buffer, int light, FixtureDesign design, boolean lit, BulbDrawer bulbs, int selected, double textRange) {
         for(int i = 0; i < design.parts.size(); ++i) {
             var p = design.parts.get(i);
             int color = i == selected ? blend(p.color, 0xFFE040, 0.45f) : p.color;
@@ -43,6 +50,7 @@ public final class FixtureDraw {
                 case GLOBE -> globe(ms, buffer, partLight, p, color, alpha);
                 case CHAIN -> chain(ms, buffer, partLight, p, color);
                 case SOCKET -> socket(ms, buffer, partLight, light, p, color, lit, bulbs);
+                case TEXT -> text(ms, buffer, partLight, p, color, textRange);
             }
         }
     }
@@ -67,6 +75,45 @@ public final class FixtureDraw {
                 default -> box(ms, buffer, light, cx - a / 2, cy - b / 2, p.z + from, cx + a / 2, cy + b / 2, p.z + to, color, alpha, p.material);
             }
         }
+    }
+
+    /**
+     * Lettering in the game's font on the part's {@code face} side, centred, scaled to fit the face
+     * both ways, standing a twentieth of a pixel off it.
+     */
+    private static void text(PoseStack ms, MultiBufferSource buffer, int light, FixturePart p, int color, double textRange) {
+        if(p.text.isEmpty())
+            return;
+        if(textRange != Double.MAX_VALUE) {
+            var origin = ms.last().pose().transformPosition(new org.joml.Vector3f());
+            if(origin.lengthSquared() > textRange * textRange)
+                return;
+        }
+        var font = Minecraft.getInstance().font;
+        int width = Math.max(1, font.width(p.text));
+        double cx = p.x + p.w / 2.0, cy = p.y + p.h / 2.0, cz = p.z + p.d / 2.0;
+        double faceW = p.face.getAxis() == Direction.Axis.X ? p.d : p.w;
+        double faceH = p.face.getAxis() == Direction.Axis.Y ? p.d : p.h;
+        double s = Math.min(faceH / 9.0, faceW / width);   // design pixels per font pixel
+        double out = 0.05;
+        ms.pushPose();
+        switch(p.face) {
+            case NORTH -> ms.translate(at(cx), at(cy), at(p.z - out));
+            case SOUTH -> { ms.translate(at(cx), at(cy), at(p.z + p.d + out)); ms.mulPose(Axis.YP.rotationDegrees(180)); }
+            case EAST -> { ms.translate(at(p.x + p.w + out), at(cy), at(cz)); ms.mulPose(Axis.YP.rotationDegrees(-90)); }
+            case WEST -> { ms.translate(at(p.x - out), at(cy), at(cz)); ms.mulPose(Axis.YP.rotationDegrees(90)); }
+            case UP -> { ms.translate(at(cx), at(p.y + p.h + out), at(cz)); ms.mulPose(Axis.XP.rotationDegrees(90)); }
+            case DOWN -> { ms.translate(at(cx), at(p.y - out), at(cz)); ms.mulPose(Axis.XP.rotationDegrees(-90)); }
+        }
+        float scale = (float) (s / 16);
+        ms.scale(-scale, -scale, scale);
+        font.drawInBatch(p.text, -width / 2f, -4.5f, 0xFF000000 | color, false, ms.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, light);
+        ms.popPose();
+    }
+
+    /** A design pixel as a pose coordinate: the pose sits at the anchor block's corner, pixel 16. */
+    private static double at(double px) {
+        return (px - 16) / 16;
     }
 
     /** A ball from three crossing slabs and a core, which reads round enough at a lamp's size. */
@@ -108,12 +155,12 @@ public final class FixtureDraw {
         ms.pushPose();
         // To the face's centre, then turn so the bulb's +y points along the face.
         switch(p.face) {
-            case DOWN -> { ms.translate(cx / 16, p.y / 16.0, cz / 16); ms.mulPose(Axis.XP.rotationDegrees(180)); }
-            case UP -> ms.translate(cx / 16, (p.y + p.h) / 16.0, cz / 16);
-            case NORTH -> { ms.translate(cx / 16, cy / 16, p.z / 16.0); ms.mulPose(Axis.XP.rotationDegrees(-90)); }
-            case SOUTH -> { ms.translate(cx / 16, cy / 16, (p.z + p.d) / 16.0); ms.mulPose(Axis.XP.rotationDegrees(90)); }
-            case WEST -> { ms.translate(p.x / 16.0, cy / 16, cz / 16); ms.mulPose(Axis.ZP.rotationDegrees(90)); }
-            case EAST -> { ms.translate((p.x + p.w) / 16.0, cy / 16, cz / 16); ms.mulPose(Axis.ZP.rotationDegrees(-90)); }
+            case DOWN -> { ms.translate(at(cx), at(p.y), at(cz)); ms.mulPose(Axis.XP.rotationDegrees(180)); }
+            case UP -> ms.translate(at(cx), at(p.y + p.h), at(cz));
+            case NORTH -> { ms.translate(at(cx), at(cy), at(p.z)); ms.mulPose(Axis.XP.rotationDegrees(-90)); }
+            case SOUTH -> { ms.translate(at(cx), at(cy), at(p.z + p.d)); ms.mulPose(Axis.XP.rotationDegrees(90)); }
+            case WEST -> { ms.translate(at(p.x), at(cy), at(cz)); ms.mulPose(Axis.ZP.rotationDegrees(90)); }
+            case EAST -> { ms.translate(at(p.x + p.w), at(cy), at(cz)); ms.mulPose(Axis.ZP.rotationDegrees(-90)); }
         }
         ms.scale(BULB_SCALE, BULB_SCALE, BULB_SCALE);
         ms.translate(-0.5, 0, -0.5);

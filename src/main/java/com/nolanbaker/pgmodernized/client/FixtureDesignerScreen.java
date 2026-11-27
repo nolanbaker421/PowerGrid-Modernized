@@ -81,7 +81,7 @@ public class FixtureDesignerScreen extends Screen {
     private void rebuild() {
         clearWidgets();
         int bx = listX, by = listY + LIST_ROWS * ROW_H + 4;
-        String[] kinds = {"Box", "Cone", "Globe", "Chain", "Socket"};
+        String[] kinds = {"Box", "Cone", "Globe", "Chain", "Socket", "Text"};
         FixturePart.Kind[] kindValues = FixturePart.Kind.values();
         for(int i = 0; i < kinds.length; ++i) {
             var kind = kindValues[i];
@@ -92,6 +92,10 @@ public class FixtureDesignerScreen extends Screen {
         addRenderableWidget(Button.builder(Component.literal("Del"), b -> delete()).bounds(bx + 36, by + 30, 34, 13).build());
         addRenderableWidget(Button.builder(Component.literal("▲"), b -> move(-1)).bounds(bx + 72, by + 30, 16, 13).build());
         addRenderableWidget(Button.builder(Component.literal("▼"), b -> move(1)).bounds(bx + 90, by + 30, 16, 13).build());
+        // Fresh starts: each replaces the whole design.
+        addRenderableWidget(Button.builder(Component.literal("Sconce"), b -> preset(FixtureDesign.sconce())).bounds(bx, by + 46, 34, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Lamp"), b -> preset(FixtureDesign.tableLamp())).bounds(bx + 36, by + 46, 34, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Sign"), b -> preset(FixtureDesign.sign())).bounds(bx + 72, by + 46, 34, 13).build());
 
         var p = part();
         int fx = fieldsX, fy = panelY + 32;
@@ -110,9 +114,18 @@ public class FixtureDesignerScreen extends Screen {
                 p.material = FixturePart.Material.values()[(p.material.ordinal() + 1) % FixturePart.Material.values().length];
                 b.setMessage(Component.literal(p.material.name()));
             }).bounds(fx + 76, fy + 52, 70, 13).build());
-            if(p.kind == FixturePart.Kind.CONE)
+            if(p.kind == FixturePart.Kind.CONE) {
                 number(fx, fy + 70, "Taper %", p.taper, v -> p.taper = v);
-            colorField = new EditBox(font, fx + 76, fy + 70, 70, 13, Component.literal("colour"));
+            } else if(p.kind == FixturePart.Kind.TEXT) {
+                var textBox = new EditBox(font, fx, fy + 80, 70, 13, Component.literal("text"));
+                textBox.setMaxLength(FixturePart.TEXT_LENGTH);
+                textBox.setValue(p.text);
+                textBox.setResponder(s -> p.text = s);
+                addRenderableWidget(textBox);
+                labels.add(new int[] {fx, fy + 70});
+                labelText.add("Text");
+            }
+            colorField = new EditBox(font, fx + 76, fy + 80, 70, 13, Component.literal("colour"));
             colorField.setMaxLength(6);
             colorField.setValue(String.format("%06X", p.color));
             colorField.setResponder(s -> {
@@ -205,12 +218,25 @@ public class FixtureDesignerScreen extends Screen {
             case SOCKET -> { p.w = 4; p.h = 4; p.d = 4; p.x = 22; p.z = 22; p.y = 14; p.color = 0x3A3C40; }
             case GLOBE -> { p.w = 10; p.h = 10; p.d = 10; p.x = 19; p.z = 19; p.y = 8; p.material = FixturePart.Material.GLASS; p.color = 0xF2F2EE; }
             case CONE -> { p.w = 14; p.h = 8; p.d = 14; p.x = 17; p.z = 17; p.y = 10; }
+            case TEXT -> { p.w = 16; p.h = 6; p.d = 1; p.x = 16; p.y = 21; p.z = 27; p.face = Direction.NORTH; p.color = 0xFF3040; p.material = FixturePart.Material.GLOW; p.text = "OPEN"; }
             default -> {}
         }
         if(kind == FixturePart.Kind.SOCKET && design.socketCount() >= FixtureDesign.MAX_SOCKETS)
             return;
         design.parts.add(p);
         selected = design.parts.size() - 1;
+        rebuild();
+    }
+
+    /** Starts over from a preset: its parts, mount and name replace the design's. */
+    private void preset(FixtureDesign from) {
+        design.parts.clear();
+        for(var p : from.parts)
+            design.parts.add(p.copy());
+        design.mount = from.mount;
+        design.name = from.name;
+        selected = design.parts.isEmpty() ? -1 : 0;
+        scroll = 0;
         rebuild();
     }
 
@@ -257,7 +283,7 @@ public class FixtureDesignerScreen extends Screen {
             }
         }
         var p = part();
-        if(button == 0 && p != null && my >= panelY + 120 && my < panelY + 132 && mx >= fieldsX && mx < fieldsX + SWATCHES.length * 14) {
+        if(button == 0 && p != null && my >= panelY + 130 && my < panelY + 142 && mx >= fieldsX && mx < fieldsX + SWATCHES.length * 14) {
             p.color = SWATCHES[(int) ((mx - fieldsX) / 14)];
             if(colorField != null)
                 colorField.setValue(String.format("%06X", p.color));
@@ -471,23 +497,24 @@ public class FixtureDesignerScreen extends Screen {
             if(idx == selected)
                 graphics.fill(listX - 1, y - 1, listX + 103, y + ROW_H - 1, SEL);
             graphics.fill(listX, y, listX + 7, y + 7, 0xFF000000 | p.color);
-            graphics.drawString(font, (idx + 1) + " " + p.kind.name().charAt(0) + p.kind.name().substring(1).toLowerCase() + " " + p.w + "x" + p.h + "x" + p.d, listX + 10, y, TEXT, false);
+            var label = p.kind == FixturePart.Kind.TEXT ? "\"" + p.text + "\"" : p.w + "x" + p.h + "x" + p.d;
+            graphics.drawString(font, (idx + 1) + " " + p.kind.name().charAt(0) + p.kind.name().substring(1).toLowerCase() + " " + label, listX + 10, y, TEXT, false);
         }
         // The fields' labels and the swatches.
         for(int i = 0; i < labels.size(); ++i)
             graphics.drawString(font, labelText.get(i), labels.get(i)[0], labels.get(i)[1], DIM, false);
         var p = part();
         if(p != null) {
-            graphics.drawString(font, Component.translatable("powergrid.gui.fixture.colour"), fieldsX, panelY + 110, DIM, false);
+            graphics.drawString(font, Component.translatable("powergrid.gui.fixture.colour"), fieldsX + 76, panelY + 102, DIM, false);
             for(int i = 0; i < SWATCHES.length; ++i) {
                 int x = fieldsX + i * 14;
-                graphics.fill(x, panelY + 120, x + 12, panelY + 132, 0xFF000000 | SWATCHES[i]);
+                graphics.fill(x, panelY + 130, x + 12, panelY + 142, 0xFF000000 | SWATCHES[i]);
                 if(SWATCHES[i] == p.color)
-                    graphics.renderOutline(x - 1, panelY + 119, 14, 14, 0xFFFFE040);
+                    graphics.renderOutline(x - 1, panelY + 129, 14, 14, 0xFFFFE040);
             }
             var hint = Component.translatable("powergrid.gui.fixture.hint").getString().split("\\n");
             for(int i = 0; i < hint.length; ++i)
-                graphics.drawString(font, hint[i], fieldsX, panelY + 140 + i * 10, DIM, false);
+                graphics.drawString(font, hint[i], fieldsX, panelY + 150 + i * 10, DIM, false);
         } else {
             graphics.drawString(font, Component.translatable("powergrid.gui.fixture.none"), fieldsX, panelY + 32, DIM, false);
         }
@@ -513,7 +540,7 @@ public class FixtureDesignerScreen extends Screen {
         var renderer = Minecraft.getInstance().getBlockRenderer().getModelRenderer();
         var bulbModel = BreakerPanelModels.get(BreakerPanelModels.BULB_ON);
         FixtureDraw.draw(pose, buffers, LightTexture.FULL_BRIGHT, design, true, (ms, buf, light, lit) ->
-                renderer.renderModel(ms.last(), buf.getBuffer(RenderType.cutout()), null, bulbModel, 1, 1, 1, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, ModelData.EMPTY, RenderType.cutout()), selected);
+                renderer.renderModel(ms.last(), buf.getBuffer(RenderType.cutout()), null, bulbModel, 1, 1, 1, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, ModelData.EMPTY, RenderType.cutout()), selected, Double.MAX_VALUE);
         // The anchor block, as a ghost, so the design can be placed round it; the canopy plate and its three
         // knockouts as the placed fixture will have them, so parts can meet them.
         FixtureDraw.box(pose, buffers, LightTexture.FULL_BRIGHT, 16, 16, 16, 32, 32, 32, 0x80A0C0, 0.16f, FixturePart.Material.GLASS);

@@ -1054,12 +1054,18 @@ middle, the selected part's numbers on the right. In the middle, drag a part to 
 the view (Shift-drag moves it in and out), drag empty space to turn the view, scroll to zoom;
 the arrow keys and PgUp/PgDn nudge the selected part a pixel, Ctrl with them resizes it, Shift
 makes the step four, and Delete removes it. The numbers on the right follow. Parts are
-boxes, cones (shades, with a taper), globes, chains and sockets, each placed by pixel in a
+boxes, cones (shades, with a taper), globes, chains, sockets and text, each placed by pixel in a
 three-block cube round the anchor block, which shows as a ghost with the canopy plate and its
 knockouts; the anchor is pixels 16 to 32
 on every axis, up is up, and for a wall fixture the wall is the far face. Each part has a
 colour, from the swatches or typed as hex, and a material: matte, metal, glass or glow, and glow
-parts light up with the lamp. Mount says what holds the fixture up: the block above, the block
+parts light up with the lamp. A **text** part is lettering in the game's font, up to sixteen
+characters, drawn on the side of its box that its Face names and scaled to fit; make it glow and
+it lights with the lamp, which is how a business sign is made: a dark cabinet box standing off
+the wall, glowing text on its face, a socket inside. The **Sconce**, **Lamp** and **Sign**
+buttons under the part list start a design over from one of those. A design spans three blocks
+each way round its anchor, so a sign is at most three blocks wide; only what falls inside the
+anchor block can be clicked. Mount says what holds the fixture up: the block above, the block
 behind, or the block below. Name it, and press **Build**: a **Fixture Blank** from your inventory
 becomes a **Custom Fixture** item carrying the design, as many as you like. **Done** keeps the
 design on the designer.

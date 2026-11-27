@@ -4,6 +4,17 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.98.0 — 2026-11-26
+
+### Added
+- Fixture designer: a Text part, lettering in the game's font on any face of its box, scaled to
+  fit, full-bright when its material is glow and the lamp is on, for lit business signs. Sconce,
+  Lamp and Sign preset buttons start a design over.
+
+### Fixed
+- Fixture sockets drew their bulb a block away from the socket.
+- The designer's taper and colour fields no longer sit on top of the swatches.
+
 ## 0.97.0 — 2026-11-26
 
 ### Added

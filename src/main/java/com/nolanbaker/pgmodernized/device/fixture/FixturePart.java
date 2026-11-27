@@ -8,15 +8,17 @@ import net.minecraft.util.Mth;
  * One piece of a designed fixture, in the design's 48-pixel cube: the anchor block is pixels 16
  * to 32 on every axis, up is +y, and a wall-mounted design's wall is the +z face. Boxes are
  * plain; a cone tapers from its base toward {@code face}; a globe is a ball; a chain is links
- * running along {@code face}; a socket is a lamp holder whose bulb points along {@code face}.
+ * running along {@code face}; a socket is a lamp holder whose bulb points along {@code face}; a
+ * text part is lettering in the game's font on the box's {@code face} side, scaled to fit it,
+ * full-bright when its material is glow and the lamp is on, so a sign can be lit.
  */
 public final class FixturePart {
-    public enum Kind { BOX, CONE, GLOBE, CHAIN, SOCKET }
+    public enum Kind { BOX, CONE, GLOBE, CHAIN, SOCKET, TEXT }
 
     /** Matte takes its colour; metal is the same with brighter tops; glass is see-through; glow lights up with the lamp. */
     public enum Material { MATTE, METAL, GLASS, GLOW }
 
-    public static final int CUBE = 48, ANCHOR_MIN = 16, ANCHOR_MAX = 32;
+    public static final int CUBE = 48, ANCHOR_MIN = 16, ANCHOR_MAX = 32, TEXT_LENGTH = 16;
 
     public Kind kind = Kind.BOX;
     public int x = 20, y = 20, z = 20, w = 8, h = 8, d = 8;
@@ -26,6 +28,8 @@ public final class FixturePart {
     public Material material = Material.MATTE;
     /** Cones: the far end's size as a percentage of the base, 0 to 100. */
     public int taper = 40;
+    /** Text parts: the lettering, up to {@link #TEXT_LENGTH} characters. */
+    public String text = "";
 
     public FixturePart() {}
 
@@ -45,6 +49,7 @@ public final class FixturePart {
     public FixturePart copy() {
         var p = new FixturePart(kind, x, y, z, w, h, d, face, color, material);
         p.taper = taper;
+        p.text = text;
         return p;
     }
 
@@ -58,6 +63,10 @@ public final class FixturePart {
         z = Mth.clamp(z, 0, CUBE - 1);
         taper = Mth.clamp(taper, 0, 100);
         color &= 0xFFFFFF;
+        if(text == null)
+            text = "";
+        if(text.length() > TEXT_LENGTH)
+            text = text.substring(0, TEXT_LENGTH);
     }
 
     public CompoundTag write() {
@@ -68,6 +77,8 @@ public final class FixturePart {
         tag.putInt("Color", color);
         tag.putString("Material", material.name());
         tag.putInt("Taper", taper);
+        if(!text.isEmpty())
+            tag.putString("Text", text);
         return tag;
     }
 
@@ -91,6 +102,7 @@ public final class FixturePart {
             p.material = Material.valueOf(tag.getString("Material"));
         } catch(IllegalArgumentException ignored) {}
         p.taper = tag.contains("Taper") ? tag.getInt("Taper") : 40;
+        p.text = tag.getString("Text");
         p.clamp();
         return p;
     }

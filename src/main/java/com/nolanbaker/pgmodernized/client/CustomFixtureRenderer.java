@@ -15,6 +15,9 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 
 /** A designed fixture in the world: its parts round the anchor block, turned to its facing, with the real bulb in every socket. */
 public class CustomFixtureRenderer extends SafeBlockEntityRenderer<CustomFixtureBlockEntity> {
+    /** Sign lettering is drawn out to this many blocks; past it the font draw is spent on nothing readable. */
+    private static final double TEXT_RANGE = 48;
+
     public CustomFixtureRenderer(BlockEntityRendererProvider.Context context) {}
 
     @Override
@@ -33,7 +36,7 @@ public class CustomFixtureRenderer extends SafeBlockEntityRenderer<CustomFixture
             draw(pose, buf, renderer, bulb.getModel(), l, overlay, RenderType.cutout());
             if(lit)
                 draw(pose, buf, renderer, bulb.getLightModel(), LightTexture.FULL_BRIGHT, overlay, RenderType.translucent());
-        }, -1);
+        }, -1, TEXT_RANGE);
         ms.popPose();
     }
 
