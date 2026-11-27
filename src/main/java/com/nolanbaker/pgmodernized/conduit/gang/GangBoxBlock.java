@@ -302,7 +302,7 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
                 return InteractionResult.FAIL;
             for(int h = 0; h < GangLayout.hubCount(gangs); ++h) {
                 var run = be.hubRun(h);
-                if(run != null && run.conductors().size() < run.capacity())
+                if(run != null && !run.isNipple() && run.conductors().size() < run.capacity())
                     return run.pull(context.getPlayer(), context.getItemInHand());
             }
             IElectric.sendMessage(context, Lang.builder().translate("message.gang.no_run").style(ChatFormatting.RED).component());

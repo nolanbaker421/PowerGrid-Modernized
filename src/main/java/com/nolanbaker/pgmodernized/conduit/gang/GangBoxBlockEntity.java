@@ -1,6 +1,7 @@
 package com.nolanbaker.pgmodernized.conduit.gang;
 
 import com.nolanbaker.pgmodernized.conduit.ConduitRunEntity;
+import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.ConduitBoxBlockEntity;
 import com.nolanbaker.pgmodernized.conduit.splice.ISpliceHost;
@@ -938,6 +939,66 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         if(level == null || level.isClientSide)
             return;
         splices().prune();
+        if(level instanceof net.minecraft.server.level.ServerLevel server && GangBoxBlock.inset(getBlockState()))
+            linkFixtures(server);
+    }
+
+    /**
+     * A box set into a ceiling (or a wall, or a floor) is the fixture box for a fixture hung from
+     * it: the fixture's mount knockout gets a nipple from a free knockout of this box with a black
+     * and a white lead pulled through, spliced to L and N at the fixture's end, so only the box end
+     * is left to splice. Laid one lazy tick, spliced the next, once the leads are in.
+     */
+    private void linkFixtures(net.minecraft.server.level.ServerLevel server) {
+        for(var dir : net.minecraft.core.Direction.values()) {
+            var there = worldPosition.relative(dir);
+            if(!server.isLoaded(there) || !(server.getBlockEntity(there) instanceof com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlockEntity fixture))
+                continue;
+            var state = fixture.getBlockState();
+            if(!(state.getBlock() instanceof com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock)
+                    || !com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.support(state, there).equals(worldPosition))
+                continue;
+            int mount = com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.HUB_MOUNT;
+            var layout = com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.LAYOUT;
+            var run = fixture.deviceHubs().hubRun(mount);
+            if(run == null) {
+                int free = -1;
+                for(int h = 0; h < hubCount(); ++h) {
+                    if(hubRun(h) == null) {
+                        free = h;
+                        break;
+                    }
+                }
+                if(free < 0)
+                    continue;
+                var mine = new org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint(worldPosition, GangLayout.hubTerminal(free));
+                var theirs = new org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint(there, layout.hubTerminal(mount));
+                var nipple = ConduitRunEntity.createNipple(server, mine, theirs);
+                if(nipple != null)
+                    server.tryAddFreshEntityWithPassengers(nipple);
+                continue;
+            }
+            if(!run.isNipple())
+                continue;
+            var lead = com.nolanbaker.pgmodernized.registry.ModItems.BUILDING_WIRE.get(com.nolanbaker.pgmodernized.conduit.WireGauge.AWG_14).get();
+            if(run.conductor(0) == null)
+                run.pullFree(0, new ItemStack(lead), ConductorColors.BLACK, "Fixture");
+            if(run.conductor(1) == null)
+                run.pullFree(1, new ItemStack(lead), ConductorColors.WHITE, "Fixture");
+            int black = layout.conductorTerminal(mount, 0), white = layout.conductorTerminal(mount, 1);
+            int l = com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.L, n = com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.N;
+            if(!spliced(fixture.splices(), black, l))
+                fixture.splices().toggle(black, l);
+            if(!spliced(fixture.splices(), white, n))
+                fixture.splices().toggle(white, n);
+        }
+    }
+
+    private static boolean spliced(com.nolanbaker.pgmodernized.conduit.splice.SpliceSupport splices, int a, int b) {
+        for(var s : splices.list())
+            if(s[0] == Math.min(a, b) && s[1] == Math.max(a, b))
+                return true;
+        return false;
     }
 
     // ---- splice host ----

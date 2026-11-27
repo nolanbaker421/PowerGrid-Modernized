@@ -1137,9 +1137,10 @@ A placed fixture draws itself round its anchor block on a canopy plate at its mo
 design put its box (a floor
 fixture has no plate: its design supplies the base, and its knockouts lie flat on the floor at
 the base's edges), with three knockouts: one on the mounting face itself (top for a ceiling fixture, back for a
-wall one, bottom for a floor one), for a run that comes through the block by a chaseway: a sleeve
-in that block ending behind the knockout gets a nipple to it on its own, so a run into the
-sleeve's far end pulls straight through to the fixture. The other two knockouts are one
+wall one, bottom for a floor one), for what comes through the block it hangs from: a gang box set
+into that block wires the fixture to itself with two leads (see *Gang boxes*, the usual way to
+feed a ceiling light), and a chaseway sleeve ending behind the knockout gets a nipple to it on its
+own, so a run into the sleeve's far end pulls straight through. The other two knockouts are one
 on each of two sides of the canopy for runs along the surface, left and right of a ceiling or
 floor fixture, above and below a wall one. L and N are behind them. Every socket takes the same lamp: right-click with a stack of bulbs and one goes in each
 socket; sneak-click with an empty hand to take them out; an empty hand opens the readings and
@@ -1221,7 +1222,12 @@ Conduit bent from one of its knockouts to any other knockout is laid concealed
 through the wall (see *Wiring inside the walls*), and a chase whose sleeve ends in the block
 beside it links to it on its own, so a wall of receptacles and switches shows nothing but plates.
 Wire in hand on the box pulls into its concealed run; wire cutters on it pull the last wire back
-out, then the empty run, and sneaking with them take the run out at once. Everything below works
+out, then the empty run, and sneaking with them take the run out at once. A box set into a
+ceiling is a **fixture box**: hang a custom fixture from it and within a second or two the box
+wires the fixture itself, a short nipple from a free knockout to the fixture's mount knockout with
+a black and a white lead pulled through and spliced to L and N at the fixture, so in the box's
+splice editor the fixture's two leads sit beside the circuit's wires waiting to be spliced to
+them. The same for a wall sconce hung from a box in the wall. Everything below works
 the same set in or hung on;
 breaking it gives the wall block back with the box.
 

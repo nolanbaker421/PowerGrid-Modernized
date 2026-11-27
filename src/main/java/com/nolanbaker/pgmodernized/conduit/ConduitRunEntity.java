@@ -242,6 +242,16 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         return getItem() instanceof ConduitItem conduit ? conduit.size() : ConduitSize.HALF;
     }
 
+    /** A gang box set into a block and a fixture hung from that block; the box lays this one, leads and all. */
+    private static boolean isBoxFixture(@Nullable net.minecraft.world.level.block.entity.BlockEntity box, @Nullable net.minecraft.world.level.block.entity.BlockEntity fixture) {
+        if(!(box instanceof com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlockEntity b) || !(fixture instanceof com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlockEntity f))
+            return false;
+        var state = f.getBlockState();
+        return com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlock.inset(b.getBlockState())
+                && state.getBlock() instanceof com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock
+                && com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.support(state, f.getBlockPos()).equals(b.getBlockPos());
+    }
+
     /** A chaseway sleeve end against another fitting (a chased block, a box, a fixture, a panel); the chaseway lays these. */
     private static boolean isChaseLink(@Nullable net.minecraft.world.level.block.entity.BlockEntity chaseway, @Nullable net.minecraft.world.level.block.entity.BlockEntity other, BlockWireEndpoint chasewayEnd) {
         if(!(chaseway instanceof ChasewayBlockEntity c) || !(other instanceof ISpliceHost))
@@ -277,7 +287,8 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         var beB = level().getBlockEntity(b.getPos());
         // A gutter (pull box or trough section) against a panel (head or extension), either way round,
         // or a fixture against the chaseway sleeve in the block it hangs from.
-        boolean pair = (isGutter(beA) && isPanel(beB)) || (isGutter(beB) && isPanel(beA)) || isChaseLink(beA, beB, a) || isChaseLink(beB, beA, b);
+        boolean pair = (isGutter(beA) && isPanel(beB)) || (isGutter(beB) && isPanel(beA)) || isChaseLink(beA, beB, a) || isChaseLink(beB, beA, b)
+                || isBoxFixture(beA, beB) || isBoxFixture(beB, beA);
         if(!pair || !a.getPos().closerThan(b.getPos(), 1.5))
             kill();
     }
@@ -512,6 +523,19 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
             }
         }
         return count;
+    }
+
+    /** A conductor put in with no one paying for it: the leads a box pulls to a fixture hung from it. Server side; false when the slot is taken or the run is open. */
+    public boolean pullFree(int slot, ItemStack wire, int colorIndex, String label) {
+        var ends = ends();
+        if(ends == null || slot < 0 || slot >= capacity() || conductor(slot) != null)
+            return false;
+        var entity = spawnConductor(ends, slot, wire);
+        if(entity == null)
+            return false;
+        entity.setColorIndex(colorIndex);
+        entity.setLabel(label);
+        return true;
     }
 
     /** A pull into a given slot, quiet, for a run further along a chase; false when it cannot take the wire. */

@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.106.0 — 2026-11-27
+
+### Added
+- A gang box set into a ceiling, wall or floor is a fixture box: a custom fixture hung from it is
+  wired to it on its own, with a nipple from a free knockout to the fixture's mount knockout, a
+  black and a white 14 AWG lead pulled through, and the leads spliced to L and N at the fixture.
+  The circuit is finished in the box's splice editor. The leads go with the fixture.
+
 ## 0.105.0 — 2026-11-27
 
 ### Added
