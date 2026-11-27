@@ -200,8 +200,10 @@ public final class FixtureDraw {
             var q0 = new org.joml.Vector3f(p0).add(new org.joml.Vector3f(up).mul((float) (n1 - n0) / 16));
             var q1 = new org.joml.Vector3f(p1).add(new org.joml.Vector3f(up).mul((float) (n1 - n0) / 16));
             float f = p.material == FixturePart.Material.METAL ? 0.85f + 0.35f * normal.y : 0.9f + 0.1f * normal.y;
-            int rgb = shade(color, Math.max(0.5f, f));
+            int rgb = shade(color, Math.max(0.7f, f));
+            // Both windings: a tube is seen from every side and nothing of it is ever culled away.
             quad(pose, c, light, rgb, a, p0.x, p0.y, p0.z, q0.x, q0.y, q0.z, q1.x, q1.y, q1.z, p1.x, p1.y, p1.z, normal.x, normal.y, normal.z);
+            quad(pose, c, light, rgb, a, p1.x, p1.y, p1.z, q1.x, q1.y, q1.z, q0.x, q0.y, q0.z, p0.x, p0.y, p0.z, -normal.x, -normal.y, -normal.z);
             // The two caps, one fan triangle per facet, as degenerate quads, wound to face outward.
             cap(pose, c, light, shade(color, p.material == FixturePart.Material.METAL ? 1.2f : 1), a, centre1, q0, q1, up);
             cap(pose, c, light, shade(color, p.material == FixturePart.Material.METAL ? 0.6f : 0.8f), a, centre0, p0, p1, new org.joml.Vector3f(up).negate());
@@ -231,6 +233,7 @@ public final class FixtureDraw {
         var e1 = new org.joml.Vector3f(p1).sub(centre);
         if(e0.cross(e1).dot(normal) < 0) { var s = p0; p0 = p1; p1 = s; }
         quad(pose, c, light, rgb, a, centre.x, centre.y, centre.z, p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p1.x, p1.y, p1.z, normal.x, normal.y, normal.z);
+        quad(pose, c, light, rgb, a, centre.x, centre.y, centre.z, p1.x, p1.y, p1.z, p0.x, p0.y, p0.z, p0.x, p0.y, p0.z, -normal.x, -normal.y, -normal.z);
     }
 
     // ---- boxes ----

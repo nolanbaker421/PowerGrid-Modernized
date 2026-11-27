@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.99.2 — 2026-11-26
+
+### Fixed
+- Cylinder parts vanished from one side: they are drawn double-sided now and shaded no darker
+  than 70 percent, so no facet is culled or lost in the dark.
+
 ## 0.99.1 — 2026-11-26
 
 ### Fixed
