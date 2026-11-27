@@ -1009,14 +1009,9 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             var layout = com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.LAYOUT;
             var run = fixture.deviceHubs().hubRun(mount);
             if(run == null) {
-                int free = -1;
-                for(int h = 0; h < hubCount(); ++h) {
-                    if(hubRun(h) == null) {
-                        free = h;
-                        break;
-                    }
-                }
-                if(free < 0)
+                // The box's own fixture knockout, behind the plate: the real ones may both be taken by the runs in and out.
+                int free = GangLayout.fixtureHub(gangs());
+                if(hubRun(free) != null)
                     continue;
                 var mine = new org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint(worldPosition, GangLayout.hubTerminal(free));
                 var theirs = new org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint(there, layout.hubTerminal(mount));
@@ -1085,7 +1080,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     @Override
     public int hubCount() {
-        return GangLayout.hubCount(gangs());
+        return GangLayout.hubCountWithFixture(gangs());
     }
 
     @Override

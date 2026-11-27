@@ -109,6 +109,49 @@ public final class ConduitPlacement {
         return new java.util.ArrayList<>(RunReshape.tidy(points));
     }
 
+    /**
+     * Whether what is laid next from this pending end goes concealed: the open end of a concealed
+     * run laid so far, a knockout on a box set into a wall, or a sneaking player at any knockout.
+     */
+    public static boolean concealedIntent(Level level, @Nullable Player player, IWireEndpoint pending) {
+        if(pending instanceof BlockWireEntityEndpoint runEnd)
+            return runEnd.getEntity(level) instanceof ConduitRunEntity run && run.isConcealed();
+        if(player != null && player.isShiftKeyDown())
+            return true;
+        return pending instanceof BlockWireEndpoint hub && com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlock.inset(level.getBlockState(hub.getPos()));
+    }
+
+    /** A point inside a full solid block: where a concealed run may be told to turn. */
+    public static boolean insideWall(Level level, Vec3 point) {
+        var pos = net.minecraft.core.BlockPos.containing(point);
+        return level.getBlockState(pos).isCollisionShapeFullBlock(level, pos);
+    }
+
+    /** A concealed run's legs from a knockout to a point inside a wall the player chose: out of the square, then straight legs to it. */
+    public static java.util.List<BlockWireEntity.Point> concealedToPoint(Level level, BlockWireEndpoint from, Vec3 target) {
+        var exitA = Knockouts.exit(level, from);
+        var a = BlockTrace.alignPosition(BodySpace.local(level, from));
+        var points = new java.util.ArrayList<BlockWireEntity.Point>();
+        if(exitA != null) {
+            points.add(new BlockWireEntity.Point(exitA, Knockouts.STUB_PX));
+            a = a.relative(exitA, Knockouts.STUB_PX / 16.0);
+        }
+        points.addAll(concealedLegs(level, a, target));
+        return new java.util.ArrayList<>(RunReshape.tidy(points));
+    }
+
+    /** A concealed run's legs on from a point inside a wall to the next point, or to a knockout, into its square. Empty when they are one point. */
+    public static java.util.List<BlockWireEntity.Point> concealedFromPoint(Level level, Vec3 from, IWireEndpoint to) {
+        var b = BlockTrace.alignPosition(BodySpace.local(level, to));
+        var exitB = to instanceof BlockWireEndpoint hub ? Knockouts.exit(level, hub) : null;
+        if(exitB != null)
+            b = b.relative(exitB, Knockouts.STUB_PX / 16.0);
+        var points = new java.util.ArrayList<>(concealedLegs(level, from, b));
+        if(exitB != null)
+            points.add(new BlockWireEntity.Point(exitB.getOpposite(), Knockouts.STUB_PX));
+        return new java.util.ArrayList<>(RunReshape.tidy(points));
+    }
+
     /** Axis-aligned legs from one point to another, in the order of axes that leaves the fewest quarter-blocks of the way outside solid blocks; ties go to fewer legs. */
     public static java.util.List<BlockWireEntity.Point> concealedLegs(Level level, Vec3 from, Vec3 to) {
         Direction.Axis[][] orders = {
@@ -188,13 +231,20 @@ public final class ConduitPlacement {
         return result;
     }
 
-    /** A plain block was clicked: route the pending run along blocks up to the click point. */
+    /**
+     * A plain block was clicked: route the pending run along blocks up to the click point. With a
+     * concealed run pending, a solid block is where it turns, at the block's centre, and the run
+     * waits there, open, for the next block or a knockout.
+     */
     public static InteractionResult groundClick(UseOnContext context) {
         var stack = context.getItemInHand();
-        var existing = ConduitConnection.get(stack, context.getLevel());
+        var level = context.getLevel();
+        var existing = ConduitConnection.get(stack, level);
         if(existing == null)
             return InteractionResult.PASS;
-        var target = new ImaginaryWireEndpoint(context.getClickLocation().relative(context.getClickedFace(), 1 / 32f));
+        var pos = context.getClickedPos();
+        boolean wall = level.getBlockState(pos).isCollisionShapeFullBlock(level, pos) && concealedIntent(level, context.getPlayer(), existing);
+        var target = new ImaginaryWireEndpoint(wall ? pos.getCenter() : context.getClickLocation().relative(context.getClickedFace(), 1 / 32f));
         var run = connectBlockWire(context.getLevel(), stack, context.getPlayer(), existing, target);
         if(run.getResult().consumesAction()) {
             var entity = run.getObject();
@@ -552,14 +602,34 @@ public final class ConduitPlacement {
             lastPoint = BlockTrace.alignPosition(lastPoint);
         }
         var runStart = lastPoint;
-        // Knockout to knockout with either on a box set into a wall, or sneaking: a concealed run, straight
-        // through the blocks between, nothing on any surface.
-        if(existing == null && from instanceof BlockWireEndpoint start0 && to instanceof BlockWireEndpoint end0 && concealedBetween(level, player, start0, end0)) {
+        // A concealed run, straight through the blocks, nothing on any surface: knockout to knockout with
+        // either on a box set into a wall or sneaking, or turn by turn where the player clicks wall blocks,
+        // the run waiting open inside each until the next block or the knockout that finishes it.
+        boolean wallPoint = to instanceof ImaginaryWireEndpoint && insideWall(level, BodySpace.local(level, to));
+        boolean concealedRun;
+        if(existing != null)
+            concealedRun = existing.isConcealed();
+        else if(from instanceof BlockWireEndpoint s0 && to instanceof BlockWireEndpoint e0)
+            concealedRun = concealedBetween(level, player, s0, e0);
+        else
+            concealedRun = from instanceof BlockWireEndpoint s0 && wallPoint && concealedIntent(level, player, s0);
+        if(concealedRun) {
+            boolean closes = to instanceof BlockWireEndpoint;
+            if(!closes && !wallPoint) {
+                message(player, "message.conduit.concealed_solid", ChatFormatting.RED);
+                return InteractionResultHolder.fail(null);
+            }
             if(!SableUtils.sameSubLevel(level, runStart, BodySpace.local(level, to))) {
                 message(player, "message.connection_different_bodies", ChatFormatting.RED);
                 return InteractionResultHolder.fail(null);
             }
-            var legs = concealedPoints(level, start0, end0);
+            java.util.List<BlockWireEntity.Point> legs;
+            if(existing != null)
+                legs = concealedFromPoint(level, lastPoint, to);
+            else if(to instanceof BlockWireEndpoint e1)
+                legs = concealedPoints(level, (BlockWireEndpoint) from, e1);
+            else
+                legs = concealedToPoint(level, (BlockWireEndpoint) from, BodySpace.local(level, to));
             if(legs.isEmpty()) {
                 message(player, "message.connection_failed", ChatFormatting.RED);
                 return InteractionResultHolder.fail(null);
@@ -574,18 +644,33 @@ public final class ConduitPlacement {
             }
             if(level.isClientSide)
                 return InteractionResultHolder.success(null);
-            var entity = ConduitRunEntity.create(level, from, ConduitSupply.stack(stack, newItems), legs);
-            entity.setEndpoint2(to);
-            entity.setConcealed(true);
-            SubLevelStick.stick(entity);
-            if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
-                PowerGridModernized.LOGGER.error("Failed to spawn conduit run entity");
-                message(player, "message.connection_failed", ChatFormatting.RED);
-                return InteractionResultHolder.fail(null);
+            if(existing == null) {
+                var entity = ConduitRunEntity.create(level, from, ConduitSupply.stack(stack, newItems), legs);
+                if(closes)
+                    entity.setEndpoint2(to);
+                entity.setConcealed(true);
+                SubLevelStick.stick(entity);
+                if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
+                    PowerGridModernized.LOGGER.error("Failed to spawn conduit run entity");
+                    message(player, "message.connection_failed", ChatFormatting.RED);
+                    return InteractionResultHolder.fail(null);
+                }
+                ConduitSupply.take(player, stack, newItems);
+                message(player, closes ? "message.conduit.concealed_laid" : "message.conduit.concealed_waypoint", ChatFormatting.GRAY);
+                return InteractionResultHolder.success(closes ? null : entity);
             }
+            var whole = new ArrayList<>(existing.segments);
+            whole.addAll(legs);
+            var tidied = RunReshape.tidy(whole);
+            existing.segments.clear();
+            existing.segments.addAll(tidied);
+            existing.extend(java.util.List.of(), newItems);
+            if(closes)
+                existing.setEndpoint2(to);
+            existing.sendExtraData();
             ConduitSupply.take(player, stack, newItems);
-            message(player, "message.conduit.concealed_laid", ChatFormatting.GRAY);
-            return InteractionResultHolder.success(null);
+            message(player, closes ? "message.conduit.concealed_laid" : "message.conduit.concealed_waypoint", ChatFormatting.GRAY);
+            return InteractionResultHolder.success(closes ? null : existing);
         }
         // A run begun on a box set into a wall has nowhere to go but another knockout.
         if(existing == null && from instanceof BlockWireEndpoint start1 && !(to instanceof BlockWireEndpoint)

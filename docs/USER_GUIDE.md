@@ -318,6 +318,15 @@ wire back out, cutters on it again once it is empty take the run out, and sneaki
 takes it out at once, wires and all. Breaking either box takes the run out too. The bender does
 not touch a concealed run. The preview while you aim shows the legs through the wall.
 
+**Routing it yourself.** Left alone the run takes the turn with the most solid cover, which
+across a room may still mean a stretch through the air. To choose the way, start at the knockout
+as usual and then click the wall blocks you want it to pass through, one after another: each
+click lays the run into that block, turning at its centre, and leaves it waiting there for the
+next; the knockout you finish on closes it. Every leg is routed the same way, so between two
+clicked blocks it still keeps to solid cover where it can. Sneak for the clicks from a knockout
+that is not on an inset box; from an inset box, or once the run is under way, a plain click on a
+wall block is enough. The preview shows each leg before you click.
+
 **Leaving the wall.** A concealed run ends on any knockout, so it leaves the wall wherever the
 fitting it ends on is: a panel or a hung box on the wall's face, a fixture's mount knockout, a
 chaseway sleeve end on the far face to carry on exposed in the next room. Only what lies inside
@@ -1267,8 +1276,9 @@ plate for the one above, lower for the one below, as when laying it); wire cutte
 last wire back out of that run, then the empty run, and sneaking with them take the run out at
 once. A box set into a
 ceiling is a **fixture box**: hang a custom fixture from it and within a second or two the box
-wires the fixture itself, a short nipple from a free knockout to the fixture's mount knockout with
-a black and a white lead pulled through and spliced to L and N at the fixture, so in the box's
+wires the fixture itself, a short nipple from a knockout of its own behind the plate, kept for
+this so the box's real knockouts stay free for the runs in and out, to the fixture's mount
+knockout with a black and a white lead pulled through and spliced to L and N at the fixture, so in the box's
 splice editor the fixture's two leads sit beside the circuit's wires waiting to be spliced to
 them. The same for a wall sconce hung from a box in the wall. Everything below works
 the same set in or hung on;

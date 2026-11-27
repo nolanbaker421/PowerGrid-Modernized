@@ -66,8 +66,25 @@ public final class GangLayout {
         return 2 * gangs + (gangs == 3 ? 2 : 0);
     }
 
+    /**
+     * One more knockout after the real ones, behind the plate's centre, that only the box itself
+     * uses: the nipple it lays to a fixture hung from it when it is set into a ceiling or wall, so
+     * the knockouts a player can reach stay free for the runs in and out. Never clicked, never
+     * drawn; it has a terminal so the nipple has somewhere to land.
+     */
+    public static int fixtureHub(int gangs) {
+        return hubCount(gangs);
+    }
+
+    /** The knockouts a box has terminals for: the real ones and the fixture's. */
+    public static int hubCountWithFixture(int gangs) {
+        return hubCount(gangs) + 1;
+    }
+
     public static AABB hub(int gangs, int hub) {
         double l = left(gangs);
+        if(hub == fixtureHub(gangs))
+            return new AABB(7, BODY_Y1 - 1, 7, 9, BODY_Y1, 9);
         if(hub < gangs) {
             double x = slotCentreX(gangs, hub);
             return new AABB(x - 1, 0.5, 4, x + 1, 2.5, 5);
@@ -96,7 +113,7 @@ public final class GangLayout {
         if(!inset)
             return terminals(gangs);
         var terminals = terminals(gangs);
-        for(int h = 0; h < hubCount(gangs); ++h)
+        for(int h = 0; h < hubCountWithFixture(gangs); ++h)
             terminals[hubTerminal(h)] = terminal(hubName(gangs, h), hub(gangs, h).move(0, INSET_SHIFT, 0)).withColor(ConduitSize.ONE.bandColor());
         return terminals;
     }
@@ -146,6 +163,8 @@ public final class GangLayout {
     }
 
     public static Component hubName(int gangs, int hub) {
+        if(hub == fixtureHub(gangs))
+            return Lang.builder().translate("gang.hub_fixture").style(ChatFormatting.AQUA).component();
         var name = hub < gangs ? Lang.builder().translate("gang.hub_top", hub + 1)
                 : hub < 2 * gangs ? Lang.builder().translate("gang.hub_bottom", hub - gangs + 1)
                 : Lang.builder().translate(hub == 2 * gangs ? "gang.hub_left" : "gang.hub_right");
@@ -161,7 +180,7 @@ public final class GangLayout {
             for(int k = 0; k < GangDevice.MAX_POINTS; ++k)
                 terminals[point(slot, k)] = terminal(Lang.builder().translate("gang.point", slot + 1, k + 1).component(), HIDDEN);
         for(int h = 0; h < MAX_HUBS; ++h) {
-            boolean present = h < hubCount(gangs);
+            boolean present = h < hubCountWithFixture(gangs);
             terminals[hubTerminal(h)] = terminal(present ? hubName(gangs, h) : Lang.builder().translate("conduit_socket.hub").component(), present ? hub(gangs, h) : HIDDEN).withColor(ConduitSize.ONE.bandColor());
             for(int k = 0; k < ConductorColors.COUNT; ++k)
                 terminals[conductorTerminal(h, k)] = terminal(ConductorColors.name(k), HIDDEN).withColor(ConductorColors.rgb(k));

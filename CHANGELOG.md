@@ -4,6 +4,21 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.108.1 — 2026-11-27
+
+### Added
+- Concealed runs can be routed by hand: with a run pending from a knockout, clicking a solid
+  wall block lays the run into it, turning at the block's centre, and leaves it open there for
+  the next block or the knockout that finishes it. Each leg is still routed for solid cover
+  between the points chosen. From an inset box or a run under way a plain click does; from any
+  other knockout, sneak. The preview shows each leg.
+
+### Fixed
+- A fixture hung from a 1-gang box set into the ceiling was never wired when the box's two
+  knockouts both carried runs, in and on to the next fixture: the box looked for a free knockout
+  and found none. Every gang box now has a fixture knockout of its own behind the plate, used
+  only for that nipple, so the real knockouts are the player's.
+
 ## 0.108.0 — 2026-11-27
 
 ### Added

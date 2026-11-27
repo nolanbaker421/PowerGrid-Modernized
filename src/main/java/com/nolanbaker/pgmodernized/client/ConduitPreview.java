@@ -141,12 +141,19 @@ public final class ConduitPreview {
                     hitPoint = IElectric.getTerminalPos(level, pos, index);
                     onHub = true;
                     var hubEnd = new BlockWireEndpoint(pos, index);
-                    if(endpoint instanceof BlockWireEndpoint start && com.nolanbaker.pgmodernized.conduit.ConduitPlacement.concealedBetween(level, player, start, hubEnd)) {
-                        var laid = com.nolanbaker.pgmodernized.conduit.ConduitPlacement.concealedPoints(level, start, hubEnd);
+                    List<BlockWireEntity.Point> throughWall = null;
+                    if(endpoint instanceof BlockWireEndpoint start) {
+                        if(com.nolanbaker.pgmodernized.conduit.ConduitPlacement.concealedBetween(level, player, start, hubEnd))
+                            throughWall = com.nolanbaker.pgmodernized.conduit.ConduitPlacement.concealedPoints(level, start, hubEnd);
+                    } else if(com.nolanbaker.pgmodernized.conduit.ConduitPlacement.concealedIntent(level, player, endpoint)) {
+                        throughWall = com.nolanbaker.pgmodernized.conduit.ConduitPlacement.concealedFromPoint(level, currentPos, hubEnd);
+                    }
+                    if(throughWall != null) {
+                        var laid = throughWall;
                         if(laid.isEmpty())
                             return;
                         concealed = laid;
-                        origin = BlockTrace.alignPosition(currentPos);
+                        origin = endpoint instanceof BlockWireEndpoint ? BlockTrace.alignPosition(currentPos) : currentPos;
                         render = true;
                         if(!player.isCreative()) {
                             float length = 0;
@@ -169,6 +176,26 @@ public final class ConduitPreview {
                         endStub = new BlockWireEntity.Point(entryDir.getOpposite(), Knockouts.STUB_PX);
                     }
                 }
+            }
+            if(!onHub && level.getBlockState(pos).isCollisionShapeFullBlock(level, pos)
+                    && com.nolanbaker.pgmodernized.conduit.ConduitPlacement.concealedIntent(level, player, endpoint)) {
+                // A wall block with a concealed run pending: the run turns inside it, at its centre.
+                var laid = endpoint instanceof BlockWireEndpoint start
+                        ? com.nolanbaker.pgmodernized.conduit.ConduitPlacement.concealedToPoint(level, start, pos.getCenter())
+                        : com.nolanbaker.pgmodernized.conduit.ConduitPlacement.concealedFromPoint(level, currentPos, new org.patryk3211.powergrid.electricity.wire.ImaginaryWireEndpoint(pos.getCenter()));
+                if(laid.isEmpty())
+                    return;
+                concealed = laid;
+                origin = endpoint instanceof BlockWireEndpoint ? BlockTrace.alignPosition(currentPos) : currentPos;
+                render = true;
+                if(!player.isCreative()) {
+                    float length = 0;
+                    for(var p : laid)
+                        length += p.length();
+                    int required = Math.max(Math.round(length * item.itemsPerMeter()), 1);
+                    PlacementOverlay.setItemRequirement(ConduitSupply.item(stack), required, ConduitSupply.count(stack) >= required);
+                }
+                return;
             }
             if(!onHub)
                 hitPoint = hitPoint.relative(blockHit.getDirection(), 1 / 32f);
