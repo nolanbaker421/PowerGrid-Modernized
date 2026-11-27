@@ -174,6 +174,8 @@ public class ConduitBenderItem extends Item {
     public static InteractionResult tap(ConduitRunEntity run, Player player, ItemStack stack) {
         if(run.isNipple())
             return fail(player, "message.conduit.nipple");
+        if(run.isConcealed())
+            return fail(player, "message.conduit.concealed");
         var leg = legUnder(run, player);
         if(leg == null)
             return fail(player, "message.conduit.bend_miss");
@@ -339,6 +341,8 @@ public class ConduitBenderItem extends Item {
 
     /** A sneak-click on a run: the diagonal through that leg comes out if there is one, else the run is cut there. Server side. */
     public static InteractionResult sneakTap(ConduitRunEntity run, Player player, ItemStack stack) {
+        if(run.isConcealed())
+            return fail(player, "message.conduit.concealed");
         var leg = legUnder(run, player);
         if(leg != null)
             for(var d : run.diagonals())
@@ -628,6 +632,8 @@ public class ConduitBenderItem extends Item {
     public static InteractionResult cut(ConduitRunEntity run, Player player, ItemStack stack) {
         if(run.isNipple())
             return fail(player, "message.conduit.nipple");
+        if(run.isConcealed())
+            return fail(player, "message.conduit.concealed");
         var leg = legUnder(run, player);
         if(leg == null)
             return fail(player, "message.conduit.bend_miss");

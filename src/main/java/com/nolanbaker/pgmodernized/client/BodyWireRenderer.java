@@ -83,6 +83,16 @@ public class BodyWireRenderer extends BlockWireRenderer {
             super.render(entity, yaw, partialTicks, poseStack, buffer, light);
             return;
         }
+        if(run.isConcealed()) {
+            // Inside the wall: nothing, or with goggles on, its legs as tubes drawn through whatever hides them.
+            var player = net.minecraft.client.Minecraft.getInstance().player;
+            if(player != null && com.simibubi.create.content.equipment.goggles.GogglesItem.isWearingGoggles(player)) {
+                var hidden = run.getWireEntry();
+                float thickness = hidden != null ? hidden.wireThickness() : run.size().tubeThickness();
+                XrayDraw.legs(poseStack.last().pose(), XrayDraw.buffer(buffer), Vec3.ZERO, run.segments, thickness / 2, XrayDraw.CHASE, XrayDraw.ALPHA);
+            }
+            return;
+        }
         var consumer = TubeDraw.buffer(buffer);
         var pose = poseStack.last();
         var entry = run.getWireEntry();

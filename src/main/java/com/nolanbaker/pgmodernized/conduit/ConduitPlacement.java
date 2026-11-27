@@ -73,6 +73,92 @@ public final class ConduitPlacement {
 
     private ConduitPlacement() {}
 
+    /**
+     * Whether a run between two knockouts is laid concealed, straight through the blocks between
+     * them with nothing on any surface: when either knockout is on a gang box set into a wall, or
+     * when the player sneaks on the finishing click.
+     */
+    public static boolean concealedBetween(Level level, @Nullable Player player, IWireEndpoint from, IWireEndpoint to) {
+        if(!(from instanceof BlockWireEndpoint a) || !(to instanceof BlockWireEndpoint b))
+            return false;
+        return (player != null && player.isShiftKeyDown())
+                || com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlock.inset(level.getBlockState(a.getPos()))
+                || com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlock.inset(level.getBlockState(b.getPos()));
+    }
+
+    /**
+     * The legs of a concealed run between two knockouts: out of the first square, straight legs
+     * to the second in the axis order that keeps the most of the run inside solid blocks, and into
+     * the second square. Empty when the two knockouts are one point.
+     */
+    public static java.util.List<BlockWireEntity.Point> concealedPoints(Level level, BlockWireEndpoint from, BlockWireEndpoint to) {
+        var exitA = Knockouts.exit(level, from);
+        var exitB = Knockouts.exit(level, to);
+        var a = BlockTrace.alignPosition(BodySpace.local(level, from));
+        var b = BlockTrace.alignPosition(BodySpace.local(level, to));
+        var points = new java.util.ArrayList<BlockWireEntity.Point>();
+        if(exitA != null) {
+            points.add(new BlockWireEntity.Point(exitA, Knockouts.STUB_PX));
+            a = a.relative(exitA, Knockouts.STUB_PX / 16.0);
+        }
+        if(exitB != null)
+            b = b.relative(exitB, Knockouts.STUB_PX / 16.0);
+        points.addAll(concealedLegs(level, a, b));
+        if(exitB != null)
+            points.add(new BlockWireEntity.Point(exitB.getOpposite(), Knockouts.STUB_PX));
+        return new java.util.ArrayList<>(RunReshape.tidy(points));
+    }
+
+    /** Axis-aligned legs from one point to another, in the order of axes that leaves the fewest quarter-blocks of the way outside solid blocks; ties go to fewer legs. */
+    public static java.util.List<BlockWireEntity.Point> concealedLegs(Level level, Vec3 from, Vec3 to) {
+        Direction.Axis[][] orders = {
+                {Direction.Axis.X, Direction.Axis.Y, Direction.Axis.Z}, {Direction.Axis.X, Direction.Axis.Z, Direction.Axis.Y},
+                {Direction.Axis.Y, Direction.Axis.X, Direction.Axis.Z}, {Direction.Axis.Y, Direction.Axis.Z, Direction.Axis.X},
+                {Direction.Axis.Z, Direction.Axis.X, Direction.Axis.Y}, {Direction.Axis.Z, Direction.Axis.Y, Direction.Axis.X}};
+        java.util.List<BlockWireEntity.Point> best = null;
+        int bestAir = Integer.MAX_VALUE;
+        for(var order : orders) {
+            var legs = new java.util.ArrayList<BlockWireEntity.Point>();
+            var at = from;
+            for(var axis : order) {
+                double d = to.get(axis) - at.get(axis);
+                if(Math.abs(d) < 1 / 32.0)
+                    continue;
+                legs.add(switch(axis) {
+                    case X -> BlockWireEntity.Point.x((float) d);
+                    case Y -> BlockWireEntity.Point.y((float) d);
+                    case Z -> BlockWireEntity.Point.z((float) d);
+                });
+                at = at.with(axis, to.get(axis));
+            }
+            int air = airAlong(level, from, legs);
+            if(best == null || air < bestAir || air == bestAir && legs.size() < best.size()) {
+                best = legs;
+                bestAir = air;
+            }
+        }
+        return best;
+    }
+
+    private static int airAlong(Level level, Vec3 start, java.util.List<BlockWireEntity.Point> legs) {
+        int air = 0;
+        var at = start;
+        for(var leg : legs) {
+            var v = leg.vector();
+            double length = v.length();
+            if(length < 1e-6)
+                continue;
+            var step = v.scale(0.25 / length);
+            for(double t = 0; t < length; t += 0.25) {
+                at = at.add(step);
+                var pos = net.minecraft.core.BlockPos.containing(at);
+                if(!level.getBlockState(pos).isCollisionShapeFullBlock(level, pos))
+                    ++air;
+            }
+        }
+        return air;
+    }
+
     /** A hub was clicked: remember it, or finish the pending run on it. */
     public static InteractionResult click(UseOnContext context, BlockWireEndpoint hub) {
         var level = context.getLevel();
@@ -466,6 +552,47 @@ public final class ConduitPlacement {
             lastPoint = BlockTrace.alignPosition(lastPoint);
         }
         var runStart = lastPoint;
+        // Knockout to knockout with either on a box set into a wall, or sneaking: a concealed run, straight
+        // through the blocks between, nothing on any surface.
+        if(existing == null && from instanceof BlockWireEndpoint start0 && to instanceof BlockWireEndpoint end0 && concealedBetween(level, player, start0, end0)) {
+            if(!SableUtils.sameSubLevel(level, runStart, BodySpace.local(level, to))) {
+                message(player, "message.connection_different_bodies", ChatFormatting.RED);
+                return InteractionResultHolder.fail(null);
+            }
+            var legs = concealedPoints(level, start0, end0);
+            if(legs.isEmpty()) {
+                message(player, "message.connection_failed", ChatFormatting.RED);
+                return InteractionResultHolder.fail(null);
+            }
+            float length = 0;
+            for(var p : legs)
+                length += p.length();
+            int newItems = Math.max((int) Math.ceil(length * entry.itemsPerMeter()), 1);
+            if(!ConduitSupply.has(player, stack, newItems)) {
+                message(player, "message.connection_missing_items", ChatFormatting.RED);
+                return InteractionResultHolder.fail(null);
+            }
+            if(level.isClientSide)
+                return InteractionResultHolder.success(null);
+            var entity = ConduitRunEntity.create(level, from, ConduitSupply.stack(stack, newItems), legs);
+            entity.setEndpoint2(to);
+            entity.setConcealed(true);
+            SubLevelStick.stick(entity);
+            if(!((ServerLevel) level).tryAddFreshEntityWithPassengers(entity)) {
+                PowerGridModernized.LOGGER.error("Failed to spawn conduit run entity");
+                message(player, "message.connection_failed", ChatFormatting.RED);
+                return InteractionResultHolder.fail(null);
+            }
+            ConduitSupply.take(player, stack, newItems);
+            message(player, "message.conduit.concealed_laid", ChatFormatting.GRAY);
+            return InteractionResultHolder.success(null);
+        }
+        // A run begun on a box set into a wall has nowhere to go but another knockout.
+        if(existing == null && from instanceof BlockWireEndpoint start1 && !(to instanceof BlockWireEndpoint)
+                && com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlock.inset(level.getBlockState(start1.getPos()))) {
+            message(player, "message.conduit.concealed_hubs", ChatFormatting.RED);
+            return InteractionResultHolder.fail(null);
+        }
         // Two knockouts within a metre of each other take one straight piece between them, an offset
         // nipple, with no tracer: the legs are the axis-aligned path for hit boxes and wire, the tube is
         // drawn straight from one to the other.

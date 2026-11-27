@@ -264,10 +264,28 @@ panel's. Pull wire through the nipple exactly as through any run, right-click it
 splice in the panel editor as usual. The nipple cannot be cut or picked up; it goes away when the
 box or the panel does. That is how feeders too big for a 2" panel knockout get in: up the gutter.
 
-### Chaseway, and wiring inside the walls
+### Wiring inside the walls
 
-A **Chaseway** is a sleeve through a solid block, for conduit that has to cross a wall, floor or
-ceiling without a hole in it, and the piece a hidden run through a house is made of. Hold one and
+**Concealed runs.** Conduit bent from one knockout to another goes *through* the blocks between
+instead of along their faces when either knockout is on a gang box set into a wall (see *Gang
+boxes*), or when you sneak on the finishing click. It leaves each knockout square and runs in
+straight legs, taking the turn that keeps the most of it inside solid blocks: from one inset box
+to another on the same wall it is an L inside the wall, from a wall box up to a ceiling fixture it
+climbs the wall and crosses the ceiling. Nothing shows on any surface, and it costs the same
+conduit as the same length laid in the open. The run itself cannot be clicked, so its box stands
+in for it: wire in hand on an inset box pulls a wire into the run on its knockout (and on through
+anything beyond, as any pull does), wire cutters on the box pull the last wire back out, and
+sneaking with cutters takes the whole run out. Breaking either box takes the run out too. The
+bender does not touch a concealed run. The preview while you aim shows the legs through the wall.
+
+**Seeing it.** Wearing Engineer's Goggles, concealed runs and chaseway sleeves show through the
+walls as translucent blue tubes. Without goggles they are invisible, which is the point.
+
+### Chaseway
+
+A **Chaseway** is a sleeve through a solid block, for exposed conduit that has to cross a wall,
+floor or ceiling without a hole in it: the run stops on one face and carries on from the other,
+and the wall stays whole. Hold one and
 right-click the face of a plain full block (stone, brick, concrete, planks, anything solid with
 nothing inside it) and the block becomes a chaseway with a sleeve through it along that face's
 axis, at the spot you clicked: each face has a three by three grid of sleeve positions, and the
@@ -295,10 +313,6 @@ within a few pixels of a sleeve end: a gang box hung on the wall with its knocko
 custom fixture's mount knockout, a pull box, a panel. So a chase down the inside of a wall feeds the receptacles and switches on it with
 nothing but their plates showing, and a chase across a ceiling drops into every fixture hung from
 it. The nipple comes and goes with what it joins.
-
-**Seeing it.** Wearing Engineer's Goggles, every sleeve in a chased block shows through the wall
-as a translucent blue tube, and the goggle readout on a chaseway lists its sleeves and the runs on
-them. Without goggles a chase is invisible, which is the point.
 
 Break a chaseway and you get the block and every chaseway back.
 
@@ -1190,10 +1204,12 @@ drop. A mistake costs the bad piece, which the wire cutters take, not the whole 
 **In the wall.** A gang box can be set into a wall instead of hung on it: sneak-right-click a
 plain solid block with the box in hand and that block becomes the box, still looking, sounding and
 dropping like the wall it was, with the plate flush on the face you clicked and the body and
-knockouts inside. A chase in the wall (see *Chaseway*) whose sleeve ends in the block beside it,
-near one of those knockouts, links to it on its own, so a wall of receptacles and switches shows
-nothing but plates. Everything below works the same set in or hung on; breaking it gives the wall
-block back with the box.
+knockouts inside. Conduit bent from one of its knockouts to any other knockout is laid concealed
+through the wall (see *Wiring inside the walls*), and a chase whose sleeve ends in the block
+beside it links to it on its own, so a wall of receptacles and switches shows nothing but plates.
+Wire in hand on the box pulls into its concealed run; wire cutters on it pull the last wire back
+out, sneaking with them take the run out. Everything below works the same set in or hung on;
+breaking it gives the wall block back with the box.
 
 The **Gang Box** comes in 1-, 2-, 3- and 4-gang sizes, four pixels a gang, and takes devices as
 items: a **Single-Pole Switch**, a **3-Way Switch**, a **4-Way Switch**, a **Push Button**, a

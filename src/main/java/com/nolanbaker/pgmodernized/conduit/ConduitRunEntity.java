@@ -60,6 +60,8 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
     private int nippleTimer;
     /** Two knockouts within a metre: drawn as one straight piece between them, an offset nipple, whatever its legs say. */
     private boolean direct;
+    /** Laid through the blocks between its knockouts, inside a wall: drawn only for goggles, never bent, worked from its boxes. */
+    private boolean concealed;
     /**
      * Straight tubes drawn from a point on one leg to a point on a later leg in place of the
      * corners between, set with the bender. The legs underneath stay as laid; this is drawing.
@@ -221,6 +223,14 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         return direct;
     }
 
+    public boolean isConcealed() {
+        return concealed;
+    }
+
+    public void setConcealed(boolean concealed) {
+        this.concealed = concealed;
+    }
+
     public void setDirect(boolean direct) {
         this.direct = direct;
     }
@@ -278,6 +288,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         ride.save(nbt);
         nbt.putBoolean("Nipple", nipple);
         nbt.putBoolean("Direct", direct);
+        nbt.putBoolean("Concealed", concealed);
         nbt.put("Diagonals", getEntityData().get(DIAGONALS).copy());
     }
 
@@ -287,6 +298,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         ride.load(nbt);
         nipple = nbt.getBoolean("Nipple");
         direct = nbt.getBoolean("Direct");
+        concealed = nbt.getBoolean("Concealed");
         if(nbt.contains("Diagonals"))
             getEntityData().set(DIAGONALS, nbt.getCompound("Diagonals"));
         if(getColor() == 0)
@@ -672,7 +684,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
     }
 
     /** Highest current in any pulled wire, for shocking the careless. */
-    float maxAmps() {
+    public float maxAmps() {
         float max = 0;
         for(var conductor : conductors())
             max = Math.max(max, Math.abs(conductor.measuredCurrent()));
@@ -802,7 +814,7 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
             return player.isShiftKeyDown() ? ConduitBenderItem.sneakTap(this, player, stack) : ConduitBenderItem.tap(this, player, stack);
         }
         if(stack.getItem() instanceof ConduitItem)
-            return client ? InteractionResult.SUCCESS : nipple ? fail(player, "message.conduit.no_tee") : ConduitPlacement.attach(this, player, stack);
+            return client ? InteractionResult.SUCCESS : nipple ? fail(player, "message.conduit.no_tee") : concealed ? fail(player, "message.conduit.concealed") : ConduitPlacement.attach(this, player, stack);
         if(stack.is(ModdedTags.Item.WIRE_CUTTERS.tag) || stack.is(ModdedTags.Item.BAD_WIRE_CUTTERS.tag)) {
             if(client)
                 return InteractionResult.SUCCESS;

@@ -265,6 +265,20 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
             var routed = ConduitPlacement.groundClick(context);
             return routed != InteractionResult.PASS ? routed : InteractionResult.PASS;
         }
+        if(inset(state) && org.patryk3211.powergrid.electricity.wire.IWire.isWire(context.getLevel(), context.getItemInHand().getItem())) {
+            // Wire on a box set into a wall pulls into the run on its knockout: the run itself is inside the wall.
+            if(context.getLevel().isClientSide)
+                return InteractionResult.SUCCESS;
+            if(context.getPlayer() == null || !(context.getLevel().getBlockEntity(pos) instanceof GangBoxBlockEntity be))
+                return InteractionResult.FAIL;
+            for(int h = 0; h < GangLayout.hubCount(gangs); ++h) {
+                var run = be.hubRun(h);
+                if(run != null && run.conductors().size() < run.capacity())
+                    return run.pull(context.getPlayer(), context.getItemInHand());
+            }
+            IElectric.sendMessage(context, Lang.builder().translate("message.gang.no_run").style(ChatFormatting.RED).component());
+            return InteractionResult.FAIL;
+        }
         IElectric.sendMessage(context, Lang.builder().translate("message.gang.conduit_only").style(ChatFormatting.RED).component());
         return InteractionResult.FAIL;
     }
@@ -272,6 +286,30 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
     /** A device item goes into the gang under the click, or the first empty one. */
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(inset(state) && (stack.is(org.patryk3211.powergrid.collections.ModdedTags.Item.WIRE_CUTTERS.tag) || stack.is(org.patryk3211.powergrid.collections.ModdedTags.Item.BAD_WIRE_CUTTERS.tag))) {
+            // Cutters on a box set into a wall work its concealed run: the last wire out, or sneaking, the run itself.
+            if(level.isClientSide)
+                return ItemInteractionResult.SUCCESS;
+            if(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be) {
+                for(int h = 0; h < GangLayout.hubCount(gangs); ++h) {
+                    var run = be.hubRun(h);
+                    if(run == null || !run.isConcealed())
+                        continue;
+                    if(player.isShiftKeyDown()) {
+                        com.nolanbaker.pgmodernized.util.ShockDamage.shockAmps(player, run.maxAmps());
+                        run.kill();
+                        player.displayClientMessage(Lang.translate("message.gang.run_removed").style(ChatFormatting.GRAY).component(), true);
+                        return ItemInteractionResult.SUCCESS;
+                    }
+                    if(!run.conductors().isEmpty()) {
+                        run.pullOut(player);
+                        return ItemInteractionResult.SUCCESS;
+                    }
+                }
+            }
+            player.displayClientMessage(Lang.translate(player.isShiftKeyDown() ? "message.gang.no_concealed" : "message.gang.no_wire").style(ChatFormatting.RED).component(), true);
+            return ItemInteractionResult.FAIL;
+        }
         if(stack.getItem() instanceof GangDeviceItem item) {
             if(!level.isClientSide && level.getBlockEntity(pos) instanceof GangBoxBlockEntity be) {
                 int slot = slotAt(state, hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));

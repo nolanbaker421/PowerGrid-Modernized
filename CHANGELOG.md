@@ -4,6 +4,21 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.104.0 — 2026-11-27
+
+### Added
+- Concealed conduit runs: bend from a knockout on a gang box set into a wall, or sneak on the
+  finishing click, and the run goes straight through the blocks between the two knockouts, in the
+  axis order that keeps the most of it inside solid blocks, with nothing on any surface. The
+  bender leaves it alone; its box stands in for it: wire on an inset box pulls into the run, wire
+  cutters on the box pull the last wire out, and sneaking with cutters takes the run out.
+- The placement preview draws a concealed run's legs through the wall, and goggles show laid
+  ones the way they show chaseway sleeves.
+
+### Changed
+- Chaseways are for exposed conduit crossing a wall, floor or ceiling; the guide says so, with
+  chases and in-wall boxes kept as the alternative they are.
+
 ## 0.103.0 — 2026-11-27
 
 ### Added

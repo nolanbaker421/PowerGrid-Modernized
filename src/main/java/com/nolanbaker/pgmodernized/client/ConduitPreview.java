@@ -60,6 +60,9 @@ public final class ConduitPreview {
     private static Vec3 directFrom, directTo;
     /** The knockout stubs placement adds before and after the traced path. */
     private static List<BlockWireEntity.Point> prefix = List.of(), suffix = List.of();
+    /** A concealed run's legs, when the pending knockout and the one under the cursor would be joined through the wall. */
+    @Nullable
+    private static List<BlockWireEntity.Point> concealed;
 
     private ConduitPreview() {}
 
@@ -79,6 +82,7 @@ public final class ConduitPreview {
         render = false;
         directFrom = null;
         directTo = null;
+        concealed = null;
         var mc = Minecraft.getInstance();
         var player = mc.player;
         var level = mc.level;
@@ -134,6 +138,23 @@ public final class ConduitPreview {
                     hitTerminal = electric.terminal(state, index);
                     hitPoint = IElectric.getTerminalPos(level, pos, index);
                     onHub = true;
+                    var hubEnd = new BlockWireEndpoint(pos, index);
+                    if(endpoint instanceof BlockWireEndpoint start && com.nolanbaker.pgmodernized.conduit.ConduitPlacement.concealedBetween(level, player, start, hubEnd)) {
+                        var laid = com.nolanbaker.pgmodernized.conduit.ConduitPlacement.concealedPoints(level, start, hubEnd);
+                        if(laid.isEmpty())
+                            return;
+                        concealed = laid;
+                        origin = BlockTrace.alignPosition(currentPos);
+                        render = true;
+                        if(!player.isCreative()) {
+                            float length = 0;
+                            for(var p : laid)
+                                length += p.length();
+                            int required = Math.max(Math.round(length * item.itemsPerMeter()), 1);
+                            PlacementOverlay.setItemRequirement(ConduitSupply.item(stack), required, ConduitSupply.count(stack) >= required);
+                        }
+                        return;
+                    }
                     if(endpoint instanceof BlockWireEndpoint && com.nolanbaker.pgmodernized.conduit.ConduitPlacement.directBetween(level, currentPos, hitPoint)) {
                         directFrom = currentPos;
                         directTo = hitPoint;
@@ -210,6 +231,14 @@ public final class ConduitPreview {
             matrixStack.pushPose();
             matrixStack.translate(directFrom.x - cameraPos.x, directFrom.y - cameraPos.y, directFrom.z - cameraPos.z);
             TubeDraw.straight(matrixStack.last(), TubeDraw.translucentBuffer(buffer), LightTexture.FULL_BRIGHT, OK, Vec3.ZERO, directTo.subtract(directFrom), item.wireThickness());
+            matrixStack.popPose();
+            buffer.draw();
+            return;
+        }
+        if(concealed != null && item != null) {
+            matrixStack.pushPose();
+            matrixStack.translate(origin.x - cameraPos.x, origin.y - cameraPos.y, origin.z - cameraPos.z);
+            XrayDraw.legs(matrixStack.last().pose(), XrayDraw.buffer(buffer), Vec3.ZERO, concealed, item.wireThickness() / 2, OK & 0xFFFFFF, 0x90);
             matrixStack.popPose();
             buffer.draw();
             return;
