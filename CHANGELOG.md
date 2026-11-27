@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.94.1 — 2026-11-26
+
+### Fixed
+- 0.94.0 crashed on launch: the strip light's glow block borrowed the vanilla light block's
+  properties, which look up a property it does not have. It has its own now.
+
 ## 0.94.0 — 2026-11-26
 
 ### Added

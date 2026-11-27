@@ -369,8 +369,10 @@ public class ModBlocks {
     /** The strip light's light on the floor: invisible, unbreakable, and gone when no lit section claims it. */
     public static final BlockEntry<com.nolanbaker.pgmodernized.device.light.StripLightGlowBlock> STRIP_LIGHT_GLOW = REGISTRATE.block("strip_light_glow", com.nolanbaker.pgmodernized.device.light.StripLightGlowBlock::new)
             .blockstate(NonNullBiConsumer.noop())
-            .initialProperties(() -> net.minecraft.world.level.block.Blocks.LIGHT)
-            .properties(p -> p.lightLevel(s -> s.getValue(com.nolanbaker.pgmodernized.device.light.StripLightGlowBlock.LEVEL)).noCollission().noOcclusion().noLootTable())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.replaceable().noCollission().noOcclusion().noLootTable().strength(-1f, 3600000f)
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
+                    .lightLevel(s -> s.getValue(com.nolanbaker.pgmodernized.device.light.StripLightGlowBlock.LEVEL)))
             .lang("Strip Light Glow")
             .register();
 
