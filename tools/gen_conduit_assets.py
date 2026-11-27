@@ -510,7 +510,7 @@ def gang_device_items():
     """Item icons for the gang devices: a plate with the device on it."""
     plate = (0xd8, 0xd8, 0xd8)
     dark = (0x2a, 0x2a, 0x2a)
-    for device in ("blank", "switch", "switch_3way", "switch_4way", "button", "receptacle", "pull_station", "horn_strobe", "monitor_module", "annunciator", "thermostat"):
+    for device in ("blank", "switch", "switch_3way", "switch_4way", "button", "receptacle", "pull_station", "smoke_detector", "heat_detector", "horn_strobe", "monitor_module", "annunciator", "thermostat"):
         img = canvas(16, 16)
         fill(img, 3, 1, 13, 15, plate)
         fill(img, 3, 14, 13, 15, shade(plate, 0.7))
@@ -536,6 +536,12 @@ def gang_device_items():
             fill(img, 5, 3, 11, 13, (0xb3, 0x1b, 0x1b))
             fill(img, 6, 6, 10, 7, (0xf0, 0xf0, 0xec))
             fill(img, 7, 7, 9, 11, (0xf0, 0xf0, 0xec))
+        elif device in ("smoke_detector", "heat_detector"):
+            puck = (0xf0, 0xef, 0xe8)
+            fill(img, 5, 4, 11, 12, puck)                    # a round-ish puck
+            fill(img, 4, 5, 12, 11, puck)
+            fill(img, 6, 6, 10, 10, (0xd0, 0xce, 0xc6) if device == "smoke_detector" else (0xb3, 0x1b, 0x1b))
+            fill(img, 7, 7, 9, 9, (0x30, 0xe0, 0x50))        # the status light
         elif device == "horn_strobe":
             fill(img, 5, 3, 11, 13, (0xb3, 0x1b, 0x1b))
             fill(img, 6, 4, 10, 7, (0xff, 0xff, 0xf0))
@@ -798,6 +804,9 @@ def recipes():
     # A key: three iron nuggets in a column; any key opens any padlock.
     shaped("key", ["N", "N", "N"], {"N": nugget}, 2, {"items": "%s:padlock" % MOD})
     recipe_shapeless("gang_pull_station", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}], 1, {"items": "%s:gang_box_1" % MOD})
+    # The detectors, as their conduit-box covers are made, on a nugget in place of the blank cover.
+    recipe_shapeless("gang_smoke_detector", [nugget, {"item": "minecraft:redstone"}, {"item": "minecraft:glass_pane"}, {"tag": "c:nuggets/copper"}], 1, {"items": "%s:gang_box_1" % MOD})
+    recipe_shapeless("gang_heat_detector", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:nuggets/copper"}, {"tag": "c:nuggets/iron"}], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_horn_strobe", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"tag": "c:nuggets/copper"}], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_monitor_module", [nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"item": "minecraft:redstone_torch"}], 1, {"items": "%s:gang_box_1" % MOD})
     recipe_shapeless("gang_annunciator", [nugget, nugget, {"item": "minecraft:redstone"}, {"tag": "c:dyes/red"}, {"tag": "c:glass_panes"}, {"tag": "c:nuggets/copper"}], 1, {"items": "%s:gang_box_3" % MOD})

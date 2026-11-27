@@ -44,8 +44,8 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     public static final float STROBE_VOLTS = 8, HORN_VOLTS = 16;
     /** Blocks each way a smoke detector looks for fire, and ticks it holds its alarm after the last smoke. */
     public static final int SMOKE_RANGE = 4, SMOKE_HOLD = 200;
-    /** The horn pattern: three half-second pulses and a pause, eighty ticks round. */
-    private static final int HORN_CYCLE = 80;
+    /** The horn pattern, temporal-three: three half-second pulses and a pause, eighty ticks round; the sound file is one cycle of it. */
+    public static final int HORN_CYCLE = 80;
 
     private SpliceSupport splices;
     private List<SplicePoint> points;
@@ -74,6 +74,7 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     private org.patryk3211.powergrid.electricity.sim.ElectricWire horn;
     private float hornVolts;
     private int hornTimer;
+    private final com.nolanbaker.pgmodernized.util.Settled lampSettled = new com.nolanbaker.pgmodernized.util.Settled(), hornSettled = new com.nolanbaker.pgmodernized.util.Settled();
     /** Game time of the next fire scan; detectors start out of step so a building's worth never scan on one tick. */
     private long nextSmokeScan = -1;
 
@@ -267,27 +268,19 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     }
 
     private boolean smokeNearby(int range, boolean burningThings) {
-        var from = worldPosition.offset(-range, -range, -range);
-        var to = worldPosition.offset(range, range, range);
-        for(var pos : BlockPos.betweenClosed(from, to)) {
-            var state = level.getBlockState(pos);
-            if(state.is(net.minecraft.tags.BlockTags.FIRE) || state.is(net.minecraft.world.level.block.Blocks.LAVA)
-                    || (burningThings && state.getBlock() instanceof net.minecraft.world.level.block.CampfireBlock && state.getValue(net.minecraft.world.level.block.CampfireBlock.LIT)))
-                return true;
-        }
-        if(!burningThings)
-            return false;
-        var box = new net.minecraft.world.phys.AABB(worldPosition).inflate(range);
-        return !level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, box, net.minecraft.world.entity.Entity::isOnFire).isEmpty();
+        return com.nolanbaker.pgmodernized.conduit.fire.FireSensing.nearby(level, worldPosition, range, burningThings);
     }
 
     /** Every tick: the loop's volts at the horn strobe set its strobe and its horn; the horn plays the three-pulse pattern. */
     private void hornTick() {
         if(horn == null || level == null || level.isClientSide)
             return;
-        if(horn.isConverged()) {
+        var hornState = hornSettled.of(horn);
+        if(hornState == com.nolanbaker.pgmodernized.util.Settled.State.LIVE) {
             double v = Math.abs(horn.current()) * horn.getResistance();   // the volts across the load, from its current
             hornVolts = Float.isFinite((float) v) ? (float) v : 0;
+        } else if(hornState == com.nolanbaker.pgmodernized.util.Settled.State.DEAD) {
+            hornVolts = 0;
         }
         boolean strobe = hornVolts >= STROBE_VOLTS, sound = hornVolts >= HORN_VOLTS;
         var state = getBlockState();
@@ -300,9 +293,8 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
             hornTimer = 0;
             return;
         }
-        int t = hornTimer++ % HORN_CYCLE;
-        if(t < 60 && t % 20 < 10 && t % 4 == 0)
-            level.playSound(null, worldPosition, com.nolanbaker.pgmodernized.registry.ModSounds.FIRE_ALARM_HORN.get(), SoundSource.BLOCKS, 2.0f, 0.5f);
+        if(hornTimer++ % HORN_CYCLE == 0)
+            level.playSound(null, worldPosition, com.nolanbaker.pgmodernized.registry.ModSounds.FIRE_ALARM_HORN.get(), SoundSource.BLOCKS, 2.0f, 1.0f);
     }
 
     // ---- the bulb ----
@@ -381,13 +373,21 @@ public class ConduitBoxBlockEntity extends ElectricBlockEntity implements ISplic
     @Override
     public void electricalTick() {
         hornTick();
-        if(lamp == null || bulb == null || level == null || level.isClientSide || !lamp.isConverged())
+        if(lamp == null || bulb == null || level == null || level.isClientSide)
             return;
-        double watts = Math.abs(lamp.power());
-        lampWatts = Float.isFinite((float) watts) ? (float) watts : 0;
-        // The bulb's own physics: filament resistance with temperature, the power level, burning out.
+        var lampState = lampSettled.of(lamp);
+        if(lampState == com.nolanbaker.pgmodernized.util.Settled.State.WAIT)
+            return;
         int before = powerLevel;
-        bulb.tick();
+        if(lampState == com.nolanbaker.pgmodernized.util.Settled.State.DEAD) {
+            lampWatts = 0;
+            powerLevel = 0;
+        } else {
+            double watts = Math.abs(lamp.power());
+            lampWatts = Float.isFinite((float) watts) ? (float) watts : 0;
+            // The bulb's own physics: filament resistance with temperature, the power level, burning out.
+            bulb.tick();
+        }
         if(powerLevel != before)
             sendData();
         var state = getBlockState();

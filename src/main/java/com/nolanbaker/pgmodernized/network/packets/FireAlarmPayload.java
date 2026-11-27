@@ -10,9 +10,18 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import static com.nolanbaker.pgmodernized.PowerGridModernized.asResource;
 
-/** Client works the fire alarm panel's screen: a device's zone, a zone's name, Silence, Reset. */
+/**
+ * Client works the fire alarm panel's screen: a device's zone, a zone's name, Silence, Reset,
+ * Drill. From an annunciator only the operator's three, Silence, Reset and Drill, go through;
+ * the programming is done at the panel.
+ */
 public record FireAlarmPayload(BlockPos pos, BlockPos via, int action, int a, int b, String text) implements CustomPacketPayload {
-    public static final int SET_ZONE = 0, ZONE_NAME = 1, SILENCE = 2, RESET = 3, REMOVE = 4;
+    public static final int SET_ZONE = 0, ZONE_NAME = 1, SILENCE = 2, RESET = 3, REMOVE = 4, DRILL = 5;
+
+    /** The actions an annunciator offers. */
+    public static boolean operator(int action) {
+        return action == SILENCE || action == RESET || action == DRILL;
+    }
     public static final int MAX_LENGTH = 24;
     public static final Type<FireAlarmPayload> TYPE = new Type<>(asResource("fire_alarm"));
     public static final StreamCodec<RegistryFriendlyByteBuf, FireAlarmPayload> STREAM_CODEC = StreamCodec.composite(
@@ -36,7 +45,7 @@ public record FireAlarmPayload(BlockPos pos, BlockPos via, int action, int a, in
             return;
         // At the panel's door, or at an annunciator of its.
         boolean near = player.distanceToSqr(payload.pos.getCenter()) <= 64;
-        if(!near && level.isLoaded(payload.via) && player.distanceToSqr(payload.via.getCenter()) <= 64
+        if(!near && operator(payload.action) && level.isLoaded(payload.via) && player.distanceToSqr(payload.via.getCenter()) <= 64
                 && level.getBlockEntity(payload.via) instanceof com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlockEntity box && box.linksTo(payload.pos))
             near = true;
         if(!near || !(level.getBlockEntity(payload.pos) instanceof FireAlarmPanelBlockEntity panel))
@@ -47,6 +56,7 @@ public record FireAlarmPayload(BlockPos pos, BlockPos via, int action, int a, in
             case SILENCE -> panel.silence(player);
             case RESET -> panel.reset(player);
             case REMOVE -> panel.forget(payload.a);
+            case DRILL -> panel.plcDrill(true);
             default -> {}
         }
     }

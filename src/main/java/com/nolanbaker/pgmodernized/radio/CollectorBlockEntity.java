@@ -51,6 +51,7 @@ public class CollectorBlockEntity extends ElectricBlockEntity implements INetwor
     private final Set<Listener> listeners = new HashSet<>();
     private ElectricWire load;
     private AcReadings.Filter reading;
+    private final com.nolanbaker.pgmodernized.util.Settled settled = new com.nolanbaker.pgmodernized.util.Settled();
     private float volts;
     private String utility = "";
     @Nullable
@@ -94,9 +95,9 @@ public class CollectorBlockEntity extends ElectricBlockEntity implements INetwor
 
     @Override
     public void electricalTick() {
-        if(load == null || !load.isConverged())
+        if(load == null)
             return;
-        reading.sample(load);
+        settled.sample(load, reading);
         volts = (float) reading.rmsVoltage();
     }
 

@@ -19,7 +19,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
  */
 public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity> {
     private static final int TOGGLE = 0xE0E0E0, TOGGLE_EDGE = 0x9A9A9A, BUTTON = 0xC83030, BUTTON_RING = 0x404040;
-    private static final int FACE = 0xE8E4DA, SLOT = 0x2A2A2A, BLANK = 0xD8D8D8;
+    private static final int FACE = 0xE8E4DA, SLOT = 0x2A2A2A, BLANK = 0xD8D8D8, DETECTOR = 0xF0EFE8, DETECTOR_DARK = 0xD0CEC6;
     private static final int ALARM_RED = 0xB31B1B, HANDLE = 0xF0F0EC, LENS_OFF = 0xC8C8C0, LENS_ON = 0xFFFFF0;
     private static final int MODULE = 0x9A9A9A, ANNUN_FACE = 0x303034, ANNUN_SCREEN = 0x101418, SILENCE_KEY = 0xC8A000, RESET_KEY = 0x30A050;
     /** Die-cast grey of a weatherproof cover, its hinge and lever a shade darker, the gasket under it black. */
@@ -91,6 +91,17 @@ public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity>
                     DeviceDraw.box(ms, buffer, light, cx - 1.5, top, 5.75, cx + 1.5, top + 1.2, 10.25, ALARM_RED);
                     double z = on ? 8.6 : 6.6;
                     DeviceDraw.box(ms, buffer, light, cx - 1.1, top + 1.2, z, cx + 1.1, top + 1.6, z + 0.8, HANDLE);
+                }
+                case SMOKE_DETECTOR, HEAT_DETECTOR -> {
+                    // A white puck with a status light: a slow green blink at rest, red flashing in alarm; the heat detector has a red centre.
+                    boolean heat = device == com.nolanbaker.pgmodernized.conduit.gang.GangDevice.HEAT_DETECTOR;
+                    boolean alarm = be.isOn(slot);
+                    DeviceDraw.box(ms, buffer, light, cx - 1.5, top, 6.0, cx + 1.5, top + 0.8, 10.0, DETECTOR);
+                    DeviceDraw.box(ms, buffer, light, cx - 1.1, top + 0.8, 6.4, cx + 1.1, top + 1.1, 9.6, heat ? ALARM_RED : DETECTOR_DARK);
+                    long time = be.getLevel() != null ? be.getLevel().getGameTime() : 0;
+                    boolean blink = alarm ? (time / 5) % 2 == 0 : time % 60 < 4;
+                    DeviceDraw.box(ms, buffer, blink ? net.minecraft.client.renderer.LightTexture.FULL_BRIGHT : light,
+                            cx - 0.3, top + 1.1, 7.7, cx + 0.3, top + 1.3, 8.3, alarm ? 0xFF2020 : blink ? 0x30E050 : 0x205030);
                 }
                 case HORN_STROBE -> {
                     // A red horn with a lens above its grille; the lens flashes full bright while strobing.

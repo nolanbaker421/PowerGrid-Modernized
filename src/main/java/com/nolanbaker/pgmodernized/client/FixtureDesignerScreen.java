@@ -49,7 +49,7 @@ public class FixtureDesignerScreen extends Screen {
     private Drag drag = Drag.NONE;
     private final Vector3f dragAcc = new Vector3f();
     private final java.util.Map<String, EditBox> numbers = new java.util.HashMap<>();
-    private EditBox nameField, colorField;
+    private EditBox nameField, colorField, canopyField;
     /** The three by three grid that places the junction box, drawn by the name field. */
     private int gridX, gridY;
     private static final int GRID_CELL = 4, GRID_GAP = 1, GRID_SIZE = 3 * GRID_CELL + 2 * GRID_GAP;
@@ -156,6 +156,17 @@ public class FixtureDesignerScreen extends Screen {
         nameField = new EditBox(font, panelX + 110, my, 110, 14, Component.literal("name"));
         gridX = panelX + 226;
         gridY = my;
+        canopyField = new EditBox(font, panelX + 302, my, 50, 14, Component.literal("canopy"));
+        canopyField.setMaxLength(6);
+        canopyField.setValue(String.format("%06X", design.canopy));
+        canopyField.setResponder(s -> {
+            try {
+                if(s.length() == 6)
+                    design.canopy = Integer.parseInt(s, 16);
+            } catch(NumberFormatException ignored) {}
+        });
+        canopyField.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable("powergrid.gui.fixture.canopy_tip")));
+        addRenderableWidget(canopyField);
         nameField.setMaxLength(FixtureDesign.NAME_LENGTH);
         nameField.setValue(design.name);
         nameField.setResponder(s -> design.name = s);
@@ -254,6 +265,7 @@ public class FixtureDesignerScreen extends Screen {
         design.mount = from.mount;
         design.name = from.name;
         design.box = from.box;
+        design.canopy = from.canopy;
         selected = design.parts.isEmpty() ? -1 : 0;
         scroll = 0;
         rebuild();
@@ -307,6 +319,13 @@ public class FixtureDesignerScreen extends Screen {
             }
         }
         var p = part();
+        if(button == 1 && p != null && my >= panelY + 156 && my < panelY + 168 && mx >= fieldsX && mx < fieldsX + SWATCHES.length * 14) {
+            // A swatch under the right button colours the canopy.
+            design.canopy = SWATCHES[(int) ((mx - fieldsX) / 14)];
+            if(canopyField != null)
+                canopyField.setValue(String.format("%06X", design.canopy));
+            return true;
+        }
         if(button == 0 && p != null && my >= panelY + 156 && my < panelY + 168 && mx >= fieldsX && mx < fieldsX + SWATCHES.length * 14) {
             p.color = SWATCHES[(int) ((mx - fieldsX) / 14)];
             if(colorField != null)
@@ -543,6 +562,10 @@ public class FixtureDesignerScreen extends Screen {
         } else {
             graphics.drawString(font, Component.translatable("powergrid.gui.fixture.none"), fieldsX, panelY + 32, DIM, false);
         }
+        // The canopy's colour, by its field.
+        graphics.drawString(font, Component.translatable("powergrid.gui.fixture.canopy"), panelX + 246, gridY + 3, DIM, false);
+        graphics.fill(panelX + 286, gridY + 1, panelX + 298, gridY + 13, 0xFF000000 | design.canopy);
+        graphics.renderOutline(panelX + 285, gridY, 14, 14, EDGE);
         // The preview.
         graphics.fill(previewX, previewY, previewX + previewW, previewY + previewH, 0xFF101014);
         graphics.renderOutline(previewX, previewY, previewW, previewH, EDGE);
@@ -598,7 +621,7 @@ public class FixtureDesignerScreen extends Screen {
         FixtureDraw.box(pose, buffers, LightTexture.FULL_BRIGHT, 16, 16, 16, 32, 32, 32, 0x80A0C0, 0.16f, FixturePart.Material.GLASS);
         var canopy = CustomFixtureBlock.canopy(design.mount, design.box).bounds();
         FixtureDraw.box(pose, buffers, LightTexture.FULL_BRIGHT, 16 + canopy.minX * 16, 16 + canopy.minY * 16, 16 + canopy.minZ * 16,
-                16 + canopy.maxX * 16, 16 + canopy.maxY * 16, 16 + canopy.maxZ * 16, 0xB8BCC2, 0.7f, FixturePart.Material.METAL);
+                16 + canopy.maxX * 16, 16 + canopy.maxY * 16, 16 + canopy.maxZ * 16, design.canopy, 0.7f, FixturePart.Material.METAL);
         for(var hub : CustomFixtureBlock.hubs(design.mount, design.box))
             FixtureDraw.box(pose, buffers, LightTexture.FULL_BRIGHT, 16 + hub.minX, 16 + hub.minY, 16 + hub.minZ, 16 + hub.maxX, 16 + hub.maxY, 16 + hub.maxZ, 0x2FB8D6, 1, FixturePart.Material.MATTE);
         buffers.endBatch();

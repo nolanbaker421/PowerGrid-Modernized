@@ -58,6 +58,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     @Nullable
     private CompoundTag pendingBulb;
     private int powerLevel;
+    private final com.nolanbaker.pgmodernized.util.Settled settled = new com.nolanbaker.pgmodernized.util.Settled();
     private float watts, syncedWatts;
     @Nullable
     private VoxelShape shape;
@@ -208,14 +209,23 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
             return;
         }
         var filaments = filaments();
-        if(filaments.length == 0 || bulb == null || level == null || !filaments[0].isConverged())
+        if(filaments.length == 0 || bulb == null || level == null)
             return;
-        double w = 0;
-        for(var f : filaments)
-            w += Math.abs(f.power());
-        watts = Float.isFinite((float) w) ? (float) w : 0;
+        var state = settled.of(filaments[0]);
+        if(state == com.nolanbaker.pgmodernized.util.Settled.State.WAIT)
+            return;
         int before = powerLevel;
-        bulb.tick();
+        if(state == com.nolanbaker.pgmodernized.util.Settled.State.DEAD) {
+            // Nothing behind the filament any more: dark, whatever the last solve said.
+            watts = 0;
+            powerLevel = 0;
+        } else {
+            double w = 0;
+            for(var f : filaments)
+                w += Math.abs(f.power());
+            watts = Float.isFinite((float) w) ? (float) w : 0;
+            bulb.tick();
+        }
         if(powerLevel != before) {
             sendData();
             updateLight();
@@ -442,6 +452,8 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
         if(tag.contains("Design")) {
             design = FixtureDesign.read(tag.getCompound("Design"));
             shape = null;
+            if(clientPacket && level != null)
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);   // the canopy's tint is baked with the chunk
         }
         powerLevel = tag.getInt("Power");
         watts = tag.getFloat("Watts");

@@ -58,6 +58,7 @@ public class AirHandlerBlockEntity extends ElectricBlockEntity implements IDevic
     private ElectricWire coilY, coilW, coilG, sense;
     private ProvidedVoltageSourceCoupling control;
     private AcReadings.Filter feedReading, yReading, wReading, gReading;
+    private final com.nolanbaker.pgmodernized.util.Settled senseSettled = new com.nolanbaker.pgmodernized.util.Settled(), ySettled = new com.nolanbaker.pgmodernized.util.Settled(), wSettled = new com.nolanbaker.pgmodernized.util.Settled(), gSettled = new com.nolanbaker.pgmodernized.util.Settled();
     private float feedVolts;
     private boolean powered, callCool, callHeat, callFan, blowing, heating;
     private float roomF = Float.NaN;
@@ -238,14 +239,10 @@ public class AirHandlerBlockEntity extends ElectricBlockEntity implements IDevic
             wReading = new AcReadings.Filter();
             gReading = new AcReadings.Filter();
         }
-        if(sense.isConverged())
-            feedReading.sample(sense);
-        if(coilY.isConverged())
-            yReading.sample(coilY);
-        if(coilW.isConverged())
-            wReading.sample(coilW);
-        if(coilG.isConverged())
-            gReading.sample(coilG);
+        senseSettled.sample(sense, feedReading);
+        ySettled.sample(coilY, yReading);
+        wSettled.sample(coilW, wReading);
+        gSettled.sample(coilG, gReading);
         feedVolts = (float) AcReadings.finite(feedReading.rmsVoltage());
         powered = feedVolts >= POWERED_VOLTS;
         callCool = powered && AcReadings.finite(yReading.rmsCurrent()) >= CALL_AMPS;

@@ -39,6 +39,9 @@ public final class FixtureDesign {
     public String name = "";
     /** Where the junction box (the canopy with its knockouts) sits on the mounting face; see {@link CustomFixtureBlock#boxOffset}. */
     public int box = BOX_CENTRE;
+    /** The canopy plate's colour; the block's plate texture is white, tinted with it. */
+    public static final int CANOPY_DEFAULT = 0xB8BCC2;
+    public int canopy = CANOPY_DEFAULT;
 
     /** A starting point: a canopy, a chain, a shade and a socket, hung from a ceiling. */
     public static FixtureDesign pendant() {
@@ -98,6 +101,7 @@ public final class FixtureDesign {
         d.mount = mount;
         d.name = name;
         d.box = box;
+        d.canopy = canopy;
         for(var p : parts)
             d.parts.add(p.copy());
         return d;
@@ -144,6 +148,7 @@ public final class FixtureDesign {
         tag.putString("Mount", mount.name());
         tag.putString("Name", name);
         tag.putInt("Canopy", box);
+        tag.putInt("CanopyColor", canopy);
         var list = new ListTag();
         for(var p : parts)
             list.add(p.write());
@@ -161,6 +166,8 @@ public final class FixtureDesign {
             d.name = d.name.substring(0, NAME_LENGTH);
         if(tag.contains("Canopy"))
             d.box = Math.max(0, Math.min(BOX_COUNT - 1, tag.getInt("Canopy")));
+        if(tag.contains("CanopyColor"))
+            d.canopy = tag.getInt("CanopyColor") & 0xFFFFFF;
         for(var t : tag.getList("Parts", Tag.TAG_COMPOUND)) {
             if(d.parts.size() >= MAX_PARTS)
                 break;

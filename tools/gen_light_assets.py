@@ -25,9 +25,9 @@ def textures():
     img = canvas(16, 16, socket + (255,))
     fill(img, 0, 7, 16, 9, shade(socket, 0.8))
     write_png(os.path.join(TEX, "strip_light_socket.png"), img)
-    canopy = (0xB8, 0xBC, 0xC2)
+    # White, with a shaded bottom edge: the block model tints it with the design's canopy colour (FixtureColors).
+    canopy = (0xFF, 0xFF, 0xFF)
     img = canvas(16, 16, canopy + (255,))
-    fill(img, 0, 0, 16, 1, shade(canopy, 1.08))
     fill(img, 0, 15, 16, 16, shade(canopy, 0.85))
     write_png(os.path.join(TEX, "fixture_canopy.png"), img)
 
@@ -69,6 +69,10 @@ def strip_light():
         "wall": ((4, 4, 13, 12, 12, 16), [(7, 7, 15.65, 9, 9, 16), (7, 12, 13.5, 9, 12.35, 15.5), (7, 3.65, 13.5, 9, 4, 15.5)]),
         "floor": (None, [(7, 0, 7, 9, 0.35, 9), (12, 0, 7, 12.35, 2, 9), (3.65, 0, 7, 4, 2, 9)]),   # no plate: the design's base is the canopy
     }
+    def tinted(el):
+        for face in el["faces"].values():
+            face["tintindex"] = 0
+        return el
     parts = []
     for mount, (canopy, kos) in mounts.items():
         stale = os.path.join(ASSETS, "models", "block", "custom_fixture_%s.json" % mount)
@@ -78,7 +82,7 @@ def strip_light():
             u, v = (box // 3 - 1) * 4, (box % 3 - 1) * 4
             dx, dy, dz = (u, v, 0) if mount == "wall" else (u, 0, v)
             moved = lambda b: (b[0] + dx, b[1] + dy, b[2] + dz, b[3] + dx, b[4] + dy, b[5] + dz)
-            elements = ([element(*moved(canopy), "#canopy")] if canopy else []) + [element(*moved(ko), "#knockout12") for ko in kos]
+            elements = ([tinted(element(*moved(canopy), "#canopy"))] if canopy else []) + [element(*moved(ko), "#knockout12") for ko in kos]
             name = "custom_fixture_%s_%d" % (mount, box)
             dump(os.path.join(ASSETS, "models", "block", name + ".json"), {"parent": "block/block", "textures": canopy_tex, "elements": elements})
             for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):

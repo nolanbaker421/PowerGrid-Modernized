@@ -59,6 +59,10 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     private org.patryk3211.powergrid.electricity.sim.ElectricWire[] horns;
     private float[] hornVolts;
     private boolean[] strobing;
+    private com.nolanbaker.pgmodernized.util.Settled[] hornSettled;
+    /** Per gang: ticks a detector there holds its alarm past the last fire seen; and when the box next looks for fire. */
+    private int[] smokeClear;
+    private long nextSmokeScan;
     private int hornTimer;
     /** Per gang: the loop address a fire alarm panel gave a pull station or horn strobe there, and its name. */
     private int[] fireAddresses;
@@ -140,6 +144,10 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             horns = new org.patryk3211.powergrid.electricity.sim.ElectricWire[GangLayout.MAX_GANGS];
             hornVolts = new float[GangLayout.MAX_GANGS];
             strobing = new boolean[GangLayout.MAX_GANGS];
+            smokeClear = new int[GangLayout.MAX_GANGS];
+            hornSettled = new com.nolanbaker.pgmodernized.util.Settled[GangLayout.MAX_GANGS];
+            for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot)
+                hornSettled[slot] = new com.nolanbaker.pgmodernized.util.Settled();
             fireAddresses = new int[GangLayout.MAX_GANGS];
             fireLabels = new String[GangLayout.MAX_GANGS];
             java.util.Arrays.fill(fireLabels, "");
@@ -364,6 +372,10 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         var device = device(slot);
         if(device == GangDevice.PULL_STATION)
             return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.PULL;
+        if(device == GangDevice.SMOKE_DETECTOR)
+            return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.SMOKE;
+        if(device == GangDevice.HEAT_DETECTOR)
+            return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.HEAT;
         if(device == GangDevice.HORN_STROBE)
             return com.nolanbaker.pgmodernized.conduit.fire.FireDeviceKind.HORN;
         if(device == GangDevice.MONITOR_MODULE)
@@ -398,7 +410,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     @Override
     public boolean fireTripped(int slot) {
         var device = device(slot);
-        return (device == GangDevice.PULL_STATION || device == GangDevice.MONITOR_MODULE) && isOn(slot);
+        return device != null && device.initiating() && isOn(slot);
     }
 
     @Override
@@ -578,7 +590,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                         builder.connectSwitch(r, builder.terminalNode(p[1]), builder.terminalNode(p[3]), !on[slot]),
                         builder.connectSwitch(r, builder.terminalNode(p[0]), builder.terminalNode(p[3]), on[slot]),
                         builder.connectSwitch(r, builder.terminalNode(p[1]), builder.terminalNode(p[2]), on[slot])};
-                case PULL_STATION -> {
+                case PULL_STATION, SMOKE_DETECTOR, HEAT_DETECTOR -> {
                     builder.connect(resistance("supervisory"), builder.terminalNode(p[0]), builder.terminalNode(p[1]));
                     contacts[slot] = new SwitchedWire[] {
                             builder.connectSwitch(resistance("detector"), builder.terminalNode(p[0]), builder.terminalNode(p[1]), on[slot])};
@@ -620,7 +632,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             return;
         boolean state = on[slot];
         switch(device) {
-            case SWITCH, BUTTON, PULL_STATION, MONITOR_MODULE -> wires[0].setState(state);
+            case SWITCH, BUTTON, PULL_STATION, MONITOR_MODULE, SMOKE_DETECTOR, HEAT_DETECTOR -> wires[0].setState(state);
             case THREE_WAY -> {
                 wires[0].setState(!state);
                 wires[1].setState(state);
@@ -856,9 +868,12 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                 strobing[slot] = false;
                 continue;
             }
-            if(horn.isConverged()) {
+            var live = hornSettled[slot].of(horn);
+            if(live == com.nolanbaker.pgmodernized.util.Settled.State.LIVE) {
                 double v = Math.abs(horn.current()) * horn.getResistance();
                 hornVolts[slot] = Float.isFinite((float) v) ? (float) v : 0;
+            } else if(live == com.nolanbaker.pgmodernized.util.Settled.State.DEAD) {
+                hornVolts[slot] = 0;
             }
             boolean strobe = hornVolts[slot] >= ConduitBoxBlockEntity.STROBE_VOLTS;
             if(strobe != strobing[slot]) {
@@ -873,9 +888,8 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             hornTimer = 0;
             return;
         }
-        int t = hornTimer++ % 80;
-        if(t < 60 && t % 20 < 10 && t % 4 == 0)
-            level.playSound(null, worldPosition, com.nolanbaker.pgmodernized.registry.ModSounds.FIRE_ALARM_HORN.get(), SoundSource.BLOCKS, 2.0f, 0.5f);
+        if(hornTimer++ % ConduitBoxBlockEntity.HORN_CYCLE == 0)
+            level.playSound(null, worldPosition, com.nolanbaker.pgmodernized.registry.ModSounds.FIRE_ALARM_HORN.get(), SoundSource.BLOCKS, 2.0f, 1.0f);
     }
 
     /** Server side: a switch flips; a button closes for its hold time. */
@@ -930,7 +944,36 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         }
         hornTick();
         monitorTick();
+        detectorTick();
         thermostatTick();
+    }
+
+    /** Once a second: each detector in the box looks for fire, four blocks and anything burning for smoke, the next block over for heat, and holds ten seconds past the last. */
+    private void detectorTick() {
+        long now = level.getGameTime();
+        if(nextSmokeScan == 0)
+            nextSmokeScan = now + Math.floorMod(worldPosition.asLong(), 20);
+        if(now < nextSmokeScan)
+            return;
+        nextSmokeScan = now + 20;
+        for(int slot = 0; slot < GangLayout.MAX_GANGS; ++slot) {
+            var device = devices[slot];
+            if(device == null || !device.detector())
+                continue;
+            boolean heat = device == GangDevice.HEAT_DETECTOR;
+            boolean fire = com.nolanbaker.pgmodernized.conduit.fire.FireSensing.nearby(level, worldPosition, heat ? 1 : ConduitBoxBlockEntity.SMOKE_RANGE, !heat);
+            if(fire)
+                smokeClear[slot] = ConduitBoxBlockEntity.SMOKE_HOLD;
+            else if(smokeClear[slot] > 0)
+                smokeClear[slot] -= 20;
+            boolean alarm = fire || smokeClear[slot] > 0;
+            if(alarm == on[slot])
+                continue;
+            on[slot] = alarm;
+            applyContacts(slot);
+            setChanged();
+            sendData();
+        }
     }
 
     @Override
@@ -1263,6 +1306,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
             case FOUR_WAY -> on ? "gang.crossed" : "gang.straight";
             case PULL_STATION -> on ? "gang.pulled" : "gang.set";
             case MONITOR_MODULE -> on ? "gang.tripped" : "gang.normal";
+            case SMOKE_DETECTOR, HEAT_DETECTOR -> on ? "gang.alarm" : "gang.normal";
             default -> on ? "gui.conduit_switch.on" : "gui.conduit_switch.off";
         };
     }

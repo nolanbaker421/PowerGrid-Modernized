@@ -37,6 +37,8 @@ public class GangBoxItem extends BlockItem {
         var placed = getBlock().getStateForPlacement(new BlockPlaceContext(context));
         if(placed == null || !placed.hasProperty(GangBoxBlock.INSET))
             return InteractionResult.FAIL;
+        // The sneak asked for the inset; it is not the half turn Power Grid's placement gives a sneaking player.
+        placed = placed.setValue(GangBoxBlock.ROTATION, (placed.getValue(GangBoxBlock.ROTATION) + 2) % 4);
         if(level.isClientSide)
             return InteractionResult.SUCCESS;
         level.setBlock(pos, placed.setValue(GangBoxBlock.INSET, true), Block.UPDATE_ALL);

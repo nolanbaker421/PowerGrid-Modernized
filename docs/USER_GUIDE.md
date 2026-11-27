@@ -135,7 +135,8 @@ bar on the right with a landing slot per wire; a controls cabinet shows its supp
 one box per module with the channel pins on the sides; everything else is a plain column. Wires
 run through a duct down each side and a gutter above and below, each in its own lane, so nothing
 crosses that does not have to. Click a pin, then another, to splice; click a knockout's name to
-land its wires by number; right-click a wire to recolour it, shift and right-click to label it.
+land its wires by number; right-click a wire to recolour it, shift and right-click to label it,
+where the twelve wire colours sit under the label field to pick one outright.
 The window scrolls when a panel is taller than the screen.
 
 Right-click a **closed** run (a hub on both ends) with any Power Grid wire item. One conductor of that
@@ -241,6 +242,21 @@ receptacle under the ceiling.
 
 **Pull stations.** A bare hand on the handle pulls the station; anywhere else on it opens the
 splice editor, so a station is wired like any other cover or gang device. A wrench resets it.
+
+**Detectors in a gang box.** The **Smoke Detector** and **Heat Detector** gang devices are the
+detector covers' equals for a gang box, on a wall, a ceiling, or set into either: a white puck
+with a status light, green blinking at rest and red in alarm, on the initiating loop through its
+Loop + and Loop - points like a pull station. The smoke detector trips at fire or lava within
+four blocks, a lit campfire or anything burning; the heat detector only at fire in the next
+block over. Either holds ten seconds past the last fire it saw, then clears itself. The panel
+addresses, names and lists them as it does any detector.
+
+**Annunciator.** The three-gang **Fire Annunciator** mirrors its panel: the same lights and
+display, and its screen shows the panel's state, every device with its status and zone, and
+every zone with its count and whether it is in alarm. It is an operator's station, not a
+programmer's: **Drill** sounds the alarm with no device in alarm, **Silence** quiets the horns,
+**Reset** clears; zones are assigned and named at the panel itself, where the same screen has
+the arrows, Remove and Zone name as well.
 
 ### Conduit Socket
 
@@ -1130,7 +1146,8 @@ inside the anchor block can be clicked. Mount says what holds the fixture up: th
 behind, or the block below. The small grid by the name is where the **junction box** (the canopy
 with its knockouts) sits on that face: nine positions, four pixels apart, the middle one by
 default; the ghost in the preview moves with it, so a sconce's arm or a sign's cabinet can meet
-the box wherever it is. Name it, and press **Build**: a **Fixture Blank** from your inventory
+the box wherever it is. The **Canopy** field beside the grid is the canopy plate's colour, hex
+like a part's; right-click a swatch to give the canopy that colour. Name it, and press **Build**: a **Fixture Blank** from your inventory
 becomes a **Custom Fixture** item carrying the design, as many as you like. **Done** keeps the
 design on the designer.
 

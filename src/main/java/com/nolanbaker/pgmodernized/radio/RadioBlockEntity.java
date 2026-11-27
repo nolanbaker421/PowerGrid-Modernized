@@ -62,6 +62,7 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
     private DeviceSpliceHost deviceHubs;
     private ElectricWire load;
     private AcReadings.Filter reading;
+    private final com.nolanbaker.pgmodernized.util.Settled settled = new com.nolanbaker.pgmodernized.util.Settled();
     private String linkId = "";
     private float volts;
 
@@ -117,9 +118,9 @@ public class RadioBlockEntity extends ElectricBlockEntity implements INetworkJac
 
     @Override
     public void electricalTick() {
-        if(load == null || !load.isConverged())
+        if(load == null)
             return;
-        reading.sample(load);
+        settled.sample(load, reading);
         volts = (float) reading.rmsVoltage();
     }
 

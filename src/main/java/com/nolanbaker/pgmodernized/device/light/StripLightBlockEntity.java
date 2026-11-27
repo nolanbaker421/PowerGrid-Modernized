@@ -50,6 +50,7 @@ public class StripLightBlockEntity extends ElectricBlockEntity implements IDevic
     @Nullable
     private CompoundTag pendingBulb;
     private int powerLevel;
+    private final com.nolanbaker.pgmodernized.util.Settled settled = new com.nolanbaker.pgmodernized.util.Settled();
     private float watts, syncedWatts;
     @Nullable
     private BlockPos glowPos;
@@ -142,12 +143,20 @@ public class StripLightBlockEntity extends ElectricBlockEntity implements IDevic
                 bulb.tick();   // the bulb's client side: the burn-out smoke and pop, synced from the server
             return;
         }
-        if(lamp == null || bulb == null || level == null || !lamp.isConverged())
+        if(lamp == null || bulb == null || level == null)
             return;
-        double w = Math.abs(lamp.power());
-        watts = Float.isFinite((float) w) ? (float) w : 0;
+        var state = settled.of(lamp);
+        if(state == com.nolanbaker.pgmodernized.util.Settled.State.WAIT)
+            return;
         int before = powerLevel;
-        bulb.tick();
+        if(state == com.nolanbaker.pgmodernized.util.Settled.State.DEAD) {
+            watts = 0;
+            powerLevel = 0;
+        } else {
+            double w = Math.abs(lamp.power());
+            watts = Float.isFinite((float) w) ? (float) w : 0;
+            bulb.tick();
+        }
         if(powerLevel != before) {
             sendData();
             projectDown();

@@ -30,6 +30,8 @@ public class GangDeviceItem extends Item {
             tooltip.add(Lang.builder().translate("gang.device.annunciator_tip").style(ChatFormatting.GRAY).component());
         if(device == GangDevice.MONITOR_MODULE)
             tooltip.add(Lang.builder().translate("gang.device.monitor_tip").style(ChatFormatting.GRAY).component());
+        if(device.detector())
+            tooltip.add(Lang.builder().translate(device == GangDevice.HEAT_DETECTOR ? "gang.device.heat_tip" : "gang.device.smoke_tip").style(ChatFormatting.GRAY).component());
         if(device.points() > 0) {
             var names = Lang.builder();
             for(int k = 0; k < device.points(); ++k) {

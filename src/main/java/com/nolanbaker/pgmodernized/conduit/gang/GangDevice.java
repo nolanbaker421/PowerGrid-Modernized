@@ -20,6 +20,10 @@ public enum GangDevice {
     THERMOSTAT("thermostat", "Thermostat", "tstat_r", "tstat_y", "tstat_w", "tstat_g"),
     /** On the fire alarm panel's initiating loop: pulled by hand, reset with a wrench. */
     PULL_STATION("pull_station", "Pull Station", "loop_plus", "loop_minus"),
+    /** On the initiating loop: trips at fire or lava within four blocks, a lit campfire or anything burning, and holds ten seconds past the last. */
+    SMOKE_DETECTOR("smoke_detector", "Smoke Detector", "loop_plus", "loop_minus"),
+    /** On the initiating loop: trips at fire or lava in the next block over only. */
+    HEAT_DETECTOR("heat_detector", "Heat Detector", "loop_plus", "loop_minus"),
     /** On the fire alarm panel's notification loop: sounds and flashes from sixteen volts, flashes from eight. */
     HORN_STROBE("horn_strobe", "Horn Strobe", "loop_plus", "loop_minus"),
     /** On the initiating loop: a dry contact across its two sense points, normally open or normally closed, trips it. */
@@ -109,9 +113,14 @@ public enum GangDevice {
         return this == BUTTON;
     }
 
-    /** A detector or pull station's contact across the initiating loop, with its supervisory resistor. */
+    /** A detector, pull station or monitor module's contact across the initiating loop, with its supervisory resistor. */
     public boolean initiating() {
-        return this == PULL_STATION || this == MONITOR_MODULE;
+        return this == PULL_STATION || this == MONITOR_MODULE || detector();
+    }
+
+    /** A smoke or heat detector: trips itself at fire nearby. */
+    public boolean detector() {
+        return this == SMOKE_DETECTOR || this == HEAT_DETECTOR;
     }
 
     public static GangDevice byId(String id) {

@@ -30,6 +30,8 @@ public class FireAlarmScreen extends Screen {
     private static final int RED = 0xFFFF5050, YELLOW = 0xFFFFC040, GREEN = 0xFF60E070, AQUA = 0xFF60D0E0;
 
     private final BlockPos pos, via;
+    /** Opened from an annunciator: the state, devices and zones to see, and Silence, Reset and Drill to press; nothing to program. */
+    private final boolean annunciator;
     private int panelX, panelY, panelH;
     private int contentTop, contentH, contentFull, scroll;
     private long key = -1;
@@ -40,9 +42,10 @@ public class FireAlarmScreen extends Screen {
 
     /** {@code via} is where the player is working it: the panel itself, or an annunciator's box. */
     public FireAlarmScreen(BlockPos pos, BlockPos via) {
-        super(Component.translatable("powergrid.gui.fire_alarm.title"));
+        super(Component.translatable(via.equals(pos) ? "powergrid.gui.fire_alarm.title" : "powergrid.gui.fire_alarm.annunciator_title"));
         this.pos = pos;
         this.via = via;
+        this.annunciator = !via.equals(pos);
     }
 
     @Nullable
@@ -158,6 +161,8 @@ public class FireAlarmScreen extends Screen {
             lines.add(new Line(Component.translatable("powergrid.gui.fire_alarm.silenced"), left + 150, y + 6, YELLOW));
         else if(panel.drill())
             lines.add(new Line(Component.translatable("powergrid.gui.fire_alarm.drill"), left + 150, y + 6, AQUA));
+        if(!panel.drill())
+            button(Component.translatable("powergrid.gui.fire_alarm.drill_key"), right - 200, y, 60, b -> PacketDistributor.sendToServer(new FireAlarmPayload(pos, via, FireAlarmPayload.DRILL, 0, 0, "")));
         button(Component.translatable("powergrid.gui.fire_alarm.silence"), right - 130, y, 60, b -> PacketDistributor.sendToServer(new FireAlarmPayload(pos, via, FireAlarmPayload.SILENCE, 0, 0, "")));
         button(Component.translatable("powergrid.gui.fire_alarm.reset"), right - 60, y, 60, b -> PacketDistributor.sendToServer(new FireAlarmPayload(pos, via, FireAlarmPayload.RESET, 0, 0, "")));
         y += ROW;
@@ -179,12 +184,14 @@ public class FireAlarmScreen extends Screen {
             int address = device.address();
             int zone = panel.zoneOf(address);
             int zx = left + 230;
-            button(Component.literal("<"), zx, y, 14, b -> PacketDistributor.sendToServer(new FireAlarmPayload(pos, via, FireAlarmPayload.SET_ZONE, address, zone <= 0 ? FireAlarmPanelBlockEntity.MAX_ZONES : zone - 1, "")));
+            if(!annunciator)
+                button(Component.literal("<"), zx, y, 14, b -> PacketDistributor.sendToServer(new FireAlarmPayload(pos, via, FireAlarmPayload.SET_ZONE, address, zone <= 0 ? FireAlarmPanelBlockEntity.MAX_ZONES : zone - 1, "")));
             lines.add(new Line(zoneText(panel, zone), zx + 18, y + 6, zone > 0 ? AQUA : DIM));
-            button(Component.literal(">"), zx + 100, y, 14, b -> PacketDistributor.sendToServer(new FireAlarmPayload(pos, via, FireAlarmPayload.SET_ZONE, address, zone >= FireAlarmPanelBlockEntity.MAX_ZONES ? 0 : zone + 1, "")));
+            if(!annunciator)
+                button(Component.literal(">"), zx + 100, y, 14, b -> PacketDistributor.sendToServer(new FireAlarmPayload(pos, via, FireAlarmPayload.SET_ZONE, address, zone >= FireAlarmPanelBlockEntity.MAX_ZONES ? 0 : zone + 1, "")));
             var at = device.pos();
             button(Component.translatable("powergrid.gui.fire_alarm.find"), right - 40, y, 40, b -> FireAlarmHighlight.show(at));
-            if(device.status() == FireDevice.Status.MISSING)
+            if(!annunciator && device.status() == FireDevice.Status.MISSING)
                 button(Component.translatable("powergrid.gui.fire_alarm.remove"), right - 96, y, 52, b -> PacketDistributor.sendToServer(new FireAlarmPayload(pos, via, FireAlarmPayload.REMOVE, address, 0, "")));
             y += ROW;
         }
@@ -200,8 +207,9 @@ public class FireAlarmScreen extends Screen {
             if(inAlarm)
                 lines.add(new Line(Component.translatable("powergrid.gui.fire_alarm.status_alarm"), left + 250, y + 6, RED));
             int z = zone;
-            button(Component.translatable("powergrid.gui.fire_alarm.zone_name"), right - 60, y, 60,
-                    b -> Minecraft.getInstance().setScreen(new ZoneNameScreen(pos, via, z, panel.zoneName(z))));
+            if(!annunciator)
+                button(Component.translatable("powergrid.gui.fire_alarm.zone_name"), right - 60, y, 60,
+                        b -> Minecraft.getInstance().setScreen(new ZoneNameScreen(pos, via, z, panel.zoneName(z))));
             y += ROW;
         }
         setScroll(scroll);
@@ -235,7 +243,7 @@ public class FireAlarmScreen extends Screen {
             graphics.fill(panelX + PANEL_W - 5, contentTop, panelX + PANEL_W - 2, contentTop + track, 0xFF303034);
             graphics.fill(panelX + PANEL_W - 5, thumbY, panelX + PANEL_W - 2, thumbY + thumb, 0xFF8A8A92);
         }
-        graphics.drawString(font, Component.translatable("powergrid.gui.fire_alarm.hint"), panelX + PADDING, panelY + panelH - PADDING - 6, DIM);
+        graphics.drawString(font, Component.translatable(annunciator ? "powergrid.gui.fire_alarm.annunciator_hint" : "powergrid.gui.fire_alarm.hint"), panelX + PADDING, panelY + panelH - PADDING - 6, DIM);
     }
 
     @Override

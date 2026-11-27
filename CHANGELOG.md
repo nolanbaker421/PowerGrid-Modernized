@@ -4,6 +4,37 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.107.0 — 2026-11-27
+
+### Added
+- Smoke Detector and Heat Detector gang devices: the detector covers' equals for a gang box, on
+  the initiating loop like a pull station, sensing the same way (four blocks and anything burning
+  for smoke, the next block over for heat, ten seconds' hold).
+- The fixture designer's canopy plate takes a colour: a Canopy field beside the box grid, and a
+  right-click on a swatch. The placed fixture's plate is tinted with it.
+- The wire label window in the splice editor shows the twelve wire colours under the label field,
+  to pick one outright instead of cycling.
+- The fire alarm horn has its own sound: one temporal-three cycle, three pulses and a pause,
+  played once a cycle by horn strobe covers and gang devices in place of the note-block beeps.
+- A Drill key on the fire alarm panel's screen sounds the alarm with no device in alarm; Reset
+  ends it. Until now only a PLC could start a drill.
+
+### Changed
+- The annunciator is an operator's station: its screen shows the panel's state, devices and
+  zones but offers only Drill, Silence and Reset. Zone assignment, zone names and Remove are at
+  the panel alone, and the server refuses them from an annunciator.
+
+### Fixed
+- Lights stayed on after the switch box feeding them was broken, concealed runs or not: a device
+  only read its wire while Power Grid called it converged, which a wire whose network is gone
+  never is again, so it kept the last reading. Every device that reads a wire now treats one with
+  no network behind it, or one that does not settle, as dead and reads zero: custom fixtures,
+  strip lights, the conduit box lamp and horn, the gang box horn strobes, the fire alarm panel's
+  feed, air handlers and condensers (and so thermostats' calls), the line ammeter, radios.
+- A gang box set into a wall came out upside down: the sneak that asked for the inset was also
+  read as Power Grid's half-turn-on-sneak placement. The inset box is now placed the way a box
+  on the wall would be.
+
 ## 0.106.2 — 2026-11-27
 
 ### Added

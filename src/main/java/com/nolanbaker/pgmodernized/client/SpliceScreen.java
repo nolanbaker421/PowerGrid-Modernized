@@ -832,7 +832,7 @@ public class SpliceScreen extends Screen {
                 var run = hub < 0 ? null : host.hubRun(hub);
                 var conductor = run == null ? null : run.conductor(host.conductorOf(pin.terminal));
                 if(conductor != null && hasShiftDown())
-                    Minecraft.getInstance().setScreen(new ConductorLabelScreen(pos, pin.terminal, pin.name, conductor.label()));
+                    Minecraft.getInstance().setScreen(new ConductorLabelScreen(pos, pin.terminal, pin.name, conductor.label(), conductor.colorIndex()));
                 else if(conductor != null)
                     PacketDistributor.sendToServer(new SplicePayload(pos, SplicePayload.RECOLOR, pin.terminal, (conductor.colorIndex() + 1) % ConductorColors.COUNT));
                 return true;

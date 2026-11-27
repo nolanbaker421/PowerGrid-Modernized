@@ -40,6 +40,7 @@ public class LineAmmeterBlockEntity extends ElectricBlockEntity implements IHave
 
     private ElectricWire shunt;
     private final AcReadings.Filter reading = new AcReadings.Filter();
+    private final com.nolanbaker.pgmodernized.util.Settled settled = new com.nolanbaker.pgmodernized.util.Settled();
     private float current;
     private float syncedCurrent;
 
@@ -99,8 +100,8 @@ public class LineAmmeterBlockEntity extends ElectricBlockEntity implements IHave
     public void electricalTick() {
         if(shunt == null)
             return;
-        reading.sample(shunt);
-        float value = shunt.isConverged() ? (float) reading.signedRmsCurrent() : 0;
+        settled.sample(shunt, reading);
+        float value = (float) reading.signedRmsCurrent();
         current = Float.isFinite(value) ? value : 0;
     }
 

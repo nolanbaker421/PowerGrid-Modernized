@@ -45,6 +45,7 @@ public class CondenserBlockEntity extends ElectricBlockEntity implements IDevice
     private SwitchedWire compressor, fan;
     private ElectricWire coil, sense;
     private AcReadings.Filter feedReading, coilReading, compressorReading;
+    private final com.nolanbaker.pgmodernized.util.Settled senseSettled = new com.nolanbaker.pgmodernized.util.Settled(), coilSettled = new com.nolanbaker.pgmodernized.util.Settled(), compressorSettled = new com.nolanbaker.pgmodernized.util.Settled();
     private float feedVolts, coilAmps, amps;
     private boolean powered, called, running, lines;
     private int onTimer, offTimer, inrushTimer, lineCheck, humTimer;
@@ -153,12 +154,9 @@ public class CondenserBlockEntity extends ElectricBlockEntity implements IDevice
             coilReading = new AcReadings.Filter();
             compressorReading = new AcReadings.Filter();
         }
-        if(sense.isConverged())
-            feedReading.sample(sense);
-        if(coil.isConverged())
-            coilReading.sample(coil);
-        if(compressor.isConverged())
-            compressorReading.sample(compressor);
+        senseSettled.sample(sense, feedReading);
+        coilSettled.sample(coil, coilReading);
+        compressorSettled.sample(compressor, compressorReading);
         feedVolts = (float) AcReadings.finite(feedReading.rmsVoltage());
         coilAmps = (float) AcReadings.finite(coilReading.rmsCurrent());
         amps = running ? (float) AcReadings.finite(compressorReading.rmsCurrent()) : 0;

@@ -52,6 +52,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
     private final String[] zoneNames = new String[MAX_ZONES + 1];
     private final java.util.Map<Integer, Integer> zoneOf = new java.util.HashMap<>();
     private AcReadings.Filter feedReading;
+    private final com.nolanbaker.pgmodernized.util.Settled feedSettled = new com.nolanbaker.pgmodernized.util.Settled();
     private float feedVolts, idcVolts, nacVolts, idcAmps, nacAmps;
     private boolean powered, alarm, silenced, idcOpen, nacOpen;
     private State state = State.NORMAL;
@@ -451,8 +452,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
             return;
         if(feedReading == null)
             feedReading = new AcReadings.Filter();
-        if(feed.isConverged())
-            feedReading.sample(feed);
+        feedSettled.sample(feed, feedReading);
         feedVolts = (float) AcReadings.finite(feedReading.rmsVoltage());
         powered = feedVolts >= POWERED_VOLTS;
         idcAmps = powered && idc != null ? (float) AcReadings.finite(Math.abs(idc.getCurrent())) : 0;
