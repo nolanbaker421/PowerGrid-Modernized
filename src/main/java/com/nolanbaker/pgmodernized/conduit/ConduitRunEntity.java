@@ -232,6 +232,17 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
         return getItem() instanceof ConduitItem conduit ? conduit.size() : ConduitSize.HALF;
     }
 
+    /** A fixture whose mount knockout faces a chaseway sleeve in the block it hangs from; the fixture lays this nipple. */
+    private static boolean isChased(@Nullable net.minecraft.world.level.block.entity.BlockEntity fixture, @Nullable net.minecraft.world.level.block.entity.BlockEntity chaseway, BlockWireEndpoint chasewayEnd) {
+        if(!(fixture instanceof com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlockEntity f) || !(chaseway instanceof ChasewayBlockEntity c))
+            return false;
+        if(!(f.getBlockState().getBlock() instanceof com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock)
+                || !com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.support(f.getBlockState(), f.getBlockPos()).equals(c.getBlockPos()))
+            return false;
+        int hub = ChasewayBlock.LAYOUT.hubAt(chasewayEnd.getTerminal());
+        return hub >= 0 && c.hasSleeve(ChasewayBlock.slotOfHub(hub));
+    }
+
     private static boolean isGutter(@Nullable net.minecraft.world.level.block.entity.BlockEntity be) {
         return be instanceof PullBoxBlockEntity || be instanceof com.nolanbaker.pgmodernized.conduit.trough.ITroughSection;
     }
@@ -257,8 +268,9 @@ public class ConduitRunEntity extends BlockWireEntity implements BodyRider {
             return;
         var beA = level().getBlockEntity(a.getPos());
         var beB = level().getBlockEntity(b.getPos());
-        // A gutter (pull box or trough section) against a panel (head or extension), either way round.
-        boolean pair = (isGutter(beA) && isPanel(beB)) || (isGutter(beB) && isPanel(beA));
+        // A gutter (pull box or trough section) against a panel (head or extension), either way round,
+        // or a fixture against the chaseway sleeve in the block it hangs from.
+        boolean pair = (isGutter(beA) && isPanel(beB)) || (isGutter(beB) && isPanel(beA)) || isChased(beA, beB, b) || isChased(beB, beA, a);
         if(!pair || !a.getPos().closerThan(b.getPos(), 1.5))
             kill();
     }

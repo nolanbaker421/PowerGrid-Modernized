@@ -44,6 +44,13 @@ public final class FixtureDraw {
             if(p.material == FixturePart.Material.GLOW && !lit)
                 color = shade(color, 0.55f);
             float alpha = p.material == FixturePart.Material.GLASS ? 0.45f : 1;
+            ms.pushPose();
+            if(p.rotated()) {
+                double cx = at(p.x + p.w / 2.0), cy = at(p.y + p.h / 2.0), cz = at(p.z + p.d / 2.0);
+                ms.translate(cx, cy, cz);
+                ms.mulPose(p.rotation());
+                ms.translate(-cx, -cy, -cz);
+            }
             switch(p.kind) {
                 case BOX -> box(ms, buffer, partLight, p.x, p.y, p.z, p.x + p.w, p.y + p.h, p.z + p.d, color, alpha, p.material);
                 case CONE -> cone(ms, buffer, partLight, p, color, alpha);
@@ -53,6 +60,7 @@ public final class FixtureDraw {
                 case TEXT -> text(ms, buffer, partLight, p, color, textRange);
                 case CYLINDER -> cylinder(ms, buffer, partLight, p, color, alpha);
             }
+            ms.popPose();
         }
     }
 

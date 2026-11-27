@@ -35,7 +35,7 @@ import java.util.function.IntConsumer;
  * the designer; Build saves it and turns a fixture blank into a fixture that carries it.
  */
 public class FixtureDesignerScreen extends Screen {
-    private static final int PANEL_W = 430, PANEL_H = 238, LIST_ROWS = 12, ROW_H = 10;
+    private static final int PANEL_W = 430, PANEL_H = 262, LIST_ROWS = 12, ROW_H = 10;
     private static final int BG = 0xE0202024, EDGE = 0xFF606068, TEXT = 0xFFE8E8E8, DIM = 0xFF909098, SEL = 0x60FFE040;
     private static final int[] SWATCHES = {0xF2F2EE, 0x3A3C40, 0xB8BCC2, 0xC88A3C, 0x8B5A2B, 0x2E7D6B, 0x2F6FD6, 0xC62828, 0xE0C020, 0x111111};
 
@@ -97,9 +97,9 @@ public class FixtureDesignerScreen extends Screen {
         addRenderableWidget(Button.builder(Component.literal("▲"), b -> move(-1)).bounds(bx + 72, by + 44, 16, 13).build());
         addRenderableWidget(Button.builder(Component.literal("▼"), b -> move(1)).bounds(bx + 90, by + 44, 16, 13).build());
         // Fresh starts: each replaces the whole design.
-        addRenderableWidget(Button.builder(Component.literal("Sconce"), b -> replace(FixtureDesign.sconce())).bounds(fieldsX, panelY + 196, 48, 13).build());
-        addRenderableWidget(Button.builder(Component.literal("Lamp"), b -> replace(FixtureDesign.tableLamp())).bounds(fieldsX + 50, panelY + 196, 48, 13).build());
-        addRenderableWidget(Button.builder(Component.literal("Sign"), b -> replace(FixtureDesign.sign())).bounds(fieldsX + 100, panelY + 196, 48, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Sconce"), b -> replace(FixtureDesign.sconce())).bounds(fieldsX, panelY + 220, 48, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Lamp"), b -> replace(FixtureDesign.tableLamp())).bounds(fieldsX + 50, panelY + 220, 48, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Sign"), b -> replace(FixtureDesign.sign())).bounds(fieldsX + 100, panelY + 220, 48, 13).build());
         // Saved designs on this computer, and the clipboard.
         addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.fixture.files"), b -> Minecraft.getInstance().setScreen(FileScreen.fixtures(this)))
                 .bounds(panelX + PANEL_W - 52, panelY + 4, 44, 13).build());
@@ -113,6 +113,9 @@ public class FixtureDesignerScreen extends Screen {
             number(fx, fy + 26, "W", p.w, v -> p.w = v);
             number(fx + 50, fy + 26, "H", p.h, v -> p.h = v);
             number(fx + 100, fy + 26, "D", p.d, v -> p.d = v);
+            number(fx, fy + 96, "Rx", p.rx, v -> p.rx = v);
+            number(fx + 50, fy + 96, "Ry", p.ry, v -> p.ry = v);
+            number(fx + 100, fy + 96, "Rz", p.rz, v -> p.rz = v);
             addRenderableWidget(Button.builder(Component.literal("Face: " + p.face.getSerializedName()), b -> {
                 p.face = Direction.values()[(p.face.ordinal() + 1) % 6];
                 b.setMessage(Component.literal("Face: " + p.face.getSerializedName()));
@@ -166,8 +169,8 @@ public class FixtureDesignerScreen extends Screen {
 
     private void number(int x, int y, String label, int value, IntConsumer apply) {
         var box = new EditBox(font, x, y + 10, 44, 12, Component.literal(label));
-        box.setMaxLength(3);
-        box.setFilter(s -> s.isEmpty() || s.matches("\\d{1,3}"));
+        box.setMaxLength(4);
+        box.setFilter(s -> s.isEmpty() || s.equals("-") || s.matches("-?\\d{1,3}"));
         box.setValue(Integer.toString(value));
         box.setResponder(s -> {
             if(s.isEmpty())
@@ -261,7 +264,7 @@ public class FixtureDesignerScreen extends Screen {
         if(p == null || design.parts.size() >= FixtureDesign.MAX_PARTS)
             return;
         var c = p.copy();
-        c.x = Math.min(FixturePart.CUBE - 1, c.x + 2);
+        c.x = Math.min(FixturePart.SPAN_MAX - 1, c.x + 2);
         design.parts.add(selected + 1, c);
         selected += 1;
         rebuild();
@@ -304,7 +307,7 @@ public class FixtureDesignerScreen extends Screen {
             }
         }
         var p = part();
-        if(button == 0 && p != null && my >= panelY + 130 && my < panelY + 142 && mx >= fieldsX && mx < fieldsX + SWATCHES.length * 14) {
+        if(button == 0 && p != null && my >= panelY + 156 && my < panelY + 168 && mx >= fieldsX && mx < fieldsX + SWATCHES.length * 14) {
             p.color = SWATCHES[(int) ((mx - fieldsX) / 14)];
             if(colorField != null)
                 colorField.setValue(String.format("%06X", p.color));
@@ -403,11 +406,12 @@ public class FixtureDesignerScreen extends Screen {
         return mx >= r[0] && mx <= r[2] && my >= r[1] && my <= r[3];
     }
 
-    /** The screen rectangle round a part's eight corners: {left, top, right, bottom}. */
+    /** The screen rectangle round a part's eight corners, turned as the part is: {left, top, right, bottom}. */
     private static float[] rect(Matrix4f view, FixturePart p) {
         float[] r = {Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
+        var q = p.rotation();
         for(int c = 0; c < 8; ++c) {
-            var v = view.transformPosition(new Vector3f(p.x + ((c & 1) == 0 ? 0 : p.w), p.y + ((c & 2) == 0 ? 0 : p.h), p.z + ((c & 4) == 0 ? 0 : p.d)));
+            var v = view.transformPosition(p.corner(c, q));
             r[0] = Math.min(r[0], v.x);
             r[1] = Math.min(r[1], v.y);
             r[2] = Math.max(r[2], v.x);
@@ -529,13 +533,13 @@ public class FixtureDesignerScreen extends Screen {
             graphics.drawString(font, Component.translatable("powergrid.gui.fixture.colour"), fieldsX + 76, panelY + 102, DIM, false);
             for(int i = 0; i < SWATCHES.length; ++i) {
                 int x = fieldsX + i * 14;
-                graphics.fill(x, panelY + 130, x + 12, panelY + 142, 0xFF000000 | SWATCHES[i]);
+                graphics.fill(x, panelY + 156, x + 12, panelY + 168, 0xFF000000 | SWATCHES[i]);
                 if(SWATCHES[i] == p.color)
-                    graphics.renderOutline(x - 1, panelY + 129, 14, 14, 0xFFFFE040);
+                    graphics.renderOutline(x - 1, panelY + 155, 14, 14, 0xFFFFE040);
             }
             var hint = Component.translatable("powergrid.gui.fixture.hint").getString().split("\\n");
             for(int i = 0; i < hint.length; ++i)
-                graphics.drawString(font, hint[i], fieldsX, panelY + 146 + i * 10, DIM, false);
+                graphics.drawString(font, hint[i], fieldsX, panelY + 174 + i * 10, DIM, false);
         } else {
             graphics.drawString(font, Component.translatable("powergrid.gui.fixture.none"), fieldsX, panelY + 32, DIM, false);
         }

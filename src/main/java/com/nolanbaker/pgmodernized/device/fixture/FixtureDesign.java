@@ -124,7 +124,7 @@ public final class FixtureDesign {
     public VoxelShape anchorShape() {
         var shape = Shapes.empty();
         for(var p : parts) {
-            var box = new AABB(p.x, p.y, p.z, p.x + p.w, p.y + p.h, p.z + p.d)
+            var box = p.bounds()
                     .intersect(new AABB(FixturePart.ANCHOR_MIN, FixturePart.ANCHOR_MIN, FixturePart.ANCHOR_MIN, FixturePart.ANCHOR_MAX, FixturePart.ANCHOR_MAX, FixturePart.ANCHOR_MAX));
             if(box.getXsize() <= 0 || box.getYsize() <= 0 || box.getZsize() <= 0)
                 continue;

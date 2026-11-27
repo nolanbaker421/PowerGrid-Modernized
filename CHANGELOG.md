@@ -4,6 +4,20 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.101.0 — 2026-11-27
+
+### Added
+- Fixture parts turn: Rx, Ry and Rz degrees under a part's size spin it about its own centre, X
+  first, then Y, then Z. Drawing, picking in the designer and the block's click shape follow.
+- Designs reach two blocks each way round the anchor, five in all, instead of one; coordinates
+  run from -16 to 64 and old designs fit unchanged. Wide signs and long chandeliers are possible.
+- A fixture lays a nipple to a chaseway sleeve that ends behind its mount knockout, as a pull box
+  does to its panel, so a run from the room beyond pulls straight through to the fixture. The
+  nipple goes when either end does.
+
+### Changed
+- The designer panel is taller to fit the rotation row; swatches, hints and presets moved down.
+
 ## 0.100.0 — 2026-11-27
 
 ### Added

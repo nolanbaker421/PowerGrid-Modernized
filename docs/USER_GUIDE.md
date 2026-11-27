@@ -278,8 +278,9 @@ end from the next, pull the wires through both, and they pass straight through: 
 one run is the first wire of the other, and so on down the slots. There is nothing to splice and
 nothing to open.
 
-Break a chaseway and you get the block and every chaseway back. A ceiling fixture's top knockout
-is made for one: a chaseway in the ceiling block above it takes the run on from the room above.
+Break a chaseway and you get the block and every chaseway back. A fixture's mount knockout is
+made for one: a sleeve in the block the fixture hangs from, ending behind that knockout, gets a
+nipple from the fixture on its own, and the run from the room above lands on the sleeve's far end.
 
 ### Wire Trough
 
@@ -1060,9 +1061,12 @@ the arrow keys and PgUp/PgDn nudge the selected part a pixel, Ctrl with them res
 makes the step four, and Delete removes it. The numbers on the right follow. Parts are
 boxes, cones (shades, with a taper), globes, chains, sockets, text and cylinders (round tubes
 along their Face, for stems, arms and neon), each placed by pixel in a
-three-block cube round the anchor block, which shows as a ghost with the canopy plate and its
+five-block cube round the anchor block, which shows as a ghost with the canopy plate and its
 knockouts; the anchor is pixels 16 to 32
-on every axis, up is up, and for a wall fixture the wall is the far face. Each part has a
+on every axis (the cube runs from -16 to 64), up is up, and for a wall fixture the wall is the
+far face. Every part can be turned about its own centre with the Rx, Ry and Rz degrees under its
+size: about X first, then Y, then Z, so a sconce arm leans, a shade tilts, a sign hangs at an
+angle. Turned parts are drawn and picked as turned; the block's click shape is the box round them. Each part has a
 colour, from the swatches or typed as hex, and a material: matte, metal, glass or glow, and glow
 parts light up with the lamp. A **text** part is lettering in the game's font, up to sixteen
 characters, drawn on the side of its box that its Face names and scaled to fit. Every text part
@@ -1075,9 +1079,9 @@ buttons under the part list start a design over from one of those. **Files** at 
 saves the design under a name on your own computer (`powergrid_modernized/fixtures/` in the game
 folder) and loads one back, in any world or on any server, the way PLC programs are kept; Copy
 text and Paste text move a design through the clipboard, so one is shared as a block of text.
-A design spans three blocks
-each way round its anchor, so a sign is at most three blocks wide; only what falls inside the
-anchor block can be clicked. Mount says what holds the fixture up: the block above, the block
+A design spans two blocks
+each way round its anchor, five in all, so a sign is at most five blocks wide; only what falls
+inside the anchor block can be clicked. Mount says what holds the fixture up: the block above, the block
 behind, or the block below. The small grid by the name is where the **junction box** (the canopy
 with its knockouts) sits on that face: nine positions, four pixels apart, the middle one by
 default; the ghost in the preview moves with it, so a sconce's arm or a sign's cabinet can meet
@@ -1089,7 +1093,10 @@ A placed fixture draws itself round its anchor block on a canopy plate at its mo
 design put its box (a floor
 fixture has no plate: its design supplies the base, and its knockouts lie flat on the floor at
 the base's edges), with three knockouts: one on the mounting face itself (top for a ceiling fixture, back for a
-wall one, bottom for a floor one), for a run that comes through the block by a chaseway, and one
+wall one, bottom for a floor one), for a run that comes through the block by a chaseway: put a
+sleeve in that block ending behind the knockout and the fixture lays a nipple to it on its own,
+as a pull box does to its panel, so a run into the sleeve's far end pulls straight through to the
+fixture. The other two knockouts are one
 on each of two sides of the canopy for runs along the surface, left and right of a ceiling or
 floor fixture, above and below a wall one. L and N are behind them. Every socket takes the same lamp: right-click with a stack of bulbs and one goes in each
 socket; sneak-click with an empty hand to take them out; an empty hand opens the readings and
