@@ -1204,7 +1204,10 @@ drop. A mistake costs the bad piece, which the wire cutters take, not the whole 
 **In the wall.** A gang box can be set into a wall instead of hung on it: sneak-right-click a
 plain solid block with the box in hand and that block becomes the box, still looking, sounding and
 dropping like the wall it was, with the plate flush on the face you clicked and the body and
-knockouts inside. Conduit bent from one of its knockouts to any other knockout is laid concealed
+knockouts inside. The knockouts cannot be seen or clicked, so conduit clicked anywhere on the
+plate takes the free one nearest the click: the upper half of the plate for the knockout above,
+the lower half for the one below, the ends for the side ones of a 3-gang; the preview shows which.
+Conduit bent from one of its knockouts to any other knockout is laid concealed
 through the wall (see *Wiring inside the walls*), and a chase whose sleeve ends in the block
 beside it links to it on its own, so a wall of receptacles and switches shows nothing but plates.
 Wire in hand on the box pulls into its concealed run; wire cutters on it pull the last wire back

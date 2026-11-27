@@ -358,7 +358,7 @@
   "item.powergrid_modernized.gang_receptacle": "Duplex Receptacle",
   "item.powergrid_modernized.weatherproof_receptacle_cover": "Weatherproof Receptacle Cover",
   "item.powergrid_modernized.weatherproof_switch_cover": "Weatherproof Switch Cover",
-  "powergrid.gang.tooltip.inset": "Sneak-right-click a solid wall block to set the box into it, plate flush with the wall. Conduit bent from its knockouts runs concealed through the wall; wire on the box pulls into it",
+  "powergrid.gang.tooltip.inset": "Sneak-right-click a solid wall block to set the box into it, plate flush with the wall. Conduit clicked on the plate takes the nearest knockout inside and runs concealed through the wall; wire on the box pulls into it",
   "powergrid.gang.cover.tooltip.weatherproof_receptacle_cover": "Right-click a gang box's receptacle to hood it; the lid swings up while a cord is plugged in. Sneak-click to take it off",
   "powergrid.gang.cover.tooltip.weatherproof_switch_cover": "Right-click a gang box's switch to cover it; the lever works the switch. Sneak-click to take it off",
   "powergrid.message.gang.cover_fits_weatherproof_receptacle_cover": "This cover goes over a receptacle in a gang box",

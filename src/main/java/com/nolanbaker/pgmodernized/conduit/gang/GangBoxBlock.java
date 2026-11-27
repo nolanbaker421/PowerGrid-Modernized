@@ -246,7 +246,36 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
             if(hub != null && hub.check(local))
                 return t;
         }
-        return -1;
+        return conduitTerminalAt(state, level(context), pos, local);
+    }
+
+    private static Level level(UseOnContext context) {
+        return context.getLevel();
+    }
+
+    /**
+     * The knockout conduit clicked at a block-local point goes to when none was hit directly: on a
+     * box set into a wall, whose knockouts are inside the block, the free knockout nearest the
+     * click across the plate (the upper half of the plate for the one above, the lower for the one
+     * below, left and right on a 3-gang), as a hub terminal, or -1. Hung boxes need the knockout itself.
+     */
+    public int conduitTerminalAt(BlockState state, Level level, BlockPos pos, Vec3 local) {
+        if(!inset(state) || !(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be))
+            return -1;
+        var frame = GangFrame.toFrame(state, local).scale(16);
+        int best = -1;
+        double bestDistance = Double.MAX_VALUE;
+        for(int h = 0; h < GangLayout.hubCount(gangs); ++h) {
+            if(be.hubRun(h) != null)
+                continue;
+            var centre = GangLayout.hub(gangs, h).getCenter();
+            double distance = Math.hypot(frame.x - centre.x, frame.z - centre.z);
+            if(distance < bestDistance) {
+                bestDistance = distance;
+                best = h;
+            }
+        }
+        return best < 0 ? -1 : GangLayout.hubTerminal(best);
     }
 
     @Override

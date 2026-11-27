@@ -133,6 +133,8 @@ public final class ConduitPreview {
             if(electric != null && level.getBlockEntity(pos) instanceof ISpliceHost host) {
                 var state = level.getBlockState(pos);
                 int index = electric.terminalIndexAt(state, local);
+                if(host.hubAt(index) < 0 && state.getBlock() instanceof com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlock gang)
+                    index = gang.conduitTerminalAt(state, level, pos, local);   // a box in the wall: its knockouts are inside, the plate stands for them
                 if(host.hubAt(index) >= 0) {
                     // A knockout: the run ends on the terminal itself.
                     hitTerminal = electric.terminal(state, index);

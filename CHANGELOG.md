@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.104.1 — 2026-11-27
+
+### Fixed
+- A gang box set into a wall could not start or take a conduit run: its knockouts are inside the
+  block, with nothing to click. Conduit clicked anywhere on its plate now takes the free knockout
+  nearest the click (upper half of the plate for the one above, lower for the one below, the ends
+  for a 3-gang's side ones), and the aiming preview shows the same choice.
+
 ## 0.104.0 — 2026-11-27
 
 ### Added
