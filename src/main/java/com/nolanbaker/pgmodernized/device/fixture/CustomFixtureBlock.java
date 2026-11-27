@@ -39,24 +39,26 @@ import org.patryk3211.powergrid.utility.Lang;
 
 /**
  * A fixture made in the designer: one anchor block that draws the whole design round itself,
- * holds its bulbs, and carries L and N behind a knockout on the face it mounts by. Its shape is
+ * holds its bulbs, and carries L and N behind three knockouts on the canopy plate at its mount:
+ * one on the mounting face itself, for a run that comes through the block by a chaseway, and one
+ * on each of two canopy sides for runs along the surface. Its shape is
  * whatever of the design falls inside the anchor block. It hangs from the block above, off the
  * block behind or stands on the block below as the design says, and drops as its item, design
  * and all, when that block goes.
  */
 public class CustomFixtureBlock extends HorizontalElectricBlock implements IBE<CustomFixtureBlockEntity> {
-    public static final int L = 0, N = 1, BASE_COUNT = 2, HUB = 0;
+    public static final int L = 0, N = 1, BASE_COUNT = 2, HUB_MOUNT = 0, HUB_A = 1, HUB_B = 2, HUB_COUNT = 3;
     public static final EnumProperty<FixtureDesign.Mount> MOUNT = EnumProperty.create("mount", FixtureDesign.Mount.class);
     public static final IntegerProperty LIGHT = IntegerProperty.create("light", 0, 15);
     private static final AABB HIDDEN = new AABB(7.99, 7.99, 7.99, 8.01, 8.01, 8.01);
-    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, 1, new int[] {L, N});
+    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUB_COUNT, new int[] {L, N});
 
     public CustomFixtureBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState().setValue(MOUNT, FixtureDesign.Mount.CEILING).setValue(LIGHT, 0));
         setTerminalCollection(StateTerminals.horizontalNorth(this,
-                state -> DeviceHubs.withHubs(canopy(state.getValue(MOUNT)), hub(state.getValue(MOUNT))),
-                state -> DeviceHubs.withHubs(terminals(), HIDDEN, hub(state.getValue(MOUNT)))));
+                state -> DeviceHubs.withHubs(canopy(state.getValue(MOUNT)), hubs(state.getValue(MOUNT))),
+                state -> DeviceHubs.withHubs(terminals(), HIDDEN, hubs(state.getValue(MOUNT)))));
     }
 
     @Override
@@ -65,12 +67,18 @@ public class CustomFixtureBlock extends HorizontalElectricBlock implements IBE<C
         builder.add(MOUNT, LIGHT);
     }
 
-    /** The knockout sits on the mounting face: top for a ceiling fixture, back for a wall one, bottom for a floor one. */
-    public static AABB hub(FixtureDesign.Mount mount) {
+    /**
+     * Three knockouts on the canopy, in the north frame. The first is on the mounting face itself
+     * (top of a ceiling fixture, back of a wall one, bottom of a floor one), for a run that comes
+     * through the block it hangs from by a chaseway. The other two are on canopy sides, for runs
+     * along the surface: left and right of a ceiling or floor fixture, above and below a wall one.
+     * Mirrored by {@code tools/gen_light_assets.py}; change both.
+     */
+    public static AABB[] hubs(FixtureDesign.Mount mount) {
         return switch(mount) {
-            case CEILING -> new AABB(7, 15, 7, 9, 16, 9);
-            case WALL -> new AABB(7, 7, 15, 9, 9, 16);
-            case FLOOR -> new AABB(7, 0, 7, 9, 1, 9);
+            case CEILING -> new AABB[] {new AABB(7, 15, 7, 9, 16, 9), new AABB(11, 13.5, 7, 12, 15.5, 9), new AABB(4, 13.5, 7, 5, 15.5, 9)};
+            case WALL -> new AABB[] {new AABB(7, 7, 15, 9, 9, 16), new AABB(7, 11, 13.5, 9, 12, 15.5), new AABB(7, 4, 13.5, 9, 5, 15.5)};
+            case FLOOR -> new AABB[] {new AABB(7, 0, 7, 9, 1, 9), new AABB(11, 0.5, 7, 12, 2.5, 9), new AABB(4, 0.5, 7, 5, 2.5, 9)};
         };
     }
 

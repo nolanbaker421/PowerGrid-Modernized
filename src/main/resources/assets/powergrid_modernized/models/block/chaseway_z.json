@@ -1,0 +1,145 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "sleeve": "powergrid_modernized:block/chaseway_sleeve",
+    "particle": "powergrid_modernized:block/chaseway_sleeve"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        5,
+        15.65
+      ],
+      "to": [
+        11,
+        11,
+        16.35
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            5,
+            11,
+            11
+          ],
+          "texture": "#sleeve"
+        },
+        "south": {
+          "uv": [
+            5,
+            5,
+            11,
+            11
+          ],
+          "texture": "#sleeve"
+        },
+        "east": {
+          "uv": [
+            15.299999999999997,
+            5,
+            16,
+            11
+          ],
+          "texture": "#sleeve"
+        },
+        "west": {
+          "uv": [
+            15.299999999999999,
+            5,
+            16,
+            11
+          ],
+          "texture": "#sleeve"
+        },
+        "up": {
+          "uv": [
+            5,
+            15.299999999999999,
+            11,
+            16
+          ],
+          "texture": "#sleeve"
+        },
+        "down": {
+          "uv": [
+            5,
+            15.299999999999997,
+            11,
+            16
+          ],
+          "texture": "#sleeve"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        5,
+        -0.35
+      ],
+      "to": [
+        11,
+        11,
+        0.35
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            5,
+            11,
+            11
+          ],
+          "texture": "#sleeve"
+        },
+        "south": {
+          "uv": [
+            5,
+            5,
+            11,
+            11
+          ],
+          "texture": "#sleeve"
+        },
+        "east": {
+          "uv": [
+            15.299999999999999,
+            5,
+            16,
+            11
+          ],
+          "texture": "#sleeve"
+        },
+        "west": {
+          "uv": [
+            15.299999999999999,
+            5,
+            16,
+            11
+          ],
+          "texture": "#sleeve"
+        },
+        "up": {
+          "uv": [
+            5,
+            15.299999999999999,
+            11,
+            16
+          ],
+          "texture": "#sleeve"
+        },
+        "down": {
+          "uv": [
+            5,
+            15.299999999999999,
+            11,
+            16
+          ],
+          "texture": "#sleeve"
+        }
+      }
+    }
+  ]
+}

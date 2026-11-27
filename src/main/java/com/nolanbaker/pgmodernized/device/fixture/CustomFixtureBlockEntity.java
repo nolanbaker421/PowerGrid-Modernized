@@ -123,7 +123,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
 
     @Override
     public @Nullable ConduitSize maxConduit(int hub) {
-        return hub == HUB ? ConduitSize.HALF : null;
+        return hub >= 0 && hub < HUB_COUNT ? ConduitSize.HALF : null;
     }
 
     @Override
@@ -134,11 +134,6 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     @Override
     public int landings(int hub) {
         return ConductorColors.COUNT;
-    }
-
-    @Override
-    public Component hubName(int hub) {
-        return Lang.builder().translate("strip_light.hub").component();
     }
 
     // ---- circuit ----

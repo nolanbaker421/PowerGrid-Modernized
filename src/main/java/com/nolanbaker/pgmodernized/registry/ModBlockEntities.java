@@ -150,6 +150,11 @@ public class ModBlockEntities {
                     .validBlocks(ModBlocks.PULL_BOX, ModBlocks.TERMINAL_CABINET)
                     .register();
 
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.conduit.ChasewayBlockEntity> CHASEWAY =
+            REGISTRATE.blockEntity("chaseway", com.nolanbaker.pgmodernized.conduit.ChasewayBlockEntity::new)
+                    .validBlock(ModBlocks.CHASEWAY)
+                    .register();
+
     public static final BlockEntityEntry<ConduitSwitchBlockEntity> CONDUIT_SWITCH =
             REGISTRATE.blockEntity("conduit_switch", ConduitSwitchBlockEntity::new)
                     .validBlocks(ModBlocks.CONDUIT_SWITCH, ModBlocks.CONDUIT_BUTTON)

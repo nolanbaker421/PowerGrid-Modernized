@@ -264,6 +264,20 @@ panel's. Pull wire through the nipple exactly as through any run, right-click it
 splice in the panel editor as usual. The nipple cannot be cut or picked up; it goes away when the
 box or the panel does. That is how feeders too big for a 2" panel knockout get in: up the gutter.
 
+### Chaseway
+
+A **Chaseway** is a sleeve through a solid block, for conduit that has to cross a wall, floor or
+ceiling without a hole in it. Hold one and right-click the face of a plain full block (stone,
+brick, concrete, planks, anything solid with nothing inside it) and the block becomes a chaseway
+running through along that face's axis: it keeps the block's look, sound and drop, and grows a
+small sleeve end on each of the two faces. Each end is a knockout that takes conduit up to 2".
+Land a run on one end from one room and a run on the other end from the next, pull the wires
+through both, and they pass straight through: the first wire of one run is the first wire of the
+other, and so on down the slots. There is nothing to splice and nothing to open.
+
+Break a chaseway and you get the block and the chaseway back. A ceiling fixture's top knockout is
+made for one: a chaseway in the ceiling block above it takes the run on from the room above.
+
 ### Wire Trough
 
 A gutter on the wall, eight pixels tall, that conduit lands on from above, below and both ends.
@@ -1041,7 +1055,8 @@ the view (Shift-drag moves it in and out), drag empty space to turn the view, sc
 the arrow keys and PgUp/PgDn nudge the selected part a pixel, Ctrl with them resizes it, Shift
 makes the step four, and Delete removes it. The numbers on the right follow. Parts are
 boxes, cones (shades, with a taper), globes, chains and sockets, each placed by pixel in a
-three-block cube round the anchor block, which shows as a ghost; the anchor is pixels 16 to 32
+three-block cube round the anchor block, which shows as a ghost with the canopy plate and its
+knockouts; the anchor is pixels 16 to 32
 on every axis, up is up, and for a wall fixture the wall is the far face. Each part has a
 colour, from the swatches or typed as hex, and a material: matte, metal, glass or glow, and glow
 parts light up with the lamp. Mount says what holds the fixture up: the block above, the block
@@ -1049,9 +1064,11 @@ behind, or the block below. Name it, and press **Build**: a **Fixture Blank** fr
 becomes a **Custom Fixture** item carrying the design, as many as you like. **Done** keeps the
 design on the designer.
 
-A placed fixture draws itself round its anchor block, takes conduit on a knockout at its mount
-(top for a ceiling fixture, back for a wall one, bottom for a floor one), and has L and N behind
-it. Every socket takes the same lamp: right-click with a stack of bulbs and one goes in each
+A placed fixture draws itself round its anchor block on a canopy plate at its mount, with three
+knockouts on the plate: one on the mounting face itself (top for a ceiling fixture, back for a
+wall one, bottom for a floor one), for a run that comes through the block by a chaseway, and one
+on each of two sides of the canopy for runs along the surface, left and right of a ceiling or
+floor fixture, above and below a wall one. L and N are behind them. Every socket takes the same lamp: right-click with a stack of bulbs and one goes in each
 socket; sneak-click with an empty hand to take them out; an empty hand opens the readings and
 splice editor. The fixture lights its block at the bulb's level. Break it and it comes back as
 its item with the design on it. Sneak-right-click a placed fixture with the designer to copy its

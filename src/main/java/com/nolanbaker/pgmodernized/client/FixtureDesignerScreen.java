@@ -2,6 +2,7 @@ package com.nolanbaker.pgmodernized.client;
 
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.math.Axis;
+import com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock;
 import com.nolanbaker.pgmodernized.device.fixture.FixtureDesign;
 import com.nolanbaker.pgmodernized.device.fixture.FixturePart;
 import com.nolanbaker.pgmodernized.network.packets.FixtureBuildPayload;
@@ -513,8 +514,14 @@ public class FixtureDesignerScreen extends Screen {
         var bulbModel = BreakerPanelModels.get(BreakerPanelModels.BULB_ON);
         FixtureDraw.draw(pose, buffers, LightTexture.FULL_BRIGHT, design, true, (ms, buf, light, lit) ->
                 renderer.renderModel(ms.last(), buf.getBuffer(RenderType.cutout()), null, bulbModel, 1, 1, 1, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, ModelData.EMPTY, RenderType.cutout()), selected);
-        // The anchor block, as a ghost, so the design can be placed round it.
+        // The anchor block, as a ghost, so the design can be placed round it; the canopy plate and its three
+        // knockouts as the placed fixture will have them, so parts can meet them.
         FixtureDraw.box(pose, buffers, LightTexture.FULL_BRIGHT, 16, 16, 16, 32, 32, 32, 0x80A0C0, 0.16f, FixturePart.Material.GLASS);
+        var canopy = CustomFixtureBlock.canopy(design.mount).bounds();
+        FixtureDraw.box(pose, buffers, LightTexture.FULL_BRIGHT, 16 + canopy.minX * 16, 16 + canopy.minY * 16, 16 + canopy.minZ * 16,
+                16 + canopy.maxX * 16, 16 + canopy.maxY * 16, 16 + canopy.maxZ * 16, 0xB8BCC2, 0.7f, FixturePart.Material.METAL);
+        for(var hub : CustomFixtureBlock.hubs(design.mount))
+            FixtureDraw.box(pose, buffers, LightTexture.FULL_BRIGHT, 16 + hub.minX, 16 + hub.minY, 16 + hub.minZ, 16 + hub.maxX, 16 + hub.maxY, 16 + hub.maxZ, 0x2FB8D6, 1, FixturePart.Material.MATTE);
         buffers.endBatch();
         Lighting.setupFor3DItems();
         pose.popPose();

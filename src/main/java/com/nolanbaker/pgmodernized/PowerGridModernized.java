@@ -109,6 +109,7 @@ public class PowerGridModernized {
             com.nolanbaker.pgmodernized.client.PonderSetup.init();
             NeoForge.EVENT_BUS.register(HelmClientHandler.class);
             bus.register(BreakerPanelModels.class);
+            bus.register(com.nolanbaker.pgmodernized.client.ChasewayModel.class);
             ForkHooks.get().registerClient(bus);
         }
 

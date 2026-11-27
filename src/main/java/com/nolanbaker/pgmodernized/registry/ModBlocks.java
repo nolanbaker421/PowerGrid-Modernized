@@ -605,6 +605,14 @@ public class ModBlocks {
                 .build()
             .register();
 
+    /** A sleeve through a solid block: two conduit ends and nothing else, wearing the look of the block it went through. */
+    public static final BlockEntry<com.nolanbaker.pgmodernized.conduit.ChasewayBlock> CHASEWAY = REGISTRATE.block("chaseway", com.nolanbaker.pgmodernized.conduit.ChasewayBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::stone)
+            .transform(pickaxeOnly())
+            .lang("Chaseway")
+            .register();
+
     /** A gutter on the wall that conduit lands on from above, below and both ends; sections to the right join its row. */
     public static final BlockEntry<WireTroughBlock> WIRE_TROUGH = REGISTRATE.block("wire_trough", WireTroughBlock::new)
             .blockstate(NonNullBiConsumer.noop())

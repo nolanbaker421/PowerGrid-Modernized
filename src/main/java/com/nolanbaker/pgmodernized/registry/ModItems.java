@@ -220,6 +220,12 @@ public class ModItems {
             .model(NonNullBiConsumer.noop())
             .lang("Fixture Blank")
             .register();
+
+    /** Used on a solid block's face, it sleeves conduit through that block. */
+    public static final ItemEntry<com.nolanbaker.pgmodernized.conduit.ChasewayItem> CHASEWAY = REGISTRATE.item("chaseway", com.nolanbaker.pgmodernized.conduit.ChasewayItem::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Chaseway")
+            .register();
     public static final ItemEntry<com.nolanbaker.pgmodernized.device.fixture.CustomFixtureItem> CUSTOM_FIXTURE = ItemEntry.cast(com.nolanbaker.pgmodernized.registry.ModBlocks.CUSTOM_FIXTURE.getSibling(net.minecraft.core.registries.Registries.ITEM));
 
     /** The installer's boresight scope: sights two antennas in on each other. */

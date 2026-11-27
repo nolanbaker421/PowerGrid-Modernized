@@ -25,6 +25,11 @@ def textures():
     img = canvas(16, 16, socket + (255,))
     fill(img, 0, 7, 16, 9, shade(socket, 0.8))
     write_png(os.path.join(TEX, "strip_light_socket.png"), img)
+    canopy = (0xB8, 0xBC, 0xC2)
+    img = canvas(16, 16, canopy + (255,))
+    fill(img, 0, 0, 16, 1, shade(canopy, 1.08))
+    fill(img, 0, 15, 16, 16, shade(canopy, 0.85))
+    write_png(os.path.join(TEX, "fixture_canopy.png"), img)
 
 
 def strip_light():
@@ -55,9 +60,23 @@ def strip_light():
     # The glow: a block with nothing to draw.
     dump(os.path.join(ASSETS, "models", "block", "strip_light_glow.json"), {"textures": {"particle": "minecraft:block/glass"}})
     dump(os.path.join(ASSETS, "blockstates", "strip_light_glow.json"), {"variants": {"": {"model": "%s:block/strip_light_glow" % MOD}}})
-    # The custom fixture draws itself; its block model is empty and its item a drawn icon.
-    dump(os.path.join(ASSETS, "models", "block", "custom_fixture.json"), {"textures": {"particle": "%s:block/strip_light_enamel" % MOD}})
-    dump(os.path.join(ASSETS, "blockstates", "custom_fixture.json"), {"variants": {"": {"model": "%s:block/custom_fixture" % MOD}}})
+    # The custom fixture draws its design itself; the block model is the canopy plate at its mount with its
+    # three knockouts, one model per mount. Mirrors CustomFixtureBlock.canopy() and hubs(); change both.
+    canopy_tex = {"canopy": "%s:block/fixture_canopy" % MOD, "knockout12": "%s:block/knockout_half" % MOD, "particle": "%s:block/fixture_canopy" % MOD}
+    mounts = {
+        "ceiling": ((4, 13, 4, 12, 16, 12), [(7, 15.65, 7, 9, 16, 9), (12, 13.5, 7, 12.35, 15.5, 9), (3.65, 13.5, 7, 4, 15.5, 9)]),
+        "wall": ((4, 4, 13, 12, 12, 16), [(7, 7, 15.65, 9, 9, 16), (7, 12, 13.5, 9, 12.35, 15.5), (7, 3.65, 13.5, 9, 4, 15.5)]),
+        "floor": ((4, 0, 4, 12, 3, 12), [(7, 0, 7, 9, 0.35, 9), (12, 0.5, 7, 12.35, 2.5, 9), (3.65, 0.5, 7, 4, 2.5, 9)]),
+    }
+    parts = []
+    for mount, (canopy, kos) in mounts.items():
+        elements = [element(*canopy, "#canopy")] + [element(*ko, "#knockout12") for ko in kos]
+        dump(os.path.join(ASSETS, "models", "block", "custom_fixture_%s.json" % mount), {"parent": "block/block", "textures": canopy_tex, "elements": elements})
+        for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
+            apply = {"model": "%s:block/custom_fixture_%s" % (MOD, mount)}
+            apply.update(rot)
+            parts.append({"when": {"mount": mount, "facing": facing}, "apply": apply})
+    dump(os.path.join(ASSETS, "blockstates", "custom_fixture.json"), {"multipart": parts})
     ITEM_TEX = os.path.join(ASSETS, "textures", "item")
     # Custom fixture icon: a pendant, chain and shade with a lit bulb.
     img = canvas(16, 16, (0, 0, 0, 0))

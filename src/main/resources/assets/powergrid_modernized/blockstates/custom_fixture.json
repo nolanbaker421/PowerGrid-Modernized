@@ -1,7 +1,121 @@
 {
-  "variants": {
-    "": {
-      "model": "powergrid_modernized:block/custom_fixture"
+  "multipart": [
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling"
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall"
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor"
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor",
+        "y": 270
+      }
     }
-  }
+  ]
 }

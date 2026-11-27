@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.97.0 — 2026-11-26
+
+### Added
+- Chaseway: used on a solid block's face, it sleeves that block along the face's axis. The block
+  keeps its look, sound and drop and gets a conduit knockout (up to 2") on each of the two faces;
+  wires pulled into one end come out of the other slot for slot, nothing to splice.
+- Custom fixtures now show a canopy plate at their mount with three visible knockouts: one on
+  the mounting face, for a chaseway through the block they hang from, and one on each of two
+  canopy sides for runs along the surface. The designer preview shows the plate and knockouts.
+
 ## 0.96.0 — 2026-11-26
 
 ### Added
