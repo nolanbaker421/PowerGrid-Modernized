@@ -191,7 +191,7 @@ public final class FixtureDraw {
         int segments = 8;
         for(int i = 0; i < segments; ++i) {
             double t0 = (i + 0.5) / segments * Math.PI * 2, t1 = (i + 1.5) / segments * Math.PI * 2, tm = (t0 + t1) / 2;
-            var normal = ring(axis, 0, 0, 0, Math.cos(tm), Math.sin(tm), 0).normalize();
+            var normal = dir(axis, Math.cos(tm) / ru, Math.sin(tm) / rv).normalize();   // an ellipse's normal, as a direction
             var p0 = ring(axis, cx, cy, cz, Math.cos(t0) * ru, Math.sin(t0) * rv, n0);
             var p1 = ring(axis, cx, cy, cz, Math.cos(t1) * ru, Math.sin(t1) * rv, n0);
             // Wind the facet the way box() winds a face: along "right" = normal x up, then up.
@@ -206,6 +206,15 @@ public final class FixtureDraw {
             cap(pose, c, light, shade(color, p.material == FixturePart.Material.METAL ? 1.2f : 1), a, centre1, q0, q1, up);
             cap(pose, c, light, shade(color, p.material == FixturePart.Material.METAL ? 0.6f : 0.8f), a, centre0, p0, p1, new org.joml.Vector3f(up).negate());
         }
+    }
+
+    /** A direction across the tube's section: (u, v) in the two axes that are not the tube's. */
+    private static org.joml.Vector3f dir(Direction.Axis axis, double u, double v) {
+        return switch(axis) {
+            case X -> new org.joml.Vector3f(0, (float) u, (float) v);
+            case Y -> new org.joml.Vector3f((float) u, 0, (float) v);
+            case Z -> new org.joml.Vector3f((float) u, (float) v, 0);
+        };
     }
 
     /** A point of the tube in pose units: (u, v) across the section and n along the axis, in design pixels. */

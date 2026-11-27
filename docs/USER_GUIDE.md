@@ -1077,8 +1077,9 @@ behind, or the block below. Name it, and press **Build**: a **Fixture Blank** fr
 becomes a **Custom Fixture** item carrying the design, as many as you like. **Done** keeps the
 design on the designer.
 
-A placed fixture draws itself round its anchor block on a canopy plate at its mount, with three
-knockouts on the plate: one on the mounting face itself (top for a ceiling fixture, back for a
+A placed fixture draws itself round its anchor block on a canopy plate at its mount (a floor
+fixture has no plate: its design supplies the base, and its knockouts lie flat on the floor at
+the base's edges), with three knockouts: one on the mounting face itself (top for a ceiling fixture, back for a
 wall one, bottom for a floor one), for a run that comes through the block by a chaseway, and one
 on each of two sides of the canopy for runs along the surface, left and right of a ceiling or
 floor fixture, above and below a wall one. L and N are behind them. Every socket takes the same lamp: right-click with a stack of bulbs and one goes in each

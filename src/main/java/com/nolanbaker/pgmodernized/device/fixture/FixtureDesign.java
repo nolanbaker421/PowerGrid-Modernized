@@ -68,10 +68,10 @@ public final class FixtureDesign {
         var d = new FixtureDesign();
         d.name = "Table Lamp";
         d.mount = Mount.FLOOR;
-        d.parts.add(new FixturePart(FixturePart.Kind.BOX, 19, 19, 19, 10, 2, 10, Direction.UP, 0x8B5A2B, FixturePart.Material.MATTE));
-        d.parts.add(new FixturePart(FixturePart.Kind.CYLINDER, 23, 21, 23, 2, 12, 2, Direction.UP, 0xC88A3C, FixturePart.Material.METAL));
-        d.parts.add(new FixturePart(FixturePart.Kind.SOCKET, 22, 33, 22, 4, 3, 4, Direction.UP, 0x3A3C40, FixturePart.Material.MATTE));
-        var shade = new FixturePart(FixturePart.Kind.CONE, 17, 34, 17, 14, 10, 14, Direction.UP, 0xE8D8B0, FixturePart.Material.MATTE);
+        d.parts.add(new FixturePart(FixturePart.Kind.BOX, 19, 16, 19, 10, 2, 10, Direction.UP, 0x8B5A2B, FixturePart.Material.MATTE));
+        d.parts.add(new FixturePart(FixturePart.Kind.CYLINDER, 23, 18, 23, 2, 12, 2, Direction.UP, 0xC88A3C, FixturePart.Material.METAL));
+        d.parts.add(new FixturePart(FixturePart.Kind.SOCKET, 22, 30, 22, 4, 3, 4, Direction.UP, 0x3A3C40, FixturePart.Material.MATTE));
+        var shade = new FixturePart(FixturePart.Kind.CONE, 17, 31, 17, 14, 10, 14, Direction.UP, 0xE8D8B0, FixturePart.Material.MATTE);
         shade.taper = 70;
         d.parts.add(shade);
         return d;

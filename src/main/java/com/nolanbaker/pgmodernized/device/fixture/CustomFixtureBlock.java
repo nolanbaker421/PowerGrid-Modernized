@@ -83,16 +83,19 @@ public class CustomFixtureBlock extends HorizontalElectricBlock implements IBE<C
         return switch(mount) {
             case CEILING -> new AABB[] {new AABB(7, 15, 7, 9, 16, 9), new AABB(11, 13.5, 7, 12, 15.5, 9), new AABB(4, 13.5, 7, 5, 15.5, 9)};
             case WALL -> new AABB[] {new AABB(7, 7, 15, 9, 9, 16), new AABB(7, 11, 13.5, 9, 12, 15.5), new AABB(7, 4, 13.5, 9, 5, 15.5)};
-            case FLOOR -> new AABB[] {new AABB(7, 0, 7, 9, 1, 9), new AABB(11, 0.5, 7, 12, 2.5, 9), new AABB(4, 0.5, 7, 5, 2.5, 9)};
+            case FLOOR -> new AABB[] {new AABB(7, 0, 7, 9, 1, 9), new AABB(11, 0, 7, 12, 2, 9), new AABB(4, 0, 7, 5, 2, 9)};
         };
     }
 
-    /** The least a fixture is: a canopy on its mounting face, so an empty design can still be clicked. */
+    /**
+     * The least a fixture is: a canopy on its mounting face, so an empty design can still be clicked.
+     * A floor fixture's is not drawn: its design supplies the base, and this is only the footprint.
+     */
     public static VoxelShape canopy(FixtureDesign.Mount mount) {
         return switch(mount) {
             case CEILING -> box(4, 13, 4, 12, 16, 12);
             case WALL -> box(4, 4, 13, 12, 12, 16);
-            case FLOOR -> box(4, 0, 4, 12, 3, 12);
+            case FLOOR -> box(4, 0, 4, 12, 2, 12);
         };
     }
 

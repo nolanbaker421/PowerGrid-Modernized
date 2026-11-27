@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.99.1 — 2026-11-26
+
+### Fixed
+- Cylinder parts drew see-through: their facet normals were offset like positions, so most
+  facets were wound backwards and culled.
+- Floor fixtures no longer show a canopy plate under the design; the Lamp preset's base sits on
+  the floor over its knockouts.
+
 ## 0.99.0 — 2026-11-26
 
 ### Added

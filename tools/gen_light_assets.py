@@ -66,11 +66,11 @@ def strip_light():
     mounts = {
         "ceiling": ((4, 13, 4, 12, 16, 12), [(7, 15.65, 7, 9, 16, 9), (12, 13.5, 7, 12.35, 15.5, 9), (3.65, 13.5, 7, 4, 15.5, 9)]),
         "wall": ((4, 4, 13, 12, 12, 16), [(7, 7, 15.65, 9, 9, 16), (7, 12, 13.5, 9, 12.35, 15.5), (7, 3.65, 13.5, 9, 4, 15.5)]),
-        "floor": ((4, 0, 4, 12, 3, 12), [(7, 0, 7, 9, 0.35, 9), (12, 0.5, 7, 12.35, 2.5, 9), (3.65, 0.5, 7, 4, 2.5, 9)]),
+        "floor": (None, [(7, 0, 7, 9, 0.35, 9), (12, 0, 7, 12.35, 2, 9), (3.65, 0, 7, 4, 2, 9)]),   # no plate: the design's base is the canopy
     }
     parts = []
     for mount, (canopy, kos) in mounts.items():
-        elements = [element(*canopy, "#canopy")] + [element(*ko, "#knockout12") for ko in kos]
+        elements = ([element(*canopy, "#canopy")] if canopy else []) + [element(*ko, "#knockout12") for ko in kos]
         dump(os.path.join(ASSETS, "models", "block", "custom_fixture_%s.json" % mount), {"parent": "block/block", "textures": canopy_tex, "elements": elements})
         for facing, rot in (("north", {}), ("east", {"y": 90}), ("south", {"y": 180}), ("west", {"y": 270})):
             apply = {"model": "%s:block/custom_fixture_%s" % (MOD, mount)}
