@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.network.packets;
 
+import com.nolanbaker.pgmodernized.device.fixture.CustomFixtureItem;
 import com.nolanbaker.pgmodernized.device.fixture.FixtureDesign;
 import com.nolanbaker.pgmodernized.device.fixture.FixtureDesignerItem;
 import com.nolanbaker.pgmodernized.registry.ModItems;
@@ -35,7 +36,7 @@ public record FixtureBuildPayload(boolean offHand, CompoundTag design) implement
     public static void handle(FixtureBuildPayload payload, IPayloadContext context) {
         var player = context.player();
         var stack = player.getItemInHand(payload.offHand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
-        if(!(stack.getItem() instanceof FixtureDesignerItem))
+        if(!(stack.getItem() instanceof FixtureDesignerItem) && !(stack.getItem() instanceof CustomFixtureItem))
             return;
         var design = FixtureDesign.read(payload.design);
         design.putOn(stack);

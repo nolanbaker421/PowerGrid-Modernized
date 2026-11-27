@@ -15,6 +15,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -49,6 +50,9 @@ public class FixtureDesignerScreen extends Screen {
     private final Vector3f dragAcc = new Vector3f();
     private final java.util.Map<String, EditBox> numbers = new java.util.HashMap<>();
     private EditBox nameField, colorField;
+    /** The three by three grid that places the junction box, drawn by the name field. */
+    private int gridX, gridY;
+    private static final int GRID_CELL = 4, GRID_GAP = 1, GRID_SIZE = 3 * GRID_CELL + 2 * GRID_GAP;
 
     public FixtureDesignerScreen(InteractionHand hand, FixtureDesign design) {
         super(Component.translatable("powergrid.gui.fixture.title"));
@@ -93,9 +97,12 @@ public class FixtureDesignerScreen extends Screen {
         addRenderableWidget(Button.builder(Component.literal("▲"), b -> move(-1)).bounds(bx + 72, by + 44, 16, 13).build());
         addRenderableWidget(Button.builder(Component.literal("▼"), b -> move(1)).bounds(bx + 90, by + 44, 16, 13).build());
         // Fresh starts: each replaces the whole design.
-        addRenderableWidget(Button.builder(Component.literal("Sconce"), b -> preset(FixtureDesign.sconce())).bounds(fieldsX, panelY + 196, 48, 13).build());
-        addRenderableWidget(Button.builder(Component.literal("Lamp"), b -> preset(FixtureDesign.tableLamp())).bounds(fieldsX + 50, panelY + 196, 48, 13).build());
-        addRenderableWidget(Button.builder(Component.literal("Sign"), b -> preset(FixtureDesign.sign())).bounds(fieldsX + 100, panelY + 196, 48, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Sconce"), b -> replace(FixtureDesign.sconce())).bounds(fieldsX, panelY + 196, 48, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Lamp"), b -> replace(FixtureDesign.tableLamp())).bounds(fieldsX + 50, panelY + 196, 48, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Sign"), b -> replace(FixtureDesign.sign())).bounds(fieldsX + 100, panelY + 196, 48, 13).build());
+        // Saved designs on this computer, and the clipboard.
+        addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.fixture.files"), b -> Minecraft.getInstance().setScreen(FileScreen.fixtures(this)))
+                .bounds(panelX + PANEL_W - 52, panelY + 4, 44, 13).build());
 
         var p = part();
         int fx = fieldsX, fy = panelY + 32;
@@ -143,7 +150,9 @@ public class FixtureDesignerScreen extends Screen {
             design.mount = FixtureDesign.Mount.values()[(design.mount.ordinal() + 1) % 3];
             b.setMessage(Component.literal("Mount: " + design.mount.getSerializedName()));
         }).bounds(panelX + 8, my, 96, 14).build());
-        nameField = new EditBox(font, panelX + 110, my, 120, 14, Component.literal("name"));
+        nameField = new EditBox(font, panelX + 110, my, 110, 14, Component.literal("name"));
+        gridX = panelX + 226;
+        gridY = my;
         nameField.setMaxLength(FixtureDesign.NAME_LENGTH);
         nameField.setValue(design.name);
         nameField.setResponder(s -> design.name = s);
@@ -229,13 +238,19 @@ public class FixtureDesignerScreen extends Screen {
         rebuild();
     }
 
-    /** Starts over from a preset: its parts, mount and name replace the design's. */
-    private void preset(FixtureDesign from) {
+    /** The design as it stands, for saving. */
+    public CompoundTag designTag() {
+        return design.write();
+    }
+
+    /** Starts over from a preset or a loaded design: its parts, mount and name replace the design's. */
+    public void replace(FixtureDesign from) {
         design.parts.clear();
         for(var p : from.parts)
             design.parts.add(p.copy());
         design.mount = from.mount;
         design.name = from.name;
+        design.box = from.box;
         selected = design.parts.isEmpty() ? -1 : 0;
         scroll = 0;
         rebuild();
@@ -275,6 +290,11 @@ public class FixtureDesignerScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
+        int cell = gridCell(mx, my);
+        if(button == 0 && cell >= 0) {
+            design.box = cell;
+            return true;
+        }
         if(button == 0 && mx >= listX && mx < listX + 104 && my >= listY && my < listY + LIST_ROWS * ROW_H) {
             int row = (int) ((my - listY) / ROW_H) + scroll;
             if(row >= 0 && row < design.parts.size()) {
@@ -515,7 +535,7 @@ public class FixtureDesignerScreen extends Screen {
             }
             var hint = Component.translatable("powergrid.gui.fixture.hint").getString().split("\\n");
             for(int i = 0; i < hint.length; ++i)
-                graphics.drawString(font, hint[i], fieldsX, panelY + 150 + i * 10, DIM, false);
+                graphics.drawString(font, hint[i], fieldsX, panelY + 146 + i * 10, DIM, false);
         } else {
             graphics.drawString(font, Component.translatable("powergrid.gui.fixture.none"), fieldsX, panelY + 32, DIM, false);
         }
@@ -525,7 +545,34 @@ public class FixtureDesignerScreen extends Screen {
         graphics.enableScissor(previewX, previewY, previewX + previewW, previewY + previewH);
         preview(graphics);
         graphics.disableScissor();
+        grid(graphics, mouseX, mouseY);
         super.render(graphics, mouseX, mouseY, partialTick);
+    }
+
+    /**
+     * The box position under a point of the grid, or -1. Columns run across the mounting face (x),
+     * rows along it: for a wall fixture the top row is up, for a ceiling or floor one the top row
+     * is the far side (z), as the preview shows it from the front.
+     */
+    private int gridCell(double mx, double my) {
+        if(mx < gridX || mx >= gridX + GRID_SIZE || my < gridY || my >= gridY + GRID_SIZE)
+            return -1;
+        int c = (int) ((mx - gridX) / (GRID_CELL + GRID_GAP)), r = (int) ((my - gridY) / (GRID_CELL + GRID_GAP));
+        if(c > 2 || r > 2)
+            return -1;
+        int v = design.mount == FixtureDesign.Mount.WALL ? 2 - r : r;
+        return c * 3 + v;
+    }
+
+    private void grid(GuiGraphics graphics, int mouseX, int mouseY) {
+        int hover = gridCell(mouseX, mouseY);
+        graphics.fill(gridX - 1, gridY - 1, gridX + GRID_SIZE + 1, gridY + GRID_SIZE + 1, 0xFF15151A);
+        for(int c = 0; c < 3; ++c)
+            for(int r = 0; r < 3; ++r) {
+                int v = design.mount == FixtureDesign.Mount.WALL ? 2 - r : r, cell = c * 3 + v;
+                int x = gridX + c * (GRID_CELL + GRID_GAP), y = gridY + r * (GRID_CELL + GRID_GAP);
+                graphics.fill(x, y, x + GRID_CELL, y + GRID_CELL, cell == design.box ? 0xFFFFE040 : cell == hover ? 0xFF8A8A94 : 0xFF50505A);
+            }
     }
 
     private void preview(GuiGraphics graphics) {
@@ -545,10 +592,10 @@ public class FixtureDesignerScreen extends Screen {
         // The anchor block, as a ghost, so the design can be placed round it; the canopy plate and its three
         // knockouts as the placed fixture will have them, so parts can meet them.
         FixtureDraw.box(pose, buffers, LightTexture.FULL_BRIGHT, 16, 16, 16, 32, 32, 32, 0x80A0C0, 0.16f, FixturePart.Material.GLASS);
-        var canopy = CustomFixtureBlock.canopy(design.mount).bounds();
+        var canopy = CustomFixtureBlock.canopy(design.mount, design.box).bounds();
         FixtureDraw.box(pose, buffers, LightTexture.FULL_BRIGHT, 16 + canopy.minX * 16, 16 + canopy.minY * 16, 16 + canopy.minZ * 16,
                 16 + canopy.maxX * 16, 16 + canopy.maxY * 16, 16 + canopy.maxZ * 16, 0xB8BCC2, 0.7f, FixturePart.Material.METAL);
-        for(var hub : CustomFixtureBlock.hubs(design.mount))
+        for(var hub : CustomFixtureBlock.hubs(design.mount, design.box))
             FixtureDraw.box(pose, buffers, LightTexture.FULL_BRIGHT, 16 + hub.minX, 16 + hub.minY, 16 + hub.minZ, 16 + hub.maxX, 16 + hub.maxY, 16 + hub.maxZ, 0x2FB8D6, 1, FixturePart.Material.MATTE);
         buffers.endBatch();
         Lighting.setupFor3DItems();

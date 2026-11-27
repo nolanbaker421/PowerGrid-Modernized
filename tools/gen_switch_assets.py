@@ -4,8 +4,7 @@
 Run from the repository root:  python tools/gen_switch_assets.py
 
 Geometry mirrors RecloserBlock.java; change both. North frame, pixels: the recloser's back is
-against the pole at z = 16. (Pole-top switches themselves are Create: Power Plant Grid's; see
-gen_ppg_recipes.py.)
+against the pole at z = 16. (Pole-top switches themselves are Create: Power Plant Grid's.)
 """
 import os
 

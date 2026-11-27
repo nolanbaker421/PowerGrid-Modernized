@@ -31,10 +31,14 @@ public final class FixtureDesign {
     }
 
     public static final int MAX_PARTS = 24, MAX_SOCKETS = 6, NAME_LENGTH = 24;
+    /** Box positions: a three by three grid across the mounting face, {@link #BOX_CENTRE} in the middle. */
+    public static final int BOX_COUNT = 9, BOX_CENTRE = 4;
 
     public final List<FixturePart> parts = new ArrayList<>();
     public Mount mount = Mount.CEILING;
     public String name = "";
+    /** Where the junction box (the canopy with its knockouts) sits on the mounting face; see {@link CustomFixtureBlock#boxOffset}. */
+    public int box = BOX_CENTRE;
 
     /** A starting point: a canopy, a chain, a shade and a socket, hung from a ceiling. */
     public static FixtureDesign pendant() {
@@ -93,6 +97,7 @@ public final class FixtureDesign {
         var d = new FixtureDesign();
         d.mount = mount;
         d.name = name;
+        d.box = box;
         for(var p : parts)
             d.parts.add(p.copy());
         return d;
@@ -135,6 +140,7 @@ public final class FixtureDesign {
         var tag = new CompoundTag();
         tag.putString("Mount", mount.name());
         tag.putString("Name", name);
+        tag.putInt("Canopy", box);
         var list = new ListTag();
         for(var p : parts)
             list.add(p.write());
@@ -150,6 +156,8 @@ public final class FixtureDesign {
         d.name = tag.getString("Name");
         if(d.name.length() > NAME_LENGTH)
             d.name = d.name.substring(0, NAME_LENGTH);
+        if(tag.contains("Canopy"))
+            d.box = Math.max(0, Math.min(BOX_COUNT - 1, tag.getInt("Canopy")));
         for(var t : tag.getList("Parts", Tag.TAG_COMPOUND)) {
             if(d.parts.size() >= MAX_PARTS)
                 break;

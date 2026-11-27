@@ -933,8 +933,9 @@ volts across its gap.
 **Pole-top switches** are [Create: Power Plant Grid](https://www.curseforge.com/minecraft/mc-mods/create-powerplantgrid)'s
 job: its breakers (10, 35, 65 and 100 kV, one to three poles, upright or horizontal) stand on a
 breaker shaft over a handle, a solenoid, a servo or a rotary drive, with rated insulators, gauged
-conductors and tank transformers to go with them. That mod ships without recipes, so this one
-supplies them whenever it is installed; see *Power Plant Grid recipes* under Recipes below.
+conductors and tank transformers to go with them. Since its 0.1.4 that mod crafts its own, by
+its own machines; this one only fills in the three items it still leaves out, see *Power Plant
+Grid recipes* under Recipes below.
 
 **The recloser** is a pole-mounted three-pole breaker in a tank, hanging wire on its three line
 lugs on top and three load lugs underneath. It trips on the breaker curve against its pickup,
@@ -1070,14 +1071,22 @@ socket, the bulb is never seen, and with the glow material the lettering lights 
 is on; a backlit lamp lights nothing but its lettering, so a sign with no open socket gives the
 room no light. That is how a business sign is made: a dark cabinet box standing off the wall and glowing
 text on its face, nothing else. The **Sconce**, **Lamp** and **Sign**
-buttons under the part list start a design over from one of those. A design spans three blocks
+buttons under the part list start a design over from one of those. **Files** at the top right
+saves the design under a name on your own computer (`powergrid_modernized/fixtures/` in the game
+folder) and loads one back, in any world or on any server, the way PLC programs are kept; Copy
+text and Paste text move a design through the clipboard, so one is shared as a block of text.
+A design spans three blocks
 each way round its anchor, so a sign is at most three blocks wide; only what falls inside the
 anchor block can be clicked. Mount says what holds the fixture up: the block above, the block
-behind, or the block below. Name it, and press **Build**: a **Fixture Blank** from your inventory
+behind, or the block below. The small grid by the name is where the **junction box** (the canopy
+with its knockouts) sits on that face: nine positions, four pixels apart, the middle one by
+default; the ghost in the preview moves with it, so a sconce's arm or a sign's cabinet can meet
+the box wherever it is. Name it, and press **Build**: a **Fixture Blank** from your inventory
 becomes a **Custom Fixture** item carrying the design, as many as you like. **Done** keeps the
 design on the designer.
 
-A placed fixture draws itself round its anchor block on a canopy plate at its mount (a floor
+A placed fixture draws itself round its anchor block on a canopy plate at its mount, where the
+design put its box (a floor
 fixture has no plate: its design supplies the base, and its knockouts lie flat on the floor at
 the base's edges), with three knockouts: one on the mounting face itself (top for a ceiling fixture, back for a
 wall one, bottom for a floor one), for a run that comes through the block by a chaseway, and one
@@ -1091,7 +1100,9 @@ item with the design on. The fixture lights its block at the bulb's level and, l
 glow on the first floor below its lowest lamp while lit, so a pendant lights the room from the
 floor up as well as from the ceiling down. Break it and it comes back as
 its item with the design on it. Sneak-right-click a placed fixture with the designer to copy its
-design.
+design. A built fixture in hand opens its own design the same way: sneak-right-click it, in the
+air or against a block, and the designer opens on it; Done writes the changes back onto that
+fixture (every fixture in the stack), and Build makes another from a blank.
 
 Conduit runs leave and enter every knockout straight and on centre, bend through a real elbow at every corner, and end in a connector the tube's own size where they enter a knockout.
 
@@ -1455,34 +1466,6 @@ adapter placed next to them:
 | 2 m A-Frame Ladder | iron plates in an A: one, then two apart, then three |
 | 3 m, 4 m A-Frame Ladder | shapeless: the ladder a metre shorter and two iron plates |
 | Recloser | copper ingots either side of a 3-pole 200 A breaker, iron plates round redstone, iron ingots below |
-
-### Power Plant Grid recipes
-
-With Create: Power Plant Grid installed, its blocks and wires craft as follows; without it, none
-of these recipes exist. Porcelain is brown terracotta, white porcelain white terracotta, and
-glass is glass.
-
-| Item | Recipe |
-| --- | --- |
-| Gauged wire (copper, iron, golden) | shapeless from Power Grid's wire of the same metal: one wire makes four 24 AWG, three 20 AWG or two 16 AWG; three make two 8 AWG; three, four, five and six make one 4, 2, 1 and 1/0 AWG |
-| Insulated gauged wire | the bare wire of that gauge and dried kelp; 12 AWG insulated iron or golden wire is one Power Grid wire and kelp |
-| 600 V Insulator (4) | porcelain and an iron nugget |
-| 10 kV Insulator (2) | two porcelain, white porcelain or glass and an iron nugget |
-| 35 kV, 65 kV, 100 kV, 275 kV, 360 kV, 500 kV, 750 kV, 1150 kV Insulators | the insulator one class down and more porcelain (or glass for the glass and multi-disc ones); 100 kV and 1150 kV add an iron ingot |
-| Thin insulators | craft the regular one alone, and back again |
-| 65 kV Disc Insulators | four porcelain or white porcelain, an iron nugget and a chain |
-| Breakers | a column per pole: copper plate over the insulator of the breaker's class over an iron plate (10 kV takes the brown 10 kV insulator, white the white one); craft an upright breaker alone for the horizontal one, and back |
-| Breaker Handle | a lever, an iron plate and an iron ingot |
-| Breaker Shaft (2) | a Create shaft and an iron plate |
-| Rotary Breaker Drive | a cogwheel, a shaft and an iron plate |
-| Solenoid Breaker Drive | a wire connector, an iron plate and one copper coil per voltage step: one for 12 V, two for 24 V, three for 110 V, four for 230 V |
-| Servo Breaker Drive | a Power Grid servo, an iron plate, copper coils for the supply as above and resistors for the signal: one for 5 V, two for 12 V, three for 24 V |
-| Transformers | HV bushings either side of the top row, copper coils round an iron block, LV terminals either side of an iron plate below. Bushings are the insulator of the side's class (600 V for 1 kV); 115 V terminals are wire connectors, 240 V heavy wire connectors. Craft an A transformer alone for its B shape, and back |
-| Wire Clamp (2) | two iron nuggets and a copper plate |
-| Large Wire Clamp (2) | an iron plate, a copper plate and an iron nugget |
-| Synchroscope | two voltage gauges, a compass and an iron plate |
-| Alternator Clutch | a generator clutch, a cogwheel and an iron plate |
-| Alternator Terminals | three heavy wire connectors over iron plates either side of a conductive casing |
 | Node Cover Plate | a blank cover plate and pins, shapeless |
 | Pull Box | ring of eight iron plates |
 | Conduit Switch (2) | iron nugget, lever, iron nugget over an iron nugget |
@@ -1500,6 +1483,22 @@ glass is glass.
 | Switchgear Section | bus bars either side of a 400 A three-phase panel, iron plates above and below, a bus bar top centre |
 | Transformers | copper coils either side of a transformer core, bigger housings with more of each; iron plates for cans and cabinets, smooth stone under the tanks |
 | Tap Changer Drive | a shaft between iron plates, a large cogwheel between two cogwheels, iron plates below |
+
+### Power Plant Grid recipes
+
+Create: Power Plant Grid 0.1.4 and later crafts its own items by its own machines: porcelain is
+fired, wire is drawn from rods, coils are wound, insulator strings and breakers are assembled.
+Look them up in the recipe book. Three of its items still have no recipe there, and this mod
+supplies those while that mod is installed:
+
+| Item | Recipe |
+| --- | --- |
+| Synchroscope | two voltage gauges, a compass and an iron plate |
+| Alternator Clutch | a generator clutch, a cogwheel and an iron plate |
+| Alternator Terminals | three heavy wire connectors over iron plates either side of a conductive casing |
+
+Power Plant Grid builds before 0.1.4 shipped no recipes at all; this mod supplied them up to its
+0.99.2, so pair an old Power Plant Grid with that or update both.
 
 Look the rest up in the recipe book; every recipe unlocks from its main ingredient.
 

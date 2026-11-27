@@ -3,117 +3,1161 @@
     {
       "when": {
         "mount": "ceiling",
-        "facing": "north"
+        "facing": "north",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_ceiling"
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_0"
       }
     },
     {
       "when": {
         "mount": "ceiling",
-        "facing": "east"
+        "facing": "east",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_ceiling",
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_0",
         "y": 90
       }
     },
     {
       "when": {
         "mount": "ceiling",
-        "facing": "south"
+        "facing": "south",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_ceiling",
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_0",
         "y": 180
       }
     },
     {
       "when": {
         "mount": "ceiling",
-        "facing": "west"
+        "facing": "west",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_ceiling",
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "north",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_1"
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "east",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "south",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "west",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "north",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_2"
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "east",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "south",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "west",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "north",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_3"
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "east",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "south",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "west",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "north",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_4"
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "east",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "south",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "west",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_4",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "north",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_5"
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "east",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_5",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "south",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_5",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "west",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_5",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "north",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_6"
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "east",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_6",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "south",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_6",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "west",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_6",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "north",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_7"
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "east",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_7",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "south",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_7",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "west",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_7",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "north",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_8"
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "east",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_8",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "south",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_8",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "ceiling",
+        "facing": "west",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_ceiling_8",
         "y": 270
       }
     },
     {
       "when": {
         "mount": "wall",
-        "facing": "north"
+        "facing": "north",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_wall"
+        "model": "powergrid_modernized:block/custom_fixture_wall_0"
       }
     },
     {
       "when": {
         "mount": "wall",
-        "facing": "east"
+        "facing": "east",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_wall",
+        "model": "powergrid_modernized:block/custom_fixture_wall_0",
         "y": 90
       }
     },
     {
       "when": {
         "mount": "wall",
-        "facing": "south"
+        "facing": "south",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_wall",
+        "model": "powergrid_modernized:block/custom_fixture_wall_0",
         "y": 180
       }
     },
     {
       "when": {
         "mount": "wall",
-        "facing": "west"
+        "facing": "west",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_wall",
+        "model": "powergrid_modernized:block/custom_fixture_wall_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "north",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_1"
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "east",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "south",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "west",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "north",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_2"
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "east",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "south",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "west",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "north",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_3"
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "east",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "south",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "west",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "north",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_4"
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "east",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "south",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "west",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_4",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "north",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_5"
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "east",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_5",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "south",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_5",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "west",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_5",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "north",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_6"
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "east",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_6",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "south",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_6",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "west",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_6",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "north",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_7"
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "east",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_7",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "south",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_7",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "west",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_7",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "north",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_8"
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "east",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_8",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "south",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_8",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "wall",
+        "facing": "west",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_wall_8",
         "y": 270
       }
     },
     {
       "when": {
         "mount": "floor",
-        "facing": "north"
+        "facing": "north",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_floor"
+        "model": "powergrid_modernized:block/custom_fixture_floor_0"
       }
     },
     {
       "when": {
         "mount": "floor",
-        "facing": "east"
+        "facing": "east",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_floor",
+        "model": "powergrid_modernized:block/custom_fixture_floor_0",
         "y": 90
       }
     },
     {
       "when": {
         "mount": "floor",
-        "facing": "south"
+        "facing": "south",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_floor",
+        "model": "powergrid_modernized:block/custom_fixture_floor_0",
         "y": 180
       }
     },
     {
       "when": {
         "mount": "floor",
-        "facing": "west"
+        "facing": "west",
+        "box": "0"
       },
       "apply": {
-        "model": "powergrid_modernized:block/custom_fixture_floor",
+        "model": "powergrid_modernized:block/custom_fixture_floor_0",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "north",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_1"
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "east",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "south",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "west",
+        "box": "1"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "north",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_2"
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "east",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "south",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "west",
+        "box": "2"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "north",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_3"
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "east",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "south",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "west",
+        "box": "3"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "north",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_4"
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "east",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "south",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "west",
+        "box": "4"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_4",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "north",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_5"
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "east",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_5",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "south",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_5",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "west",
+        "box": "5"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_5",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "north",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_6"
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "east",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_6",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "south",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_6",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "west",
+        "box": "6"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_6",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "north",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_7"
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "east",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_7",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "south",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_7",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "west",
+        "box": "7"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_7",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "north",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_8"
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "east",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_8",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "south",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_8",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "mount": "floor",
+        "facing": "west",
+        "box": "8"
+      },
+      "apply": {
+        "model": "powergrid_modernized:block/custom_fixture_floor_8",
         "y": 270
       }
     }

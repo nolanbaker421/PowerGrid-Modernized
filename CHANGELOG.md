@@ -4,6 +4,26 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.100.0 — 2026-11-27
+
+### Added
+- Fixture designs save to files, as PLC programs do: **Files** in the designer saves the design
+  under a name on your computer (`powergrid_modernized/fixtures/` in the game folder), loads one
+  back, and copies or pastes it through the clipboard as text.
+- The junction box of a fixture moves: a three by three grid by the name field in the designer
+  puts the canopy and its knockouts at one of nine positions on the mounting face, four pixels
+  apart, and the preview's ghost follows. The position travels with the design and the placed
+  block.
+- A built fixture in hand reopens its design: sneak-right-click it and the designer opens on it;
+  Done writes the changes back onto the fixture.
+
+### Changed
+- Create: Power Plant Grid 0.1.4 crafts its own items through its own machines, so the recipes
+  this mod supplied for it are gone, all but three it still has none for (the synchroscope and
+  the alternator clutch and terminals). Thirteen of the old recipes named insulators that no
+  longer exist and had become load errors. Pair Power Plant Grid builds older than 0.1.4 with
+  0.99.2 of this mod, or update both.
+
 ## 0.99.2 — 2026-11-26
 
 ### Fixed

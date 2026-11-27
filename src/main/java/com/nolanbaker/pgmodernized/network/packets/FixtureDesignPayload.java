@@ -1,5 +1,6 @@
 package com.nolanbaker.pgmodernized.network.packets;
 
+import com.nolanbaker.pgmodernized.device.fixture.CustomFixtureItem;
 import com.nolanbaker.pgmodernized.device.fixture.FixtureDesign;
 import com.nolanbaker.pgmodernized.device.fixture.FixtureDesignerItem;
 import net.minecraft.nbt.CompoundTag;
@@ -27,7 +28,7 @@ public record FixtureDesignPayload(boolean offHand, CompoundTag design) implemen
 
     public static void handle(FixtureDesignPayload payload, IPayloadContext context) {
         var stack = context.player().getItemInHand(payload.offHand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
-        if(stack.getItem() instanceof FixtureDesignerItem)
+        if(stack.getItem() instanceof FixtureDesignerItem || stack.getItem() instanceof CustomFixtureItem)
             FixtureDesign.read(payload.design).putOn(stack);   // read and rewritten: clamped, capped, nothing else taken on trust
     }
 }

@@ -3,10 +3,17 @@ package com.nolanbaker.pgmodernized.device.fixture;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import com.nolanbaker.pgmodernized.client.ClientHooks;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -34,8 +41,31 @@ public class CustomFixtureItem extends BlockItem {
         var state = getBlock().defaultBlockState()
                 .setValue(HorizontalElectricBlock.HORIZONTAL_FACING, facing)
                 .setValue(CustomFixtureBlock.MOUNT, design.mount)
+                .setValue(CustomFixtureBlock.BOX, design.box)
                 .setValue(CustomFixtureBlock.LIGHT, 0);
         return state.canSurvive(ctx.getLevel(), ctx.getClickedPos()) && ctx.getLevel().isUnobstructed(state, ctx.getClickedPos(), net.minecraft.world.phys.shapes.CollisionContext.empty()) ? state : null;
+    }
+
+    /** Sneak-right-click, in the air or on a block, opens the fixture's own design in the designer instead of placing it. */
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        var stack = player.getItemInHand(hand);
+        if(!player.isShiftKeyDown() || FixtureDesign.of(stack) == null)
+            return InteractionResultHolder.pass(stack);
+        if(level.isClientSide)
+            ClientHooks.openFixtureDesigner(hand, FixtureDesign.of(stack));
+        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        var player = context.getPlayer();
+        if(player != null && player.isShiftKeyDown() && FixtureDesign.of(context.getItemInHand()) != null) {
+            if(context.getLevel().isClientSide)
+                ClientHooks.openFixtureDesigner(context.getHand(), FixtureDesign.of(context.getItemInHand()));
+            return InteractionResult.sidedSuccess(context.getLevel().isClientSide);
+        }
+        return super.useOn(context);
     }
 
     @Override
@@ -54,5 +84,6 @@ public class CustomFixtureItem extends BlockItem {
         }
         tooltip.add(Lang.builder().translate("fixture.tooltip.mount." + design.mount.getSerializedName()).style(ChatFormatting.GRAY).component());
         tooltip.add(Lang.builder().translate("fixture.tooltip.parts", design.parts.size(), design.socketCount()).style(ChatFormatting.GRAY).component());
+        tooltip.add(Lang.builder().translate("fixture.tooltip.edit").style(ChatFormatting.GRAY).component());
     }
 }

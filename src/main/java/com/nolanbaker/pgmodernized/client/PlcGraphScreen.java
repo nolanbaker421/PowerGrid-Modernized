@@ -104,7 +104,7 @@ public class PlcGraphScreen extends Screen {
         addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.controls.plc_delete"), b -> deleteSelected()).bounds(x + 172, 4, 50, 18).build());
         addRenderableWidget(Button.builder(Component.literal("-"), b -> setZoom(zoom / 1.25f)).bounds(x + 226, 4, 18, 18).build());
         addRenderableWidget(Button.builder(Component.literal("+"), b -> setZoom(zoom * 1.25f)).bounds(x + 246, 4, 18, 18).build());
-        addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.controls.plc_files"), b -> Minecraft.getInstance().setScreen(new PlcFileScreen(this))).bounds(x + 268, 4, 44, 18).build());
+        addRenderableWidget(Button.builder(Component.translatable("powergrid.gui.controls.plc_files"), b -> Minecraft.getInstance().setScreen(FileScreen.plc(this))).bounds(x + 268, 4, 44, 18).build());
         paletteButtons.clear();
         for(var type : NodeType.values()) {
             var button = addRenderableWidget(Button.builder(Component.literal(type.title), b -> addNode(type)).bounds(4, 0, PALETTE_W - 8, 16).build());
