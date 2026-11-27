@@ -45,7 +45,10 @@ public final class GangFrame {
         };
     }
 
+    /** Floor-frame point to the block's local space for that state; a gang box set into a wall has its frame moved up into the block. */
     public static Vec3 toWorld(BlockState state, Vec3 p) {
+        if(GangBoxBlock.inset(state))
+            p = p.add(0, GangLayout.INSET_SHIFT / 16, 0);
         return toWorld(state.getValue(DirectionalElectricBlock.FACING), state.getValue(Rotation4ElectricBlock.ROTATION), p);
     }
 

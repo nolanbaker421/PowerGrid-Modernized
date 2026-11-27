@@ -4,6 +4,12 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.entity.Entity;
 import com.nolanbaker.pgmodernized.client.ClientHooks;
 import com.nolanbaker.pgmodernized.conduit.ConduitItem;
 import com.nolanbaker.pgmodernized.conduit.ConduitPlacement;
@@ -54,19 +60,65 @@ import java.util.Map;
 public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxBlockEntity>, IAcceptCord {
     /** The gang of the first receptacle, 1 to 4, or 0 with none: where a power cord plugs in. Kept by the block entity. */
     public static final IntegerProperty SOCKET = IntegerProperty.create("socket", 0, GangLayout.MAX_GANGS);
+    /** Set into a wall block: the block is the wall, the box inside it, the plate flush on the face. The wall is kept by the block entity. */
+    public static final BooleanProperty INSET = BooleanProperty.create("inset");
     private final int gangs;
 
     public GangBoxBlock(Properties properties, int gangs) {
         super(properties);
         this.gangs = gangs;
-        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this, GangLayout.terminals(gangs), GangLayout.shape(gangs)));
-        registerDefaultState(defaultBlockState().setValue(SOCKET, 0));
+        setTerminalCollection(com.nolanbaker.pgmodernized.util.Rotation4Frame.collection(this,
+                state -> GangLayout.terminals(gangs, inset(state)), state -> GangLayout.shape(gangs, inset(state)), state -> inset(state) ? 1 : 0));
+        registerDefaultState(defaultBlockState().setValue(SOCKET, 0).setValue(INSET, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(SOCKET);
+        builder.add(SOCKET, INSET);
+    }
+
+    public static boolean inset(BlockState state) {
+        return state.hasProperty(INSET) && state.getValue(INSET);
+    }
+
+    // ---- wearing the wall it is set into ----
+
+    /** The wall an inset box replaced, or null for one on a surface. */
+    @Nullable
+    public static BlockState material(BlockGetter level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof GangBoxBlockEntity be ? be.material() : null;
+    }
+
+    @Override
+    public BlockState getAppearance(BlockState state, BlockAndTintGetter level, BlockPos pos, Direction side, @Nullable BlockState queryState, @Nullable BlockPos queryPos) {
+        var material = material(level, pos);
+        return material != null ? material : state;
+    }
+
+    @Override
+    public SoundType getSoundType(BlockState state, LevelReader level, BlockPos pos, @Nullable Entity entity) {
+        var material = material(level, pos);
+        return material != null ? material.getSoundType(level, pos, entity) : super.getSoundType(state, level, pos, entity);
+    }
+
+    /** An inset box is a wall block to light: nothing shines through it. */
+    @Override
+    protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return inset(state) ? level.getMaxLightLevel() : super.getLightBlock(state, level, pos);
+    }
+
+    @Override
+    protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return !inset(state) && super.propagatesSkylightDown(state, level, pos);
+    }
+
+    /** Broken, an inset box gives the wall back as well as itself. */
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        if(!level.isClientSide && !player.isCreative() && level.getBlockEntity(pos) instanceof GangBoxBlockEntity be && be.material() != null)
+            popResource(level, pos, new ItemStack(be.material().getBlock()));
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     public int gangs() {

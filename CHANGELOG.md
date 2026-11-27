@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.103.0 — 2026-11-27
+
+### Added
+- Gang boxes set into walls: sneak-right-click a plain solid block with a gang box and the block
+  becomes the box, keeping the wall's look, sound and drop, with the plate flush on the clicked
+  face and the body and knockouts inside, where a chase in the wall links to them on its own.
+  Devices, covers, locks, cords and the splice editor work as on a hung box.
+
 ## 0.102.0 — 2026-11-27
 
 ### Added

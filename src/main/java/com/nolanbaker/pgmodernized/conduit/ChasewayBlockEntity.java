@@ -208,7 +208,7 @@ public class ChasewayBlockEntity extends ElectricBlockEntity implements IDeviceS
 
     /**
      * The fitting's free knockout nearest the sleeve's centre on the fitting's {@code side} (the
-     * face against this block), within four pixels of that face and six of the sleeve, or -1.
+     * face against this block), within six pixels of that face and six of the sleeve, or -1.
      */
     private static int knockoutBehind(ServerLevel server, ISpliceHost host, BlockPos pos, Direction side, int slot) {
         var centre = ChasewayBlock.centre(slot).scale(1 / 16.0);
@@ -225,7 +225,7 @@ public class ChasewayBlockEntity extends ElectricBlockEntity implements IDeviceS
                 continue;
             }
             double depth = side.getAxisDirection() == Direction.AxisDirection.NEGATIVE ? at.get(axis) : 1 - at.get(axis);
-            if(depth > 4 / 16.0)
+            if(depth > 6 / 16.0)
                 continue;
             double d2 = 0;
             for(var other : Direction.Axis.values()) {

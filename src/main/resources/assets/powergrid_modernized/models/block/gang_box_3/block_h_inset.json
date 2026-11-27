@@ -1,0 +1,77 @@
+{
+  "textures": {
+    "box": "powergrid_modernized:block/conduit_box",
+    "knockout": "powergrid_modernized:block/knockout_one",
+    "particle": "powergrid_modernized:block/conduit_box"
+  },
+  "elements": [
+    {
+      "from": [
+        -0.5,
+        2.5,
+        5.5
+      ],
+      "to": [
+        0,
+        13.5,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            2.5,
+            0.5,
+            13.5
+          ],
+          "texture": "#box"
+        },
+        "south": {
+          "uv": [
+            15.5,
+            2.5,
+            16,
+            13.5
+          ],
+          "texture": "#box"
+        },
+        "east": {
+          "uv": [
+            5.5,
+            2.5,
+            10.5,
+            13.5
+          ],
+          "texture": "#box"
+        },
+        "west": {
+          "uv": [
+            5.5,
+            2.5,
+            10.5,
+            13.5
+          ],
+          "texture": "#box"
+        },
+        "up": {
+          "uv": [
+            15.5,
+            5.5,
+            16,
+            10.5
+          ],
+          "texture": "#box"
+        },
+        "down": {
+          "uv": [
+            15.5,
+            5.5,
+            16,
+            10.5
+          ],
+          "texture": "#box"
+        }
+      }
+    }
+  ]
+}

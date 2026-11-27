@@ -29,6 +29,8 @@ public final class GangLayout {
     public static final String[] HUB_KEYS = {"conduit_socket.hub", "conduit_socket.hub2", "gang.hub_left", "gang.hub_right"};
 
     public static final double BODY_Y1 = 3, PLATE_Y1 = 3.5;
+    /** Set into a wall, the whole box moves this far up its floor frame: the body inside the block, the plate half a pixel proud of the face. */
+    public static final double INSET_SHIFT = 16 - BODY_Y1;
     private static final AABB HIDDEN = new AABB(7.99, 1.49, 7.99, 8.01, 1.51, 8.01);
 
     private GangLayout() {}
@@ -75,6 +77,21 @@ public final class GangLayout {
         for(int h = 0; h < hubCount(gangs); ++h)
             shape = Shapes.or(shape, box(com.nolanbaker.pgmodernized.conduit.splice.DeviceHubs.flat(hub(gangs, h))));
         return shape;
+    }
+
+    /** Inset, the block is the wall: a full cube with the plate on its face; otherwise the box as it stands on a surface. */
+    public static VoxelShape shape(int gangs, boolean inset) {
+        return inset ? Shapes.or(Shapes.block(), box(plate(gangs).move(0, INSET_SHIFT, 0))) : shape(gangs);
+    }
+
+    /** The collection for a size set into a wall: the knockouts moved up with the box. */
+    public static TerminalBoundingBox[] terminals(int gangs, boolean inset) {
+        if(!inset)
+            return terminals(gangs);
+        var terminals = terminals(gangs);
+        for(int h = 0; h < hubCount(gangs); ++h)
+            terminals[hubTerminal(h)] = terminal(hubName(h), hub(gangs, h).move(0, INSET_SHIFT, 0)).withColor(ConduitSize.ONE.bandColor());
+        return terminals;
     }
 
     // ---- numbering ----

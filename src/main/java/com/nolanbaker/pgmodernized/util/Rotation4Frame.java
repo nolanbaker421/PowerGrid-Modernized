@@ -15,6 +15,7 @@ import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCol
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The terminal collection of a four-way (facing and quarter turn) block, built from its floor
@@ -27,10 +28,18 @@ public final class Rotation4Frame {
     private Rotation4Frame() {}
 
     public static BlockStateTerminalCollection collection(Block block, TerminalBoundingBox[] floor, VoxelShape floorShape) {
+        return collection(block, state -> floor, state -> floorShape, state -> 0);
+    }
+
+    /**
+     * The same for a block whose floor frame differs between states: a gang box set into a wall.
+     * {@code variant} numbers the frames (0 to 15) so each facing and turn of each is shaped once.
+     */
+    public static BlockStateTerminalCollection collection(Block block, Function<BlockState, TerminalBoundingBox[]> floor, Function<BlockState, VoxelShape> floorShape, Function<BlockState, Integer> variant) {
         Map<Integer, VoxelShape> shapes = new HashMap<>();
         return BlockStateTerminalCollection.builder(block)
-                .forAllStates(state -> BlockStateTerminalCollection.each(floor, terminal -> rotate(facing(state), rotation(state), terminal)))
-                .withShapeMapper(state -> shapes.computeIfAbsent(facing(state).ordinal() * 4 + rotation(state), k -> shape(facing(state), rotation(state), floorShape)))
+                .forAllStates(state -> BlockStateTerminalCollection.each(floor.apply(state), terminal -> rotate(facing(state), rotation(state), terminal)))
+                .withShapeMapper(state -> shapes.computeIfAbsent((facing(state).ordinal() * 4 + rotation(state)) * 16 + variant.apply(state), k -> shape(facing(state), rotation(state), floorShape.apply(state))))
                 .build();
     }
 

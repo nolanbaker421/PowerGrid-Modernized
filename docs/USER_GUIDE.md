@@ -288,10 +288,11 @@ inside of a wall, floor or ceiling. Two sleeves in one block that cross each oth
 a Y sleeve on the same z, say) are one piece, an elbow or a tee, so a chase turns a corner or
 branches; sleeves that miss each other stay separate, so two circuits can share a block.
 
-**A box in the wall.** A sleeve that ends behind a fitting against that face, within a few pixels
-of one of its free knockouts, gets a short nipple to that knockout laid for it: a gang box with its
-knockout near the wall, a custom fixture's mount knockout, a pull box, a panel, anything with
-knockouts. So a chase down the inside of a wall feeds the receptacles and switches on it with
+**A box in the wall.** A gang box set into a wall block (sneak-place it on the block; see *Gang
+boxes*) has its knockouts inside that block, and a sleeve ending against it near one of them gets a
+short nipple to that knockout laid for it. The same goes for any fitting with a free knockout
+within a few pixels of a sleeve end: a gang box hung on the wall with its knockout near it, a
+custom fixture's mount knockout, a pull box, a panel. So a chase down the inside of a wall feeds the receptacles and switches on it with
 nothing but their plates showing, and a chase across a ceiling drops into every fixture hung from
 it. The nipple comes and goes with what it joins.
 
@@ -1185,6 +1186,14 @@ cut within two pixels of a corner made at the corner; the wires pulled through i
 drop. A mistake costs the bad piece, which the wire cutters take, not the whole run.
 
 ### Gang boxes
+
+**In the wall.** A gang box can be set into a wall instead of hung on it: sneak-right-click a
+plain solid block with the box in hand and that block becomes the box, still looking, sounding and
+dropping like the wall it was, with the plate flush on the face you clicked and the body and
+knockouts inside. A chase in the wall (see *Chaseway*) whose sleeve ends in the block beside it,
+near one of those knockouts, links to it on its own, so a wall of receptacles and switches shows
+nothing but plates. Everything below works the same set in or hung on; breaking it gives the wall
+block back with the box.
 
 The **Gang Box** comes in 1-, 2-, 3- and 4-gang sizes, four pixels a gang, and takes devices as
 items: a **Single-Pole Switch**, a **3-Way Switch**, a **4-Way Switch**, a **Push Button**, a

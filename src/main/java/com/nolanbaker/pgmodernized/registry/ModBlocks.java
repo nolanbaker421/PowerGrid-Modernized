@@ -672,7 +672,7 @@ public class ModBlocks {
                 .properties(p -> p.noOcclusion())
                 .transform(pickaxeOnly())
                 .lang(gangs + "-Gang Box")
-                .item()
+                .item(com.nolanbaker.pgmodernized.conduit.gang.GangBoxItem::new)
                 .model(NonNullBiConsumer.noop())
                 .build()
                 .register();

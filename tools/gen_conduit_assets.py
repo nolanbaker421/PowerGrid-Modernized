@@ -483,16 +483,21 @@ def gang_box_models():
         body = (left, 0, 5, 16 - left, 3, 11)
         plate = (left + 0.5, 3, 5.5, 16 - left - 0.5, 3.5, 10.5)
         boxes = [(body, "#box"), (plate, "#box")] + [(hub, "#knockout") for hub in gang_hubs(gangs)]
+        # Set into a wall the box moves up 13 pixels (GangLayout.INSET_SHIFT): the body and knockouts are inside
+        # the block, which the model wrapper draws as the wall, so only the plate is modelled, half a pixel proud.
+        inset_plate = (left + 0.5, 16, 5.5, 16 - left - 0.5, 16.5, 10.5)
         name = "gang_box_%d" % gangs
         for suffix, transform in (("v", lambda b: b), ("h", to_h)):
             elements = [element(*transform(box), texture) for box, texture in boxes]
             dump(os.path.join(ASSETS, "models", "block", name, "block_%s.json" % suffix), {"parent": "block/block", "textures": tex, "elements": elements})
+            dump(os.path.join(ASSETS, "models", "block", name, "block_%s_inset.json" % suffix), {"textures": tex, "elements": [element(*transform(inset_plate), "#box")]})
         dump(os.path.join(ASSETS, "models", "item", name + ".json"), {"parent": "%s:block/%s/block_v" % (MOD, name)})
         variants = {}
         for key, (suffix, rot) in ROTATION4.items():
-            v = {"model": "%s:block/%s/block_%s" % (MOD, name, suffix)}
-            v.update(rot)
-            variants[key] = v
+            for inset in ("false", "true"):
+                v = {"model": "%s:block/%s/block_%s%s" % (MOD, name, suffix, "_inset" if inset == "true" else "")}
+                v.update(rot)
+                variants[key + ",inset=" + inset] = v
         dump(os.path.join(ASSETS, "blockstates", name + ".json"), {"variants": variants})
 
 

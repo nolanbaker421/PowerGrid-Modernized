@@ -80,10 +80,50 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     /** Ticks without a survey before an annunciator shows its link lost; surveys come every sixty. */
     public static final int LINK_TICKS = 200;
     private List<SplicePoint> points;
+    /** The wall this box is set into, or null on a surface; the model draws it and breaking gives it back. */
+    @Nullable
+    private BlockState material;
 
     public GangBoxBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         setLazyTickRate(20);
+    }
+
+    @Nullable
+    public BlockState material() {
+        return material;
+    }
+
+    public void setMaterial(BlockState state) {
+        material = state;
+        setChanged();
+        if(level != null && !level.isClientSide)
+            sendData();
+    }
+
+    @Override
+    public net.neoforged.neoforge.client.model.data.ModelData getModelData() {
+        return material == null ? net.neoforged.neoforge.client.model.data.ModelData.EMPTY
+                : net.neoforged.neoforge.client.model.data.ModelData.builder().with(com.nolanbaker.pgmodernized.conduit.ChasewayBlockEntity.MATERIAL, material).build();
+    }
+
+    private void writeMaterial(CompoundTag tag) {
+        if(material != null)
+            tag.put("Material", net.minecraft.nbt.NbtUtils.writeBlockState(material));
+    }
+
+    private void readMaterial(CompoundTag tag, boolean clientPacket) {
+        var was = material;
+        material = null;
+        if(tag.contains("Material")) {
+            var read = net.minecraft.nbt.NbtUtils.readBlockState(net.minecraft.core.registries.BuiltInRegistries.BLOCK.asLookup(), tag.getCompound("Material"));
+            if(!read.isAir())
+                material = read;
+        }
+        if(clientPacket && level != null && level.isClientSide && material != was) {
+            requestModelDataUpdate();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_ALL);
+        }
     }
 
     private void ensureArrays() {
@@ -1028,6 +1068,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         super.write(tag, registries, clientPacket);
         splices().write(tag);
         writeDevices(tag);
+        writeMaterial(tag);
     }
 
     @Override
@@ -1035,6 +1076,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         super.writeSafe(tag, registries);
         splices().write(tag);
         writeDevices(tag);
+        writeMaterial(tag);
     }
 
     @Override
@@ -1042,6 +1084,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
         ensureArrays();
         super.read(tag, registries, clientPacket);
         splices().read(tag);
+        readMaterial(tag, clientPacket);
         var list = tag.getList("Devices", Tag.TAG_STRING);
         int bits = tag.getInt("On");
         boolean changed = false;
