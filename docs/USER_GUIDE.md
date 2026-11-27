@@ -274,12 +274,22 @@ to another on the same wall it is an L inside the wall, from a wall box up to a 
 climbs the wall and crosses the ceiling. Nothing shows on any surface, and it costs the same
 conduit as the same length laid in the open. The run itself cannot be clicked, so its box stands
 in for it: wire in hand on an inset box pulls a wire into the run on its knockout (and on through
-anything beyond, as any pull does), wire cutters on the box pull the last wire back out, and
-sneaking with cutters takes the whole run out. Breaking either box takes the run out too. The
-bender does not touch a concealed run. The preview while you aim shows the legs through the wall.
+anything beyond, as any pull does), wire cutters on any fitting the run ends on pull the last
+wire back out, cutters on it again once it is empty take the run out, and sneaking with cutters
+takes it out at once, wires and all. Breaking either box takes the run out too. The bender does
+not touch a concealed run. The preview while you aim shows the legs through the wall.
+
+**Leaving the wall.** A concealed run ends on any knockout, so it leaves the wall wherever the
+fitting it ends on is: a panel or a hung box on the wall's face, a fixture's mount knockout, a
+chaseway sleeve end on the far face to carry on exposed in the next room. Only what lies inside
+solid blocks is hidden; wherever the run crosses open air, coming out of the wall to that
+knockout or across a doorway, that stretch is drawn as plain conduit for everyone, so a run out
+of the wall into a panel shows the stub between them as it would in a real wall.
 
 **Seeing it.** Wearing Engineer's Goggles, concealed runs and chaseway sleeves show through the
-walls as translucent blue tubes. Without goggles they are invisible, which is the point.
+walls as translucent blue tubes. Without goggles they are invisible, which is the point. The
+**Show wiring in walls** key (H by default, under PowerGrid: Modernized in the controls) turns
+the view off and on for those who live in their goggles.
 
 ### Chaseway
 
@@ -1211,13 +1221,15 @@ Conduit bent from one of its knockouts to any other knockout is laid concealed
 through the wall (see *Wiring inside the walls*), and a chase whose sleeve ends in the block
 beside it links to it on its own, so a wall of receptacles and switches shows nothing but plates.
 Wire in hand on the box pulls into its concealed run; wire cutters on it pull the last wire back
-out, sneaking with them take the run out. Everything below works the same set in or hung on;
+out, then the empty run, and sneaking with them take the run out at once. Everything below works
+the same set in or hung on;
 breaking it gives the wall block back with the box.
 
 The **Gang Box** comes in 1-, 2-, 3- and 4-gang sizes, four pixels a gang, and takes devices as
 items: a **Single-Pole Switch**, a **3-Way Switch**, a **4-Way Switch**, a **Push Button**, a
 **Duplex Receptacle** and a **Blank Insert**. Mount it like the conduit switch, on any face and
-turned with a wrench; knockouts top and bottom, and on the 3-gang at the sides too. Right-click a
+turned with a wrench; a knockout above and one below every gang, and on the 3-gang at the sides
+too. Right-click a
 gang with a device to fit it, sneak-click the device with an empty hand to take it out, click a
 switch to flip it or a button to press it (it lets go after half a second).
 

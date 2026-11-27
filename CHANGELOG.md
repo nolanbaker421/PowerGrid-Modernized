@@ -4,6 +4,24 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.105.0 — 2026-11-27
+
+### Added
+- A key, H by default, turns the goggles' view of wiring inside the walls off and on.
+- Gang boxes have a knockout above and one below every gang: two on a 1-gang as before, four on
+  a 2-gang, six on a 3-gang (plus its two side ones), eight on a 4-gang. Knockouts are numbered
+  top row first, then bottom, then sides, so runs landed on a 2-, 3- or 4-gang box before this
+  release may show at a different knockout; land them again if it matters.
+- Where a concealed run crosses open air, out of the wall into a panel or a hung box, or across
+  a doorway, that stretch draws as plain conduit for everyone; only what lies inside blocks is
+  hidden.
+
+### Fixed
+- A concealed run with both ends in the wall could not be taken out: sneaking with cutters never
+  reached the box, since the game skips a block's click handling for a sneaking player holding
+  an item. Cutters now work a concealed run from any fitting it ends on, through the click event:
+  the last wire out, then the empty run; sneaking takes the run out at once.
+
 ## 0.104.1 — 2026-11-27
 
 ### Fixed

@@ -95,6 +95,7 @@ public class PowerGridModernized {
         NeoForge.EVENT_BUS.register(WireGuard.class);
         NeoForge.EVENT_BUS.register(Inspections.class);
         NeoForge.EVENT_BUS.register(com.nolanbaker.pgmodernized.conduit.CeilingTileHook.class);
+        NeoForge.EVENT_BUS.register(com.nolanbaker.pgmodernized.conduit.ConcealedRuns.class);
         NeoForge.EVENT_BUS.register(VillageInjector.class);
         if(FMLEnvironment.dist.isClient()) {
             NeoForge.EVENT_BUS.register(Cat6Preview.class);
@@ -111,6 +112,8 @@ public class PowerGridModernized {
             bus.register(BreakerPanelModels.class);
             bus.register(com.nolanbaker.pgmodernized.client.ChasewayModel.class);
             bus.register(com.nolanbaker.pgmodernized.client.MimicModel.class);
+            bus.register(com.nolanbaker.pgmodernized.client.WallViewKeys.class);
+            NeoForge.EVENT_BUS.register(com.nolanbaker.pgmodernized.client.WallView.class);
             ForkHooks.get().registerClient(bus);
         }
 

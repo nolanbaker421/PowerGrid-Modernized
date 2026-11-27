@@ -468,15 +468,20 @@ ITEM_TEX_DIR = os.path.join(ASSETS, "textures", "item")
 
 
 def gang_hubs(gangs):
+    """One knockout over and one under every gang, and on the 3-gang one at each side; mirrors GangLayout.hub()."""
     left = 8 - 2 * gangs
-    hubs = [(7, 0.5, 4, 9, 2.5, 5), (7, 0.5, 11, 9, 2.5, 12)]
+    hubs = []
+    for z1, z2 in ((4, 5), (11, 12)):
+        for slot in range(gangs):
+            x = left + 4 * slot + 2
+            hubs.append((x - 1, 0.5, z1, x + 1, 2.5, z2))
     if gangs == 3:
         hubs += [(left - 1, 0.5, 7, left, 2.5, 9), (16 - left, 0.5, 7, 17 - left, 2.5, 9)]
     return hubs
 
 
 def gang_box_models():
-    """Gang boxes: a body four pixels a gang wide, a plate on top, knockouts north and south (east and west on the 3-gang)."""
+    """Gang boxes: a body four pixels a gang wide, a plate on top, a knockout north and south of every gang (and east and west on the 3-gang)."""
     tex = {"box": "%s:block/conduit_box" % MOD, "knockout": "%s:block/knockout_one" % MOD, "particle": "%s:block/conduit_box" % MOD}
     for gangs in range(1, 5):
         left = 8 - 2 * gangs

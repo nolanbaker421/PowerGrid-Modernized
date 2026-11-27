@@ -68,6 +68,38 @@ public class BodyWireRenderer extends BlockWireRenderer {
     /** A leg this short between two legs square to each other and to it is a nudged corner, not a leg: one bend absorbs it. */
     private static final int ABSORB_MAX_PX = 2;
 
+    /** The stretches of a concealed run that lie in open air, each drawn as a straight tube: where it leaves a wall for a knockout. */
+    private void exposed(ConduitRunEntity run, PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer consumer, float t, int rgb) {
+        var level = run.level();
+        var origin = run.position();
+        var p = Vec3.ZERO;
+        for(var leg : run.segments) {
+            var v = leg.vector();
+            double length = v.length();
+            if(length < 1e-6)
+                continue;
+            var dir = v.scale(1 / length);
+            double spanStart = -1;
+            for(double d = 0; ; d += 1 / 16.0) {
+                double at = Math.min(d, length);
+                var world = origin.add(p).add(dir.scale(at));
+                var pos = net.minecraft.core.BlockPos.containing(world);
+                boolean open = at < length - 1e-6 && !level.getBlockState(pos).isCollisionShapeFullBlock(level, pos);
+                if(open && spanStart < 0)
+                    spanStart = at;
+                if(!open && spanStart >= 0) {
+                    var from = p.add(dir.scale(spanStart));
+                    var to = p.add(dir.scale(at));
+                    TubeDraw.straight(pose, consumer, brightest(run, origin.add(from.add(to).scale(0.5))), rgb, from, to, t);
+                    spanStart = -1;
+                }
+                if(at >= length)
+                    break;
+            }
+            p = p.add(v);
+        }
+    }
+
     /**
      * Conduit is drawn here rather than by Power Grid's loop, which tiles its banded wire texture
      * along every straight and runs each one half a tube past its ends. Here a straight is an
@@ -84,13 +116,14 @@ public class BodyWireRenderer extends BlockWireRenderer {
             return;
         }
         if(run.isConcealed()) {
-            // Inside the wall: nothing, or with goggles on, its legs as tubes drawn through whatever hides them.
-            var player = net.minecraft.client.Minecraft.getInstance().player;
-            if(player != null && com.simibubi.create.content.equipment.goggles.GogglesItem.isWearingGoggles(player)) {
-                var hidden = run.getWireEntry();
-                float thickness = hidden != null ? hidden.wireThickness() : run.size().tubeThickness();
+            // Inside the walls: nothing, or with goggles on and the wall view keyed on, its legs as tubes drawn
+            // through whatever hides them. Where it crosses open air, coming out of a wall to a knockout on a
+            // hung fitting, it is the plain tube it is, for everyone.
+            var hidden = run.getWireEntry();
+            float thickness = hidden != null ? hidden.wireThickness() : run.size().tubeThickness();
+            if(WallView.visible(net.minecraft.client.Minecraft.getInstance().player))
                 XrayDraw.legs(poseStack.last().pose(), XrayDraw.buffer(buffer), Vec3.ZERO, run.segments, thickness / 2, XrayDraw.CHASE, XrayDraw.ALPHA);
-            }
+            exposed(run, poseStack.last(), TubeDraw.buffer(buffer), thickness, run.getColor() & 0xFFFFFF);
             return;
         }
         var consumer = TubeDraw.buffer(buffer);

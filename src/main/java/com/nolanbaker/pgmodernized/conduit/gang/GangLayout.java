@@ -21,12 +21,12 @@ import org.patryk3211.powergrid.utility.Lang;
  * receptacle), then four points a gang, then four knockouts each followed by its hidden landings.
  */
 public final class GangLayout {
-    public static final int MAX_GANGS = 4, MAX_HUBS = 4;
+    /** Knockouts: one above and one below every gang, and on the 3-gang one at each side, the only size with room beside its body. */
+    public static final int MAX_GANGS = 4, MAX_HUBS = 2 * MAX_GANGS + 2;
     public static final int CORD_A = 0, CORD_B = 1, POINT_BASE = 2;
     public static final int HUB_BASE = POINT_BASE + MAX_GANGS * GangDevice.MAX_POINTS;
     public static final int HUB_STRIDE = 1 + ConductorColors.COUNT;
     public static final int TERMINAL_COUNT = HUB_BASE + MAX_HUBS * HUB_STRIDE;
-    public static final String[] HUB_KEYS = {"conduit_socket.hub", "conduit_socket.hub2", "gang.hub_left", "gang.hub_right"};
 
     public static final double BODY_Y1 = 3, PLATE_Y1 = 3.5;
     /** Set into a wall, the whole box moves this far up its floor frame: the body inside the block, the plate half a pixel proud of the face. */
@@ -57,19 +57,26 @@ public final class GangLayout {
         return left(gangs) + 4 * slot + 2;
     }
 
-    /** Knockouts per size: north and south always; east and west on the 3-gang, the only one with room beside its body. */
+    /**
+     * Knockouts per size, numbered top row first: hubs 0 to gangs-1 are the north knockouts, one
+     * over each gang, the next gangs are the south ones under each gang, and the 3-gang has two
+     * more at its east and west sides. A 1-gang box keeps the two it always had.
+     */
     public static int hubCount(int gangs) {
-        return gangs == 3 ? 4 : 2;
+        return 2 * gangs + (gangs == 3 ? 2 : 0);
     }
 
     public static AABB hub(int gangs, int hub) {
         double l = left(gangs);
-        return switch(hub) {
-            case 0 -> new AABB(7, 0.5, 4, 9, 2.5, 5);
-            case 1 -> new AABB(7, 0.5, 11, 9, 2.5, 12);
-            case 2 -> new AABB(l - 1, 0.5, 7, l, 2.5, 9);
-            default -> new AABB(16 - l, 0.5, 7, 17 - l, 2.5, 9);
-        };
+        if(hub < gangs) {
+            double x = slotCentreX(gangs, hub);
+            return new AABB(x - 1, 0.5, 4, x + 1, 2.5, 5);
+        }
+        if(hub < 2 * gangs) {
+            double x = slotCentreX(gangs, hub - gangs);
+            return new AABB(x - 1, 0.5, 11, x + 1, 2.5, 12);
+        }
+        return hub == 2 * gangs ? new AABB(l - 1, 0.5, 7, l, 2.5, 9) : new AABB(16 - l, 0.5, 7, 17 - l, 2.5, 9);
     }
 
     public static VoxelShape shape(int gangs) {
@@ -90,7 +97,7 @@ public final class GangLayout {
             return terminals(gangs);
         var terminals = terminals(gangs);
         for(int h = 0; h < hubCount(gangs); ++h)
-            terminals[hubTerminal(h)] = terminal(hubName(h), hub(gangs, h).move(0, INSET_SHIFT, 0)).withColor(ConduitSize.ONE.bandColor());
+            terminals[hubTerminal(h)] = terminal(hubName(gangs, h), hub(gangs, h).move(0, INSET_SHIFT, 0)).withColor(ConduitSize.ONE.bandColor());
         return terminals;
     }
 
@@ -138,8 +145,11 @@ public final class GangLayout {
         return (terminal - HUB_BASE) % HUB_STRIDE - 1;
     }
 
-    public static Component hubName(int hub) {
-        return Lang.builder().translate(HUB_KEYS[hub]).style(ChatFormatting.AQUA).component();
+    public static Component hubName(int gangs, int hub) {
+        var name = hub < gangs ? Lang.builder().translate("gang.hub_top", hub + 1)
+                : hub < 2 * gangs ? Lang.builder().translate("gang.hub_bottom", hub - gangs + 1)
+                : Lang.builder().translate(hub == 2 * gangs ? "gang.hub_left" : "gang.hub_right");
+        return name.style(ChatFormatting.AQUA).component();
     }
 
     /** The collection for a size: real knockouts where the size has them, specks everywhere else. */
@@ -152,7 +162,7 @@ public final class GangLayout {
                 terminals[point(slot, k)] = terminal(Lang.builder().translate("gang.point", slot + 1, k + 1).component(), HIDDEN);
         for(int h = 0; h < MAX_HUBS; ++h) {
             boolean present = h < hubCount(gangs);
-            terminals[hubTerminal(h)] = terminal(hubName(h), present ? hub(gangs, h) : HIDDEN).withColor(ConduitSize.ONE.bandColor());
+            terminals[hubTerminal(h)] = terminal(present ? hubName(gangs, h) : Lang.builder().translate("conduit_socket.hub").component(), present ? hub(gangs, h) : HIDDEN).withColor(ConduitSize.ONE.bandColor());
             for(int k = 0; k < ConductorColors.COUNT; ++k)
                 terminals[conductorTerminal(h, k)] = terminal(ConductorColors.name(k), HIDDEN).withColor(ConductorColors.rgb(k));
         }

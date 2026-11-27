@@ -982,7 +982,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
 
     @Override
     public Component hubName(int hub) {
-        return GangLayout.hubName(hub);
+        return GangLayout.hubName(gangs(), hub);
     }
 
     @Override
