@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.106.1 — 2026-11-27
+
+### Fixed
+- Wire on a box set into a wall always went into the first knockout's run, so with two runs on
+  the box the second could never be pulled. The click on the plate now chooses, as when laying:
+  upper half for the knockout above, lower for the one below. Cutters choose the same way.
+
 ## 0.106.0 — 2026-11-27
 
 ### Added

@@ -1221,8 +1221,10 @@ the lower half for the one below, the ends for the side ones of a 3-gang; the pr
 Conduit bent from one of its knockouts to any other knockout is laid concealed
 through the wall (see *Wiring inside the walls*), and a chase whose sleeve ends in the block
 beside it links to it on its own, so a wall of receptacles and switches shows nothing but plates.
-Wire in hand on the box pulls into its concealed run; wire cutters on it pull the last wire back
-out, then the empty run, and sneaking with them take the run out at once. A box set into a
+Wire in hand on the box pulls into the run on the knockout nearest the click (upper half of the
+plate for the one above, lower for the one below, as when laying it); wire cutters there pull the
+last wire back out of that run, then the empty run, and sneaking with them take the run out at
+once. A box set into a
 ceiling is a **fixture box**: hang a custom fixture from it and within a second or two the box
 wires the fixture itself, a short nipple from a free knockout to the fixture's mount knockout with
 a black and a white lead pulled through and spliced to L and N at the fixture, so in the box's

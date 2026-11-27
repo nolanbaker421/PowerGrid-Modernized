@@ -262,11 +262,21 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
     public int conduitTerminalAt(BlockState state, Level level, BlockPos pos, Vec3 local) {
         if(!inset(state) || !(level.getBlockEntity(pos) instanceof GangBoxBlockEntity be))
             return -1;
+        int best = hubNearest(state, local, h -> be.hubRun(h) == null);
+        return best < 0 ? -1 : GangLayout.hubTerminal(best);
+    }
+
+    /**
+     * The knockout nearest a block-local click across the plate, among those the test accepts, or
+     * -1: how a box set into a wall tells which of its unseen knockouts a click on the plate means,
+     * the upper half of the plate for the one above, the lower for the one below.
+     */
+    public int hubNearest(BlockState state, Vec3 local, java.util.function.IntPredicate accept) {
         var frame = GangFrame.toFrame(state, local).scale(16);
         int best = -1;
         double bestDistance = Double.MAX_VALUE;
         for(int h = 0; h < GangLayout.hubCount(gangs); ++h) {
-            if(be.hubRun(h) != null)
+            if(!accept.test(h))
                 continue;
             var centre = GangLayout.hub(gangs, h).getCenter();
             double distance = Math.hypot(frame.x - centre.x, frame.z - centre.z);
@@ -275,7 +285,7 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
                 best = h;
             }
         }
-        return best < 0 ? -1 : GangLayout.hubTerminal(best);
+        return best;
     }
 
     @Override
@@ -300,11 +310,11 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
                 return InteractionResult.SUCCESS;
             if(context.getPlayer() == null || !(context.getLevel().getBlockEntity(pos) instanceof GangBoxBlockEntity be))
                 return InteractionResult.FAIL;
-            for(int h = 0; h < GangLayout.hubCount(gangs); ++h) {
-                var run = be.hubRun(h);
-                if(run != null && !run.isNipple() && run.conductors().size() < run.capacity())
-                    return run.pull(context.getPlayer(), context.getItemInHand());
-            }
+            // The run whose knockout is nearest the click: the upper half of the plate for the one above, and so on.
+            var local = context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+            int hub = hubNearest(state, local, h -> be.hubRun(h) != null && !be.hubRun(h).isNipple());
+            if(hub >= 0)
+                return be.hubRun(hub).pull(context.getPlayer(), context.getItemInHand());
             IElectric.sendMessage(context, Lang.builder().translate("message.gang.no_run").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
         }

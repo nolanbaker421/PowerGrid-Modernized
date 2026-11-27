@@ -25,10 +25,24 @@ public final class ConcealedRuns {
         if(!stack.is(ModdedTags.Item.WIRE_CUTTERS.tag) && !stack.is(ModdedTags.Item.BAD_WIRE_CUTTERS.tag))
             return;
         var level = event.getLevel();
-        if(!(level.getBlockEntity(event.getPos()) instanceof ISpliceHost host))
+        var pos = event.getPos();
+        if(!(level.getBlockEntity(pos) instanceof ISpliceHost host))
             return;
         ConduitRunEntity withWire = null, empty = null;
-        for(int h = 0; h < host.hubCount(); ++h) {
+        var state = level.getBlockState(pos);
+        if(state.getBlock() instanceof com.nolanbaker.pgmodernized.conduit.gang.GangBoxBlock box && event.getHitVec() != null) {
+            // On a gang box the click says which run: the one on the knockout nearest it across the plate.
+            var local = event.getHitVec().getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+            int hub = box.hubNearest(state, local, h -> host.hubRun(h) != null && host.hubRun(h).isConcealed());
+            if(hub >= 0) {
+                var run = host.hubRun(hub);
+                if(run.conductors().isEmpty())
+                    empty = run;
+                else
+                    withWire = run;
+            }
+        }
+        for(int h = 0; withWire == null && empty == null && h < host.hubCount(); ++h) {
             var run = host.hubRun(h);
             if(run == null || !run.isConcealed())
                 continue;
