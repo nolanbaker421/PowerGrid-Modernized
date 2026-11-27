@@ -71,7 +71,7 @@ public class StripLightBlockEntity extends ElectricBlockEntity implements IDevic
 
     @Override
     public @Nullable ConduitSize maxConduit(int hub) {
-        return hub == HUB ? ConduitSize.HALF : null;
+        return hub == HUB_NORTH || hub == HUB_SOUTH ? ConduitSize.HALF : null;
     }
 
     @Override

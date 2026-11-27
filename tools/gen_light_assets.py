@@ -36,8 +36,12 @@ def strip_light():
         element(11, 12, 0, 12, 13, 16, "#enamel"),
         element(4, 12, 0, 12, 13, 1, "#enamel"),         # end caps
         element(4, 12, 15, 12, 13, 16, "#enamel"),
-        element(6.5, 11, 6.5, 9.5, 13, 9.5, "#socket"),  # the lamp holder under the channel
-        element(7, 13.5, -0.35, 9, 15.5, 0, "#knockout12"),  # the knockout, proud of the north cap
+        element(5, 11, 0, 8, 13, 1.5, "#socket"),        # the tube holders at each end, two per end
+        element(8, 11, 0, 11, 13, 1.5, "#socket"),
+        element(5, 11, 14.5, 8, 13, 16, "#socket"),
+        element(8, 11, 14.5, 11, 13, 16, "#socket"),
+        element(7, 13.5, -0.35, 9, 15.5, 0, "#knockout12"),  # a knockout proud of each end cap
+        element(7, 13.5, 16, 9, 15.5, 16.35, "#knockout12"),
     ]
     dump(os.path.join(ASSETS, "models", "block", "strip_light.json"), {"parent": "block/block", "textures": tex, "elements": elements})
     dump(os.path.join(ASSETS, "models", "item", "strip_light.json"), {"parent": "%s:block/strip_light" % MOD})

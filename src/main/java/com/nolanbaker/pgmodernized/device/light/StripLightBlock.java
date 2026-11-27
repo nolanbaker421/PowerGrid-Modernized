@@ -32,17 +32,17 @@ import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 import org.patryk3211.powergrid.utility.Lang;
 
 /**
- * A two-foot section of strip light: a white channel hung from the ceiling with one socket that
- * takes any Power Grid bulb, a knockout on its end cap for conduit, and a line and neutral behind
- * it. Two in a row along the same axis are a four-foot two-lamp fixture: they wire themselves
- * together through hidden links, so the pair is fed once. North frame: the channel runs
- * north-south under the ceiling, the knockout on the north end.
+ * A two-foot section of strip light: a white channel hung from the ceiling holding one Power Grid
+ * bulb, drawn as the pair of fluorescent tubes the channel is made for whatever bulb is in it, a
+ * knockout on each end cap for conduit, and a line and neutral behind it. Any number in a row
+ * along the same axis wire themselves together through hidden links, so a run is fed once from
+ * either end. North frame: the channel runs north-south under the ceiling.
  */
 public class StripLightBlock extends HorizontalElectricBlock implements IBE<StripLightBlockEntity> {
-    public static final int L = 0, N = 1, BASE_COUNT = 2, HUB = 0;
-    public static final AABB[] HUBS = {new AABB(7, 13.5, 0, 9, 15.5, 1)};
+    public static final int L = 0, N = 1, BASE_COUNT = 2, HUB_NORTH = 0, HUB_SOUTH = 1;
+    public static final AABB[] HUBS = {new AABB(7, 13.5, 0, 9, 15.5, 1), new AABB(7, 13.5, 15, 9, 15.5, 16)};
     private static final AABB HIDDEN = new AABB(7.99, 13.99, 7.99, 8.01, 14.01, 8.01);
-    private static final VoxelShape BODY = Shapes.or(box(4, 12, 0, 12, 16, 16), box(5.5, 6, 5.5, 10.5, 12, 10.5));
+    private static final VoxelShape BODY = Shapes.or(box(4, 12, 0, 12, 16, 16), box(5, 9.5, 0, 11, 12, 16));
     public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(BASE_COUNT, HUBS.length, new int[] {L, N});
 
     public StripLightBlock(Properties properties) {

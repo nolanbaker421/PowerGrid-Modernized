@@ -1019,11 +1019,11 @@ a standard bulb, since they had a lamp built in.
 
 #### Strip lights
 
-The **Strip Light** is a two-foot section of white channel hung under a ceiling, with one socket
-that takes any Power Grid bulb, a knockout on its end cap for 1/2" conduit, and L and N behind
-it. Place it running the way you look, with the knockout at the far end (sneak for the near end);
-two in a row along the same axis are the four-foot two-lamp fixture, and they wire themselves
-together, so the pair is fed once through either knockout. Right-click a bulb in, sneak-click
+The **Strip Light** is a two-foot section of white channel hung under a ceiling that takes one
+Power Grid bulb of any kind and shows it as the pair of fluorescent tubes the channel is made
+for, with a knockout on each end cap for 1/2" conduit and L and N behind it. Place it running
+the way you look; two in a row along the same axis are the four-foot two-lamp fixture, and any
+number in a row wire themselves together, so a run is fed once from either end. Right-click a bulb in, sneak-click
 with an empty hand to take it out, and an empty hand opens the readings and splice editor. Like
 Power Grid's factory light it throws no light at the fixture itself: the light lands on the
 first floor below it, however high the ceiling, at the bulb's own level. It falls when the block

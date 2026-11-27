@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.95.1 — 2026-11-26
+
+### Changed
+- Strip lights draw a pair of fluorescent tubes whatever bulb is in them, lit white when the bulb
+  is, and carry a knockout on each end cap. Sections in a row still join electrically.
+
 ## 0.95.0 — 2026-11-26
 
 ### Added
