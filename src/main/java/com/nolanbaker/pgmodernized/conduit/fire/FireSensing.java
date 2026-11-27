@@ -8,7 +8,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.phys.AABB;
 
-/** What a detector senses, shared by the conduit box covers and the gang devices: fire and lava within range, and for smoke, lit campfires and anything burning too. */
+/**
+ * What a detector senses, shared by the conduit box covers and the gang devices: fire and lava
+ * within range, and for smoke, lit campfires, anything burning, and Advanced Chimneys' smoke
+ * pouring out below it when that mod is there.
+ */
 public final class FireSensing {
     private FireSensing() {}
 
@@ -24,6 +28,8 @@ public final class FireSensing {
         if(!burningThings)
             return false;
         var box = new AABB(at).inflate(range);
-        return !level.getEntitiesOfClass(Entity.class, box, Entity::isOnFire).isEmpty();
+        if(!level.getEntitiesOfClass(Entity.class, box, Entity::isOnFire).isEmpty())
+            return true;
+        return com.nolanbaker.pgmodernized.compat.adchimneys.ChimneySmoke.smokeBelow(level, at);
     }
 }

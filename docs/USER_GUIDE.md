@@ -248,7 +248,12 @@ detector covers' equals for a gang box, on a wall, a ceiling, or set into either
 with a status light, green blinking at rest and red in alarm, on the initiating loop through its
 Loop + and Loop - points like a pull station. The smoke detector trips at fire or lava within
 four blocks, a lit campfire or anything burning; the heat detector only at fire in the next
-block over. Either holds ten seconds past the last fire it saw, then clears itself. The panel
+block over. Either holds ten seconds past the last fire it saw, then clears itself. With
+**Advanced Chimneys** installed, a smoke detector, cover or gang device, also trips on that
+mod's smoke pouring out below it: a furnace, stove or fire with no chimney, or a chimney ending
+indoors, within six blocks sideways and sixteen down, with nothing solid between the outlet and
+the detector's height, as smoke rises and collects under the ceiling. A fire on the floor of a
+tall hall reaches the detector on its ceiling. The panel
 addresses, names and lists them as it does any detector.
 
 **Annunciator.** The three-gang **Fire Annunciator** mirrors its panel: the same lights and

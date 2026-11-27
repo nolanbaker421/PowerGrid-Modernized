@@ -292,20 +292,10 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
     public InteractionResult onWire(BlockState state, UseOnContext context) {
         var pos = context.getClickedPos();
         boolean conduit = ConduitItem.isConduit(context.getItemInHand());
-        int terminal = hubClicked(state, context);
-        if(terminal >= 0) {
-            if(!conduit) {
-                IElectric.sendMessage(context, Lang.builder().translate("message.conduit.hub_only").style(ChatFormatting.RED).component());
-                return InteractionResult.FAIL;
-            }
-            return ConduitPlacement.click(context, new BlockWireEndpoint(pos, terminal));
-        }
-        if(conduit) {
-            var routed = ConduitPlacement.groundClick(context);
-            return routed != InteractionResult.PASS ? routed : InteractionResult.PASS;
-        }
-        if(inset(state) && org.patryk3211.powergrid.electricity.wire.IWire.isWire(context.getLevel(), context.getItemInHand().getItem())) {
-            // Wire on a box set into a wall pulls into the run on its knockout: the run itself is inside the wall.
+        if(inset(state) && !conduit && org.patryk3211.powergrid.electricity.wire.IWire.isWire(context.getLevel(), context.getItemInHand().getItem())) {
+            // Wire on a box set into a wall pulls into the run on its knockout: the run itself is inside the wall. Before
+            // the knockout check, since on an inset box every plate click resolves to a knockout, and a knockout takes
+            // only conduit.
             if(context.getLevel().isClientSide)
                 return InteractionResult.SUCCESS;
             if(context.getPlayer() == null || !(context.getLevel().getBlockEntity(pos) instanceof GangBoxBlockEntity be))
@@ -317,6 +307,18 @@ public class GangBoxBlock extends Rotation4ElectricBlock implements IBE<GangBoxB
                 return be.hubRun(hub).pull(context.getPlayer(), context.getItemInHand());
             IElectric.sendMessage(context, Lang.builder().translate("message.gang.no_run").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
+        }
+        int terminal = hubClicked(state, context);
+        if(terminal >= 0) {
+            if(!conduit) {
+                IElectric.sendMessage(context, Lang.builder().translate("message.conduit.hub_only").style(ChatFormatting.RED).component());
+                return InteractionResult.FAIL;
+            }
+            return ConduitPlacement.click(context, new BlockWireEndpoint(pos, terminal));
+        }
+        if(conduit) {
+            var routed = ConduitPlacement.groundClick(context);
+            return routed != InteractionResult.PASS ? routed : InteractionResult.PASS;
         }
         IElectric.sendMessage(context, Lang.builder().translate("message.gang.conduit_only").style(ChatFormatting.RED).component());
         return InteractionResult.FAIL;

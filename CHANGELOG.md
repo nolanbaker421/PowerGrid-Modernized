@@ -4,6 +4,20 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.107.1 — 2026-11-27
+
+### Added
+- Smoke detectors, covers and gang devices alike, sense Advanced Chimneys' smoke when that mod
+  is installed: an outlet pouring smoke below the detector, within six blocks sideways and
+  sixteen down with a clear rise to the detector's height, trips it, so a fire or an unvented
+  furnace on the floor of a tall room reaches the detector on its ceiling. Read by reflection;
+  nothing changes without the mod.
+
+### Fixed
+- Wire on a gang box set into a wall said "Only conduit fits a hub": on an inset box every
+  plate click resolves to a knockout, and the knockout check ran before the wire pull. The pull
+  now comes first, into the run on the knockout nearest the click.
+
 ## 0.107.0 — 2026-11-27
 
 ### Added
