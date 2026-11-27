@@ -183,8 +183,10 @@ public class CustomFixtureBlock extends HorizontalElectricBlock implements IBE<C
 
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
-        if(!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof CustomFixtureBlockEntity be)
+        if(!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof CustomFixtureBlockEntity be) {
             be.dropBulbs();
+            be.removeGlow();
+        }
         super.onRemove(state, level, pos, newState, moved);
     }
 

@@ -77,7 +77,7 @@ public final class FixtureDesign {
         return d;
     }
 
-    /** A lit sign on a wall: a dark cabinet standing off the wall with glowing lettering on its face and a lamp inside. */
+    /** A lit sign on a wall: a dark cabinet standing off the wall with glowing, backlit lettering on its face. */
     public static FixtureDesign sign() {
         var d = new FixtureDesign();
         d.name = "Sign";
@@ -87,7 +87,6 @@ public final class FixtureDesign {
         var text = new FixturePart(FixturePart.Kind.TEXT, 6, 20, 27, 36, 8, 1, Direction.NORTH, 0xFF3040, FixturePart.Material.GLOW);
         text.text = "OPEN";
         d.parts.add(text);
-        d.parts.add(new FixturePart(FixturePart.Kind.SOCKET, 22, 28, 29, 4, 2, 3, Direction.DOWN, 0x3A3C40, FixturePart.Material.MATTE));
         return d;
     }
 
@@ -100,10 +99,11 @@ public final class FixtureDesign {
         return d;
     }
 
+    /** Lamp holders: every socket, and every text part, which is backlit by a hidden one. */
     public int socketCount() {
         int n = 0;
         for(var p : parts)
-            if(p.kind == FixturePart.Kind.SOCKET)
+            if(p.kind == FixturePart.Kind.SOCKET || p.kind == FixturePart.Kind.TEXT)
                 ++n;
         return Math.min(n, MAX_SOCKETS);
     }

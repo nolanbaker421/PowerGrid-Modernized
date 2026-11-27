@@ -4,6 +4,19 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.98.1 — 2026-11-26
+
+### Changed
+- Text parts are backlit: each carries a hidden lamp holder, so a sign takes a bulb per text part
+  and needs no visible socket. The Sign preset lost its socket.
+- Custom fixtures light the floor below their lowest lamp while lit, as strip lights do; a
+  pendant no longer lights only the ceiling block it hangs from.
+
+### Fixed
+- Strip lights and custom fixtures were nearly dark: Power Grid's bulb reports a level of 0, 1
+  or 2 and both lights used that as the block light level. They now light at 10 and 15 like
+  Power Grid's own fixtures.
+
 ## 0.98.0 — 2026-11-26
 
 ### Added

@@ -4,6 +4,11 @@ import com.nolanbaker.pgmodernized.conduit.ConduitSize;
 import com.nolanbaker.pgmodernized.conduit.ConductorColors;
 import com.nolanbaker.pgmodernized.conduit.splice.DeviceSpliceHost;
 import com.nolanbaker.pgmodernized.conduit.splice.IDeviceSpliceHost;
+import com.nolanbaker.pgmodernized.device.light.IGlowOwner;
+import com.nolanbaker.pgmodernized.device.light.StripLightBlockEntity;
+import com.nolanbaker.pgmodernized.device.light.StripLightGlowBlock;
+import com.nolanbaker.pgmodernized.registry.ModBlocks;
+import net.minecraft.nbt.NbtUtils;
 import com.nolanbaker.pgmodernized.registry.ModItems;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.ChatFormatting;
@@ -38,7 +43,7 @@ import static com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.*;
  * bulbs' worth while the bulb's own physics see one socket's share. The block lights up at the
  * bulb's level and the glow-material parts of the design light with it.
  */
-public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDeviceSpliceHost, IFixtureEntity, IHaveGoggleInformation {
+public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDeviceSpliceHost, IFixtureEntity, IHaveGoggleInformation, IGlowOwner {
     // No initialisers here: ElectricBlockEntity's constructor calls buildCircuit before they would
     // run, so anything set there would be wiped, and anything read there would be null.
     private DeviceSpliceHost deviceHubs;
@@ -55,6 +60,9 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     @Nullable
     private VoxelShape shape;
     private Direction shapeFacing;
+    /** The glow this fixture keeps on the floor below its lamps while lit, or null. */
+    @Nullable
+    private BlockPos glowPos;
 
     public CustomFixtureBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -178,6 +186,16 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
         return powerLevel > 0 && bulb != null && !bulb.isBurned();
     }
 
+    /**
+     * Power Grid's bulb reports 0 (dark), 1 (warm, under-run) or 2 (full), not a light level; its
+     * own fixtures light at 10 and 15 for the two, and so do ours.
+     */
+    public int lightLevel() {
+        if(!lit())
+            return 0;
+        return powerLevel >= 2 ? 15 : 10;
+    }
+
     @Override
     public void electricalTick() {
         var filaments = filaments();
@@ -201,9 +219,77 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
         var state = getBlockState();
         if(!(state.getBlock() instanceof CustomFixtureBlock))
             return;
-        int wanted = lit() ? Math.max(0, Math.min(15, powerLevel)) : 0;
+        int wanted = lightLevel();
         if(state.getValue(LIGHT) != wanted)
             level.setBlock(worldPosition, state.setValue(LIGHT, wanted), Block.UPDATE_ALL);
+        projectDown();
+    }
+
+    // ---- the glow on the floor ----
+
+    /**
+     * The block the lowest lamp holder (socket or text) sits in, straight under the anchor; a
+     * pendant's bulb hangs a block below the anchor, so its light should start there.
+     */
+    private BlockPos lampBlock() {
+        int lowest = FixturePart.ANCHOR_MIN;
+        for(var p : design().parts)
+            if(p.kind == FixturePart.Kind.SOCKET || p.kind == FixturePart.Kind.TEXT)
+                lowest = Math.min(lowest, p.y);
+        return worldPosition.below(Math.floorDiv(FixturePart.ANCHOR_MIN - lowest + 15, 16));
+    }
+
+    /**
+     * Like the strip light: a lit fixture keeps a glow block on the first floor below its lamps,
+     * so the room is lit from the floor up and not just from the ceiling down. Server side.
+     */
+    private void projectDown() {
+        if(level == null || level.isClientSide)
+            return;
+        int wanted = lightLevel();
+        BlockPos target = null;
+        if(wanted > 0) {
+            var from = lampBlock();
+            for(int i = 0; i <= StripLightBlockEntity.PROJECTION; ++i) {
+                var p = from.below(i);
+                if(!level.isLoaded(p))
+                    break;
+                var s = level.getBlockState(p);
+                if(p.equals(worldPosition) || s.is(ModBlocks.STRIP_LIGHT_GLOW.get()) || s.isAir())
+                    continue;
+                if(i > 0 && !p.above().equals(worldPosition))
+                    target = p.above();
+                break;
+            }
+        }
+        if(glowPos != null && !glowPos.equals(target))
+            removeGlow();
+        if(target == null)
+            return;
+        var s = level.getBlockState(target);
+        if(s.is(ModBlocks.STRIP_LIGHT_GLOW.get())) {
+            if(s.getValue(StripLightGlowBlock.LEVEL) != wanted)
+                level.setBlock(target, s.setValue(StripLightGlowBlock.LEVEL, wanted), Block.UPDATE_ALL);
+        } else if(s.isAir()) {
+            level.setBlock(target, ModBlocks.STRIP_LIGHT_GLOW.getDefaultState().setValue(StripLightGlowBlock.LEVEL, wanted), Block.UPDATE_ALL);
+        } else {
+            return;
+        }
+        if(!target.equals(glowPos)) {
+            glowPos = target;
+            setChanged();
+        }
+    }
+
+    public void removeGlow() {
+        if(glowPos != null && level != null && !level.isClientSide && level.getBlockState(glowPos).is(ModBlocks.STRIP_LIGHT_GLOW.get()))
+            level.removeBlock(glowPos, false);
+        glowPos = null;
+    }
+
+    @Override
+    public boolean ownsGlow(BlockPos pos) {
+        return pos.equals(glowPos) && lit();
     }
 
     // ---- bulbs: one per socket, all the same ----
@@ -268,6 +354,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
         if(level == null || level.isClientSide)
             return;
         deviceHubs().lazyTick();
+        projectDown();
         if(Math.abs(watts - syncedWatts) > 0.5f) {
             syncedWatts = watts;
             sendData();
@@ -303,6 +390,8 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
         tag.put("Design", design().write());
         tag.putInt("Power", powerLevel);
         tag.putFloat("Watts", watts);
+        if(glowPos != null)
+            tag.put("Glow", NbtUtils.writeBlockPos(glowPos));
         if(bulb != null) {
             var b = new CompoundTag();
             bulb.write(b);
@@ -320,6 +409,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
         }
         powerLevel = tag.getInt("Power");
         watts = tag.getFloat("Watts");
+        glowPos = NbtUtils.readBlockPos(tag, "Glow").orElse(null);
         if(tag.contains("Bulb")) {
             var b = tag.getCompound("Bulb");
             var item = LightBulbState.getBulbItem(b);

@@ -10,7 +10,8 @@ import net.minecraft.util.Mth;
  * plain; a cone tapers from its base toward {@code face}; a globe is a ball; a chain is links
  * running along {@code face}; a socket is a lamp holder whose bulb points along {@code face}; a
  * text part is lettering in the game's font on the box's {@code face} side, scaled to fit it,
- * full-bright when its material is glow and the lamp is on, so a sign can be lit.
+ * backlit by a hidden lamp holder of its own: it takes a bulb like a socket, never shows it, and
+ * when its material is glow the lettering is full-bright while the lamp is on.
  */
 public final class FixturePart {
     public enum Kind { BOX, CONE, GLOBE, CHAIN, SOCKET, TEXT }

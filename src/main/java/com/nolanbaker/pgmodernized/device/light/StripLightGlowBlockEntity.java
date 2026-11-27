@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 
-/** A glow that checks once a second that a lit strip light above still claims it, and goes out otherwise. */
+/** A glow that checks once a second that a lit lamp above still claims it, and goes out otherwise. */
 public class StripLightGlowBlockEntity extends SmartBlockEntity {
     public StripLightGlowBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -23,11 +23,12 @@ public class StripLightGlowBlockEntity extends SmartBlockEntity {
         super.lazyTick();
         if(level == null || level.isClientSide)
             return;
-        for(int i = 1; i <= StripLightBlockEntity.PROJECTION; ++i) {
+        // A fixture's lamp may hang a block or two below its anchor, so look a little past the projection.
+        for(int i = 1; i <= StripLightBlockEntity.PROJECTION + 3; ++i) {
             var p = worldPosition.above(i);
             if(!level.isLoaded(p))
                 return;
-            if(level.getBlockEntity(p) instanceof StripLightBlockEntity strip && strip.ownsGlow(worldPosition))
+            if(level.getBlockEntity(p) instanceof IGlowOwner owner && owner.ownsGlow(worldPosition))
                 return;
         }
         level.removeBlock(worldPosition, false);

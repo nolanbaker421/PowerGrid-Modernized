@@ -221,7 +221,7 @@ public class FixtureDesignerScreen extends Screen {
             case TEXT -> { p.w = 16; p.h = 6; p.d = 1; p.x = 16; p.y = 21; p.z = 27; p.face = Direction.NORTH; p.color = 0xFF3040; p.material = FixturePart.Material.GLOW; p.text = "OPEN"; }
             default -> {}
         }
-        if(kind == FixturePart.Kind.SOCKET && design.socketCount() >= FixtureDesign.MAX_SOCKETS)
+        if((kind == FixturePart.Kind.SOCKET || kind == FixturePart.Kind.TEXT) && design.socketCount() >= FixtureDesign.MAX_SOCKETS)
             return;
         design.parts.add(p);
         selected = design.parts.size() - 1;

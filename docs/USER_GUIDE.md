@@ -1060,9 +1060,11 @@ knockouts; the anchor is pixels 16 to 32
 on every axis, up is up, and for a wall fixture the wall is the far face. Each part has a
 colour, from the swatches or typed as hex, and a material: matte, metal, glass or glow, and glow
 parts light up with the lamp. A **text** part is lettering in the game's font, up to sixteen
-characters, drawn on the side of its box that its Face names and scaled to fit; make it glow and
-it lights with the lamp, which is how a business sign is made: a dark cabinet box standing off
-the wall, glowing text on its face, a socket inside. The **Sconce**, **Lamp** and **Sign**
+characters, drawn on the side of its box that its Face names and scaled to fit. Every text part
+is backlit by a hidden lamp holder of its own: the fixture takes one bulb for it as it does for a
+socket, the bulb is never seen, and with the glow material the lettering lights while the lamp
+is on. That is how a business sign is made: a dark cabinet box standing off the wall and glowing
+text on its face, nothing else. The **Sconce**, **Lamp** and **Sign**
 buttons under the part list start a design over from one of those. A design spans three blocks
 each way round its anchor, so a sign is at most three blocks wide; only what falls inside the
 anchor block can be clicked. Mount says what holds the fixture up: the block above, the block
@@ -1076,7 +1078,9 @@ wall one, bottom for a floor one), for a run that comes through the block by a c
 on each of two sides of the canopy for runs along the surface, left and right of a ceiling or
 floor fixture, above and below a wall one. L and N are behind them. Every socket takes the same lamp: right-click with a stack of bulbs and one goes in each
 socket; sneak-click with an empty hand to take them out; an empty hand opens the readings and
-splice editor. The fixture lights its block at the bulb's level. Break it and it comes back as
+splice editor. The fixture lights its block at the bulb's level and, like a strip light, keeps a
+glow on the first floor below its lowest lamp while lit, so a pendant lights the room from the
+floor up as well as from the ceiling down. Break it and it comes back as
 its item with the design on it. Sneak-right-click a placed fixture with the designer to copy its
 design.
 

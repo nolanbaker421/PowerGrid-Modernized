@@ -39,7 +39,7 @@ import static com.nolanbaker.pgmodernized.device.light.StripLightBlock.*;
  * ceiling lights the room rather than the rafters. Sections in a row along the same axis join
  * L to L and N to N through hidden bus links.
  */
-public class StripLightBlockEntity extends ElectricBlockEntity implements IDeviceSpliceHost, IFixtureEntity, IBusJoin, IBusLinkHost, IHaveGoggleInformation {
+public class StripLightBlockEntity extends ElectricBlockEntity implements IDeviceSpliceHost, IFixtureEntity, IBusJoin, IBusLinkHost, IHaveGoggleInformation, IGlowOwner {
     /** How far down the floor is looked for. */
     public static final int PROJECTION = 32;
 
@@ -125,6 +125,16 @@ public class StripLightBlockEntity extends ElectricBlockEntity implements IDevic
         return powerLevel > 0 && bulb != null && !bulb.isBurned();
     }
 
+    /**
+     * Power Grid's bulb reports 0 (dark), 1 (warm, under-run) or 2 (full), not a light level; its
+     * own fixtures light at 10 and 15 for the two, and so do ours.
+     */
+    public int lightLevel() {
+        if(!lit())
+            return 0;
+        return powerLevel >= 2 ? 15 : 10;
+    }
+
     @Override
     public void electricalTick() {
         if(lamp == null || bulb == null || level == null || level.isClientSide || !lamp.isConverged())
@@ -190,7 +200,7 @@ public class StripLightBlockEntity extends ElectricBlockEntity implements IDevic
     private void projectDown() {
         if(level == null || level.isClientSide)
             return;
-        int wanted = lit() ? Math.max(0, Math.min(15, powerLevel)) : 0;
+        int wanted = lightLevel();
         BlockPos target = null;
         if(wanted > 0) {
             for(int i = 1; i <= PROJECTION; ++i) {
@@ -231,6 +241,7 @@ public class StripLightBlockEntity extends ElectricBlockEntity implements IDevic
     }
 
     /** Whether the glow at that position is this section's: the glow asks before it stays. */
+    @Override
     public boolean ownsGlow(BlockPos pos) {
         return pos.equals(glowPos) && lit();
     }
