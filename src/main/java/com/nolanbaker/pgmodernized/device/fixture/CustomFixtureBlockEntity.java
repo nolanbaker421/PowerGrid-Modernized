@@ -39,9 +39,13 @@ import static com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.*;
  * bulb's level and the glow-material parts of the design light with it.
  */
 public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDeviceSpliceHost, IFixtureEntity, IHaveGoggleInformation {
+    // No initialisers here: ElectricBlockEntity's constructor calls buildCircuit before they would
+    // run, so anything set there would be wiped, and anything read there would be null.
     private DeviceSpliceHost deviceHubs;
-    private FixtureDesign design = new FixtureDesign();
-    private SwitchedWire[] filaments = new SwitchedWire[0];
+    @Nullable
+    private FixtureDesign design;
+    @Nullable
+    private SwitchedWire[] filaments;
     @Nullable
     private LightBulbState bulb;
     @Nullable
@@ -67,7 +71,13 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     // ---- the design ----
 
     public FixtureDesign design() {
+        if(design == null)
+            design = new FixtureDesign();
         return design;
+    }
+
+    private SwitchedWire[] filaments() {
+        return filaments == null ? new SwitchedWire[0] : filaments;
     }
 
     public void setDesign(FixtureDesign design) {
@@ -86,14 +96,14 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     /** The fixture as the item that places it again, design on board. */
     public ItemStack toItem() {
         var stack = new ItemStack(ModItems.CUSTOM_FIXTURE.get());
-        design.putOn(stack);
+        design().putOn(stack);
         return stack;
     }
 
     /** The design's parts inside the anchor block, turned to the facing; cached until either changes. */
     public VoxelShape shape(Direction facing) {
         if(shape == null || shapeFacing != facing) {
-            shape = CustomFixtureBlock.rotate(design.anchorShape(), facing);
+            shape = CustomFixtureBlock.rotate(design().anchorShape(), facing);
             shapeFacing = facing;
         }
         return shape;
@@ -106,7 +116,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     }
 
     public int sockets() {
-        return design.socketCount();
+        return design().socketCount();
     }
 
     // ---- the knockout ----
@@ -136,10 +146,11 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         deviceHubs().buildCircuit(builder);
-        int n = Math.max(1, design.socketCount());
-        filaments = new SwitchedWire[n];
+        int n = Math.max(1, sockets());
+        var built = new SwitchedWire[n];
         for(int i = 0; i < n; ++i)
-            filaments[i] = builder.connectSwitch(bulb != null ? bulb.resistance() : 1e6f, builder.terminalNode(L), builder.terminalNode(N), bulb != null);
+            built[i] = builder.connectSwitch(bulb != null ? bulb.resistance() : 1e6f, builder.terminalNode(L), builder.terminalNode(N), bulb != null);
+        filaments = built;
         if(pendingBulb != null && bulb != null) {
             bulb.read(pendingBulb);
             pendingBulb = null;
@@ -149,7 +160,8 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     /** One socket's filament: the bulb's physics see one socket's share of the power. */
     @Override
     public SwitchedWire getFilament() {
-        return filaments.length > 0 ? filaments[0] : null;
+        var f = filaments();
+        return f.length > 0 ? f[0] : null;
     }
 
     @Override
@@ -173,6 +185,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
 
     @Override
     public void electricalTick() {
+        var filaments = filaments();
         if(filaments.length == 0 || bulb == null || level == null || level.isClientSide || !filaments[0].isConverged())
             return;
         double w = 0;
@@ -270,6 +283,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        var design = design();
         Lang.builder().add(Component.literal(design.name.isEmpty() ? "Fixture" : design.name)).style(ChatFormatting.GRAY).forGoggles(tooltip);
         int n = sockets();
         if(n == 0)
@@ -291,7 +305,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         deviceHubs().write(tag, registries, clientPacket);
-        tag.put("Design", design.write());
+        tag.put("Design", design().write());
         tag.putInt("Power", powerLevel);
         tag.putFloat("Watts", watts);
         if(bulb != null) {
@@ -320,9 +334,9 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
                     electricBehaviour.rebuildCircuit(false);
             }
             if(bulb != null) {
-                if(filaments.length == 0 && electricBehaviour != null)
+                if(filaments().length == 0 && electricBehaviour != null)
                     electricBehaviour.rebuildCircuit(false);
-                if(filaments.length > 0)
+                if(filaments().length > 0)
                     bulb.read(b);
                 else
                     pendingBulb = b.copy();

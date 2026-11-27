@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.95.2 — 2026-11-26
+
+### Fixed
+- Placing a custom fixture crashed the game: the block entity read its design before the field
+  existed, and its filaments were wiped straight after being built.
+
 ## 0.95.1 — 2026-11-26
 
 ### Changed
