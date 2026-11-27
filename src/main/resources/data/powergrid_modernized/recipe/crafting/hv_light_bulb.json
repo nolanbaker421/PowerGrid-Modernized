@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powergrid:light_bulb"
+    },
+    {
+      "item": "minecraft:glass"
+    },
+    {
+      "tag": "c:nuggets/copper"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:hv_light_bulb"
+  }
+}

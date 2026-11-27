@@ -205,6 +205,15 @@ public class ModBlockEntities {
                             ModBlocks.CUTOUTS.get(com.nolanbaker.pgmodernized.device.pole.CutoutClass.KV38))
                     .renderer(() -> com.nolanbaker.pgmodernized.client.CutoutRenderer::new)
                     .register();
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.device.light.StripLightBlockEntity> STRIP_LIGHT =
+            REGISTRATE.blockEntity("strip_light", com.nolanbaker.pgmodernized.device.light.StripLightBlockEntity::new)
+                    .validBlock(ModBlocks.STRIP_LIGHT)
+                    .renderer(() -> com.nolanbaker.pgmodernized.client.StripLightRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.device.light.StripLightGlowBlockEntity> STRIP_LIGHT_GLOW =
+            REGISTRATE.blockEntity("strip_light_glow", com.nolanbaker.pgmodernized.device.light.StripLightGlowBlockEntity::new)
+                    .validBlock(ModBlocks.STRIP_LIGHT_GLOW)
+                    .register();
     public static final BlockEntityEntry<com.nolanbaker.pgmodernized.device.pole.RecloserBlockEntity> RECLOSER =
             REGISTRATE.blockEntity("recloser", com.nolanbaker.pgmodernized.device.pole.RecloserBlockEntity::new)
                     .validBlock(ModBlocks.RECLOSER)

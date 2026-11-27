@@ -1017,6 +1017,21 @@ its warm-up, its burnout at too high a voltage, and its light level, drawn with 
 model in the socket. A socket without a bulb is dark. Light sockets from before this version keep
 a standard bulb, since they had a lamp built in.
 
+#### Strip lights
+
+The **Strip Light** is a two-foot section of white channel hung under a ceiling, with one socket
+that takes any Power Grid bulb, a knockout on its end cap for 1/2" conduit, and L and N behind
+it. Place it running the way you look, with the knockout at the far end (sneak for the near end);
+two in a row along the same axis are the four-foot two-lamp fixture, and they wire themselves
+together, so the pair is fed once through either knockout. Right-click a bulb in, sneak-click
+with an empty hand to take it out, and an empty hand opens the readings and splice editor. Like
+Power Grid's factory light it throws no light at the fixture itself: the light lands on the
+first floor below it, however high the ceiling, at the bulb's own level. It falls when the block
+above it goes.
+
+The **HV Light Bulb (277 V)** is the commercial lighting lamp: 60 W at 277 V, Power Grid's bulb
+physics in Power Grid's bulb model. On a 120 V circuit it barely glows; on 480 it burns out.
+
 Conduit runs leave and enter every knockout straight and on centre, bend through a real elbow at every corner, and end in a connector the tube's own size where they enter a knockout.
 
 ### Strut channel
@@ -1372,6 +1387,8 @@ adapter placed next to them:
 | Hot Stick | an iron nugget over two sticks |
 | Extension Ladder | iron plates in a ladder: two columns with three rungs |
 | Cable Tray (8) | iron nuggets in two rows with iron ingots between them |
+| Strip Light (2) | iron plates over Power Grid wire either side of an iron nugget |
+| HV Light Bulb (277 V) | shapeless: a light bulb, glass and a copper nugget |
 | 2 m A-Frame Ladder | iron plates in an A: one, then two apart, then three |
 | 3 m, 4 m A-Frame Ladder | shapeless: the ladder a metre shorter and two iron plates |
 | Recloser | copper ingots either side of a 3-pole 200 A breaker, iron plates round redstone, iron ingots below |

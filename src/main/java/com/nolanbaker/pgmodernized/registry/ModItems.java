@@ -190,6 +190,26 @@ public class ModItems {
             .lang("Label Maker")
             .register();
 
+    /** A 277 V bulb for commercial lighting circuits: Power Grid's bulb physics and models, rated for the higher line. */
+    public static final ItemEntry<org.patryk3211.powergrid.electricity.light.bulb.LightBulb> HV_LIGHT_BULB = REGISTRATE.item("hv_light_bulb", org.patryk3211.powergrid.electricity.light.bulb.LightBulb::new)
+            .transform(org.patryk3211.powergrid.electricity.light.bulb.LightBulb.setModelNameProvider(() -> state -> net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("powergrid", switch(state) {
+                case ON -> "block/lamps/light_bulb_on";
+                case BROKEN -> "block/lamps/light_bulb_broken";
+                case LIGHT -> "block/lamps/light_bulb_light";
+                default -> "block/lamps/light_bulb";
+            })))
+            .transform(org.patryk3211.powergrid.electricity.light.bulb.LightBulb.setDyedModelNameProvider(() -> state -> net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("powergrid", switch(state) {
+                case ON -> "block/lamps/dyed_light_bulb_on";
+                case BROKEN -> "block/lamps/dyed_light_bulb_broken";
+                case LIGHT -> "block/lamps/dyed_light_bulb_light";
+                case BULB -> "block/lamps/dyed_light_bulb_bulb";
+                default -> "block/lamps/dyed_light_bulb";
+            })))
+            .transform(org.patryk3211.powergrid.electricity.light.bulb.LightBulb.setProperties(60, 277, 120, 0.005f))
+            .model(NonNullBiConsumer.noop())
+            .lang("HV Light Bulb (277 V)")
+            .register();
+
     /** The installer's boresight scope: sights two antennas in on each other. */
     public static final ItemEntry<AlignmentScopeItem> ALIGNMENT_SCOPE = REGISTRATE.item("alignment_scope", AlignmentScopeItem::new)
             .properties(p -> p.stacksTo(1))

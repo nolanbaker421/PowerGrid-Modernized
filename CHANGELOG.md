@@ -4,6 +4,14 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.94.0 — 2026-11-26
+
+### Added
+- The **Strip Light**: a two-foot ceiling section with one socket for any Power Grid bulb and an
+  end knockout; two in a row are the four-foot two-lamp fixture and wire themselves together.
+  Its light lands on the first floor below, as the factory light's does.
+- The **HV Light Bulb (277 V)**, 60 W, on Power Grid's bulb physics and models.
+
 ## 0.93.0 — 2026-11-16
 
 ### Added

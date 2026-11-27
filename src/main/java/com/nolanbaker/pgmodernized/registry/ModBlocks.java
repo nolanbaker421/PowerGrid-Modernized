@@ -355,6 +355,25 @@ public class ModBlocks {
                 .build()
             .register();
 
+    /** A two-foot section of strip light under a ceiling; two in a row are the four-foot two-lamp fixture. */
+    public static final BlockEntry<com.nolanbaker.pgmodernized.device.light.StripLightBlock> STRIP_LIGHT = REGISTRATE.block("strip_light", com.nolanbaker.pgmodernized.device.light.StripLightBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion())
+            .transform(pickaxeOnly())
+            .lang("Strip Light")
+            .item()
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+    /** The strip light's light on the floor: invisible, unbreakable, and gone when no lit section claims it. */
+    public static final BlockEntry<com.nolanbaker.pgmodernized.device.light.StripLightGlowBlock> STRIP_LIGHT_GLOW = REGISTRATE.block("strip_light_glow", com.nolanbaker.pgmodernized.device.light.StripLightGlowBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(() -> net.minecraft.world.level.block.Blocks.LIGHT)
+            .properties(p -> p.lightLevel(s -> s.getValue(com.nolanbaker.pgmodernized.device.light.StripLightGlowBlock.LEVEL)).noCollission().noOcclusion().noLootTable())
+            .lang("Strip Light Glow")
+            .register();
+
     /** Fused cutouts, one block per voltage class, one to three poles each. */
     public static final Map<com.nolanbaker.pgmodernized.device.pole.CutoutClass, BlockEntry<com.nolanbaker.pgmodernized.device.pole.CutoutBlock>> CUTOUTS = cutouts();
 
