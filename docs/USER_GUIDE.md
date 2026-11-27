@@ -287,7 +287,8 @@ knockout or across a doorway, that stretch is drawn as plain conduit for everyon
 of the wall into a panel shows the stub between them as it would in a real wall.
 
 **Seeing it.** Wearing Engineer's Goggles, concealed runs and chaseway sleeves show through the
-walls as translucent blue tubes. Without goggles they are invisible, which is the point. The
+walls as translucent blue tubes, and a box set into a wall shows its knockouts, pale where free
+and blue where a run lands, so you can see which one a click on the plate will take. Without goggles they are invisible, which is the point. The
 **Show wiring in walls** key (H by default, under PowerGrid: Modernized in the controls) turns
 the view off and on for those who live in their goggles.
 

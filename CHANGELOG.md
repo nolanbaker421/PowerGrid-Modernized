@@ -4,6 +4,12 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.106.2 — 2026-11-27
+
+### Added
+- With the wall view on, a gang box set into a wall shows its knockouts through the wall, pale
+  where free and blue where a run lands, so a plate click can be aimed at the right one.
+
 ## 0.106.1 — 2026-11-27
 
 ### Fixed

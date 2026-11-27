@@ -37,6 +37,20 @@ public class GangBoxRenderer extends SafeBlockEntityRenderer<GangBoxBlockEntity>
         if(!(state.getBlock() instanceof GangBoxBlock box))
             return;
         int gangs = box.gangs();
+        if(GangBoxBlock.inset(state) && WallView.visible(net.minecraft.client.Minecraft.getInstance().player)) {
+            // The knockouts inside the wall, for anyone who can see inside it: dim where free, the chase blue where a run lands.
+            ms.pushPose();
+            ms.mulPose(GangFrame.pose(state));
+            var xray = XrayDraw.buffer(buffer);
+            var m = ms.last().pose();
+            for(int h = 0; h < GangLayout.hubCount(gangs); ++h) {
+                var k = GangLayout.hub(gangs, h);
+                boolean used = be.hubRun(h) != null;
+                XrayDraw.box(m, xray, (k.minX - 0.5) / 16, (k.minY - 0.5) / 16, (k.minZ - 0.5) / 16, (k.maxX + 0.5) / 16, (k.maxY + 0.5) / 16, (k.maxZ + 0.5) / 16,
+                        used ? XrayDraw.CHASE : 0xE8E8F0, used ? 0xA0 : 0x60);
+            }
+            ms.popPose();
+        }
         ms.pushPose();
         ms.mulPose(GangFrame.pose(state));
         double top = GangLayout.PLATE_Y1;
