@@ -4,6 +4,16 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.107.2 — 2026-11-27
+
+### Fixed
+- The monitor module never saw its contact close: its sense circuit was a floating island of
+  its own beside the loop in the box's network, and the solver leaves a network with two such
+  islands at zero everywhere, so a jumper across Contact A and B read no current (and N.C. mode
+  tripped at once, reading it open). The sense circuit is now referenced to Loop - through a
+  megohm, which draws nothing and lets it solve. A unit test covers the module's circuit.
+- The user guide gains a monitor module paragraph.
+
 ## 0.107.1 — 2026-11-27
 
 ### Added

@@ -81,7 +81,7 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
     /** An annunciator's panel: where it is, and when its survey last reached this box. */
     private BlockPos[] panelPos;
     private long[] panelSeen;
-    public static final float SENSE_VOLTS = 5, SENSE_AMPS = 0.001f;
+    public static final float SENSE_VOLTS = 5, SENSE_AMPS = 0.001f, SENSE_REFERENCE_OHMS = 1e6f;
     /** Ticks without a survey before an annunciator shows its link lost; surveys come every sixty. */
     public static final int LINK_TICKS = 200;
     private List<SplicePoint> points;
@@ -605,6 +605,10 @@ public class GangBoxBlockEntity extends ElectricBlockEntity implements ISpliceHo
                     source.setVoltageProvider(() -> SENSE_VOLTS);
                     builder.add(source);
                     sense[slot] = source;
+                    // The sense circuit is referenced to Loop - through a megohm. On its own it is a second floating
+                    // island of the box's network, and the solver leaves such a network at zero everywhere, the
+                    // loop included; tied to the loop it solves, and a megohm draws nothing a contact would notice.
+                    builder.connect(SENSE_REFERENCE_OHMS, builder.terminalNode(p[3]), builder.terminalNode(p[1]));
                 }
                 case ANNUNCIATOR -> builder.connect(resistance("supervisory"), builder.terminalNode(p[0]), builder.terminalNode(p[1]));
                 case THERMOSTAT -> contacts[slot] = new SwitchedWire[] {

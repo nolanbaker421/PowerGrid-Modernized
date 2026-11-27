@@ -243,6 +243,17 @@ receptacle under the ceiling.
 **Pull stations.** A bare hand on the handle pulls the station; anywhere else on it opens the
 splice editor, so a station is wired like any other cover or gang device. A wrench resets it.
 
+**Monitor module.** A gang device with four points. **Loop +** and **Loop -** go across the
+panel's initiating loop like a pull station's, and the panel lists it as a device. **Contact A**
+and **Contact B** are its own sense circuit, five volts through a kilohm, watching for current:
+splice any dry contact across them, a switch's Line and Load in the same box, a push button, a
+relay's contacts over a run, a flow or tamper switch, or a plain jumper to test it. Anything
+under a few thousand ohms counts as closed; put nothing live on those two points. A wrench
+toggles it between **N.O.**, the default, which trips when the contact closes, and **N.C.**,
+which trips when it opens, so an N.C. module with nothing across A and B sits tripped. A trip
+closes a kilohm across the loop and the panel latches alarm until Reset; goggles on the box
+show the module normal or tripped.
+
 **Detectors in a gang box.** The **Smoke Detector** and **Heat Detector** gang devices are the
 detector covers' equals for a gang box, on a wall, a ceiling, or set into either: a white puck
 with a status light, green blinking at rest and red in alarm, on the initiating loop through its
