@@ -274,6 +274,13 @@ programmer's: **Drill** sounds the alarm with no device in alarm, **Silence** qu
 **Reset** clears; zones are assigned and named at the panel itself, where the same screen has
 the arrows, Remove and Zone name as well.
 
+**Computers and the PLC.** Over its Cat6 jack the panel is the ComputerCraft peripheral and
+OpenComputers component `powergrid_fire_alarm` (see *Computer integration*): its state, every
+device and zone, Silence, Reset and Drill, and events as they change. A PLC on the same network
+reads the tags `FA` or `FA.ALARM`, `FA.TROUBLE`, `FA.SILENCED`, `FA.POWER`, `FA.DRILL`, `FA.Zn`
+for zone n and `FA.n` for the device at address n, and writes `FA.SILENCE`, `FA.RESET` and
+`FA.DRILL`. Both work the one panel; neither gets in the other's way.
+
 ### Conduit Socket
 
 A 6 x 6 pixel fitting for the equipment end of a run. It has one hub and a **cord socket**: the first
@@ -1513,6 +1520,21 @@ coordinates prefixed by `n`, so `peripheral.find("powergrid_vfd")` or
 
 **powergrid_voltmeter**: `getVoltage()`.
 
+**powergrid_fire_alarm** (the fire alarm panel, over its Cat6 jack)
+
+| Method | Meaning |
+| --- | --- |
+| `getState()` | `normal`, `alarm` or `trouble` |
+| `isInAlarm()` / `isPowered()` / `isSilenced()` / `isDrill()` | The panel's lights |
+| `getStatus()` | All of that plus feedVoltage, loopCurrent, notificationCurrent, loopOpen, notificationOpen, devices |
+| `getDevices()` / `getDevice(address)` | Every device by loop address: address, kind, label, status, tripped, zone, zoneName, x, y, z |
+| `getZones()` / `getZone(n)` / `isZoneInAlarm(n)` | Every zone with a name or a device: zone, name, devices, alarm |
+| `silence()` / `reset()` / `drill(on)` | The operator's keys; `reset()` is false while a device still holds the loop |
+
+Events: `fire_alarm` (state, alarm, silenced, drill, powered) when any of those change, and
+`fire_device` (address, status, kind, label, zone) when a device's status does. Zones and names
+are set at the panel; a computer reads them. The PLC's FA tags work the same panel alongside.
+
 ### OpenComputers
 
 The same devices are components with the same names (`powergrid_vfd`, `powergrid_analog_io`,
@@ -1528,6 +1550,8 @@ its signature. Methods match the ComputerCraft ones, plus:
 - **CT cabinet**: `setChangeThreshold(watts)` for a `power_change` signal on total power.
 - **Three-phase drive** and **motor**: the same methods as their ComputerCraft peripherals, as components
   `powergrid_three_phase_drive` and `powergrid_three_phase_motor`.
+- **Fire alarm panel**: component `powergrid_fire_alarm` with the same methods, and the signals
+  `fire_alarm` and `fire_device`.
 
 When OpenComputers is present, Power Grid's own blocks also become read-only components for an
 adapter placed next to them:

@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.108.0 — 2026-11-27
+
+### Added
+- The fire alarm panel is a computer device over its Cat6 jack: ComputerCraft peripheral and
+  OpenComputers component `powergrid_fire_alarm`, with the panel's state, every device with its
+  status and zone, every zone, Silence, Reset and Drill, and the events `fire_alarm` and
+  `fire_device` as they change. The PLC's FA tags are unchanged and work alongside. The guide
+  documents both, the FA tags for the first time.
+
 ## 0.107.2 — 2026-11-27
 
 ### Fixed

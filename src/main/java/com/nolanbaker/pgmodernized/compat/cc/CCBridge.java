@@ -70,6 +70,8 @@ public class CCBridge {
                 (be, direction) -> new RadioPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.COLLECTOR.get(),
                 (be, direction) -> new CollectorPeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.FIRE_ALARM_PANEL.get(),
+                (be, direction) -> new FireAlarmPeripheral(be));
         ForkHooks.get().registerCC(event);
 
         // The standalone jack behaves like a piece of CC cable towards its neighbours.
@@ -106,6 +108,8 @@ public class CCBridge {
             return new RadioPeripheral(radio);
         if(be instanceof CollectorBlockEntity collector)
             return new CollectorPeripheral(collector);
+        if(be instanceof com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity panel)
+            return new FireAlarmPeripheral(panel);
         if(ForkHooks.get().ccPeripheral(be) instanceof IPeripheral peripheral)
             return peripheral;
         return null;

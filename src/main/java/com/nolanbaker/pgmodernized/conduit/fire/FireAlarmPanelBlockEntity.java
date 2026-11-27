@@ -180,7 +180,108 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
         return JACK;
     }
 
-    // ---- what a PLC reads and writes over the jack ----
+    // ---- what a computer or a PLC reads and writes over the jack ----
+
+    /** Told of the panel's changes: a computer peripheral or component queues them as events. Server side. */
+    public interface Listener {
+        void panelChanged(State state, boolean alarm, boolean silenced, boolean drill, boolean powered);
+
+        void deviceChanged(FireDevice device);
+    }
+
+    private final java.util.List<Listener> listeners = new java.util.ArrayList<>();
+    private long listenerKey = -1;
+    private final java.util.Map<Integer, FireDevice.Status> reportedStatus = new java.util.HashMap<>();
+
+    public void addListener(Listener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(Listener listener) {
+        listeners.remove(listener);
+    }
+
+    /** Every lazy tick: what changed since the last goes to the listeners; the first look only primes the record. */
+    private void notifyListeners() {
+        long key = state.ordinal() | (alarm ? 8 : 0) | (silenced ? 16 : 0) | (drill ? 32 : 0) | (powered ? 64 : 0);
+        boolean primed = listenerKey != -1;
+        if(primed && key != listenerKey)
+            for(var l : java.util.List.copyOf(listeners))
+                l.panelChanged(state, alarm, silenced, drill, powered);
+        listenerKey = key;
+        for(var device : devices.values()) {
+            var was = reportedStatus.put(device.address(), device.status());
+            if(primed && was != device.status())
+                for(var l : java.util.List.copyOf(listeners))
+                    l.deviceChanged(device);
+        }
+        reportedStatus.keySet().removeIf(address -> !devices.containsKey(address));
+    }
+
+    /** The panel at a glance, for a computer. */
+    public java.util.Map<String, Object> describe() {
+        var m = new java.util.LinkedHashMap<String, Object>();
+        m.put("state", state.name().toLowerCase(java.util.Locale.ROOT));
+        m.put("alarm", alarm);
+        m.put("silenced", silenced);
+        m.put("drill", drill);
+        m.put("powered", powered);
+        m.put("feedVoltage", (double) feedVolts);
+        m.put("loopCurrent", (double) idcAmps);
+        m.put("notificationCurrent", (double) nacAmps);
+        m.put("loopOpen", idcOpen);
+        m.put("notificationOpen", nacOpen);
+        m.put("devices", devices.size());
+        return m;
+    }
+
+    public java.util.Map<String, Object> describe(FireDevice device) {
+        var m = new java.util.LinkedHashMap<String, Object>();
+        int zone = zoneOf(device.address());
+        m.put("address", device.address());
+        m.put("kind", device.kind().id());
+        m.put("label", device.label());
+        m.put("status", device.status().name().toLowerCase(java.util.Locale.ROOT));
+        m.put("tripped", device.status() == FireDevice.Status.ALARM);
+        m.put("zone", zone);
+        m.put("zoneName", zone > 0 ? zoneName(zone) : "");
+        m.put("x", device.pos().getX());
+        m.put("y", device.pos().getY());
+        m.put("z", device.pos().getZ());
+        return m;
+    }
+
+    @Nullable
+    public java.util.Map<String, Object> describeDevice(int address) {
+        var device = devices.get(address);
+        return device == null ? null : describe(device);
+    }
+
+    /** Every device by loop address. */
+    public java.util.Map<Integer, java.util.Map<String, Object>> describeDevices() {
+        var table = new java.util.LinkedHashMap<Integer, java.util.Map<String, Object>>();
+        for(var device : devices.values())
+            table.put(device.address(), describe(device));
+        return table;
+    }
+
+    public java.util.Map<String, Object> describeZone(int zone) {
+        var m = new java.util.LinkedHashMap<String, Object>();
+        m.put("zone", zone);
+        m.put("name", zoneName(zone));
+        m.put("devices", zoneCount(zone));
+        m.put("alarm", zoneAlarm(zone));
+        return m;
+    }
+
+    /** Every zone with a name or a device, by number. */
+    public java.util.Map<Integer, java.util.Map<String, Object>> describeZones() {
+        var table = new java.util.LinkedHashMap<Integer, java.util.Map<String, Object>>();
+        for(int zone = 1; zone <= MAX_ZONES; ++zone)
+            if(!zoneName(zone).isEmpty() || zoneCount(zone) > 0)
+                table.put(zone, describeZone(zone));
+        return table;
+    }
 
     public boolean drill() {
         return drill;
@@ -547,6 +648,7 @@ public class FireAlarmPanelBlockEntity extends ElectricBlockEntity implements ID
             syncedNac = nacAmps;
             sendData();
         }
+        notifyListeners();
     }
 
     // ---- persistence ----

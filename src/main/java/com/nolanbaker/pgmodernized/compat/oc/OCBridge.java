@@ -37,6 +37,7 @@ public class OCBridge {
         expose(event, ModBlockEntities.RADIO.get());
         expose(event, ModBlockEntities.COLLECTOR.get());
         expose(event, ModBlockEntities.COAX_HANGER.get());
+        expose(event, ModBlockEntities.FIRE_ALARM_PANEL.get());
     }
 
     public static <T extends BlockEntity> void expose(RegisterCapabilitiesEvent event, BlockEntityType<T> type) {
@@ -71,6 +72,7 @@ public class OCBridge {
         ComputerBlockEntityFactories.RADIO = OCRadioBlockEntity::new;
         ComputerBlockEntityFactories.COLLECTOR = OCCollectorBlockEntity::new;
         ComputerBlockEntityFactories.COAX_HANGER = OCCoaxHangerBlockEntity::new;
+        ComputerBlockEntityFactories.FIRE_ALARM_PANEL = OCFireAlarmPanelBlockEntity::new;
         // Cat6 cables link the OC nodes of the jacks they join.
         JackSupport.registerLinkFactory((be, jack) -> be instanceof OCNetworkSwitchBlockEntity sw ? new OCJackLink(sw::nodeForPort)
                 : be instanceof OCRadioBlockEntity radio ? new OCJackLink(radio::nodeForPort)

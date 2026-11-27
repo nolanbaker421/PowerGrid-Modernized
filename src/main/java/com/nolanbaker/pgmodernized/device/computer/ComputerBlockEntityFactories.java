@@ -40,6 +40,7 @@ public final class ComputerBlockEntityFactories {
     public static BlockEntityFactory<RadioBlockEntity> RADIO = RadioBlockEntity::new;
     public static BlockEntityFactory<CollectorBlockEntity> COLLECTOR = CollectorBlockEntity::new;
     public static BlockEntityFactory<CoaxHangerBlockEntity> COAX_HANGER = CoaxHangerBlockEntity::new;
+    public static BlockEntityFactory<com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity> FIRE_ALARM_PANEL = com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity::new;
 
     public static BlockEntityFactory<RadioBlockEntity> radio() {
         return (type, pos, state) -> RADIO.create(type, pos, state);
@@ -51,6 +52,10 @@ public final class ComputerBlockEntityFactories {
 
     public static BlockEntityFactory<CoaxHangerBlockEntity> coaxHanger() {
         return (type, pos, state) -> COAX_HANGER.create(type, pos, state);
+    }
+
+    public static BlockEntityFactory<com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity> fireAlarmPanel() {
+        return (type, pos, state) -> FIRE_ALARM_PANEL.create(type, pos, state);
     }
 
     public static BlockEntityFactory<GearCellBlockEntity> gearCell() {

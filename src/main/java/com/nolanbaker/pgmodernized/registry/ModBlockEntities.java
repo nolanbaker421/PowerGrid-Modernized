@@ -125,7 +125,7 @@ public class ModBlockEntities {
                     .register();
 
     public static final BlockEntityEntry<com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity> FIRE_ALARM_PANEL =
-            REGISTRATE.blockEntity("fire_alarm_panel", com.nolanbaker.pgmodernized.conduit.fire.FireAlarmPanelBlockEntity::new)
+            REGISTRATE.blockEntity("fire_alarm_panel", ComputerBlockEntityFactories.fireAlarmPanel())
                     .validBlock(ModBlocks.FIRE_ALARM_PANEL)
                     .renderer(() -> com.nolanbaker.pgmodernized.client.FireAlarmPanelRenderer::new)
                     .register();
