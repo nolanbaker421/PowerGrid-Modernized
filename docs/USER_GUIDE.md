@@ -1036,7 +1036,10 @@ physics in Power Grid's bulb model. On a 120 V circuit it barely glows; on 480 i
 
 The **Fixture Designer** makes your own lamps: pendants, chandeliers, sconces, table lamps.
 Sneak-right-click it and a design opens: a list of parts on the left, the fixture turning in the
-middle (drag to turn, scroll to zoom), the selected part's numbers on the right. Parts are
+middle, the selected part's numbers on the right. In the middle, drag a part to move it across
+the view (Shift-drag moves it in and out), drag empty space to turn the view, scroll to zoom;
+the arrow keys and PgUp/PgDn nudge the selected part a pixel, Ctrl with them resizes it, Shift
+makes the step four, and Delete removes it. The numbers on the right follow. Parts are
 boxes, cones (shades, with a taper), globes, chains and sockets, each placed by pixel in a
 three-block cube round the anchor block, which shows as a ghost; the anchor is pixels 16 to 32
 on every axis, up is up, and for a wall fixture the wall is the far face. Each part has a

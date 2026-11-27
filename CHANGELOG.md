@@ -4,6 +4,13 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.96.0 — 2026-11-26
+
+### Added
+- Fixture designer: drag a part in the preview to move it (Shift-drag for in and out), click a
+  part to select it, and nudge the selected part with the arrow keys and PgUp/PgDn; Ctrl resizes,
+  Shift steps by four, Delete removes. Dragging empty space still turns the view.
+
 ## 0.95.2 — 2026-11-26
 
 ### Fixed

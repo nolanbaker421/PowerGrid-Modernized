@@ -56,7 +56,7 @@
   "powergrid.gui.fixture.title": "Fixture designer",
   "powergrid.gui.fixture.parts": "%1$s of %2$s parts",
   "powergrid.gui.fixture.colour": "Colour",
-  "powergrid.gui.fixture.hint": "Drag the view to turn it, scroll to zoom",
+  "powergrid.gui.fixture.hint": "Drag a part to move it\nShift-drag: in and out\nArrows, PgUp/PgDn: nudge\nCtrl: resize, Shift: x4\nDrag space: turn, scroll: zoom",
   "powergrid.gui.fixture.none": "Add a part on the left",
   "powergrid.gui.fixture.build": "Build",
   "powergrid.gui.fixture.done": "Done",

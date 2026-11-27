@@ -18,14 +18,19 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.function.IntConsumer;
 
 /**
  * The fixture designer: a list of parts on the left, the design turning in the middle, the
  * selected part's numbers on the right, and the fixture's mount and name along the bottom.
- * Drag the preview to turn it, scroll to zoom. Done saves the design to the designer; Build
- * saves it and turns a fixture blank into a fixture that carries it.
+ * Drag a part to move it across the view (Shift-drag for in and out), drag empty space to turn
+ * the view, scroll to zoom; the arrow keys and PgUp/PgDn nudge the selected part a pixel, Ctrl
+ * with them resizes it, Shift makes the step four, Delete removes it. Done saves the design to
+ * the designer; Build saves it and turns a fixture blank into a fixture that carries it.
  */
 public class FixtureDesignerScreen extends Screen {
     private static final int PANEL_W = 430, PANEL_H = 238, LIST_ROWS = 12, ROW_H = 10;
@@ -38,7 +43,10 @@ public class FixtureDesignerScreen extends Screen {
     private float yaw = 35, pitch = 22, zoom = 26;
     private int panelX, panelY;
     private int listX, listY, previewX, previewY, previewW, previewH, fieldsX;
-    private boolean dragging;
+    private enum Drag { NONE, ORBIT, MOVE }
+    private Drag drag = Drag.NONE;
+    private final Vector3f dragAcc = new Vector3f();
+    private final java.util.Map<String, EditBox> numbers = new java.util.HashMap<>();
     private EditBox nameField, colorField;
 
     public FixtureDesignerScreen(InteractionHand hand, FixtureDesign design) {
@@ -149,8 +157,28 @@ public class FixtureDesignerScreen extends Screen {
             } catch(NumberFormatException ignored) {}
         });
         addRenderableWidget(box);
+        numbers.put(label, box);
         labels.add(new int[] {x, y});
         labelText.add(label);
+    }
+
+    /** Writes the selected part's numbers back into their boxes after a nudge or a drag. */
+    private void syncNumbers() {
+        var p = part();
+        if(p == null)
+            return;
+        sync("X", p.x);
+        sync("Y", p.y);
+        sync("Z", p.z);
+        sync("W", p.w);
+        sync("H", p.h);
+        sync("D", p.d);
+    }
+
+    private void sync(String label, int value) {
+        var box = numbers.get(label);
+        if(box != null && !box.getValue().equals(Integer.toString(value)))
+            box.setValue(Integer.toString(value));
     }
 
     private final java.util.List<int[]> labels = new java.util.ArrayList<>();
@@ -161,6 +189,7 @@ public class FixtureDesignerScreen extends Screen {
         super.clearWidgets();
         labels.clear();
         labelText.clear();
+        numbers.clear();
     }
 
     // ---- part list edits ----
@@ -234,8 +263,18 @@ public class FixtureDesignerScreen extends Screen {
             return true;
         }
         if(mx >= previewX && mx < previewX + previewW && my >= previewY && my < previewY + previewH) {
-            dragging = true;
             setFocused(null);
+            int hit = button == 0 ? pick(mx, my) : -1;
+            if(hit >= 0) {
+                if(hit != selected) {
+                    selected = hit;
+                    rebuild();
+                }
+                drag = Drag.MOVE;
+                dragAcc.set(0);
+            } else {
+                drag = Drag.ORBIT;
+            }
             return true;
         }
         return super.mouseClicked(mx, my, button);
@@ -243,18 +282,143 @@ public class FixtureDesignerScreen extends Screen {
 
     @Override
     public boolean mouseReleased(double mx, double my, int button) {
-        dragging = false;
+        drag = Drag.NONE;
         return super.mouseReleased(mx, my, button);
     }
 
     @Override
     public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
-        if(dragging) {
+        if(drag == Drag.ORBIT) {
             yaw += (float) dx * 1.5f;
             pitch = Math.max(-89, Math.min(89, pitch + (float) dy * 1.5f));
             return true;
         }
+        if(drag == Drag.MOVE) {
+            var p = part();
+            if(p == null)
+                return true;
+            // Mouse travel in design pixels: across the view plane, or with Shift along the line of sight.
+            var inverse = rotation().invert();
+            Vector3f v = hasShiftDown()
+                    ? inverse.transformDirection(new Vector3f(0, 0, -1)).mul((float) -dy / zoom * 16)
+                    : inverse.transformDirection(new Vector3f((float) dx / zoom, (float) -dy / zoom, 0).mul(16));
+            dragAcc.add(v);
+            int sx = (int) dragAcc.x, sy = (int) dragAcc.y, sz = (int) dragAcc.z;
+            if(sx != 0 || sy != 0 || sz != 0) {
+                p.x += sx;
+                p.y += sy;
+                p.z += sz;
+                dragAcc.sub(sx, sy, sz);
+                p.clamp();
+                syncNumbers();
+            }
+            return true;
+        }
         return super.mouseDragged(mx, my, button, dx, dy);
+    }
+
+    /** The view's turn alone: pitch about X, then yaw about Y, as preview() applies them. */
+    private Matrix4f rotation() {
+        return new Matrix4f().rotate(Axis.XP.rotationDegrees(pitch)).rotate(Axis.YP.rotationDegrees(yaw));
+    }
+
+    /** The preview's whole transform, design pixels to screen pixels, matching preview(). */
+    private Matrix4f view() {
+        return new Matrix4f().translate(previewX + previewW / 2f, previewY + previewH / 2f + 8, 0)
+                .scale(zoom, -zoom, zoom)
+                .mul(rotation())
+                .translate(-0.5f, -0.5f, -0.5f)
+                .scale(1 / 16f)
+                .translate(-16, -16, -16);
+    }
+
+    /** The part under the mouse: the selected one if it is there, else the smallest on screen, else -1. */
+    private int pick(double mx, double my) {
+        var view = view();
+        var sel = part();
+        if(sel != null && contains(rect(view, sel), mx, my))
+            return selected;
+        int best = -1;
+        float bestArea = Float.MAX_VALUE;
+        for(int i = 0; i < design.parts.size(); ++i) {
+            var r = rect(view, design.parts.get(i));
+            float area = (r[2] - r[0]) * (r[3] - r[1]);
+            if(contains(r, mx, my) && area < bestArea) {
+                bestArea = area;
+                best = i;
+            }
+        }
+        return best;
+    }
+
+    private static boolean contains(float[] r, double mx, double my) {
+        return mx >= r[0] && mx <= r[2] && my >= r[1] && my <= r[3];
+    }
+
+    /** The screen rectangle round a part's eight corners: {left, top, right, bottom}. */
+    private static float[] rect(Matrix4f view, FixturePart p) {
+        float[] r = {Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
+        for(int c = 0; c < 8; ++c) {
+            var v = view.transformPosition(new Vector3f(p.x + ((c & 1) == 0 ? 0 : p.w), p.y + ((c & 2) == 0 ? 0 : p.h), p.z + ((c & 4) == 0 ? 0 : p.d)));
+            r[0] = Math.min(r[0], v.x);
+            r[1] = Math.min(r[1], v.y);
+            r[2] = Math.max(r[2], v.x);
+            r[3] = Math.max(r[3], v.y);
+        }
+        return r;
+    }
+
+    /**
+     * Arrow keys move the selected part across the screen, PgUp/PgDn along the line of sight, Ctrl
+     * with any of them resizes it instead, Shift makes the step four pixels, Delete removes it.
+     */
+    private boolean nudge(int key) {
+        var p = part();
+        if(p == null)
+            return false;
+        if(key == GLFW.GLFW_KEY_DELETE) {
+            delete();
+            return true;
+        }
+        int step = hasShiftDown() ? 4 : 1;
+        int dx = 0, dy = 0, dz = 0;   // screen right, screen up, into the screen
+        switch(key) {
+            case GLFW.GLFW_KEY_LEFT -> dx = -step;
+            case GLFW.GLFW_KEY_RIGHT -> dx = step;
+            case GLFW.GLFW_KEY_UP -> dy = step;
+            case GLFW.GLFW_KEY_DOWN -> dy = -step;
+            case GLFW.GLFW_KEY_PAGE_UP -> dz = step;
+            case GLFW.GLFW_KEY_PAGE_DOWN -> dz = -step;
+            default -> { return false; }
+        }
+        var inverse = rotation().invert();
+        var right = dominant(inverse.transformDirection(new Vector3f(1, 0, 0)));
+        var into = dominant(inverse.transformDirection(new Vector3f(0, 0, -1)));
+        int[] d = new int[3];
+        if(hasControlDown()) {
+            // Resizing: right, up and in each grow the dimension along that screen axis.
+            d[right[0]] += dx;
+            d[1] += dy;
+            d[into[0]] += dz;
+            p.w += d[0];
+            p.h += d[1];
+            p.d += d[2];
+        } else {
+            d[right[0]] += right[1] * dx;
+            d[1] += dy;
+            d[into[0]] += into[1] * dz;
+            p.x += d[0];
+            p.y += d[1];
+            p.z += d[2];
+        }
+        p.clamp();
+        syncNumbers();
+        return true;
+    }
+
+    /** Which of X and Z a horizontal-ish direction mostly follows, and which way: {axis index, sign}. */
+    private static int[] dominant(Vector3f v) {
+        return Math.abs(v.x) >= Math.abs(v.z) ? new int[] {0, v.x >= 0 ? 1 : -1} : new int[] {2, v.z >= 0 ? 1 : -1};
     }
 
     @Override
@@ -276,6 +440,8 @@ public class FixtureDesignerScreen extends Screen {
             setFocused(null);
             return true;
         }
+        if(!(getFocused() instanceof EditBox) && nudge(keyCode))
+            return true;
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -318,7 +484,9 @@ public class FixtureDesignerScreen extends Screen {
                 if(SWATCHES[i] == p.color)
                     graphics.renderOutline(x - 1, panelY + 119, 14, 14, 0xFFFFE040);
             }
-            graphics.drawString(font, Component.translatable("powergrid.gui.fixture.hint"), fieldsX, panelY + 140, DIM, false);
+            var hint = Component.translatable("powergrid.gui.fixture.hint").getString().split("\\n");
+            for(int i = 0; i < hint.length; ++i)
+                graphics.drawString(font, hint[i], fieldsX, panelY + 140 + i * 10, DIM, false);
         } else {
             graphics.drawString(font, Component.translatable("powergrid.gui.fixture.none"), fieldsX, panelY + 32, DIM, false);
         }
