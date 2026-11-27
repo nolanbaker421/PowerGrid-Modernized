@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "B": {
+      "item": "minecraft:black_dye"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PBP",
+    "PRP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid_modernized:fixture_designer"
+  }
+}

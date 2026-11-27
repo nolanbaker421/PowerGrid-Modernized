@@ -51,6 +51,36 @@ def strip_light():
     # The glow: a block with nothing to draw.
     dump(os.path.join(ASSETS, "models", "block", "strip_light_glow.json"), {"textures": {"particle": "minecraft:block/glass"}})
     dump(os.path.join(ASSETS, "blockstates", "strip_light_glow.json"), {"variants": {"": {"model": "%s:block/strip_light_glow" % MOD}}})
+    # The custom fixture draws itself; its block model is empty and its item a drawn icon.
+    dump(os.path.join(ASSETS, "models", "block", "custom_fixture.json"), {"textures": {"particle": "%s:block/strip_light_enamel" % MOD}})
+    dump(os.path.join(ASSETS, "blockstates", "custom_fixture.json"), {"variants": {"": {"model": "%s:block/custom_fixture" % MOD}}})
+    ITEM_TEX = os.path.join(ASSETS, "textures", "item")
+    # Custom fixture icon: a pendant, chain and shade with a lit bulb.
+    img = canvas(16, 16, (0, 0, 0, 0))
+    fill(img, 6, 0, 10, 1, (0xb8, 0xbc, 0xc2))
+    fill(img, 7, 1, 9, 6, (0x8e, 0x92, 0x98))
+    fill(img, 5, 6, 11, 8, (0x2e, 0x7d, 0x6b))
+    fill(img, 3, 8, 13, 10, (0x2e, 0x7d, 0x6b))
+    fill(img, 6, 10, 10, 14, (0xff, 0xf0, 0xa0))
+    fill(img, 7, 14, 9, 15, (0xe8, 0xc8, 0x40))
+    write_png(os.path.join(ITEM_TEX, "custom_fixture.png"), img)
+    dump(os.path.join(ASSETS, "models", "item", "custom_fixture.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/custom_fixture" % MOD}})
+    # Designer icon: a drafting tablet with a sketched lamp.
+    img = canvas(16, 16, (0, 0, 0, 0))
+    fill(img, 1, 1, 15, 15, (0x3a, 0x3c, 0x40))
+    fill(img, 2, 2, 14, 14, (0xe8, 0xe8, 0xe0))
+    fill(img, 7, 3, 9, 6, (0x50, 0x50, 0x58))
+    fill(img, 4, 6, 12, 8, (0x50, 0x50, 0x58))
+    fill(img, 6, 8, 10, 11, (0xe8, 0xc2, 0x1e))
+    write_png(os.path.join(ITEM_TEX, "fixture_designer.png"), img)
+    dump(os.path.join(ASSETS, "models", "item", "fixture_designer.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/fixture_designer" % MOD}})
+    # Blank icon: a bare canopy with a socket.
+    img = canvas(16, 16, (0, 0, 0, 0))
+    fill(img, 3, 2, 13, 5, (0xb8, 0xbc, 0xc2))
+    fill(img, 6, 5, 10, 9, (0x8e, 0x92, 0x98))
+    fill(img, 5, 9, 11, 12, (0x3a, 0x3c, 0x40))
+    write_png(os.path.join(ITEM_TEX, "fixture_blank.png"), img)
+    dump(os.path.join(ASSETS, "models", "item", "fixture_blank.json"), {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/fixture_blank" % MOD}})
     # The HV bulb wears Power Grid's standard bulb model.
     dump(os.path.join(ASSETS, "models", "item", "hv_light_bulb.json"), {"parent": "powergrid:block/lamps/light_bulb"})
 
@@ -58,6 +88,8 @@ def strip_light():
 def data():
     plate, wire, nugget = {"tag": "c:plates/iron"}, {"item": "powergrid:wire"}, {"tag": "c:nuggets/iron"}
     recipe("strip_light", ["PPP", "WNW"], {"P": plate, "W": wire, "N": nugget}, 2, {"items": "powergrid:light_bulb"})
+    recipe("fixture_designer", ["PPP", "PBP", "PRP"], {"P": {"item": "minecraft:paper"}, "B": {"item": "minecraft:black_dye"}, "R": {"item": "minecraft:redstone"}}, 1, {"items": "powergrid:light_bulb"})
+    recipe("fixture_blank", ["I I", "WSW"], {"I": plate, "W": wire, "S": {"tag": "c:nuggets/iron"}}, 2, {"items": "%s:fixture_designer" % MOD})
     recipe_shapeless("hv_light_bulb", [{"item": "powergrid:light_bulb"}, {"item": "minecraft:glass"}, {"tag": "c:nuggets/copper"}], 1, {"items": "powergrid:light_bulb"})
 
 

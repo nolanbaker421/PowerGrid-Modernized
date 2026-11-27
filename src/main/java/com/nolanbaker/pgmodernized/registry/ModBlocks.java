@@ -376,6 +376,19 @@ public class ModBlocks {
             .lang("Strip Light Glow")
             .register();
 
+    /** A fixture made in the designer: the anchor block that draws the design, holds the bulbs and takes the conduit. */
+    public static final BlockEntry<com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock> CUSTOM_FIXTURE = REGISTRATE.block("custom_fixture", com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock::new)
+            .blockstate(NonNullBiConsumer.noop())
+            .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.noOcclusion().noLootTable().lightLevel(s -> s.getValue(com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlock.LIGHT)))
+            .transform(pickaxeOnly())
+            .lang("Custom Fixture")
+            .item(com.nolanbaker.pgmodernized.device.fixture.CustomFixtureItem::new)
+                .properties(p -> p.stacksTo(1))
+                .model(NonNullBiConsumer.noop())
+                .build()
+            .register();
+
     /** Fused cutouts, one block per voltage class, one to three poles each. */
     public static final Map<com.nolanbaker.pgmodernized.device.pole.CutoutClass, BlockEntry<com.nolanbaker.pgmodernized.device.pole.CutoutBlock>> CUTOUTS = cutouts();
 

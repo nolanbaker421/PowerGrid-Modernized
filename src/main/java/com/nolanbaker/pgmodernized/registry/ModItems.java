@@ -210,6 +210,18 @@ public class ModItems {
             .lang("HV Light Bulb (277 V)")
             .register();
 
+    /** The fixture designer, and the blank a design is built into. The built fixture itself is CUSTOM_FIXTURE below. */
+    public static final ItemEntry<com.nolanbaker.pgmodernized.device.fixture.FixtureDesignerItem> FIXTURE_DESIGNER = REGISTRATE.item("fixture_designer", com.nolanbaker.pgmodernized.device.fixture.FixtureDesignerItem::new)
+            .properties(p -> p.stacksTo(1))
+            .model(NonNullBiConsumer.noop())
+            .lang("Fixture Designer")
+            .register();
+    public static final ItemEntry<Item> FIXTURE_BLANK = REGISTRATE.item("fixture_blank", Item::new)
+            .model(NonNullBiConsumer.noop())
+            .lang("Fixture Blank")
+            .register();
+    public static final ItemEntry<com.nolanbaker.pgmodernized.device.fixture.CustomFixtureItem> CUSTOM_FIXTURE = ItemEntry.cast(com.nolanbaker.pgmodernized.registry.ModBlocks.CUSTOM_FIXTURE.getSibling(net.minecraft.core.registries.Registries.ITEM));
+
     /** The installer's boresight scope: sights two antennas in on each other. */
     public static final ItemEntry<AlignmentScopeItem> ALIGNMENT_SCOPE = REGISTRATE.item("alignment_scope", AlignmentScopeItem::new)
             .properties(p -> p.stacksTo(1))

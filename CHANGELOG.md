@@ -4,6 +4,15 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.95.0 — 2026-11-26
+
+### Added
+- The **Fixture Designer**: design lamps from boxes, cones, globes, chains and sockets in a
+  three-block cube, with colours and matte, metal, glass or glow materials, mounted on a
+  ceiling, wall or floor. Build turns a **Fixture Blank** into a **Custom Fixture** carrying the
+  design; placed, it draws itself, takes a bulb per socket, conduit on its knockout, and lights
+  its block. Step one of the designer; text and neon for signs come next.
+
 ## 0.94.1 — 2026-11-26
 
 ### Fixed

@@ -16,6 +16,8 @@ public final class BreakerPanelModels {
     public static final ModelResourceLocation TRIPPED = ModelResourceLocation.standalone(asResource("block/breaker/tripped"));
     public static final ModelResourceLocation BLANK = ModelResourceLocation.standalone(asResource("block/breaker/blank"));
     public static final ModelResourceLocation LOCK = ModelResourceLocation.standalone(asResource("block/breaker/lock"));
+    /** Power Grid's lit bulb, for the fixture designer's preview. */
+    public static final ModelResourceLocation BULB_ON = ModelResourceLocation.standalone(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("powergrid", "block/lamps/light_bulb_on"));
 
     private BreakerPanelModels() {}
 
@@ -26,6 +28,7 @@ public final class BreakerPanelModels {
         event.register(TRIPPED);
         event.register(BLANK);
         event.register(LOCK);
+        event.register(BULB_ON);
     }
 
     public static BakedModel get(ModelResourceLocation location) {

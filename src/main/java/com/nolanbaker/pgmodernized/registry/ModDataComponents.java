@@ -56,6 +56,11 @@ public class ModDataComponents {
             REGISTER.registerComponentType("label_maker", builder -> builder
                     .persistent(CompoundTag.CODEC)
                     .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
+    /** A designed fixture, on the designer and on the fixture it builds. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> FIXTURE_DESIGN =
+            REGISTER.registerComponentType("fixture_design", builder -> builder
+                    .persistent(CompoundTag.CODEC)
+                    .networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
     /** A lock's serial number. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> LOCK =
             REGISTER.registerComponentType("lock", builder -> builder

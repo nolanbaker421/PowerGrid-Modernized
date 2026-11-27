@@ -1032,6 +1032,28 @@ above it goes.
 The **HV Light Bulb (277 V)** is the commercial lighting lamp: 60 W at 277 V, Power Grid's bulb
 physics in Power Grid's bulb model. On a 120 V circuit it barely glows; on 480 it burns out.
 
+#### The fixture designer
+
+The **Fixture Designer** makes your own lamps: pendants, chandeliers, sconces, table lamps.
+Sneak-right-click it and a design opens: a list of parts on the left, the fixture turning in the
+middle (drag to turn, scroll to zoom), the selected part's numbers on the right. Parts are
+boxes, cones (shades, with a taper), globes, chains and sockets, each placed by pixel in a
+three-block cube round the anchor block, which shows as a ghost; the anchor is pixels 16 to 32
+on every axis, up is up, and for a wall fixture the wall is the far face. Each part has a
+colour, from the swatches or typed as hex, and a material: matte, metal, glass or glow, and glow
+parts light up with the lamp. Mount says what holds the fixture up: the block above, the block
+behind, or the block below. Name it, and press **Build**: a **Fixture Blank** from your inventory
+becomes a **Custom Fixture** item carrying the design, as many as you like. **Done** keeps the
+design on the designer.
+
+A placed fixture draws itself round its anchor block, takes conduit on a knockout at its mount
+(top for a ceiling fixture, back for a wall one, bottom for a floor one), and has L and N behind
+it. Every socket takes the same lamp: right-click with a stack of bulbs and one goes in each
+socket; sneak-click with an empty hand to take them out; an empty hand opens the readings and
+splice editor. The fixture lights its block at the bulb's level. Break it and it comes back as
+its item with the design on it. Sneak-right-click a placed fixture with the designer to copy its
+design.
+
 Conduit runs leave and enter every knockout straight and on centre, bend through a real elbow at every corner, and end in a connector the tube's own size where they enter a knockout.
 
 ### Strut channel
@@ -1389,6 +1411,8 @@ adapter placed next to them:
 | Cable Tray (8) | iron nuggets in two rows with iron ingots between them |
 | Strip Light (2) | iron plates over Power Grid wire either side of an iron nugget |
 | HV Light Bulb (277 V) | shapeless: a light bulb, glass and a copper nugget |
+| Fixture Designer | paper round black dye, redstone at the bottom |
+| Fixture Blank (2) | iron plates at the top corners, Power Grid wire either side of an iron nugget |
 | 2 m A-Frame Ladder | iron plates in an A: one, then two apart, then three |
 | 3 m, 4 m A-Frame Ladder | shapeless: the ladder a metre shorter and two iron plates |
 | Recloser | copper ingots either side of a 3-pole 200 A breaker, iron plates round redstone, iron ingots below |

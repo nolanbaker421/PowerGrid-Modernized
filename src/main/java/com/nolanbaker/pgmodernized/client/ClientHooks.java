@@ -66,6 +66,10 @@ public final class ClientHooks {
         Minecraft.getInstance().setScreen(new LabelMakerScreen(hand, current));
     }
 
+    public static void openFixtureDesigner(net.minecraft.world.InteractionHand hand, com.nolanbaker.pgmodernized.device.fixture.FixtureDesign design) {
+        Minecraft.getInstance().setScreen(new FixtureDesignerScreen(hand, design));
+    }
+
     public static void openSettings(BlockPos pos, String titleKey) {
         Minecraft.getInstance().setScreen(new SettingsScreen(pos, net.minecraft.network.chat.Component.translatable(titleKey)));
     }

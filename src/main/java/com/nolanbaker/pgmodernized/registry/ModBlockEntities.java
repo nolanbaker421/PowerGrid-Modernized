@@ -214,6 +214,11 @@ public class ModBlockEntities {
             REGISTRATE.blockEntity("strip_light_glow", com.nolanbaker.pgmodernized.device.light.StripLightGlowBlockEntity::new)
                     .validBlock(ModBlocks.STRIP_LIGHT_GLOW)
                     .register();
+    public static final BlockEntityEntry<com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlockEntity> CUSTOM_FIXTURE =
+            REGISTRATE.blockEntity("custom_fixture", com.nolanbaker.pgmodernized.device.fixture.CustomFixtureBlockEntity::new)
+                    .validBlock(ModBlocks.CUSTOM_FIXTURE)
+                    .renderer(() -> com.nolanbaker.pgmodernized.client.CustomFixtureRenderer::new)
+                    .register();
     public static final BlockEntityEntry<com.nolanbaker.pgmodernized.device.pole.RecloserBlockEntity> RECLOSER =
             REGISTRATE.blockEntity("recloser", com.nolanbaker.pgmodernized.device.pole.RecloserBlockEntity::new)
                     .validBlock(ModBlocks.RECLOSER)
