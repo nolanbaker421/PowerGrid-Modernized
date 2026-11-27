@@ -1,13 +1,7 @@
 {
   "variants": {
-    "axis=x": {
-      "model": "powergrid_modernized:block/chaseway_x"
-    },
-    "axis=y": {
-      "model": "powergrid_modernized:block/chaseway_y"
-    },
-    "axis=z": {
-      "model": "powergrid_modernized:block/chaseway_z"
+    "": {
+      "model": "powergrid_modernized:block/chaseway"
     }
   }
 }

@@ -7,6 +7,7 @@ import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -17,16 +18,13 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
@@ -36,53 +34,89 @@ import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCol
 import org.patryk3211.powergrid.utility.Lang;
 
 /**
- * A chaseway: a sleeve through a solid block, so conduit can land on one side of a wall, floor
- * or ceiling and carry on from the other without the block being gone. The block keeps the
- * look, sound and drop of the block it went through, which the block entity remembers, and
- * shows a sleeve end on the two faces its axis meets. Each end is a knockout that takes conduit
- * up to 2"; the wires in the run on one end come out of the other in the same order, slot for
- * slot, with nothing to splice. It cannot be placed as a block: the Chaseway item is used on a
- * block face, and the axis is that face's.
+ * A chaseway: a solid block with sleeves through it, so conduit can land on one side of a wall,
+ * floor or ceiling and carry on from the other without the block being gone. The block keeps
+ * the look, sound and drop of the block it went through, which the block entity remembers.
+ * <p>
+ * Power Grid fixes a block's terminals per block state, so a sleeve "anywhere" is one of a grid
+ * of slots: three by three on each pair of opposite faces, 27 slots, each a four-pixel plate
+ * on both of its faces. A block holds any number of them. Each plate is a knockout that takes
+ * conduit up to 2"; the wires in the run on one end of a sleeve come out of the other in the
+ * same order, slot for slot, with nothing to splice. The Chaseway item puts a sleeve at the
+ * slot nearest where it is clicked.
  */
 public class ChasewayBlock extends ElectricBlock implements IBE<ChasewayBlockEntity> {
-    public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
-    public static final int HUB_POSITIVE = 0, HUB_NEGATIVE = 1;
-    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(0, 2, new int[0]);
+    public static final int GRID = 3, SLOTS_PER_AXIS = GRID * GRID, SLOT_COUNT = 3 * SLOTS_PER_AXIS, HUB_COUNT = SLOT_COUNT * 2;
+    /** Plate centres along a face, in pixels, and the plate's half width; mirrored by {@code tools/gen_chaseway_assets.py}. */
+    public static final double[] CENTRES = {3, 8, 13};
+    public static final double HALF = 2, PLATE_DEPTH = 0.5;
+    public static final DeviceHubs.Layout LAYOUT = new DeviceHubs.Layout(0, HUB_COUNT, new int[0]);
     private static final AABB HIDDEN = new AABB(7.99, 7.99, 7.99, 8.01, 8.01, 8.01);
-    /** The sleeve end on a face: a six-pixel plate round the hole, matching the model. */
-    public static final double PLATE_MIN = 5, PLATE_MAX = 11, PLATE_DEPTH = 0.5;
 
     public ChasewayBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(AXIS, Direction.Axis.Z));
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
-                .forAllStates(state -> DeviceHubs.withHubs(new TerminalBoundingBox[0], HIDDEN, hubs(state.getValue(AXIS))))
+                .forAllStates(state -> DeviceHubs.withHubs(new TerminalBoundingBox[0], HIDDEN, hubs()))
                 .withShapeMapper(state -> Shapes.block())
                 .build());
     }
 
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
-        builder.add(AXIS);
+    // ---- slots and hubs ----
+
+    /** Slot s: axis s / 9, then its row and column over the two in-plane axes in x, y, z order. */
+    public static Direction.Axis axisOf(int slot) {
+        return Direction.Axis.VALUES[slot / SLOTS_PER_AXIS];
     }
 
-    /** The two sleeve ends: the positive face of the axis first, then the negative. */
-    public static AABB[] hubs(Direction.Axis axis) {
-        return new AABB[] {
-                hub(Direction.get(Direction.AxisDirection.POSITIVE, axis)),
-                hub(Direction.get(Direction.AxisDirection.NEGATIVE, axis))};
+    public static int slot(Direction.Axis axis, int a, int b) {
+        return axis.ordinal() * SLOTS_PER_AXIS + a * GRID + b;
     }
 
-    /** The plate on one face, in pixels. */
-    public static AABB hub(Direction face) {
-        boolean positive = face.getAxisDirection() == Direction.AxisDirection.POSITIVE;
-        double a = positive ? 16 - PLATE_DEPTH : 0, b = positive ? 16 : PLATE_DEPTH;
-        return switch(face.getAxis()) {
-            case X -> new AABB(a, PLATE_MIN, PLATE_MIN, b, PLATE_MAX, PLATE_MAX);
-            case Y -> new AABB(PLATE_MIN, a, PLATE_MIN, PLATE_MAX, b, PLATE_MAX);
-            case Z -> new AABB(PLATE_MIN, PLATE_MIN, a, PLATE_MAX, PLATE_MAX, b);
+    /** Hub 2s is the positive face of slot s, hub 2s+1 the negative. */
+    public static int hub(int slot, Direction face) {
+        return slot * 2 + (face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 0 : 1);
+    }
+
+    public static int slotOfHub(int hub) {
+        return hub / 2;
+    }
+
+    public static Direction faceOfHub(int hub) {
+        return Direction.get(hub % 2 == 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE, axisOf(hub / 2));
+    }
+
+    /** The plate of one hub, in pixels. */
+    public static AABB hub(int hub) {
+        int slot = hub / 2;
+        var axis = axisOf(slot);
+        double ca = CENTRES[(slot % SLOTS_PER_AXIS) / GRID], cb = CENTRES[slot % GRID];
+        boolean positive = hub % 2 == 0;
+        double n0 = positive ? 16 - PLATE_DEPTH : 0, n1 = positive ? 16 : PLATE_DEPTH;
+        return switch(axis) {
+            case X -> new AABB(n0, ca - HALF, cb - HALF, n1, ca + HALF, cb + HALF);   // a = y, b = z
+            case Y -> new AABB(ca - HALF, n0, cb - HALF, ca + HALF, n1, cb + HALF);   // a = x, b = z
+            case Z -> new AABB(ca - HALF, cb - HALF, n0, ca + HALF, cb + HALF, n1);   // a = x, b = y
         };
+    }
+
+    public static AABB[] hubs() {
+        var out = new AABB[HUB_COUNT];
+        for(int i = 0; i < HUB_COUNT; ++i)
+            out[i] = hub(i);
+        return out;
+    }
+
+    /** The slot nearest a point on a face: the face's axis, and the grid cell the point's two other coordinates fall in. */
+    public static int slotAt(Direction face, Vec3 local) {
+        return switch(face.getAxis()) {
+            case X -> slot(Direction.Axis.X, cell(local.y), cell(local.z));
+            case Y -> slot(Direction.Axis.Y, cell(local.x), cell(local.z));
+            case Z -> slot(Direction.Axis.Z, cell(local.x), cell(local.y));
+        };
+    }
+
+    private static int cell(double t) {
+        return Mth.clamp((int) (t * GRID), 0, GRID - 1);
     }
 
     /** The block this chaseway went through, or null before it is known. */
@@ -106,12 +140,15 @@ public class ChasewayBlock extends ElectricBlock implements IBE<ChasewayBlockEnt
         return material != null ? material.getSoundType(level, pos, entity) : super.getSoundType(state, level, pos, entity);
     }
 
-    /** Broken, it gives the block back; the sleeve itself comes from the loot table. */
+    /** Broken, it gives the block back and every sleeve but the one the loot table drops. */
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        var material = material(level, pos);
-        if(!level.isClientSide && !player.isCreative() && material != null)
-            popResource(level, pos, new ItemStack(material.getBlock()));
+        if(!level.isClientSide && !player.isCreative() && level.getBlockEntity(pos) instanceof ChasewayBlockEntity be) {
+            if(be.material() != null)
+                popResource(level, pos, new ItemStack(be.material().getBlock()));
+            if(be.sleeveCount() > 1)
+                popResource(level, pos, new ItemStack(ModItems.CHASEWAY.get(), be.sleeveCount() - 1));
+        }
         return super.playerWillDestroy(level, pos, state, player);
     }
 
@@ -120,15 +157,26 @@ public class ChasewayBlock extends ElectricBlock implements IBE<ChasewayBlockEnt
         return new ItemStack(ModItems.CHASEWAY.get());
     }
 
-    // ---- the two ends ----
+    // ---- the sleeve ends ----
 
     @Override
     public boolean accepts(ItemStack wireStack) {
         return false;
     }
 
+    /** Only the plates of sleeves that are there take conduit; the other slots are plain wall. */
     @Override
     public InteractionResult onWire(BlockState state, UseOnContext context) {
+        var pos = context.getClickedPos();
+        int terminal = terminalIndexAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        int hub = LAYOUT.hubAt(terminal);
+        if(hub >= 0 && !(context.getLevel().getBlockEntity(pos) instanceof ChasewayBlockEntity be && be.hasSleeve(slotOfHub(hub)))) {
+            if(ConduitItem.isConduit(context.getItemInHand())) {
+                IElectric.sendMessage(context, Lang.builder().translate("message.chaseway.no_sleeve").style(ChatFormatting.RED).component());
+                return InteractionResult.FAIL;
+            }
+            return InteractionResult.PASS;
+        }
         return DeviceHubs.onWire(this, LAYOUT, state, context, (s, c) -> {
             IElectric.sendMessage(c, Lang.builder().translate("message.chaseway.conduit_only").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;

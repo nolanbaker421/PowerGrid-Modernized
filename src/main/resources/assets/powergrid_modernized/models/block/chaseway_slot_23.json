@@ -1,0 +1,144 @@
+{
+  "textures": {
+    "sleeve": "powergrid_modernized:block/chaseway_sleeve",
+    "particle": "powergrid_modernized:block/chaseway_sleeve"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        11,
+        15.65
+      ],
+      "to": [
+        10,
+        15,
+        16.35
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        },
+        "south": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        },
+        "east": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        },
+        "west": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        },
+        "up": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        },
+        "down": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        11,
+        -0.35
+      ],
+      "to": [
+        10,
+        15,
+        0.35
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        },
+        "south": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        },
+        "east": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        },
+        "west": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        },
+        "up": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        },
+        "down": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#sleeve"
+        }
+      }
+    }
+  ]
+}

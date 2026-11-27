@@ -35,18 +35,23 @@ import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
+import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.patryk3211.powergrid.utility.Lang;
+import net.minecraft.world.phys.HitResult;
 
 /**
  * A fixture made in the designer: one anchor block that draws the whole design round itself,
  * holds its bulbs, and carries L and N behind three knockouts on the canopy plate at its mount:
  * one on the mounting face itself, for a run that comes through the block by a chaseway, and one
- * on each of two canopy sides for runs along the surface. Its shape is
+ * on each of two canopy sides for runs along the surface. A power cord plugs in anywhere on it
+ * instead, which is how a table lamp reaches a receptacle. An empty hand on the body is the pull
+ * chain; on the canopy it opens the splice editor. Its shape is
  * whatever of the design falls inside the anchor block. It hangs from the block above, off the
  * block behind or stands on the block below as the design says, and drops as its item, design
  * and all, when that block goes.
  */
-public class CustomFixtureBlock extends HorizontalElectricBlock implements IBE<CustomFixtureBlockEntity> {
+public class CustomFixtureBlock extends HorizontalElectricBlock implements IBE<CustomFixtureBlockEntity>, IAcceptCord {
     public static final int L = 0, N = 1, BASE_COUNT = 2, HUB_MOUNT = 0, HUB_A = 1, HUB_B = 2, HUB_COUNT = 3;
     public static final EnumProperty<FixtureDesign.Mount> MOUNT = EnumProperty.create("mount", FixtureDesign.Mount.class);
     public static final IntegerProperty LIGHT = IntegerProperty.create("light", 0, 15);
@@ -181,6 +186,18 @@ public class CustomFixtureBlock extends HorizontalElectricBlock implements IBE<C
         return super.playerWillDestroy(level, pos, state, player);
     }
 
+    /** Pick block hands back the fixture with its design on it. */
+    @Override
+    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
+        return level.getBlockEntity(pos) instanceof CustomFixtureBlockEntity be ? be.toItem() : super.getCloneItemStack(state, target, level, pos, player);
+    }
+
+    /** A power cord plugs in where it is clicked, onto L and N. */
+    @Override
+    public AutoCordEndpoint getEndpoint(UseOnContext context) {
+        return new AutoCordEndpoint(context.getClickedPos(), L, N, context.getClickLocation(), context.getClickedFace());
+    }
+
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
         if(!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof CustomFixtureBlockEntity be) {
@@ -224,9 +241,16 @@ public class CustomFixtureBlock extends HorizontalElectricBlock implements IBE<C
                 be.takeBulbs(player);
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
-        if(level.isClientSide)
-            ClientHooks.openSplices(pos);
-        return InteractionResult.SUCCESS;
+        // The canopy opens the splice editor; anywhere else on the fixture is its pull chain.
+        var local = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+        if(rotate(canopy(state.getValue(MOUNT)), facing(state)).bounds().inflate(0.02).contains(local)) {
+            if(level.isClientSide)
+                ClientHooks.openSplices(pos);
+            return InteractionResult.SUCCESS;
+        }
+        if(!level.isClientSide && level.getBlockEntity(pos) instanceof CustomFixtureBlockEntity be)
+            be.toggle();
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override

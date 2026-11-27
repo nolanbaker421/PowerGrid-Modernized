@@ -9,6 +9,8 @@ import com.nolanbaker.pgmodernized.device.light.StripLightBlockEntity;
 import com.nolanbaker.pgmodernized.device.light.StripLightGlowBlock;
 import com.nolanbaker.pgmodernized.registry.ModBlocks;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import com.nolanbaker.pgmodernized.registry.ModItems;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.ChatFormatting;
@@ -63,6 +65,8 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     /** The glow this fixture keeps on the floor below its lamps while lit, or null. */
     @Nullable
     private BlockPos glowPos;
+    /** The pull chain: true while switched off at the fixture. */
+    private boolean off;
 
     public CustomFixtureBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -152,7 +156,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
         int n = Math.max(1, sockets());
         var built = new SwitchedWire[n];
         for(int i = 0; i < n; ++i)
-            built[i] = builder.connectSwitch(bulb != null ? bulb.resistance() : 1e6f, builder.terminalNode(L), builder.terminalNode(N), bulb != null);
+            built[i] = builder.connectSwitch(bulb != null ? bulb.resistance() : 1e6f, builder.terminalNode(L), builder.terminalNode(N), bulb != null && !off);
         filaments = built;
         if(pendingBulb != null && bulb != null) {
             bulb.read(pendingBulb);
@@ -198,8 +202,13 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
 
     @Override
     public void electricalTick() {
+        if(level != null && level.isClientSide) {
+            if(bulb != null)
+                bulb.tick();   // the bulb's client side: the burn-out smoke and pop, synced from the server
+            return;
+        }
         var filaments = filaments();
-        if(filaments.length == 0 || bulb == null || level == null || level.isClientSide || !filaments[0].isConverged())
+        if(filaments.length == 0 || bulb == null || level == null || !filaments[0].isConverged())
             return;
         double w = 0;
         for(var f : filaments)
@@ -211,6 +220,28 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
             sendData();
             updateLight();
         }
+    }
+
+    /** The pull chain: switches the lamp off and on at the fixture. Server side. */
+    public void toggle() {
+        if(level == null || level.isClientSide)
+            return;
+        off = !off;
+        for(var f : filaments())
+            f.setState(bulb != null && !off);
+        level.playSound(null, worldPosition, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.4f, off ? 0.55f : 0.65f);
+        setChanged();
+        sendData();
+    }
+
+    public boolean isOff() {
+        return off;
+    }
+
+    /** Hands the bulb to the behaviour's sync so its burn-out plays on clients, as Power Grid's fixtures do. */
+    private void syncBulb() {
+        if(electricBehaviour != null)
+            electricBehaviour.setSyncAppender(bulb);
     }
 
     private void updateLight() {
@@ -340,6 +371,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
     }
 
     private void bulbChanged() {
+        syncBulb();
         powerLevel = 0;
         watts = 0;
         if(level != null && !level.isClientSide && electricBehaviour != null)
@@ -378,6 +410,8 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
                     .add(Lang.builder().translate(lit() ? "gui.conduit_box.lamp_lit" : "gui.conduit_box.lamp_dark", String.format("%.0f", watts))
                             .style(lit() ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY))
                     .forGoggles(tooltip, 1);
+        if(off)
+            Lang.builder().translate("gui.fixture.off").style(ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
         deviceHubs().addGoggleLines(tooltip, isPlayerSneaking);
         return true;
     }
@@ -391,6 +425,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
         tag.put("Design", design().write());
         tag.putInt("Power", powerLevel);
         tag.putFloat("Watts", watts);
+        tag.putBoolean("Off", off);
         if(glowPos != null)
             tag.put("Glow", NbtUtils.writeBlockPos(glowPos));
         if(bulb != null) {
@@ -430,5 +465,7 @@ public class CustomFixtureBlockEntity extends ElectricBlockEntity implements IDe
         } else {
             bulb = null;
         }
+        off = tag.getBoolean("Off");
+        syncBulb();
     }
 }

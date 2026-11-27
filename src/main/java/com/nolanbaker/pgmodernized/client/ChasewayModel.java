@@ -9,7 +9,9 @@ import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -18,6 +20,7 @@ import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.model.BakedModelWrapper;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.common.util.TriState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -25,12 +28,25 @@ import java.util.List;
 
 /**
  * The chaseway's model: the block it went through, drawn from that block's own model with its
- * own tints and render layers, and the sleeve ends from the chaseway's model on top. Wraps the
- * baked chaseway models when baking finishes; registered on the mod bus.
+ * own tints and render layers, and on top the sleeve ends of every slot in use, each a small
+ * standalone model. Wraps the baked chaseway model when baking finishes; registered on the mod bus.
  */
 public class ChasewayModel extends BakedModelWrapper<BakedModel> {
-    public ChasewayModel(BakedModel sleeve) {
-        super(sleeve);
+    private static final ModelResourceLocation[] SLOTS = new ModelResourceLocation[ChasewayBlock.SLOT_COUNT];
+
+    static {
+        for(int s = 0; s < SLOTS.length; ++s)
+            SLOTS[s] = ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath("powergrid_modernized", "block/chaseway_slot_" + s));
+    }
+
+    public ChasewayModel(BakedModel base) {
+        super(base);
+    }
+
+    @SubscribeEvent
+    public static void registerSlots(ModelEvent.RegisterAdditional event) {
+        for(var slot : SLOTS)
+            event.register(slot);
     }
 
     @SubscribeEvent
@@ -60,27 +76,37 @@ public class ChasewayModel extends BakedModelWrapper<BakedModel> {
         return data.get(ChasewayBlockEntity.MATERIAL);
     }
 
+    private static int sleeves(ModelData data) {
+        var bits = data.get(ChasewayBlockEntity.SLEEVES);
+        return bits == null ? 0 : bits;
+    }
+
     private static BakedModel modelOf(BlockState material) {
         return Minecraft.getInstance().getBlockRenderer().getBlockModel(material);
     }
 
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData data, @Nullable RenderType renderType) {
-        var material = material(data);
-        if(material == null)
-            return super.getQuads(state, side, rand, data, renderType);
         var quads = new ArrayList<BakedQuad>();
-        var model = modelOf(material);
-        if(renderType == null || model.getRenderTypes(material, rand, ModelData.EMPTY).contains(renderType))
-            quads.addAll(model.getQuads(material, side, rand, ModelData.EMPTY, renderType));
-        if(renderType == null || super.getRenderTypes(state, rand, data).contains(renderType))
-            quads.addAll(super.getQuads(state, side, rand, data, renderType));
+        var material = material(data);
+        if(material != null) {
+            var model = modelOf(material);
+            if(renderType == null || model.getRenderTypes(material, rand, ModelData.EMPTY).contains(renderType))
+                quads.addAll(model.getQuads(material, side, rand, ModelData.EMPTY, renderType));
+        }
+        if(renderType == null || renderType == RenderType.solid()) {
+            int bits = sleeves(data);
+            var manager = Minecraft.getInstance().getModelManager();
+            for(int s = 0; s < SLOTS.length; ++s)
+                if((bits & (1 << s)) != 0)
+                    quads.addAll(manager.getModel(SLOTS[s]).getQuads(state, side, rand, ModelData.EMPTY, renderType));
+        }
         return quads;
     }
 
     @Override
     public ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource rand, ModelData data) {
-        var own = super.getRenderTypes(state, rand, data);
+        var own = ChunkRenderTypeSet.of(RenderType.solid());
         var material = material(data);
         return material == null ? own : ChunkRenderTypeSet.union(own, modelOf(material).getRenderTypes(material, rand, ModelData.EMPTY));
     }
@@ -92,7 +118,7 @@ public class ChasewayModel extends BakedModelWrapper<BakedModel> {
     }
 
     @Override
-    public net.neoforged.neoforge.common.util.TriState useAmbientOcclusion(BlockState state, ModelData data, RenderType renderType) {
+    public TriState useAmbientOcclusion(BlockState state, ModelData data, RenderType renderType) {
         var material = material(data);
         return material == null ? super.useAmbientOcclusion(state, data, renderType) : modelOf(material).useAmbientOcclusion(material, ModelData.EMPTY, renderType);
     }

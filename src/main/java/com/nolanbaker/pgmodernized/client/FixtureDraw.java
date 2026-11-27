@@ -51,6 +51,7 @@ public final class FixtureDraw {
                 case CHAIN -> chain(ms, buffer, partLight, p, color);
                 case SOCKET -> socket(ms, buffer, partLight, light, p, color, lit, bulbs);
                 case TEXT -> text(ms, buffer, partLight, p, color, textRange);
+                case CYLINDER -> cylinder(ms, buffer, partLight, p, color, alpha);
             }
         }
     }
@@ -166,6 +167,61 @@ public final class FixtureDraw {
         ms.translate(-0.5, 0, -0.5);
         bulbs.draw(ms, buffer, worldLight, lit);
         ms.popPose();
+    }
+
+    /**
+     * An eight-sided tube along the part's face axis, its cross-section the ellipse that fills the
+     * other two dimensions: facets shaded by how much they face up, metal more strongly.
+     */
+    private static void cylinder(PoseStack ms, MultiBufferSource buffer, int light, FixturePart p, int color, float alpha) {
+        VertexConsumer c = buffer.getBuffer(alpha < 1 ? RenderType.entityTranslucent(WHITE) : RenderType.entitySolid(WHITE));
+        var pose = ms.last();
+        int a = (int) (alpha * 255);
+        var axis = p.face.getAxis();
+        double cx = p.x + p.w / 2.0, cy = p.y + p.h / 2.0, cz = p.z + p.d / 2.0;
+        double ru, rv, n0, n1;
+        switch(axis) {
+            case X -> { ru = p.h / 2.0; rv = p.d / 2.0; n0 = p.x; n1 = p.x + p.w; }
+            case Y -> { ru = p.w / 2.0; rv = p.d / 2.0; n0 = p.y; n1 = p.y + p.h; }
+            default -> { ru = p.w / 2.0; rv = p.h / 2.0; n0 = p.z; n1 = p.z + p.d; }
+        }
+        var up = new org.joml.Vector3f(axis == Direction.Axis.X ? 1 : 0, axis == Direction.Axis.Y ? 1 : 0, axis == Direction.Axis.Z ? 1 : 0);
+        var centre0 = ring(axis, cx, cy, cz, 0, 0, n0);
+        var centre1 = ring(axis, cx, cy, cz, 0, 0, n1);
+        int segments = 8;
+        for(int i = 0; i < segments; ++i) {
+            double t0 = (i + 0.5) / segments * Math.PI * 2, t1 = (i + 1.5) / segments * Math.PI * 2, tm = (t0 + t1) / 2;
+            var normal = ring(axis, 0, 0, 0, Math.cos(tm), Math.sin(tm), 0).normalize();
+            var p0 = ring(axis, cx, cy, cz, Math.cos(t0) * ru, Math.sin(t0) * rv, n0);
+            var p1 = ring(axis, cx, cy, cz, Math.cos(t1) * ru, Math.sin(t1) * rv, n0);
+            // Wind the facet the way box() winds a face: along "right" = normal x up, then up.
+            var right = new org.joml.Vector3f(normal).cross(up);
+            if(new org.joml.Vector3f(p1).sub(p0).dot(right) < 0) { var s = p0; p0 = p1; p1 = s; }
+            var q0 = new org.joml.Vector3f(p0).add(new org.joml.Vector3f(up).mul((float) (n1 - n0) / 16));
+            var q1 = new org.joml.Vector3f(p1).add(new org.joml.Vector3f(up).mul((float) (n1 - n0) / 16));
+            float f = p.material == FixturePart.Material.METAL ? 0.85f + 0.35f * normal.y : 0.9f + 0.1f * normal.y;
+            int rgb = shade(color, Math.max(0.5f, f));
+            quad(pose, c, light, rgb, a, p0.x, p0.y, p0.z, q0.x, q0.y, q0.z, q1.x, q1.y, q1.z, p1.x, p1.y, p1.z, normal.x, normal.y, normal.z);
+            // The two caps, one fan triangle per facet, as degenerate quads, wound to face outward.
+            cap(pose, c, light, shade(color, p.material == FixturePart.Material.METAL ? 1.2f : 1), a, centre1, q0, q1, up);
+            cap(pose, c, light, shade(color, p.material == FixturePart.Material.METAL ? 0.6f : 0.8f), a, centre0, p0, p1, new org.joml.Vector3f(up).negate());
+        }
+    }
+
+    /** A point of the tube in pose units: (u, v) across the section and n along the axis, in design pixels. */
+    private static org.joml.Vector3f ring(Direction.Axis axis, double cx, double cy, double cz, double u, double v, double n) {
+        return switch(axis) {
+            case X -> new org.joml.Vector3f((float) at(n), (float) at(cy + u), (float) at(cz + v));
+            case Y -> new org.joml.Vector3f((float) at(cx + u), (float) at(n), (float) at(cz + v));
+            case Z -> new org.joml.Vector3f((float) at(cx + u), (float) at(cy + v), (float) at(n));
+        };
+    }
+
+    private static void cap(PoseStack.Pose pose, VertexConsumer c, int light, int rgb, int a, org.joml.Vector3f centre, org.joml.Vector3f p0, org.joml.Vector3f p1, org.joml.Vector3f normal) {
+        var e0 = new org.joml.Vector3f(p0).sub(centre);
+        var e1 = new org.joml.Vector3f(p1).sub(centre);
+        if(e0.cross(e1).dot(normal) < 0) { var s = p0; p0 = p1; p1 = s; }
+        quad(pose, c, light, rgb, a, centre.x, centre.y, centre.z, p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p1.x, p1.y, p1.z, normal.x, normal.y, normal.z);
     }
 
     // ---- boxes ----

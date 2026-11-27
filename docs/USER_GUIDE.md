@@ -269,14 +269,17 @@ box or the panel does. That is how feeders too big for a 2" panel knockout get i
 A **Chaseway** is a sleeve through a solid block, for conduit that has to cross a wall, floor or
 ceiling without a hole in it. Hold one and right-click the face of a plain full block (stone,
 brick, concrete, planks, anything solid with nothing inside it) and the block becomes a chaseway
-running through along that face's axis: it keeps the block's look, sound and drop, and grows a
-small sleeve end on each of the two faces. Each end is a knockout that takes conduit up to 2".
-Land a run on one end from one room and a run on the other end from the next, pull the wires
-through both, and they pass straight through: the first wire of one run is the first wire of the
-other, and so on down the slots. There is nothing to splice and nothing to open.
+with a sleeve through it along that face's axis, at the spot you clicked: each face has a three by
+three grid of sleeve positions, and the sleeve takes the nearest. The block keeps its look, sound
+and drop and grows a small sleeve end on both faces. Click a chaseway again with another one and
+it gets another sleeve, on any face, as many as there are free positions. Each sleeve end is a
+knockout that takes conduit up to 2". Land a run on one end from one room and a run on the other
+end from the next, pull the wires through both, and they pass straight through: the first wire of
+one run is the first wire of the other, and so on down the slots. There is nothing to splice and
+nothing to open.
 
-Break a chaseway and you get the block and the chaseway back. A ceiling fixture's top knockout is
-made for one: a chaseway in the ceiling block above it takes the run on from the room above.
+Break a chaseway and you get the block and every chaseway back. A ceiling fixture's top knockout
+is made for one: a chaseway in the ceiling block above it takes the run on from the room above.
 
 ### Wire Trough
 
@@ -1054,7 +1057,8 @@ middle, the selected part's numbers on the right. In the middle, drag a part to 
 the view (Shift-drag moves it in and out), drag empty space to turn the view, scroll to zoom;
 the arrow keys and PgUp/PgDn nudge the selected part a pixel, Ctrl with them resizes it, Shift
 makes the step four, and Delete removes it. The numbers on the right follow. Parts are
-boxes, cones (shades, with a taper), globes, chains, sockets and text, each placed by pixel in a
+boxes, cones (shades, with a taper), globes, chains, sockets, text and cylinders (round tubes
+along their Face, for stems, arms and neon), each placed by pixel in a
 three-block cube round the anchor block, which shows as a ghost with the canopy plate and its
 knockouts; the anchor is pixels 16 to 32
 on every axis, up is up, and for a wall fixture the wall is the far face. Each part has a
@@ -1079,7 +1083,10 @@ wall one, bottom for a floor one), for a run that comes through the block by a c
 on each of two sides of the canopy for runs along the surface, left and right of a ceiling or
 floor fixture, above and below a wall one. L and N are behind them. Every socket takes the same lamp: right-click with a stack of bulbs and one goes in each
 socket; sneak-click with an empty hand to take them out; an empty hand opens the readings and
-splice editor. The fixture lights its block at the bulb's level and, like a strip light, keeps a
+splice editor, and an empty hand anywhere else on the fixture is its pull chain, switching it off
+and on. A **power cord** plugs into a fixture wherever you click it, which is how a table lamp
+reaches a receptacle instead of being fed by conduit. Pick block on a placed fixture gives its
+item with the design on. The fixture lights its block at the bulb's level and, like a strip light, keeps a
 glow on the first floor below its lowest lamp while lit, so a pendant lights the room from the
 floor up as well as from the ceiling down. Break it and it comes back as
 its item with the design on it. Sneak-right-click a placed fixture with the designer to copy its

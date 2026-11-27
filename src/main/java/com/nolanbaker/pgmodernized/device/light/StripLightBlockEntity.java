@@ -137,7 +137,12 @@ public class StripLightBlockEntity extends ElectricBlockEntity implements IDevic
 
     @Override
     public void electricalTick() {
-        if(lamp == null || bulb == null || level == null || level.isClientSide || !lamp.isConverged())
+        if(level != null && level.isClientSide) {
+            if(bulb != null)
+                bulb.tick();   // the bulb's client side: the burn-out smoke and pop, synced from the server
+            return;
+        }
+        if(lamp == null || bulb == null || level == null || !lamp.isConverged())
             return;
         double w = Math.abs(lamp.power());
         watts = Float.isFinite((float) w) ? (float) w : 0;
@@ -185,6 +190,8 @@ public class StripLightBlockEntity extends ElectricBlockEntity implements IDevic
     }
 
     private void bulbChanged() {
+        if(electricBehaviour != null)
+            electricBehaviour.setSyncAppender(bulb);
         powerLevel = 0;
         watts = 0;
         if(level != null && !level.isClientSide && electricBehaviour != null)

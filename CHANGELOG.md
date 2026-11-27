@@ -4,6 +4,22 @@ Every release of PowerGrid: Modernized, newest first. Versions follow the jar na
 `powergrid-modernized-mc1.21.1-<version>.jar`. The user guide in `docs/USER_GUIDE.md` describes
 each feature in full; this file says what changed and when.
 
+## 0.99.0 — 2026-11-26
+
+### Added
+- Chaseways hold any number of sleeves: each face has a three by three grid of positions and a
+  click puts the sleeve at the nearest; click a chaseway again to add another. Chaseways placed
+  in 0.97 or 0.98 need to be broken and placed again.
+- Custom fixtures take a power cord anywhere on them, so a table lamp plugs into a receptacle;
+  an empty hand on the body is a pull chain, on the canopy it still opens the splice editor.
+- A cylinder part in the designer: a round tube along its face, for stems, arms and neon. The
+  Sconce and Lamp presets use it.
+- Pick block on a fixture gives the item with its design.
+- Bulbs burning out in strip lights and fixtures smoke and pop as in Power Grid's own fixtures.
+
+### Changed
+- The Sign preset is a cabinet and lettering only.
+
 ## 0.98.2 — 2026-11-26
 
 ### Changed

@@ -81,21 +81,21 @@ public class FixtureDesignerScreen extends Screen {
     private void rebuild() {
         clearWidgets();
         int bx = listX, by = listY + LIST_ROWS * ROW_H + 4;
-        String[] kinds = {"Box", "Cone", "Globe", "Chain", "Socket", "Text"};
+        String[] kinds = {"Box", "Cone", "Globe", "Chain", "Socket", "Text", "Cyl"};
         FixturePart.Kind[] kindValues = FixturePart.Kind.values();
         for(int i = 0; i < kinds.length; ++i) {
             var kind = kindValues[i];
             addRenderableWidget(Button.builder(Component.literal("+" + kinds[i]), b -> add(kind))
                     .bounds(bx + (i % 3) * 36, by + (i / 3) * 14, 34, 13).build());
         }
-        addRenderableWidget(Button.builder(Component.literal("Dup"), b -> duplicate()).bounds(bx, by + 30, 34, 13).build());
-        addRenderableWidget(Button.builder(Component.literal("Del"), b -> delete()).bounds(bx + 36, by + 30, 34, 13).build());
-        addRenderableWidget(Button.builder(Component.literal("▲"), b -> move(-1)).bounds(bx + 72, by + 30, 16, 13).build());
-        addRenderableWidget(Button.builder(Component.literal("▼"), b -> move(1)).bounds(bx + 90, by + 30, 16, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Dup"), b -> duplicate()).bounds(bx, by + 44, 34, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Del"), b -> delete()).bounds(bx + 36, by + 44, 34, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("▲"), b -> move(-1)).bounds(bx + 72, by + 44, 16, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("▼"), b -> move(1)).bounds(bx + 90, by + 44, 16, 13).build());
         // Fresh starts: each replaces the whole design.
-        addRenderableWidget(Button.builder(Component.literal("Sconce"), b -> preset(FixtureDesign.sconce())).bounds(bx, by + 46, 34, 13).build());
-        addRenderableWidget(Button.builder(Component.literal("Lamp"), b -> preset(FixtureDesign.tableLamp())).bounds(bx + 36, by + 46, 34, 13).build());
-        addRenderableWidget(Button.builder(Component.literal("Sign"), b -> preset(FixtureDesign.sign())).bounds(bx + 72, by + 46, 34, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Sconce"), b -> preset(FixtureDesign.sconce())).bounds(fieldsX, panelY + 196, 48, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Lamp"), b -> preset(FixtureDesign.tableLamp())).bounds(fieldsX + 50, panelY + 196, 48, 13).build());
+        addRenderableWidget(Button.builder(Component.literal("Sign"), b -> preset(FixtureDesign.sign())).bounds(fieldsX + 100, panelY + 196, 48, 13).build());
 
         var p = part();
         int fx = fieldsX, fy = panelY + 32;
@@ -219,6 +219,7 @@ public class FixtureDesignerScreen extends Screen {
             case GLOBE -> { p.w = 10; p.h = 10; p.d = 10; p.x = 19; p.z = 19; p.y = 8; p.material = FixturePart.Material.GLASS; p.color = 0xF2F2EE; }
             case CONE -> { p.w = 14; p.h = 8; p.d = 14; p.x = 17; p.z = 17; p.y = 10; }
             case TEXT -> { p.w = 16; p.h = 6; p.d = 1; p.x = 16; p.y = 21; p.z = 27; p.face = Direction.NORTH; p.color = 0xFF3040; p.material = FixturePart.Material.GLOW; p.text = "OPEN"; }
+            case CYLINDER -> { p.w = 4; p.h = 12; p.d = 4; p.x = 22; p.z = 22; p.y = 18; p.face = Direction.UP; p.material = FixturePart.Material.METAL; p.color = 0xB8BCC2; }
             default -> {}
         }
         if((kind == FixturePart.Kind.SOCKET || kind == FixturePart.Kind.TEXT) && design.socketCount() >= FixtureDesign.MAX_SOCKETS)

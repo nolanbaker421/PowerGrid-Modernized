@@ -1,5 +1,4 @@
 {
-  "parent": "block/block",
   "textures": {
     "sleeve": "powergrid_modernized:block/chaseway_sleeve",
     "particle": "powergrid_modernized:block/chaseway_sleeve"
@@ -8,66 +7,66 @@
     {
       "from": [
         15.65,
-        5,
-        5
+        1,
+        11
       ],
       "to": [
         16.35,
-        11,
-        11
+        5,
+        15
       ],
       "faces": {
         "north": {
           "uv": [
-            15.299999999999997,
-            5,
-            16,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         },
         "south": {
           "uv": [
-            15.299999999999999,
-            5,
-            16,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         },
         "east": {
           "uv": [
-            5,
-            5,
-            11,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         },
         "west": {
           "uv": [
-            5,
-            5,
-            11,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         },
         "up": {
           "uv": [
-            15.299999999999999,
-            5,
-            16,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         },
         "down": {
           "uv": [
-            15.299999999999999,
-            5,
-            16,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         }
@@ -76,66 +75,66 @@
     {
       "from": [
         -0.35,
-        5,
-        5
+        1,
+        11
       ],
       "to": [
         0.35,
-        11,
-        11
+        5,
+        15
       ],
       "faces": {
         "north": {
           "uv": [
-            15.299999999999999,
-            5,
-            16,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         },
         "south": {
           "uv": [
-            15.299999999999999,
-            5,
-            16,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         },
         "east": {
           "uv": [
-            5,
-            5,
-            11,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         },
         "west": {
           "uv": [
-            5,
-            5,
-            11,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         },
         "up": {
           "uv": [
-            15.299999999999999,
-            5,
-            16,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         },
         "down": {
           "uv": [
-            15.299999999999999,
-            5,
-            16,
-            11
+            6,
+            6,
+            10,
+            10
           ],
           "texture": "#sleeve"
         }

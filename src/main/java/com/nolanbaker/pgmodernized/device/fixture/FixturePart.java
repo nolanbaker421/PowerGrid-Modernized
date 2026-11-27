@@ -11,10 +11,11 @@ import net.minecraft.util.Mth;
  * running along {@code face}; a socket is a lamp holder whose bulb points along {@code face}; a
  * text part is lettering in the game's font on the box's {@code face} side, scaled to fit it,
  * backlit by a hidden lamp holder of its own: it takes a bulb like a socket, never shows it, and
- * when its material is glow the lettering is full-bright while the lamp is on.
+ * when its material is glow the lettering is full-bright while the lamp is on. A cylinder is a
+ * round tube along {@code face}, filling its box: stems, arms, candle tubes, neon.
  */
 public final class FixturePart {
-    public enum Kind { BOX, CONE, GLOBE, CHAIN, SOCKET, TEXT }
+    public enum Kind { BOX, CONE, GLOBE, CHAIN, SOCKET, TEXT, CYLINDER }
 
     /** Matte takes its colour; metal is the same with brighter tops; glass is see-through; glow lights up with the lamp. */
     public enum Material { MATTE, METAL, GLASS, GLOW }
